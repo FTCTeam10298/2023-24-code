@@ -2,15 +2,15 @@ package us.brainstormz.threeDay
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import us.brainstormz.examples.ExampleHardware
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
-import kotlin.math.abs
 
 @TeleOp
 class ThreeDayTeleOp: OpMode() {
 
-    val hardware = ExampleHardware()
+    val hardware = ThreeDayHardware()
     val movement = MecanumDriveTrain(hardware)
+
+
 
     override fun init() {
         /** INIT PHASE */
@@ -32,5 +32,19 @@ class ThreeDayTeleOp: OpMode() {
 //                               (y - x + r),
 //                               (y - x - r),
 //                               (y + x + r))
+
+        // Collector
+        hardware.collector.power = gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()
+
+        //Depositor
+        hardware.clawA.position = if (gamepad1.right_bumper) hardware.clawOpenPos else hardware.clawClosedPos
+        hardware.clawB.position = if (gamepad1.left_bumper) hardware.clawOpenPos else hardware.clawClosedPos
+
+        hardware.leftArm.position = if (gamepad1.a)
+            hardware.armOutPos
+        else if (gamepad2.left_stick_y != 0.0f)
+            gamepad2.left_stick_y.toDouble()
+        else
+            hardware.armInPos
     }
 }
