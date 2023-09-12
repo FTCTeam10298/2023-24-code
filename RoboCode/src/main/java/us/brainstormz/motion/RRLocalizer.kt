@@ -1,6 +1,6 @@
 package us.brainstormz.motion
 
-import com.acmerobotics.roadrunner.geometry.Pose2d
+//import com.acmerobotics.roadrunner.geometry.Pose2d
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -12,25 +12,25 @@ import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.ThreeWheelOdometry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.paddieMatrick.PaddieMatrickHardware
-import us.brainstormz.roadRunner.drive.SampleMecanumDrive
+//import us.brainstormz.paddieMatrick.PaddieMatrickHardware
+//import us.brainstormz.roadRunner.drive.SampleMecanumDrive
 
 class RRLocalizer(hardware: ThreeWheelOdometry): Localizer {
-    val roadRunner = SampleMecanumDrive(hardware.hwMap)
+    //val roadRunner = SampleMecanumDrive(hardware.hwMap)
 
     override fun currentPositionAndRotation(): PositionAndRotation {
-        val (x, y, heading) = roadRunner.poseEstimate
-        //rr switches x and y
-        return PositionAndRotation(x= y, y= x, r= Math.toDegrees(heading))
+        TODO()
+//        val (x, y, heading) = roadRunner.poseEstimate
+//        //rr switches x and y
+//        return PositionAndRotation(x= y, y= x, r= Math.toDegrees(heading))
     }
 
     override fun recalculatePositionAndRotation() {
-        roadRunner.update()
+        //roadRunner.update()
     }
 
     override fun setPositionAndRotation(x: Double?, y: Double?, r: Double?) {
-//        roadRunner.localizer.poseEstimate
-        roadRunner.localizer.poseEstimate = Pose2d(y ?:0.0, x ?:0.0, Math.toRadians(r ?:0.0))
+        //roadRunner.localizer.poseEstimate = Pose2d(y ?:0.0, x ?:0.0, Math.toRadians(r ?:0.0))
     }
 
     override fun startNewMovement() {
@@ -38,7 +38,7 @@ class RRLocalizer(hardware: ThreeWheelOdometry): Localizer {
     }
 }
 
-class Foo(private val hardware: PaddieMatrickHardware, private val telemetry:Telemetry){
+/*class Foo(private val hardware: PaddieMatrickHardware, private val telemetry:Telemetry){
     val localizer = RRLocalizer(hardware)
 
     fun loop(){
@@ -70,4 +70,4 @@ class RRLocalizerTest: OpMode() {
         hardware.rBDrive.zeroPowerBehavior =  ZeroPowerBehavior.FLOAT
         foo?.loop()
     }
-}
+}*/
