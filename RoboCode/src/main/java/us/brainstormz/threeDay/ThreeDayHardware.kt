@@ -26,13 +26,13 @@ class ThreeDayHardware : MecanumHardware {
     lateinit var rightArm: Servo
     enum class ArmPos(val position:Double) {
         In(0.0),
-        Out(0.7)
+        Out(0.75)
     }
 
     lateinit var lift: DcMotorEx
     enum class LiftPos(val position:Int) {
         Min(0),
-        Down(0),
+        Down(50),
         ArmClearance(600),
         Low(750),
         Middle(1500),

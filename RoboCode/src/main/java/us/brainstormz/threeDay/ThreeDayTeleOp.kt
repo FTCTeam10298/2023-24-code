@@ -22,7 +22,9 @@ class ThreeDayTeleOp: OpMode() {
     val liftWaitForArmTimeMilis = 800
 
     var clawAPosition = false
+    var clawAButtonPrevious = false
     var clawBPosition = false
+    var clawBButtonPrevious = false
 
     override fun init() {
         /** INIT PHASE */
@@ -73,8 +75,8 @@ class ThreeDayTeleOp: OpMode() {
         telemetry.addLine("Depo State: $depoState")
 
         //Claw
-        if (gamepad1.right_bumper && !clawAPosition) clawAPosition = !clawAPosition else clawAPosition
-
+        if (gamepad1.right_bumper && !clawAButtonPrevious) clawAPosition = !clawAPosition else clawAPosition
+        clawAButtonPrevious = gamepad1.right_bumper
         hardware.clawA.position =
             if (clawAPosition) {
                 hardware.clawAOpenPos
@@ -82,7 +84,8 @@ class ThreeDayTeleOp: OpMode() {
                 hardware.clawAClosedPos
             }
 
-        if (gamepad1.left_bumper&& !clawBPosition) clawBPosition = !clawBPosition else clawBPosition
+        if (gamepad1.left_bumper && !clawBButtonPrevious) clawBPosition = !clawBPosition else clawBPosition
+        clawBButtonPrevious = gamepad1.left_bumper
         hardware.clawB.position =
             if (clawBPosition) {
                 hardware.clawBOpenPos
