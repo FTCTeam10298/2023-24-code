@@ -26,15 +26,17 @@ class ThreeDayHardware : MecanumHardware {
     lateinit var rightArm: Servo
     enum class ArmPos(val position:Double) {
         In(0.0),
-        Out(1.0)
+        Out(0.7)
     }
 
     lateinit var lift: DcMotorEx
     enum class LiftPos(val position:Int) {
+        Min(0),
         Down(0),
-        Low(50),
-        Middle(100),
-        Max(100)
+        ArmClearance(600),
+        Low(750),
+        Middle(1500),
+        Max(1500)
     }
 
     override lateinit var hwMap: HardwareMap
@@ -64,11 +66,12 @@ class ThreeDayHardware : MecanumHardware {
         rightArm.position = ArmPos.In.position
 
         lift = hwMap["lift"] as DcMotorEx
-        lift.direction = DcMotorSimple.Direction.FORWARD
+        lift.direction = DcMotorSimple.Direction.REVERSE
         lift.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         lift.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         lift.targetPosition = 0
         lift.mode = DcMotor.RunMode.RUN_TO_POSITION
+        lift.setPositionPIDFCoefficients(15.0)
     }
 
 }
