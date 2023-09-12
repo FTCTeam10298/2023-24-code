@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
+import kotlin.math.abs
 
 @TeleOp
 class ThreeDayTeleOp: OpMode() {
@@ -38,17 +39,17 @@ class ThreeDayTeleOp: OpMode() {
         /** TELE-OP PHASE */
 
         // DRONE DRIVE
-//        val yInput = gamepad1.left_stick_y.toDouble()
-//        val xInput = gamepad1.left_stick_x.toDouble()
-//        val rInput = gamepad1.right_stick_x.toDouble()
-//
-//        val y = -yInput
-//        val x = xInput
-//        val r = -rInput * abs(rInput)
-//        movement.driveSetPower((y + x - r),
-//                               (y - x + r),
-//                               (y - x - r),
-//                               (y + x + r))
+        val yInput = gamepad1.left_stick_y.toDouble()
+        val xInput = gamepad1.left_stick_x.toDouble()
+        val rInput = gamepad1.right_stick_x.toDouble()
+
+        val y = -yInput
+        val x = xInput
+        val r = -rInput * abs(rInput)
+        movement.driveSetPower((y + x - r),
+                               (y - x + r),
+                               (y - x - r),
+                               (y + x + r))
 
         // Collector
         hardware.collector.power = gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()
