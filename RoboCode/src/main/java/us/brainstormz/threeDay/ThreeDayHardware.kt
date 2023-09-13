@@ -16,23 +16,24 @@ class ThreeDayHardware : MecanumHardware {
     lateinit var collector: DcMotor
 
     lateinit var clawA: Servo
-    val clawAClosedPos = 0.38
-    val clawAOpenPos = 0.85
+    val clawAClosedPos = 0.25
+    val clawAOpenPos = 0.83
     lateinit var clawB: Servo
-    val clawBClosedPos = 0.2
+    val clawBClosedPos = 0.17
     val clawBOpenPos = 0.65
 
     lateinit var leftArm: Servo
     lateinit var rightArm: Servo
     enum class ArmPos(val position:Double) {
-        In(0.0),
-        Out(0.75)
+        In(0.02),
+        Out(0.63)
     }
 
     lateinit var lift: DcMotorEx
     enum class LiftPos(val position:Int) {
         Min(0),
-        Down(50),
+        Grabbing(0),
+        Collecting(60),
         ArmClearance(600),
         Low(750),
         Middle(1500),
@@ -55,8 +56,8 @@ class ThreeDayHardware : MecanumHardware {
 
         clawA = hwMap["clawA"] as Servo
         clawB = hwMap["clawB"] as Servo
-        clawA.position = clawAClosedPos
-        clawB.position = clawBClosedPos
+        clawA.position = clawAOpenPos
+        clawB.position = clawBOpenPos
 
         leftArm = hwMap["leftArm"] as Servo
         rightArm = hwMap["rightArm"] as Servo
