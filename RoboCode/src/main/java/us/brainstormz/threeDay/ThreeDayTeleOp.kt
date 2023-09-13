@@ -14,18 +14,19 @@ class ThreeDayTeleOp: OpMode() {
     val hardware = ThreeDayHardware()
     val movement = MecanumDriveTrain(hardware)
 
-    data class DepoState(val liftState: LiftPos, val armState: ArmPos, val milisSinceStateChange: Long)
-    var previousDepoState = DepoState(LiftPos.Down, ArmPos.In, 0)
+    data class DepoTarget(val liftTarget: LiftPos, val armTarget: ArmPos, val milisSinceStateChange: Long)
+    var previousDepoState = DepoTarget(LiftPos.Collecting, ArmPos.In, 0)
 
-    var previousArmPosition = ArmPos.In.position
+    var previousArmPosition = previousDepoState.armTarget.position
 
-    var previousLiftPosition = LiftPos.Down.position
+    var previousLiftPosition = previousDepoState.liftTarget.position
     val liftWaitForArmTimeMilis = 800
 
-    var clawAPosition = false
-    var clawAButtonPrevious = false
-    var clawBPosition = false
-    var clawBButtonPrevious = false
+    var clawAPosition = true
+    var clawAButtonPrevious = true
+    var clawBPosition = true
+    var clawBButtonPrevious = true
+
 
     override fun init() {
         /** INIT PHASE */
@@ -54,19 +55,23 @@ class ThreeDayTeleOp: OpMode() {
         // Collector
         hardware.collector.power = gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()
 
+
         //Depo
         val depoState = when {
             gamepad1.dpad_down -> {
 //                retracted
-                DepoState(LiftPos.Down, ArmPos.In, System.currentTimeMillis())
+                DepoTarget(LiftPos.Collecting, ArmPos.In, System.currentTimeMillis())
             }
             gamepad1.dpad_left -> {
 //                low
-                DepoState(LiftPos.Low, ArmPos.Out, System.currentTimeMillis())
+                DepoTarget(LiftPos.Low, ArmPos.Out, System.currentTimeMillis())
             }
             gamepad1.dpad_up -> {
 //                middle
-                DepoState(LiftPos.Middle, ArmPos.Out, System.currentTimeMillis())
+                DepoTarget(LiftPos.Middle, ArmPos.Out, System.currentTimeMillis())
+            }
+            gamepad1.x -> {
+                DepoTarget(LiftPos.Grabbing, ArmPos.In, System.currentTimeMillis())
             }
             else -> {
                 previousDepoState
@@ -94,6 +99,25 @@ class ThreeDayTeleOp: OpMode() {
                 hardware.clawBClosedPos
             }
 
+        when (depoState.liftTarget) {
+            LiftPos.Grabbing -> {
+                if (hardware.lift.currentPosition <= LiftPos.Grabbing.position) {
+                    clawAPosition = false
+                    clawBPosition = false
+                } else {
+                    clawAPosition = true
+                    clawBPosition = true
+                }
+            }
+            LiftPos.Collecting -> {
+                clawAPosition = true
+                clawBPosition = true
+            }
+            else -> {
+
+            }
+        }
+
         //Lift
         when {
             gamepad2.right_stick_y !in -0.1..0.1 -> {
@@ -111,15 +135,15 @@ class ThreeDayTeleOp: OpMode() {
 
                 val timeSinceStateStarted = System.currentTimeMillis() - depoState.milisSinceStateChange
                 hardware.lift.targetPosition =
-                    if (depoState.liftState.position <= LiftPos.ArmClearance.position && timeSinceStateStarted < liftWaitForArmTimeMilis) {
+                    if (depoState.liftTarget.position <= LiftPos.ArmClearance.position && timeSinceStateStarted < liftWaitForArmTimeMilis) {
                         telemetry.addLine("Lift waiting for arm. timeSinceStateStarted $timeSinceStateStarted")
                         previousLiftPosition
                     } else {
                         telemetry.addLine("Lift to depo position")
-                        depoState.liftState.position
+                        depoState.liftTarget.position
                     }
 
-                val liftNeedsToGoDown = depoState.liftState.position < hardware.lift.targetPosition
+                val liftNeedsToGoDown = depoState.liftTarget.position < hardware.lift.targetPosition
                 hardware.lift.power = if (liftNeedsToGoDown) 0.2 else 1.0
             }
         }
@@ -135,7 +159,7 @@ class ThreeDayTeleOp: OpMode() {
             previousArmPosition
         } else {
             telemetry.addLine("Arm to depo position")
-            depoState.armState.position
+            depoState.armTarget.position
         }
         previousArmPosition = armPosition
 
