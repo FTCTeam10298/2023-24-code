@@ -24,6 +24,11 @@ class ThreeDayHardware : MecanumHardware {
 
     lateinit var leftArm: Servo
     lateinit var rightArm: Servo
+
+    lateinit var autoClaw: Servo
+    val autoClawUp = 1.0
+    val autoClawDown = 0.5
+
     enum class ArmPos(val position:Double) {
         In(0.02),
         Out(0.63)
@@ -78,6 +83,10 @@ class ThreeDayHardware : MecanumHardware {
         lift.targetPosition = 0
         lift.mode = DcMotor.RunMode.RUN_TO_POSITION
         lift.setPositionPIDFCoefficients(15.0)
+
+        autoClaw = hwMap["autoClaw"] as Servo
+        autoClaw.direction = Servo.Direction.FORWARD
+        autoClaw.position = autoClawUp
     }
 
 }
