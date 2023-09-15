@@ -166,5 +166,9 @@ class ThreeDayTeleOp: OpMode() {
         hardware.leftArm.position = armPosition
         hardware.rightArm.position = armPosition
 
+        //launcher
+        if (gamepad1.y ) {
+            hardware.launcher.position = 0.9
+        }else {hardware.launcher.position = 0.6}
     }
 }
