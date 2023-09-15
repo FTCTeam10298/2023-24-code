@@ -25,6 +25,8 @@ class ThreeDayHardware : MecanumHardware {
     lateinit var leftArm: Servo
     lateinit var rightArm: Servo
 
+    lateinit var launcher: Servo
+
     lateinit var autoClaw: Servo
     val autoClawUp = 1.0
     val autoClawDown = 0.5
@@ -93,6 +95,9 @@ class ThreeDayHardware : MecanumHardware {
         autoClaw = hwMap["autoClaw"] as Servo
         autoClaw.direction = Servo.Direction.FORWARD
         autoClaw.position = autoClawUp
+
+        launcher = hwMap["launcher"] as Servo
+
     }
 
 }
