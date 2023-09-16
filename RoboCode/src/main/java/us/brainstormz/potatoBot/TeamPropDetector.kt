@@ -12,8 +12,8 @@ import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.telemetryWizard.GlobalConsole.console
 
 class TeamPropDetector(private val console: TelemetryConsole) {
-    enum class TSEPosition {
-        One, Two, Three
+    enum class PropPosition {
+        Left, Center, Right
     }
 
     private val blue = Scalar(0.0, 0.0, 255.0)
@@ -29,19 +29,19 @@ class TeamPropDetector(private val console: TelemetryConsole) {
         Rect(Point(220.0, 100.0), Point(300.0, 240.0)))
 
     private val regions = listOf(
-        TSEPosition.One to orangePlaces[1],
-        TSEPosition.Two to orangePlaces[2],
-        TSEPosition.Three to orangePlaces[3]
+        PropPosition.Left to orangePlaces[1],
+        PropPosition.Center to orangePlaces[2],
+        PropPosition.Right to orangePlaces[3]
     )
 
     private val colors = listOf(
-        TSEPosition.One to blue,
-        TSEPosition.Two to black,
-        TSEPosition.Three to red
+        PropPosition.Left to blue,
+        PropPosition.Center to black,
+        PropPosition.Right to red
     )
 
     @Volatile // Volatile since accessed by OpMode thread w/o synchronization
-    var position = TSEPosition.One
+    var position = PropPosition.Left
 
 //    fun init(frame: Mat): Mat {
 ////        val cbFrame = inputToCb(frame)
@@ -49,7 +49,7 @@ class TeamPropDetector(private val console: TelemetryConsole) {
 //        return frame
 //    }
 
-    private lateinit var submats: List<Pair<TSEPosition, Mat>>
+    private lateinit var submats: List<Pair<PropPosition, Mat>>
     private lateinit var cbFrame: Mat
 
     fun processFrame(frame: Mat): Mat {
@@ -60,7 +60,7 @@ class TeamPropDetector(private val console: TelemetryConsole) {
             it.first to cbFrame.submat(it.second)
         }
 
-        var result = TSEPosition.Three
+        var result = PropPosition.Right
         var prevColor = 0
         submats.forEach {
             val color = colorInRect(it.second)
