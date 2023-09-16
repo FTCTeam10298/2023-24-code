@@ -3,6 +3,9 @@ package us.brainstormz.threeDay
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotorEx
+import com.qualcomm.robotcore.hardware.Servo
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
@@ -38,6 +41,8 @@ class ThreeDayTeleOp: OpMode() {
 
     override fun loop() {
         /** TELE-OP PHASE */
+
+        telemetry.addLine("motors: ${hardware.hwMap.getAll(DcMotor::class.java).map { it as DcMotorEx; it.getCurrent(CurrentUnit.MILLIAMPS)}}")
 
         // DRONE DRIVE
         val yInput = gamepad1.left_stick_y.toDouble()
