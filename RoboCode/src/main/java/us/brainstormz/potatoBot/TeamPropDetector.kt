@@ -11,7 +11,7 @@ import us.brainstormz.hardwareClasses.EncoderDriveMovement
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.telemetryWizard.GlobalConsole.console
 
-class TeamPropDetector(private val console: TelemetryConsole) {
+class TeamPropDetector() {
     enum class TSEPosition {
         One, Two, Three
     }
@@ -24,14 +24,15 @@ class TeamPropDetector(private val console: TelemetryConsole) {
 
     private val tseThreshold = 135
 
-    private val orangePlaces = listOf(Rect(Point(100.0, 240.0), Point(0.0, 100.0)),
+    private val orangePlaces = listOf(
+        Rect(Point(100.0, 240.0), Point(0.0, 100.0)),
         Rect(Point(210.0, 100.0), Point(110.0, 240.0)),
         Rect(Point(220.0, 100.0), Point(300.0, 240.0)))
 
     private val regions = listOf(
-        TSEPosition.One to orangePlaces[1],
-        TSEPosition.Two to orangePlaces[2],
-        TSEPosition.Three to orangePlaces[3]
+        TSEPosition.One to orangePlaces[0],
+        TSEPosition.Two to orangePlaces[1],
+        TSEPosition.Three to orangePlaces[2],
     )
 
     private val colors = listOf(
@@ -101,18 +102,16 @@ class TeamPropDetector(private val console: TelemetryConsole) {
 }
 
 @Autonomous
-class UnderstudyTest/** Change Depending on robot */: LinearOpMode() {
+class ThuUnderstudyTest/** Change Depending on robot */: LinearOpMode() {
 
-    val hardware = ExampleHardware()
     val opencv = OpenCvAbstraction(this)
-    val tseDetector = TeamPropDetector(console)
+    val tseDetector = TeamPropDetector()
 
     /** Change Depending on robot */
-    val movement = EncoderDriveMovement(hardware, TelemetryConsole(telemetry))
 
     override fun runOpMode() {
-        /** INIT PHASE */
-        hardware.init(hardwareMap)
+        println("he forgot to set gravity")
+//        /** INIT PHASE */
         opencv.init(hardwareMap)
         opencv.internalCamera = false
         opencv.cameraName = "Webcam 1" //DEFINE THIS IN HW CONFIG ON HUB!!
@@ -120,7 +119,7 @@ class UnderstudyTest/** Change Depending on robot */: LinearOpMode() {
         hardwareMap.allDeviceMappings.forEach { m ->
             println("HW: ${m.deviceTypeClass} ${m.entrySet().map{it.key}.joinToString(",")}")
         }
-        opencv.onNewFrame(tseDetector::processFrame)
+//        opencv.onNewFrame(tseDetector::processFrame)
 
         waitForStart()
         /** AUTONOMOUS  PHASE */
