@@ -20,24 +20,24 @@ class ThreeDayAuto: LinearOpMode() {
     val movement = EncoderDriveMovement(hardware, console)
 
     val opencv = OpenCvAbstraction(this)
-    val teamPropDetector = TeamPropDetector(console)
+    val teamPropDetector = TeamPropDetector()
 
     override fun runOpMode() {
         /** INIT PHASE */
 
         hardware.init(hardwareMap)
 
-        opencv.init(hardwareMap)
-        opencv.internalCamera = false
-        opencv.cameraName = "Webcam 1"
-        opencv.cameraOrientation = OpenCvCameraRotation.SIDEWAYS_LEFT
-        opencv.onNewFrame(teamPropDetector::processFrame)
+//        opencv.init(hardwareMap)
+//        opencv.internalCamera = false
+//        opencv.cameraName = "Webcam 1"
+//        opencv.cameraOrientation = OpenCvCameraRotation.SIDEWAYS_LEFT
+//        opencv.onNewFrame(teamPropDetector::processFrame)
 
         waitForStart()
         /** AUTONOMOUS  PHASE */
 
-        val propPosition = teamPropDetector.position
-        opencv.stop()
+        val propPosition = PropPosition.Left//teamPropDetector.position
+//        opencv.stop()
 
         //Drop on spike
         when (propPosition) {
