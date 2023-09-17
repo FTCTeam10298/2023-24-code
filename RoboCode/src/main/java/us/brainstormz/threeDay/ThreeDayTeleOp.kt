@@ -10,6 +10,7 @@ import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
 import kotlin.math.abs
+import kotlin.math.pow
 
 @TeleOp
 class ThreeDayTeleOp: OpMode() {
@@ -156,9 +157,9 @@ class ThreeDayTeleOp: OpMode() {
         telemetry.addLine("Lift position: ${hardware.lift.currentPosition}")
 
         //Arm
-        val armPosition = if (gamepad2.left_stick_y != 0.0f) {
+        val armPosition = if (gamepad2.right_stick_x != 0.0f) {
             telemetry.addLine("Manual arm")
-            gamepad2.left_stick_y.toDouble()
+            previousArmPosition + (gamepad2.left_stick_y.toDouble() * 0.5)
         } else if (hardware.lift.targetPosition < LiftPos.Low.position || hardware.lift.isBusy) {
             telemetry.addLine("Arm waiting for lift")
             previousArmPosition
@@ -174,6 +175,13 @@ class ThreeDayTeleOp: OpMode() {
         //launcher
         if (gamepad1.y ) {
             hardware.launcher.position = 0.9
-        }else {hardware.launcher.position = 0.6}
+        } else {
+            hardware.launcher.position = 0.6
+        }
+
+        //hang
+        hardware.screw.power = gamepad2.left_stick_y.toDouble()
+        hardware.hangRotator.power = gamepad2.left_stick_x.toDouble().pow(3)
+
     }
 }
