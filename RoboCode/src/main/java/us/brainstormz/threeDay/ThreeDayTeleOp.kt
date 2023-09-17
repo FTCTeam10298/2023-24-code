@@ -48,7 +48,7 @@ class ThreeDayTeleOp: OpMode() {
         // DRONE DRIVE
         val yInput = gamepad1.left_stick_y.toDouble()
         val xInput = gamepad1.left_stick_x.toDouble()
-        val rInput = gamepad1.right_stick_x.toDouble()
+        val rInput = -gamepad1.right_stick_x.toDouble()
 
         val y = -yInput
         val x = xInput
