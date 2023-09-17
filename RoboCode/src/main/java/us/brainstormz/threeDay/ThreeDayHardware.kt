@@ -61,17 +61,14 @@ class ThreeDayHardware : MecanumHardware {
         rFDrive = hwMap["rFDrive"] as DcMotor
         lBDrive = hwMap["lBDrive"] as DcMotor
         rBDrive = hwMap["rBDrive"] as DcMotor
-
-        lFDrive.direction = DcMotorSimple.Direction.REVERSE
-        rFDrive.direction = DcMotorSimple.Direction.FORWARD
-        lBDrive.direction = DcMotorSimple.Direction.REVERSE
-        rBDrive.direction = DcMotorSimple.Direction.FORWARD
-
+        lFDrive.direction = DcMotorSimple.Direction.FORWARD
+        rFDrive.direction = DcMotorSimple.Direction.REVERSE
+        lBDrive.direction = DcMotorSimple.Direction.FORWARD
+        rBDrive.direction = DcMotorSimple.Direction.REVERSE
         lFDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         rFDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         lBDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         rBDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-
 
         collector = hwMap["collector"] as DcMotor
 
