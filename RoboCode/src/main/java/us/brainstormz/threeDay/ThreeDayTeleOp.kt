@@ -160,7 +160,7 @@ class ThreeDayTeleOp: OpMode() {
         val armPosition = if (gamepad2.right_stick_x != 0.0f) {
             telemetry.addLine("Manual arm")
             previousArmPosition + (gamepad2.left_stick_y.toDouble() * 0.5)
-        } else if (hardware.lift.targetPosition < LiftPos.Low.position || hardware.lift.isBusy) {
+        } else if (hardware.lift.targetPosition < LiftPos.ArmClearance.position || hardware.lift.currentPosition < LiftPos.ArmClearance.position) { //jank
             telemetry.addLine("Arm waiting for lift")
             previousArmPosition
         } else {

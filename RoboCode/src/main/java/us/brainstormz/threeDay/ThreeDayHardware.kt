@@ -36,7 +36,7 @@ class ThreeDayHardware : MecanumHardware {
 
     enum class ArmPos(val position:Double) {
         In(0.02),
-        Out(0.63)
+        Out(0.66)
     }
 
     lateinit var lift: DcMotorEx
@@ -44,8 +44,8 @@ class ThreeDayHardware : MecanumHardware {
         Min(0),
         Grabbing(0),
         Collecting(60),
-        ArmClearance(600),
-        Low(750),
+        ArmClearance(750),
+        Low(800),
         Middle(1500),
         Max(1500)
     }
