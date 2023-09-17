@@ -26,9 +26,9 @@ class ThreeDayTeleOp: OpMode() {
     var previousLiftPosition = previousDepoState.liftTarget.position
     val liftWaitForArmTimeMilis = 800
 
-    var clawAPosition = true
+    data class ClawTarget(val clawA: Boolean, val clawB: Boolean)
+    var clawTarget = ClawTarget(clawA = true, clawB = true)
     var clawAButtonPrevious = true
-    var clawBPosition = true
     var clawBButtonPrevious = true
 
 
@@ -87,42 +87,50 @@ class ThreeDayTeleOp: OpMode() {
         telemetry.addLine("Depo State: $depoState")
 
         //Claw
-        if (gamepad1.right_bumper && !clawAButtonPrevious) clawAPosition = !clawAPosition else clawAPosition
-        clawAButtonPrevious = gamepad1.right_bumper
+        clawTarget = if (!gamepad1.right_bumper && !gamepad1.left_bumper) {
+            when (depoState.liftTarget) {
+                LiftPos.Grabbing -> {
+                    if (hardware.lift.currentPosition <= LiftPos.Grabbing.position) {
+                        ClawTarget(clawA = false, clawB = false)
+                    } else {
+                        ClawTarget(clawA = true, clawB = true)
+                    }
+                }
+                LiftPos.Collecting -> {
+                    ClawTarget(clawA = true, clawB = true)
+                }
+                else -> {
+                    clawTarget
+                }
+            }
+        } else {
+            val clawAPosition = if (gamepad1.right_bumper && !clawAButtonPrevious)
+                !clawTarget.clawA
+            else
+                clawTarget.clawA
+            clawAButtonPrevious = gamepad1.right_bumper
+
+            val clawBPosition = if (gamepad1.left_bumper && !clawBButtonPrevious)
+                !clawTarget.clawB
+            else
+                clawTarget.clawB
+            clawBButtonPrevious = gamepad1.left_bumper
+
+            ClawTarget(clawA = clawAPosition, clawB = clawBPosition)
+        }
+
         hardware.clawA.position =
-            if (clawAPosition) {
+            if (clawTarget.clawA) {
                 hardware.clawAOpenPos
             } else {
                 hardware.clawAClosedPos
             }
-
-        if (gamepad1.left_bumper && !clawBButtonPrevious) clawBPosition = !clawBPosition else clawBPosition
-        clawBButtonPrevious = gamepad1.left_bumper
         hardware.clawB.position =
-            if (clawBPosition) {
+            if (clawTarget.clawB) {
                 hardware.clawBOpenPos
             } else {
                 hardware.clawBClosedPos
             }
-
-        when (depoState.liftTarget) {
-            LiftPos.Grabbing -> {
-                if (hardware.lift.currentPosition <= LiftPos.Grabbing.position) {
-                    clawAPosition = false
-                    clawBPosition = false
-                } else {
-                    clawAPosition = true
-                    clawBPosition = true
-                }
-            }
-            LiftPos.Collecting -> {
-                clawAPosition = true
-                clawBPosition = true
-            }
-            else -> {
-
-            }
-        }
 
         //Lift
         when {
