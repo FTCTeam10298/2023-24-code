@@ -1,11 +1,17 @@
 package us.brainstormz.threeDay
 
+import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.hardware.EmbeddedControlHubModule
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.hardware.configuration.LynxConstants
+import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap
 import us.brainstormz.hardwareClasses.MecanumHardware
+import us.brainstormz.hardwareClasses.SmartLynxModule
+
 
 class ThreeDayHardware : MecanumHardware {
     override lateinit var lFDrive: DcMotor
@@ -57,10 +63,24 @@ class ThreeDayHardware : MecanumHardware {
     }
 
     override lateinit var hwMap: HardwareMap
+//    lateinit var ctrlHub: SmartLynxModule
+//    lateinit var exHub: SmartLynxModule
 
     override fun init(ahwMap: HardwareMap) {
 
         hwMap = ahwMap
+
+//        val modules = hardwareMap.getAll(LynxModule::class.java)
+//        for (lynx in modules) {
+//            //lynx.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
+//            if (lynx.isParent && LynxConstants.isEmbeddedSerialNumber(lynx.serialNumber)) {
+//                ctrlHub = lynx
+//            } else {
+//                exHub = lynx
+//            }
+//        }
+//
+//        ctrlHub.
 
         // Drivetrain
         lFDrive = hwMap["lFDrive"] as DcMotor
