@@ -14,10 +14,10 @@ import us.brainstormz.hardwareClasses.SmartLynxModule
 
 
 class ThreeDayHardware : MecanumHardware {
-    override lateinit var lFDrive: DcMotor
-    override lateinit var rFDrive: DcMotor
-    override lateinit var lBDrive: DcMotor
-    override lateinit var rBDrive: DcMotor
+    override lateinit var lFDrive: DcMotorEx
+    override lateinit var rFDrive: DcMotorEx
+    override lateinit var lBDrive: DcMotorEx
+    override lateinit var rBDrive: DcMotorEx
 
     lateinit var collector: DcMotor
 
@@ -83,10 +83,10 @@ class ThreeDayHardware : MecanumHardware {
 //        ctrlHub.
 
         // Drivetrain
-        lFDrive = hwMap["lFDrive"] as DcMotor
-        rFDrive = hwMap["rFDrive"] as DcMotor
-        lBDrive = hwMap["lBDrive"] as DcMotor
-        rBDrive = hwMap["rBDrive"] as DcMotor
+        lFDrive = hwMap["lFDrive"] as DcMotorEx
+        rFDrive = hwMap["rFDrive"] as DcMotorEx
+        lBDrive = hwMap["lBDrive"] as DcMotorEx
+        rBDrive = hwMap["rBDrive"] as DcMotorEx
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
         rFDrive.direction = DcMotorSimple.Direction.REVERSE
         lBDrive.direction = DcMotorSimple.Direction.FORWARD

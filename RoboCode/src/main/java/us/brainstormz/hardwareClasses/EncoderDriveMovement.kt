@@ -22,7 +22,10 @@ class EncoderDriveMovement(private val hardware: MecanumHardware, private val co
     val WHEEL_DIAMETER_INCHES = 3.77953 // For figuring circumference
     val DRIVETRAIN_ERROR = 1.0 // Error determined from testing
     val COUNTS_PER_INCH = COUNTS_PER_MOTOR_REV * GEARBOX_RATIO * DRIVE_GEAR_REDUCTION / (WHEEL_DIAMETER_INCHES * PI) / DRIVETRAIN_ERROR
-    val COUNTS_PER_DEGREE: Double = COUNTS_PER_INCH * 0.268 * 2/3 // Found by testing
+    val WHEEL_TRACKWIDTH_INCH = 16.25
+    val INCHES_PER_DEGREE: Double = (WHEEL_TRACKWIDTH_INCH * PI) / (360)
+    val COUNTS_PER_DEGREE: Double = COUNTS_PER_INCH * INCHES_PER_DEGREE * 1.86
+    //val COUNTS_PER_DEGREE: Double = COUNTS_PER_INCH * 0.268 * 2/3 // Found by testing
 
     /**
      * DriveRobotTime drives the robot the set number of inches at the given power level.
@@ -180,6 +183,8 @@ class EncoderDriveMovement(private val hardware: MecanumHardware, private val co
 
     override fun driveRobotTurn(power: Double, degree: Double, smartAccel: Boolean) {
 
+        console.display(1, "COUNTS_PER_DEGREE: $COUNTS_PER_DEGREE")
+        console.display(2, "COUNTS_PER_INCH: $COUNTS_PER_INCH")
         val position: Double = degree * COUNTS_PER_DEGREE
         var state = 0 // 0 = NONE, 1 = ACCEL, 2 = DRIVE, 3 = DECEL
 
