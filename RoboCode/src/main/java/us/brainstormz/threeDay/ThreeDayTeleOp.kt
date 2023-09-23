@@ -1,5 +1,6 @@
 package us.brainstormz.threeDay
 
+import androidx.core.graphics.rotationMatrix
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -149,7 +150,7 @@ class ThreeDayTeleOp: OpMode() {
 
                 val timeSinceStateStarted = System.currentTimeMillis() - depoState.milisSinceStateChange
                 hardware.lift.targetPosition =
-                    if (depoState.liftTarget.position <= LiftPos.ArmClearance.position && timeSinceStateStarted < liftWaitForArmTimeMilis) {
+                    if ((depoState.liftTarget.position <= LiftPos.ArmClearance.position && timeSinceStateStarted < liftWaitForArmTimeMilis) || hardware.hangRotator.isBusy) {
                         telemetry.addLine("Lift waiting for arm. timeSinceStateStarted $timeSinceStateStarted")
                         previousLiftPosition
                     } else {
@@ -189,7 +190,20 @@ class ThreeDayTeleOp: OpMode() {
 
         //hang
         hardware.screw.power = gamepad2.left_stick_y.toDouble()
-        hardware.hangRotator.power = gamepad2.left_stick_x.toDouble().pow(3)
+
+        if (hardware.lift.currentPosition > LiftPos.ArmClearance.position || depoState.liftTarget.position > LiftPos.ArmClearance.position){
+            hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.LiftClearance.position //up position
+            hardware.hangRotator.power = 1.0
+        } else if (gamepad2.a) {
+            hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.StraightUp.position
+            hardware.hangRotator.power = 1.0
+        } else if (hardware.collector.power != 0.0) {
+            hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.LiftClearance.position
+            hardware.hangRotator.power = 1.0
+        } else {
+            hardware.hangRotator.power = 0.0 //down position
+        }
+        telemetry.addLine("hangRotatorPosition " + hardware.hangRotator.targetPosition)
 
     }
 }
