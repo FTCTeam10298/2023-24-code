@@ -34,7 +34,7 @@ class ThreeDayHardware : MecanumHardware {
     lateinit var launcher: Servo
 
     lateinit var autoClaw: Servo
-    val autoClawUp = 1.0
+    val autoClawUp = 0.9
     val autoClawDown = 0.5
 
     lateinit var hangRotator: DcMotor

@@ -39,60 +39,64 @@ class ThreeDayAuto: LinearOpMode() {
         val propPosition = PropPosition.Left//teamPropDetector.position
 //        opencv.stop()
 
+        hardware.clawA.position = hardware.clawAClosedPos
+        hardware.clawB.position = hardware.clawBClosedPos
         //Drop on spike
         when (propPosition) {
             PropPosition.Left -> {
                 //move to spike spot
-                movement.driveRobotPosition(power = 1.0, inches = 24.0, smartAccel = true)
+                movement.driveRobotPosition(power = 1.0, inches = -28.0, smartAccel = true)
+
                 //drop
                 hardware.autoClaw.position = hardware.autoClawDown
-                sleep(300)
+                sleep(800)
                 hardware.autoClaw.position = hardware.autoClawUp
+
                 //consistent end position
-                movement.driveRobotStrafe(power = 1.0, inches = 2.0, smartAccel = true)
-                movement.driveRobotTurn(power = 1.0, degree = 90.0, smartAccel = true)
+                movement.driveRobotStrafe(power = 1.0, inches = 4.0, smartAccel = true)
+                movement.driveRobotTurn(power = 0.7, degree = -90.0, smartAccel = true)
 
                 //go to backboard
-                movement.driveRobotPosition(power = 1.0, inches = 45.0, smartAccel = true)
+                movement.driveRobotPosition(power = 1.0, inches = -37.0, smartAccel = true)
+                movement.driveRobotPosition(power = 0.5, inches = -2.0, smartAccel = false)
 
                 //linup
-                movement.driveRobotStrafe(power = 1.0, inches = -10.0, smartAccel = true)
-
+                movement.driveRobotStrafe(power = 1.0, inches = -5.0, smartAccel = true)
             }
             PropPosition.Center -> {
                 //move to spike spot
-                movement.driveRobotPosition(power = 1.0, inches = 23.0, smartAccel = true)
+                movement.driveRobotPosition(power = 1.0, inches = -23.0, smartAccel = true)
                 movement.driveRobotTurn(power = 1.0, degree = 90.0, smartAccel = true)
                 //drop
                 hardware.autoClaw.position = hardware.autoClawDown
                 sleep(300)
                 hardware.autoClaw.position = hardware.autoClawUp
                 //consistent end position
-                movement.driveRobotStrafe(power = 1.0, inches = 2.0, smartAccel = true)
+                movement.driveRobotStrafe(power = 1.0, inches = -2.0, smartAccel = true)
 
                 //go to backboard
-                movement.driveRobotPosition(power = 1.0, inches = 45.0, smartAccel = true)
+                movement.driveRobotPosition(power = 1.0, inches = -45.0, smartAccel = true)
 
                 //linup
-                movement.driveRobotStrafe(power = 1.0, inches = -10.0, smartAccel = true)
+                movement.driveRobotStrafe(power = 1.0, inches = 10.0, smartAccel = true)
             }
             PropPosition.Right -> {
                 //move to spike spot
-                movement.driveRobotPosition(power = 1.0, inches = 24.0, smartAccel = true)
+                movement.driveRobotPosition(power = 1.0, inches = -24.0, smartAccel = true)
                 movement.driveRobotTurn(power = 1.0, degree = 180.0, smartAccel = true)
                 //drop
                 hardware.autoClaw.position = hardware.autoClawDown
                 sleep(300)
                 hardware.autoClaw.position = hardware.autoClawUp
                 //consistent end position
-                movement.driveRobotPosition(power = 1.0, inches = -24.0, smartAccel = true)
+                movement.driveRobotPosition(power = 1.0, inches = 24.0, smartAccel = true)
                 movement.driveRobotTurn(power = 1.0, degree = -90.0, smartAccel = true)
 
                 //go to backboard
-                movement.driveRobotPosition(power = 1.0, inches = 45.0, smartAccel = true)
+                movement.driveRobotPosition(power = 1.0, inches = -45.0, smartAccel = true)
 
                 //linup
-                movement.driveRobotStrafe(power = 1.0, inches = 34.0, smartAccel = true)
+                movement.driveRobotStrafe(power = 1.0, inches = -34.0, smartAccel = true)
             }
         }
 
@@ -100,15 +104,17 @@ class ThreeDayAuto: LinearOpMode() {
         moveLiftBlocking(LiftPos.Middle.position)
         hardware.rightArm.position = ArmPos.Out.position
         hardware.leftArm.position = ArmPos.Out.position
+        sleep(400)
         hardware.clawA.position = hardware.clawAOpenPos
         hardware.clawB.position = hardware.clawBOpenPos
-        sleep(500)
+        sleep(800)
         hardware.rightArm.position = ArmPos.In.position
         hardware.leftArm.position = ArmPos.In.position
         moveLiftBlocking(LiftPos.Min.position)
 
         //Park
-        movement.driveRobotStrafe(power = 1.0, inches = -10.0, smartAccel = true)
+        movement.driveRobotStrafe(power = 1.0, inches = -25.0, smartAccel = true)
+        movement.driveRobotPosition(power = 1.0, inches = -15.0, smartAccel = false)
     }
 
     fun moveLift(targetPosition: Int): Boolean {
@@ -120,10 +126,22 @@ class ThreeDayAuto: LinearOpMode() {
 
         return !hardware.lift.isBusy
     }
+    fun moveRotator(targetPosition: Int): Boolean {
+        hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
+        hardware.hangRotator.targetPosition = targetPosition
+        hardware.hangRotator.power = 1.0
+
+        return !hardware.hangRotator.isBusy
+    }
     fun moveLiftBlocking(targetPosition: Int) {
-        while (!moveLift(targetPosition)) {
+        while (!moveRotator(ThreeDayHardware.RotatorPos.LiftClearance.position)) {
             sleep(100)
         }
+        while (!moveLift(targetPosition)) {
+            moveRotator(ThreeDayHardware.RotatorPos.LiftClearance.position)
+            sleep(100)
+        }
+        hardware.hangRotator.power = 0.0
     }
 
 }
