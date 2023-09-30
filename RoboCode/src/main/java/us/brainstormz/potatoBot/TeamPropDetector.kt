@@ -10,7 +10,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.hardwareClasses.EncoderDriveMovement
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.telemetryWizard.GlobalConsole.console
-
+//
 class TeamPropDetector() {
     enum class PropPosition {
         Left, Center, Right
