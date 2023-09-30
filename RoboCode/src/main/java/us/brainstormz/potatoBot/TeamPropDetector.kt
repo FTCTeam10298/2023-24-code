@@ -28,7 +28,7 @@ class TeamPropDetector(val telemetry: Telemetry) {
     private val orangePlaces = listOf(
             Rect(Point(100.0, 240.0), Point(0.0, 100.0)),
             Rect(Point(210.0, 100.0), Point(110.0, 240.0)),
-            Rect(Point(220.0, 100.0), Point(300.0, 240.0)))
+            Rect(Point(220.0, 100.0), Point(300.0, 240.0)) )
 
     private val regions = listOf(
             PropPosition.Left to orangePlaces[0],
@@ -100,6 +100,7 @@ class TeamPropDetector(val telemetry: Telemetry) {
 //
         telemetry.addLine("Position: $position")
         telemetry.addLine("Highest Color: $prevColor")
+        telemetry.update()
 
         return frame
     }
@@ -119,7 +120,8 @@ class ThuUnderstudyTest/** Change Depending on robot */: LinearOpMode() {
     /** Change Depending on robot */
 
     override fun runOpMode() {
-        println("he forgot to set gravity")
+        telemetry.addLine("he forgot to set gravity")
+        telemetry.update()
 //        /** INIT PHASE */
         opencv.init(hardwareMap)
         opencv.internalCamera = false
