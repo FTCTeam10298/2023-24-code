@@ -60,8 +60,9 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
     private lateinit var colFrame: Mat
 
 //    private var filtered = Mat()
-    private var filteredFrame = Mat()
-
+    private var redFrame = Mat()
+    private var blueFrame = Mat()
+    private var intermediateHoldingFrame = Mat()
     fun processFrame(frame: Mat): Mat {
 
         fun colorInRect(rect: Mat): Int {
@@ -74,21 +75,27 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
 //     * and then extracts some channel to some variable
 //     */
 
-        fun inputToColor(frame: Mat): Mat {
+
+        fun inputToColor(frame: Mat, colorToReturn: PropColors): Mat {
+            //subtract red from blue in detection
+
             //coi explanation: input, output, color channel iso. in output: 0 -> R, 1 -> G?, 2 -> B
 //            Imgproc.cvtColor(input, yCrCb, Imgproc.COLOR_RGB2YCrCb)
-            var coi = 0
-                when (propColor) {
-                    PropColors.Red -> coi = 0
-                    PropColors.Blue -> coi = 3
-                }
-            Core.extractChannel(frame, filteredFrame, coi)
-            return filteredFrame
+            var coi = when (colorToReturn) {
+                PropColors.Red -> 0
+                PropColors.Blue -> 3
+            }
+            Core.extractChannel(frame, intermediateHoldingFrame, coi)
+            return intermediateHoldingFrame
         }
 
-        colFrame = inputToColor(frame)
+        blueFrame = inputToColor(frame, PropColors.Red)
+        redFrame = inputToColor(frame, PropColors.Blue)
 
-        submats = regions.map {
+        submatsBlue = regions.map {
+            it.first to colFrame.submat(it.second)
+        }
+        submatsRed = regions.map {
             it.first to colFrame.submat(it.second)
         }
 
@@ -113,7 +120,7 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
         telemetry.addLine("Highest Color: $prevColor")
         telemetry.update()
 
-        return filteredFrame
+        return blueFrame
     }
 //
 
