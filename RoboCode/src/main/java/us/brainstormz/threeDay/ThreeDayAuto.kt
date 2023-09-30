@@ -20,7 +20,7 @@ class ThreeDayAuto: LinearOpMode() {
     val movement = EncoderDriveMovement(hardware, console)
 
     val opencv = OpenCvAbstraction(this)
-    val teamPropDetector = TeamPropDetector()
+    val teamPropDetector = TeamPropDetector(telemetry)
 
     override fun runOpMode() {
         /** INIT PHASE */

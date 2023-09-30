@@ -6,12 +6,13 @@ import us.brainstormz.examples.ExampleHardware
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.hardwareClasses.EncoderDriveMovement
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.telemetryWizard.GlobalConsole.console
 //
-class TeamPropDetector() {
+class TeamPropDetector(val telemetry: Telemetry) {
     enum class PropPosition {
         Left, Center, Right
     }
@@ -62,6 +63,11 @@ class TeamPropDetector() {
             return Core.mean(rect).`val`[0].toInt()
         }
 
+        //
+//    /**
+//     * This function takes the RGB frame, converts to YCrCb,
+//     * and extracts the Cb channel to the cb variable
+//     */
 
         fun inputToCb(input: Mat?): Mat {
             Imgproc.cvtColor(input, yCrCb, Imgproc.COLOR_RGB2YCrCb)
@@ -86,34 +92,29 @@ class TeamPropDetector() {
         }
 
         position = result
-//
-//        colors.forEach {
-//            val rect = regions.toMap()[it.first]
-//            Imgproc.rectangle(frame, rect, it.second, 2)
-//        }
-//
-//        console.display(8, "Position: $position")
-//        console.display(9, "Highest Color: $prevColor")
-//
-//        return frame
-//    }
-//
 
+        colors.forEach {
+            val rect = regions.toMap()[it.first]
+            Imgproc.rectangle(frame, rect, it.second, 2)
+        }
 //
-//    /**
-//     * This function takes the RGB frame, converts to YCrCb,
-//     * and extracts the Cb channel to the cb variable
-//     */
+        telemetry.addLine("Position: $position")
+        telemetry.addLine("Highest Color: $prevColor")
 
         return frame
     }
+//
+
+
+
 }
+
 
 @Autonomous
 class ThuUnderstudyTest/** Change Depending on robot */: LinearOpMode() {
 
     val opencv = OpenCvAbstraction(this)
-    val tseDetector = TeamPropDetector()
+    val tseDetector = TeamPropDetector(telemetry)
 
     /** Change Depending on robot */
 
