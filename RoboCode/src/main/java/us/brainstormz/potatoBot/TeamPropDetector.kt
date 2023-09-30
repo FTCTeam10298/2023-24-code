@@ -77,13 +77,13 @@ class TeamPropDetector() {
 
         var result = PropPosition.Right
         var prevColor = 0
-//        submats.forEach {
-//            val color = colorInRect(it.second)
-//            if (color > prevColor) {
-//                prevColor = color
-//                result = it.first
-//            }
-//        }
+        submats.forEach {
+            val color = colorInRect(it.second)
+            if (color > prevColor) {
+                prevColor = color
+                result = it.first
+            }
+        }
 
         position = result
 //
