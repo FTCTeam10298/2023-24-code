@@ -52,10 +52,10 @@ class TeamPropDetector(val telemetry: Telemetry) {
 //    }
 
     private lateinit var submats: List<Pair<PropPosition, Mat>>
-    private lateinit var cbFrame: Mat
+    private lateinit var colFrame: Mat
 
-    private var yCrCb = Mat()
-    private var cb = Mat()
+//    private var filtered = Mat()
+    private var filteredFrame = Mat()
 
     fun processFrame(frame: Mat): Mat {
 
@@ -65,20 +65,21 @@ class TeamPropDetector(val telemetry: Telemetry) {
 
         //
 //    /**
-//     * This function takes the RGB frame, converts to YCrCb,
-//     * and extracts the Cb channel to the cb variable
+//     * This function takes the RGB frame
+//     * and then extracts some channel to some variable
 //     */
 
-        fun inputToCb(input: Mat?): Mat {
-            Imgproc.cvtColor(input, yCrCb, Imgproc.COLOR_RGB2YCrCb)
-            Core.extractChannel(yCrCb, cb, 1)
-            return cb
+        fun inputToColor(frame: Mat): Mat {
+            //0 -> R,
+//            Imgproc.cvtColor(input, yCrCb, Imgproc.COLOR_RGB2YCrCb)
+            Core.extractChannel(frame, filteredFrame, 1)
+            return filteredFrame
         }
 
-        cbFrame = inputToCb(frame)
+        colFrame = inputToColor(frame)
 
         submats = regions.map {
-            it.first to cbFrame.submat(it.second)
+            it.first to colFrame.submat(it.second)
         }
 
         var result = PropPosition.Right
@@ -102,7 +103,7 @@ class TeamPropDetector(val telemetry: Telemetry) {
         telemetry.addLine("Highest Color: $prevColor")
         telemetry.update()
 
-        return frame
+        return filteredFrame
     }
 //
 
