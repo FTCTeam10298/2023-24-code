@@ -10,12 +10,17 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.hardwareClasses.EncoderDriveMovement
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
-import us.brainstormz.telemetryWizard.GlobalConsole.console
-//
-class TeamPropDetector(val telemetry: Telemetry) {
+
+class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector.PropColors) {
     enum class PropPosition {
         Left, Center, Right
     }
+
+    enum class PropColors {
+        Red, Blue
+    }
+
+    var theColorWeAreLookingFor = PropColors.Blue
 
     private val blue = Scalar(0.0, 0.0, 255.0)
     private val red = Scalar(225.0, 0.0, 0.0)
@@ -70,9 +75,14 @@ class TeamPropDetector(val telemetry: Telemetry) {
 //     */
 
         fun inputToColor(frame: Mat): Mat {
-            //0 -> R,
+            //coi explanation: input, output, color channel iso. in output: 0 -> R, 1 -> G?, 2 -> B
 //            Imgproc.cvtColor(input, yCrCb, Imgproc.COLOR_RGB2YCrCb)
-            Core.extractChannel(frame, filteredFrame, 1)
+            var coi = 0
+                when (propColor) {
+                    PropColors.Red -> coi = 0
+                    PropColors.Blue -> coi = 3
+                }
+            Core.extractChannel(frame, filteredFrame, coi)
             return filteredFrame
         }
 
@@ -116,7 +126,7 @@ class TeamPropDetector(val telemetry: Telemetry) {
 class ThuUnderstudyTest/** Change Depending on robot */: LinearOpMode() {
 
     val opencv = OpenCvAbstraction(this)
-    val tseDetector = TeamPropDetector(telemetry)
+    val tseDetector = TeamPropDetector(telemetry, TeamPropDetector.PropColors.Blue)
 
     /** Change Depending on robot */
 
