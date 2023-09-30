@@ -26,9 +26,9 @@ class TeamPropDetector(val telemetry: Telemetry) {
     private val tseThreshold = 135
 
     private val orangePlaces = listOf(
-            Rect(Point(1.0, 2.0), Point(0.0, 1.0)),
-            Rect(Point(2.0, 1.0), Point(1.0, 2.0)),
-            Rect(Point(2.0, 1.0), Point(3.0, 2.0)))
+            Rect(Point(100.0, 240.0), Point(0.0, 100.0)),
+            Rect(Point(210.0, 100.0), Point(110.0, 240.0)),
+            Rect(Point(220.0, 100.0), Point(300.0, 240.0)))
 
     private val regions = listOf(
             PropPosition.Left to orangePlaces[0],
