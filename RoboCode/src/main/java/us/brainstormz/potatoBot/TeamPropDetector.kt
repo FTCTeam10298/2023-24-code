@@ -12,7 +12,7 @@ import us.brainstormz.hardwareClasses.EncoderDriveMovement
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 
 class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector.PropColors) {
-    enum class PropPosition {
+    public enum class PropPosition {
         Left, Center, Right
     }
 
@@ -85,14 +85,15 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
 //            Imgproc.cvtColor(input, yCrCb, Imgproc.COLOR_RGB2YCrCb)
             var coi = when (colorToReturn) {
                 PropColors.Red -> 0
-                PropColors.Blue -> 3
+                PropColors.Blue -> 2
             }
             Core.extractChannel(frame, intermediateHoldingFrame, coi)
             return intermediateHoldingFrame
         }
 
-        blueFrame = inputToColor(frame, PropColors.Blue)
-        redFrame = inputToColor(frame, PropColors.Red)
+//        blueFrame = inputToColor(frame, PropColors.Blue)
+//        redFrame = inputToColor(frame, PropColors.Red)
+        Core.split(frame, listOf(blueFrame, redFrame))
 
         submatsBlue = regions.map {
             it.first to intermediateHoldingFrame.submat(it.second)
@@ -101,16 +102,61 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
             it.first to intermediateHoldingFrame.submat(it.second)
         }
 
-        var result = PropPosition.Right
         var prevColor = 0
 
-        submatsBlue.forEach {
-            val color = colorInRect(it.second)
-            if (color > prevColor) {
-                prevColor = color
-                result = it.first
+        val bothSubmats = submatsBlue.mapIndexed{ i, it ->
+            it to submatsRed[i]
+        }
+
+        var result = PropPosition.Right
+
+        var indexVar = -1
+        bothSubmats.forEach {
+            indexVar ++
+
+            val blueRect = it.first
+            val blueColor = colorInRect(blueRect.second)
+            telemetry.addLine("blueColor: $blueColor, ${it.first.first}")
+
+
+            val redRect = it.second
+            val redColor = colorInRect(redRect.second)
+            telemetry.addLine("redColor: $redColor, ${it.first.first}")
+
+            //fix this stuff
+            val fixedBlue = blueColor - redColor
+            telemetry.addLine("fixedBlue: $fixedBlue")
+            result = PropPosition.Left
+
+            if (fixedBlue > prevColor) {
+                telemetry.addLine("hiiiiiiii!")
+
+                prevColor = fixedBlue
+                result = it.first.first
             }
         }
+
+
+//        submatsBlue.forEach {
+//            val color = colorInRect(it.second)
+//            if (color > prevColor) {
+//                prevColor = color
+//                result = it.first
+//            }
+//        }
+
+/*
+     allthecolorsLOL = submatsRed.map {
+        it.first to submats
+     }
+
+     submatsBlue.forEach {
+            val color = colorInRect(it.second)
+    }
+      submatsRed.forEach {
+            val color = colorInRect(it.second)
+    }
+ */
 
         position = result
 
