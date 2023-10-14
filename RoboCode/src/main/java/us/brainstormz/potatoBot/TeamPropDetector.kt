@@ -20,7 +20,7 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
         Red, Blue
     }
 
-    var theColorWeAreLookingFor = PropColors.Blue
+    var theColorWeAreLookingFor = PropColors.Red
 
     private val blue = Scalar(0.0, 0.0, 255.0)
     private val red = Scalar(225.0, 0.0, 0.0)
@@ -58,6 +58,8 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
 
     private lateinit var submats: List<Pair<PropPosition, Mat>>
     private lateinit var colFrame: Mat
+    private lateinit var submatsBlue: List<Pair<PropPosition, Mat>>
+    private lateinit var submatsRed: List<Pair<PropPosition, Mat>>
 
 //    private var filtered = Mat()
     private var redFrame = Mat()
@@ -89,19 +91,20 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
             return intermediateHoldingFrame
         }
 
-        blueFrame = inputToColor(frame, PropColors.Red)
-        redFrame = inputToColor(frame, PropColors.Blue)
+        blueFrame = inputToColor(frame, PropColors.Blue)
+        redFrame = inputToColor(frame, PropColors.Red)
 
         submatsBlue = regions.map {
-            it.first to colFrame.submat(it.second)
+            it.first to intermediateHoldingFrame.submat(it.second)
         }
         submatsRed = regions.map {
-            it.first to colFrame.submat(it.second)
+            it.first to intermediateHoldingFrame.submat(it.second)
         }
 
         var result = PropPosition.Right
         var prevColor = 0
-        submats.forEach {
+
+        submatsBlue.forEach {
             val color = colorInRect(it.second)
             if (color > prevColor) {
                 prevColor = color
