@@ -10,6 +10,7 @@ import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
 import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 import us.brainstormz.potatoBot.TeamPropDetector.PropPosition
+import us.brainstormz.potatoBot.TeamPropDetector.PropColors
 import us.brainstormz.potatoBot.TeamPropDetector
 
 @Autonomous
@@ -20,7 +21,7 @@ class ThreeDayAuto: LinearOpMode() {
     val movement = EncoderDriveMovement(hardware, console)
 
     val opencv = OpenCvAbstraction(this)
-    val teamPropDetector = TeamPropDetector()
+//    val teamPropDetector = TeamPropDetector(telemetry, PropColors.Red)
 
     override fun runOpMode() {
         /** INIT PHASE */

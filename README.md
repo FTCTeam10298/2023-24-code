@@ -1,3 +1,6 @@
+Need ADB help? Use some variant of this command:
+set PATH=$PATH:Users/gabriel/Library/Android/sdk/platform-tools
+
 ## NOTICE
 
 This repository contains the public FTC SDK for the CENTERSTAGE (2023-2024) competition season.
