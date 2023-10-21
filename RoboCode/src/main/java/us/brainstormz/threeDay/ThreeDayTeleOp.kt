@@ -43,6 +43,7 @@ class ThreeDayTeleOp: OpMode() {
 
     override fun loop() {
         /** TELE-OP PHASE */
+        //x is slow, keep arm up when driving, up more when gamepad 2 a,
 
         telemetry.addLine("motors: ${hardware.hwMap.getAll(DcMotor::class.java).map { it as DcMotorEx; it.getCurrent(CurrentUnit.MILLIAMPS)}}")
 
@@ -168,7 +169,7 @@ class ThreeDayTeleOp: OpMode() {
         //Arm
         val armPosition = if (gamepad2.right_stick_x != 0.0f) {
             telemetry.addLine("Manual arm")
-            previousArmPosition + (gamepad2.left_stick_y.toDouble() * 0.5)
+            previousArmPosition + (gamepad2.left_stick_y.toDouble() * 0.08)
         } else if (hardware.lift.targetPosition < LiftPos.ArmClearance.position || hardware.lift.currentPosition < LiftPos.ArmClearance.position) { //jank
             telemetry.addLine("Arm waiting for lift")
             previousArmPosition

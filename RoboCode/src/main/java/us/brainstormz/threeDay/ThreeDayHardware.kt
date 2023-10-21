@@ -37,7 +37,7 @@ class ThreeDayHardware : MecanumHardware {
     val autoClawUp = 0.9
     val autoClawDown = 0.5
 
-    lateinit var hangRotator: DcMotor
+    lateinit var hangRotator: DcMotorEx
     enum class RotatorPos(val position:Int) {
         Rest(position = 0),
         LiftClearance(position = 140),
@@ -55,7 +55,7 @@ class ThreeDayHardware : MecanumHardware {
     enum class LiftPos(val position:Int) {
         Min(0),
         Grabbing(0),
-        Collecting(60),
+        Collecting(80),
         ArmClearance(750),
         Low(800),
         Middle(1500),
@@ -124,11 +124,12 @@ class ThreeDayHardware : MecanumHardware {
 
         launcher = hwMap["launcher"] as Servo
 
-        hangRotator = hwMap["rotator"] as DcMotor
+        hangRotator = hwMap["rotator"] as DcMotorEx
         hangRotator.direction = DcMotorSimple.Direction.FORWARD
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         hangRotator.targetPosition = 0
         hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
+        hangRotator.setPositionPIDFCoefficients(15.0)
         hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
         screw = hwMap["screw"] as DcMotor
