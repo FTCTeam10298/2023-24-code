@@ -22,8 +22,8 @@ class ThreeDayHardware : MecanumHardware {
     lateinit var collector: DcMotor
 
     lateinit var clawA: Servo
-    val clawAClosedPos = 0.25
-    val clawAOpenPos = 0.83
+    val clawAClosedPos = 0.75
+    val clawAOpenPos = 0.25
     lateinit var clawB: Servo
     val clawBClosedPos = 0.17
     val clawBOpenPos = 0.65
@@ -40,7 +40,7 @@ class ThreeDayHardware : MecanumHardware {
     lateinit var hangRotator: DcMotorEx
     enum class RotatorPos(val position:Int) {
         Rest(position = 0),
-        LiftClearance(position = 140),
+        LiftClearance(position = 150),
         StraightUp(position = 180)
     }
 
@@ -55,8 +55,9 @@ class ThreeDayHardware : MecanumHardware {
     enum class LiftPos(val position:Int) {
         Min(0),
         Grabbing(0),
-        Collecting(80),
-        ArmClearance(750),
+        Collecting(0),
+//        Collecting(80),
+        ArmClearance(700),
         Low(800),
         Middle(1500),
         Max(1500)
@@ -129,7 +130,7 @@ class ThreeDayHardware : MecanumHardware {
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         hangRotator.targetPosition = 0
         hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
-        hangRotator.setPositionPIDFCoefficients(15.0)
+        hangRotator.setPositionPIDFCoefficients(20.0)
         hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
         screw = hwMap["screw"] as DcMotor

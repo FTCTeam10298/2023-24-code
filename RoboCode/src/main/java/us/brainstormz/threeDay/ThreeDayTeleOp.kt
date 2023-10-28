@@ -89,37 +89,37 @@ class ThreeDayTeleOp: OpMode() {
         telemetry.addLine("Depo State: $depoState")
 
         //Claw
-        clawTarget = if (!gamepad1.right_bumper && !gamepad1.left_bumper) {
-            when (depoState.liftTarget) {
-                LiftPos.Grabbing -> {
-                    if (hardware.lift.currentPosition <= LiftPos.Grabbing.position) {
-                        ClawTarget(clawA = false, clawB = false)
-                    } else {
-                        ClawTarget(clawA = true, clawB = true)
-                    }
-                }
-                LiftPos.Collecting -> {
-                    ClawTarget(clawA = true, clawB = true)
-                }
-                else -> {
-                    clawTarget
-                }
-            }
-        } else {
-            val clawAPosition = if (gamepad1.right_bumper && !clawAButtonPrevious)
+//        clawTarget = if (!gamepad1.right_bumper) {
+//            when (depoState.liftTarget) {
+////                LiftPos.Grabbing -> {
+////                    if (hardware.lift.currentPosition <= LiftPos.Grabbing.position) {
+////                        ClawTarget(clawA = false, clawB = false)
+////                    } else {
+////                        ClawTarget(clawA = true, clawB = true)
+////                    }
+////                }
+////                LiftPos.Collecting -> {
+////                    ClawTarget(clawA = true, clawB = true)
+////                }
+//                else -> {
+//                    clawTarget
+//                }
+//            }
+//        } else {
+            val clawAPosition = if ((gamepad1.right_bumper || gamepad2.right_bumper) && !clawAButtonPrevious)
                 !clawTarget.clawA
             else
                 clawTarget.clawA
-            clawAButtonPrevious = gamepad1.right_bumper
+            clawAButtonPrevious = gamepad1.right_bumper || gamepad2.right_bumper
 
-            val clawBPosition = if (gamepad1.left_bumper && !clawBButtonPrevious)
-                !clawTarget.clawB
-            else
-                clawTarget.clawB
-            clawBButtonPrevious = gamepad1.left_bumper
+//            val clawBPosition = if (gamepad1.left_bumper && !clawBButtonPrevious)
+//                !clawTarget.clawB
+//            else
+//                clawTarget.clawB
+//            clawBButtonPrevious = gamepad1.left_bumper
 
-            ClawTarget(clawA = clawAPosition, clawB = clawBPosition)
-        }
+            clawTarget = ClawTarget(clawA = clawAPosition, clawB = clawTarget.clawB)
+//        }
 
         hardware.clawA.position =
             if (clawTarget.clawA) {
@@ -127,12 +127,12 @@ class ThreeDayTeleOp: OpMode() {
             } else {
                 hardware.clawAClosedPos
             }
-        hardware.clawB.position =
-            if (clawTarget.clawB) {
-                hardware.clawBOpenPos
-            } else {
-                hardware.clawBClosedPos
-            }
+//        hardware.clawB.position =
+//            if (clawTarget.clawB) {
+//                hardware.clawBOpenPos
+//            } else {
+//                hardware.clawBClosedPos
+//            }
 
         //Lift
         when {
@@ -191,7 +191,7 @@ class ThreeDayTeleOp: OpMode() {
 
         //hang
         hardware.screw.power = gamepad2.left_stick_y.toDouble()
-
+f
         if (hardware.lift.currentPosition > LiftPos.ArmClearance.position || depoState.liftTarget.position > LiftPos.ArmClearance.position){
             hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.LiftClearance.position //up position
             hardware.hangRotator.power = 1.0
