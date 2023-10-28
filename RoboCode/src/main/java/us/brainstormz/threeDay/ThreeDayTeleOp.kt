@@ -16,7 +16,7 @@ import kotlin.math.pow
 @TeleOp
 class ThreeDayTeleOp: OpMode() {
 
-    val hardware = ThreeDayHardware()
+    val hardware = ThreeDayHardware(telemetry)
     val movement = MecanumDriveTrain(hardware)
 
     data class DepoTarget(val liftTarget: LiftPos, val armTarget: ArmPos, val milisSinceStateChange: Long)

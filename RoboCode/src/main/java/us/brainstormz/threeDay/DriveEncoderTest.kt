@@ -11,7 +11,7 @@ import kotlin.math.PI
 @Autonomous
 class DriveEncoderTest: LinearOpMode() {
 
-    val hardware = ThreeDayHardware()
+    val hardware = ThreeDayHardware(telemetry)
     val console = TelemetryConsole(telemetry)
     val movement = EncoderDriveMovement(hardware, console)
 

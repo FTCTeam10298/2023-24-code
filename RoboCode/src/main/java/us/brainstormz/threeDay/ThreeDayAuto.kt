@@ -16,7 +16,7 @@ import us.brainstormz.potatoBot.TeamPropDetector
 @Autonomous
 class ThreeDayAuto: LinearOpMode() {
 
-    val hardware = ThreeDayHardware()
+    val hardware = ThreeDayHardware(telemetry)
     val console = TelemetryConsole(telemetry)
     val movement = EncoderDriveMovement(hardware, console)
 
