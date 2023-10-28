@@ -50,7 +50,7 @@ class ThreeDayTeleOp: OpMode() {
         // DRONE DRIVE
         val yInput = gamepad1.left_stick_y.toDouble()
         val xInput = gamepad1.left_stick_x.toDouble()
-        val rInput = -gamepad1.right_stick_x.toDouble()
+        val rInput = gamepad1.right_stick_x.toDouble()
 
         val y = -yInput
         val x = xInput
@@ -183,7 +183,7 @@ class ThreeDayTeleOp: OpMode() {
         hardware.rightArm.position = armPosition
 
         //launcher
-        if (gamepad1.y ) {
+        if (gamepad1.y || gamepad2.y) {
             hardware.launcher.position = 0.9
         } else {
             hardware.launcher.position = 0.6
@@ -191,7 +191,7 @@ class ThreeDayTeleOp: OpMode() {
 
         //hang
         hardware.screw.power = gamepad2.left_stick_y.toDouble()
-f
+
         if (hardware.lift.currentPosition > LiftPos.ArmClearance.position || depoState.liftTarget.position > LiftPos.ArmClearance.position){
             hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.LiftClearance.position //up position
             hardware.hangRotator.power = 1.0
