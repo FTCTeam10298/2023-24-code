@@ -66,15 +66,15 @@ class ThreeDayTeleOp: OpMode() {
 
         //Depo
         val depoState = when {
-            gamepad1.dpad_down -> {
+            gamepad1.dpad_down || gamepad2.dpad_down -> {
 //                retracted
                 DepoTarget(LiftPos.Collecting, ArmPos.In, System.currentTimeMillis())
             }
-            gamepad1.dpad_left -> {
+            gamepad1.dpad_left || gamepad2.dpad_left -> {
 //                low
                 DepoTarget(LiftPos.Low, ArmPos.Out, System.currentTimeMillis())
             }
-            gamepad1.dpad_up -> {
+            gamepad1.dpad_up || gamepad2.dpad_up -> {
 //                middle
                 DepoTarget(LiftPos.Middle, ArmPos.Out, System.currentTimeMillis())
             }
@@ -106,11 +106,15 @@ class ThreeDayTeleOp: OpMode() {
 //                }
 //            }
 //        } else {
-            val clawAPosition = if ((gamepad1.right_bumper || gamepad2.right_bumper) && !clawAButtonPrevious)
+            val clawAPosition = if ((gamepad1.right_bumper || gamepad2.right_bumper) && !clawAButtonPrevious) {
                 !clawTarget.clawA
-            else
+            }else if (hardware.collector.power != 0.0) {
+                true
+            }else {
                 clawTarget.clawA
+            }
             clawAButtonPrevious = gamepad1.right_bumper || gamepad2.right_bumper
+
 
 //            val clawBPosition = if (gamepad1.left_bumper && !clawBButtonPrevious)
 //                !clawTarget.clawB
