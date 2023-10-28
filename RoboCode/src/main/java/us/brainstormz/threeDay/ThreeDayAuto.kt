@@ -3,21 +3,19 @@ package us.brainstormz.threeDay
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.DcMotor
-import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.hardwareClasses.EncoderDriveMovement
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.telemetryWizard.TelemetryConsole
+import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
 import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
-import us.brainstormz.potatoBot.TeamPropDetector.PropPosition
-import us.brainstormz.potatoBot.TeamPropDetector.PropColors
-import us.brainstormz.potatoBot.TeamPropDetector
 
 @Autonomous
 class ThreeDayAuto: LinearOpMode() {
 
     val hardware = ThreeDayHardware(telemetry)
     val console = TelemetryConsole(telemetry)
+    val wizard = TelemetryWizard(console, this)
     val movement = EncoderDriveMovement(hardware, console)
 
     val opencv = OpenCvAbstraction(this)
@@ -28,6 +26,9 @@ class ThreeDayAuto: LinearOpMode() {
 
         hardware.init(hardwareMap)
 
+        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), firstMenu = true)
+        wizard.summonWizardBlocking(gamepad1)
+
 //        opencv.init(hardwareMap)
 //        opencv.internalCamera = false
 //        opencv.cameraName = "Webcam 1"
@@ -37,85 +38,35 @@ class ThreeDayAuto: LinearOpMode() {
         waitForStart()
         /** AUTONOMOUS  PHASE */
 
-        val propPosition = PropPosition.Left//teamPropDetector.position
-//        opencv.stop()
-
         hardware.clawA.position = hardware.clawAClosedPos
-        hardware.clawB.position = hardware.clawBClosedPos
-        //Drop on spike
-        when (propPosition) {
-            PropPosition.Left -> {
-                //move to spike spot
-                movement.driveRobotPosition(power = 1.0, inches = -28.0, smartAccel = true)
 
-                //drop
-                hardware.autoClaw.position = hardware.autoClawDown
-                sleep(800)
-                hardware.autoClaw.position = hardware.autoClawUp
-
-                //consistent end position
-                movement.driveRobotStrafe(power = 1.0, inches = 4.0, smartAccel = true)
-                movement.driveRobotTurn(power = 0.7, degree = -90.0, smartAccel = true)
-
-                //go to backboard
-                movement.driveRobotPosition(power = 1.0, inches = -37.0, smartAccel = true)
-                movement.driveRobotPosition(power = 0.5, inches = -2.0, smartAccel = false)
-
-                //linup
-                movement.driveRobotStrafe(power = 1.0, inches = -5.0, smartAccel = true)
+        val movementSignBasedOnAlliance = when (wizard.wasItemChosen("alliance", "Blue")) {
+            true -> { //blue
+                1
             }
-            PropPosition.Center -> {
-                //move to spike spot
-                movement.driveRobotPosition(power = 1.0, inches = -23.0, smartAccel = true)
-                movement.driveRobotTurn(power = 1.0, degree = 90.0, smartAccel = true)
-                //drop
-                hardware.autoClaw.position = hardware.autoClawDown
-                sleep(300)
-                hardware.autoClaw.position = hardware.autoClawUp
-                //consistent end position
-                movement.driveRobotStrafe(power = 1.0, inches = -2.0, smartAccel = true)
-
-                //go to backboard
-                movement.driveRobotPosition(power = 1.0, inches = -45.0, smartAccel = true)
-
-                //linup
-                movement.driveRobotStrafe(power = 1.0, inches = 10.0, smartAccel = true)
-            }
-            PropPosition.Right -> {
-                //move to spike spot
-                movement.driveRobotPosition(power = 1.0, inches = -24.0, smartAccel = true)
-                movement.driveRobotTurn(power = 1.0, degree = 180.0, smartAccel = true)
-                //drop
-                hardware.autoClaw.position = hardware.autoClawDown
-                sleep(300)
-                hardware.autoClaw.position = hardware.autoClawUp
-                //consistent end position
-                movement.driveRobotPosition(power = 1.0, inches = 24.0, smartAccel = true)
-                movement.driveRobotTurn(power = 1.0, degree = -90.0, smartAccel = true)
-
-                //go to backboard
-                movement.driveRobotPosition(power = 1.0, inches = -45.0, smartAccel = true)
-
-                //linup
-                movement.driveRobotStrafe(power = 1.0, inches = -34.0, smartAccel = true)
+            false -> { //red
+                -1
             }
         }
+        movement.driveRobotPosition(power = 0.6, inches = -24.0, smartAccel = true)
+        movement.driveRobotTurn(power = 0.6, degree = movementSignBasedOnAlliance * -90.0, smartAccel = true)
+        movement.driveRobotPosition(power = 0.6, inches = -37.0, smartAccel = true)
 
         //drop
-        moveLiftBlocking(LiftPos.Middle.position)
+        moveLiftBlocking(LiftPos.NonExistent.position)
         hardware.rightArm.position = ArmPos.Out.position
         hardware.leftArm.position = ArmPos.Out.position
         sleep(400)
         hardware.clawA.position = hardware.clawAOpenPos
-        hardware.clawB.position = hardware.clawBOpenPos
-        sleep(800)
+        sleep(1500)
         hardware.rightArm.position = ArmPos.In.position
         hardware.leftArm.position = ArmPos.In.position
         moveLiftBlocking(LiftPos.Min.position)
 
         //Park
-        movement.driveRobotStrafe(power = 1.0, inches = -25.0, smartAccel = true)
-        movement.driveRobotPosition(power = 1.0, inches = -15.0, smartAccel = false)
+        movement.driveRobotPosition(power = 1.0, inches = 2.0, smartAccel = true)
+        movement.driveRobotStrafe(power = 1.0, inches = movementSignBasedOnAlliance * -30.0, smartAccel = true)
+        movement.driveRobotPosition(power = 1.0, inches = -15.0, smartAccel = true)
     }
 
     fun moveLift(targetPosition: Int): Boolean {

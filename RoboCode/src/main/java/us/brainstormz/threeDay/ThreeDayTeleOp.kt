@@ -1,17 +1,14 @@
 package us.brainstormz.threeDay
 
-import androidx.core.graphics.rotationMatrix
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
 import kotlin.math.abs
-import kotlin.math.pow
 
 @TeleOp
 class ThreeDayTeleOp: OpMode() {
@@ -76,7 +73,7 @@ class ThreeDayTeleOp: OpMode() {
             }
             gamepad1.dpad_up || gamepad2.dpad_up -> {
 //                middle
-                DepoTarget(LiftPos.Middle, ArmPos.Out, System.currentTimeMillis())
+                DepoTarget(LiftPos.NonExistent, ArmPos.Out, System.currentTimeMillis())
             }
             gamepad1.x -> {
                 DepoTarget(LiftPos.Grabbing, ArmPos.In, System.currentTimeMillis())
