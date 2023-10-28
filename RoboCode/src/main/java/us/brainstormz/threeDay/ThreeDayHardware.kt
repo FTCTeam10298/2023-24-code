@@ -4,11 +4,9 @@ import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
-import com.qualcomm.robotcore.hardware.EmbeddedControlHubModule
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
-import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 
@@ -23,7 +21,7 @@ class ThreeDayHardware : MecanumHardware {
 
     lateinit var clawA: Servo
     val clawAClosedPos = 0.75
-    val clawAOpenPos = 0.25
+    val clawAOpenPos = 0.3
     lateinit var clawB: Servo
     val clawBClosedPos = 0.17
     val clawBOpenPos = 0.65
@@ -64,30 +62,50 @@ class ThreeDayHardware : MecanumHardware {
     }
 
     override lateinit var hwMap: HardwareMap
-//    lateinit var ctrlHub: SmartLynxModule
-//    lateinit var exHub: SmartLynxModule
+    lateinit var ctrlHub: SmartLynxModule
+    lateinit var exHub: SmartLynxModule
 
     override fun init(ahwMap: HardwareMap) {
 
         hwMap = ahwMap
 
-//        val modules = hardwareMap.getAll(LynxModule::class.java)
-//        for (lynx in modules) {
-//            //lynx.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
-//            if (lynx.isParent && LynxConstants.isEmbeddedSerialNumber(lynx.serialNumber)) {
-//                ctrlHub = lynx
-//            } else {
-//                exHub = lynx
-//            }
-//        }
-//
-//        ctrlHub.
+        val modules = hwMap.getAll(LynxModule::class.java)
+        print("modules.size ${modules.size}")
+        for (lynx in modules) {
+            lynx.bulkCachingMode = LynxModule.BulkCachingMode.AUTO
+            if (lynx.isParent && LynxConstants.isEmbeddedSerialNumber(lynx.serialNumber)) {
+                println("ctrlHubFound: $lynx")
+
+                ctrlHub = SmartLynxModule(lynx)
+            } else {
+                println("exHubFound: $lynx")
+
+                exHub = SmartLynxModule(lynx)
+            }
+        }
+
+
+        lBDrive =       ctrlHub.getMotor(0)
+        lFDrive =       ctrlHub.getMotor(1)
+        rBDrive =       ctrlHub.getMotor(2)
+        rFDrive =       ctrlHub.getMotor(3)
+        collector =     exHub.getMotor(0)
+        lift =          exHub.getMotor(1)
+        hangRotator =   exHub.getMotor(2)
+        screw =         exHub.getMotor(3)
+
+        leftArm =       ctrlHub.getServo(2) //TODO
+        rightArm =      ctrlHub.getServo(3) //TODO
+        launcher =      ctrlHub.getServo(5)
+        clawA =         exHub.getServo(0) //TODO
+        clawB =         exHub.getServo(1) //TODO
+        autoClaw =      exHub.getServo(3) //TODO
 
         // Drivetrain
-        lFDrive = hwMap["lFDrive"] as DcMotorEx
-        rFDrive = hwMap["rFDrive"] as DcMotorEx
-        lBDrive = hwMap["lBDrive"] as DcMotorEx
-        rBDrive = hwMap["rBDrive"] as DcMotorEx
+//        lFDrive = hwMap["lFDrive"] as DcMotorEx
+//        rFDrive = hwMap["rFDrive"] as DcMotorEx
+//        lBDrive = hwMap["lBDrive"] as DcMotorEx
+//        rBDrive = hwMap["rBDrive"] as DcMotorEx
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
         rFDrive.direction = DcMotorSimple.Direction.REVERSE
         lBDrive.direction = DcMotorSimple.Direction.FORWARD
@@ -97,21 +115,21 @@ class ThreeDayHardware : MecanumHardware {
         lBDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         rBDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-        collector = hwMap["collector"] as DcMotor
+//        collector = hwMap["collector"] as DcMotor
 
-        clawA = hwMap["clawA"] as Servo
-        clawB = hwMap["clawB"] as Servo
+//        clawA = hwMap["clawA"] as Servo
+//        clawB = hwMap["clawB"] as Servo
         clawA.position = clawAOpenPos
         clawB.position = clawBOpenPos
 
-        leftArm = hwMap["leftArm"] as Servo
-        rightArm = hwMap["rightArm"] as Servo
+//        leftArm = hwMap["leftArm"] as Servo
+//        rightArm = hwMap["rightArm"] as Servo
         leftArm.direction = Servo.Direction.FORWARD
         rightArm.direction = Servo.Direction.REVERSE
         leftArm.position = ArmPos.In.position
         rightArm.position = ArmPos.In.position
 
-        lift = hwMap["lift"] as DcMotorEx
+//        lift = hwMap["lift"] as DcMotorEx
         lift.direction = DcMotorSimple.Direction.REVERSE
         lift.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         lift.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -119,13 +137,13 @@ class ThreeDayHardware : MecanumHardware {
         lift.mode = DcMotor.RunMode.RUN_TO_POSITION
         lift.setPositionPIDFCoefficients(15.0)
 
-        autoClaw = hwMap["autoClaw"] as Servo
+//        autoClaw = hwMap["autoClaw"] as Servo
         autoClaw.direction = Servo.Direction.FORWARD
         autoClaw.position = autoClawUp
 
-        launcher = hwMap["launcher"] as Servo
+//        launcher = hwMap["launcher"] as Servo
 
-        hangRotator = hwMap["rotator"] as DcMotorEx
+//        hangRotator = hwMap["rotator"] as DcMotorEx
         hangRotator.direction = DcMotorSimple.Direction.FORWARD
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         hangRotator.targetPosition = 0
@@ -133,7 +151,7 @@ class ThreeDayHardware : MecanumHardware {
         hangRotator.setPositionPIDFCoefficients(20.0)
         hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-        screw = hwMap["screw"] as DcMotor
+//        screw = hwMap["screw"] as DcMotor
         screw.direction = DcMotorSimple.Direction.FORWARD
         screw.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         screw.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
