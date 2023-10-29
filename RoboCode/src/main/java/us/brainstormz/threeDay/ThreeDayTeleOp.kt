@@ -69,11 +69,11 @@ class ThreeDayTeleOp: OpMode() {
             }
             gamepad1.dpad_left || gamepad2.dpad_left -> {
 //                low
-                DepoTarget(LiftPos.Low, ArmPos.Out, System.currentTimeMillis())
+                DepoTarget(LiftPos.NonExistentPosition, ArmPos.Out, System.currentTimeMillis())
             }
             gamepad1.dpad_up || gamepad2.dpad_up -> {
 //                middle
-                DepoTarget(LiftPos.NonExistent, ArmPos.Out, System.currentTimeMillis())
+                DepoTarget(LiftPos.High, ArmPos.Out, System.currentTimeMillis())
             }
             gamepad1.x -> {
                 DepoTarget(LiftPos.Grabbing, ArmPos.In, System.currentTimeMillis())
@@ -194,16 +194,20 @@ class ThreeDayTeleOp: OpMode() {
         hardware.screw.power = gamepad2.left_stick_y.toDouble()
 
         if (hardware.lift.currentPosition > LiftPos.ArmClearance.position || depoState.liftTarget.position > LiftPos.ArmClearance.position){
+            hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
             hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.LiftClearance.position //up position
             hardware.hangRotator.power = 1.0
         } else if (gamepad2.a) {
+            hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
             hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.StraightUp.position
             hardware.hangRotator.power = 1.0
         } else if (hardware.collector.power != 0.0) {
+            hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
             hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.LiftClearance.position
             hardware.hangRotator.power = 1.0
         } else {
-            hardware.hangRotator.power = 0.0 //down position
+            hardware.hangRotator.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+            hardware.hangRotator.power = gamepad2.right_stick_x.toDouble()//0.0 //down position
         }
         telemetry.addLine("hangRotatorPosition " + hardware.hangRotator.targetPosition)
 

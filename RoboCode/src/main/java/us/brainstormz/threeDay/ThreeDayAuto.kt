@@ -50,10 +50,11 @@ class ThreeDayAuto: LinearOpMode() {
         }
         movement.driveRobotPosition(power = 0.6, inches = -24.0, smartAccel = true)
         movement.driveRobotTurn(power = 0.6, degree = movementSignBasedOnAlliance * -90.0, smartAccel = true)
-        movement.driveRobotPosition(power = 0.6, inches = -37.0, smartAccel = true)
+        movement.driveRobotPosition(power = 0.6, inches = -38.0, smartAccel = true)
 
         //drop
-        moveLiftBlocking(LiftPos.NonExistent.position)
+        moveLiftBlocking(LiftPos.High.position)
+        moveRotator(ThreeDayHardware.RotatorPos.LiftClearance.position)
         hardware.rightArm.position = ArmPos.Out.position
         hardware.leftArm.position = ArmPos.Out.position
         sleep(400)
@@ -64,7 +65,7 @@ class ThreeDayAuto: LinearOpMode() {
         moveLiftBlocking(LiftPos.Min.position)
 
         //Park
-        movement.driveRobotPosition(power = 1.0, inches = 2.0, smartAccel = true)
+        movement.driveRobotPosition(power = 1.0, inches = 5.0, smartAccel = true)
         movement.driveRobotStrafe(power = 1.0, inches = movementSignBasedOnAlliance * -30.0, smartAccel = true)
         movement.driveRobotPosition(power = 1.0, inches = -15.0, smartAccel = true)
     }
@@ -90,10 +91,10 @@ class ThreeDayAuto: LinearOpMode() {
             sleep(100)
         }
         while (!moveLift(targetPosition)) {
-            moveRotator(ThreeDayHardware.RotatorPos.LiftClearance.position)
+//            moveRotator(ThreeDayHardware.RotatorPos.LiftClearance.position)
             sleep(100)
         }
-        hardware.hangRotator.power = 0.0
+//        hardware.hangRotator.power = 0.0
     }
 
 }

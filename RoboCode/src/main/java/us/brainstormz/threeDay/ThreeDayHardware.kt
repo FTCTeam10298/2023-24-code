@@ -58,8 +58,8 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         Collecting(0),
 //        Collecting(80),
         ArmClearance(700),
-        Low(800),
-        NonExistent(1500),
+        NonExistentPosition(800),
+        High(1500),
         Max(1500)
     }
 
@@ -161,7 +161,7 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         hangRotator.targetPosition = 0
         hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
-        hangRotator.setPositionPIDFCoefficients(20.0)
+        hangRotator.setPositionPIDFCoefficients(25.0)
         hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
 //        screw = hwMap["screw"] as DcMotor
