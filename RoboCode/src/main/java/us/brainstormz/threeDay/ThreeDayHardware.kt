@@ -21,9 +21,11 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
 
     lateinit var collector: DcMotor
 
+    //0.6 -> old open
+
     lateinit var clawA: Servo
     val clawAClosedPos = 0.3
-    val clawAOpenPos = 0.6
+    val clawAOpenPos = 1.2
     lateinit var nonExistentClaw: Servo
     val clawBClosedPos = 0.17
     val clawBOpenPos = 0.65
