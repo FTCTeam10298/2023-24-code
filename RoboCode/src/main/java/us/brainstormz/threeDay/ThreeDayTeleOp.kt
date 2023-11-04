@@ -24,9 +24,15 @@ class ThreeDayTeleOp: OpMode() {
     var previousLiftPosition = previousDepoState.liftTarget.position
     val liftWaitForArmTimeMilis = 800
 
-    data class ClawTarget(val clawA: Boolean, val clawB: Boolean)
-    var clawTarget = ClawTarget(clawA = true, clawB = true)
-    var clawAButtonPrevious = true
+    data class ClawTarget(
+            val depositorGateShouldBeOpen: Boolean,
+//        val clawB: Boolean
+    )
+    var clawTarget = ClawTarget(
+        depositorGateShouldBeOpen = true,
+//        clawB = true,
+    )
+    var eitherBumperWasPressedLastLoop = true
     var clawBButtonPrevious = true
 
 
@@ -103,14 +109,15 @@ class ThreeDayTeleOp: OpMode() {
 //                }
 //            }
 //        } else {
-            val clawAPosition = if ((gamepad1.right_bumper || gamepad2.right_bumper) && !clawAButtonPrevious) {
-                !clawTarget.clawA
+            val eitherBumperIsPressed = (gamepad1.right_bumper || gamepad2.right_bumper)
+            val depositorGateShouldBeOpen = if (eitherBumperIsPressed && !eitherBumperWasPressedLastLoop) {
+                !clawTarget.depositorGateShouldBeOpen
             }else if (hardware.collector.power != 0.0) {
                 true
             }else {
-                clawTarget.clawA
+                clawTarget.depositorGateShouldBeOpen
             }
-            clawAButtonPrevious = gamepad1.right_bumper || gamepad2.right_bumper
+            eitherBumperWasPressedLastLoop = gamepad1.right_bumper || gamepad2.right_bumper
 
 
 //            val clawBPosition = if (gamepad1.left_bumper && !clawBButtonPrevious)
@@ -119,11 +126,14 @@ class ThreeDayTeleOp: OpMode() {
 //                clawTarget.clawB
 //            clawBButtonPrevious = gamepad1.left_bumper
 
-            clawTarget = ClawTarget(clawA = clawAPosition, clawB = clawTarget.clawB)
+            clawTarget = ClawTarget(
+                depositorGateShouldBeOpen = depositorGateShouldBeOpen,
+//               clawB = clawTarget.clawB,
+            )
 //        }
 
         hardware.clawA.position =
-            if (clawTarget.clawA) {
+            if (clawTarget.depositorGateShouldBeOpen) {
                 hardware.clawAOpenPos
             } else {
                 hardware.clawAClosedPos
