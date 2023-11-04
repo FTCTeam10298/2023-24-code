@@ -38,7 +38,7 @@ class ThreeDayAuto: LinearOpMode() {
         waitForStart()
         /** AUTONOMOUS  PHASE */
 
-        hardware.clawA.position = hardware.clawAClosedPos
+        hardware.clawA.position = hardware.gateClosedPosition
 
         val movementSignBasedOnAlliance = when (wizard.wasItemChosen("alliance", "Blue")) {
             true -> { //blue
@@ -58,7 +58,7 @@ class ThreeDayAuto: LinearOpMode() {
         hardware.rightArm.position = ArmPos.Out.position
         hardware.leftArm.position = ArmPos.Out.position
         sleep(400)
-        hardware.clawA.position = hardware.clawAOpenPos
+        hardware.clawA.position = hardware.gateOpenPosition
         sleep(1500)
         hardware.rightArm.position = ArmPos.In.position
         hardware.leftArm.position = ArmPos.In.position

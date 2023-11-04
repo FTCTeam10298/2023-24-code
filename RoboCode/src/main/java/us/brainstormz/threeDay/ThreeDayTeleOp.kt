@@ -26,15 +26,15 @@ class ThreeDayTeleOp: OpMode() {
 
     enum class GatePosition{
         Closed,
-//        Half,
-        Open;
+        Deposit,
+        Intake;
     }
     data class DepositorTarget(
             val gatePosition: GatePosition,
 //        val clawB: Boolean
     )
     var depositorTarget = DepositorTarget(
-        gatePosition = GatePosition.Open,
+        gatePosition = GatePosition.Intake,
 //        clawB = true,
     )
     var eitherBumperWasPressedLastLoop = true
@@ -114,14 +114,24 @@ class ThreeDayTeleOp: OpMode() {
 //                }
 //            }
 //        } else {
+            val collectorIsOn = hardware.collector.power != 0.0
             val eitherBumperIsPressed = (gamepad1.right_bumper || gamepad2.right_bumper)
             val desiredGatePosition = if (eitherBumperIsPressed && !eitherBumperWasPressedLastLoop) {
-                when(depositorTarget.gatePosition){
-                    GatePosition.Open -> GatePosition.Closed
-                    GatePosition.Closed -> GatePosition.Open
+
+                when(depoState.liftTarget){
+                    LiftPos.High -> when(depositorTarget.gatePosition){
+                        GatePosition.Intake -> GatePosition.Closed
+                        GatePosition.Deposit -> GatePosition.Closed
+                        GatePosition.Closed -> GatePosition.Deposit
+                    }
+                    else -> when(depositorTarget.gatePosition){
+                        GatePosition.Intake -> GatePosition.Closed
+                        GatePosition.Deposit -> GatePosition.Closed
+                        GatePosition.Closed -> GatePosition.Intake
+                    }
                 }
-            }else if (hardware.collector.power != 0.0) {
-                GatePosition.Open
+            }else if (collectorIsOn) {
+                GatePosition.Intake
             }else {
                 depositorTarget.gatePosition
             }
@@ -138,10 +148,11 @@ class ThreeDayTeleOp: OpMode() {
                 gatePosition = desiredGatePosition,
             )
 //        }
-
+        println("targets: lift  ${depoState.liftTarget} gate  ${depositorTarget.gatePosition} ")
         hardware.clawA.position = when(depositorTarget.gatePosition){
-            GatePosition.Open -> hardware.clawAOpenPos
-            GatePosition.Closed -> hardware.clawAClosedPos
+            GatePosition.Intake -> hardware.gateOpenPosition
+            GatePosition.Closed -> hardware.gateClosedPosition
+            GatePosition.Deposit -> hardware.gateDepositPosition
         }
 //        hardware.clawB.position =
 //            if (clawTarget.clawB) {

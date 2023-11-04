@@ -22,8 +22,9 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
     lateinit var collector: DcMotor
 
     lateinit var clawA: Servo
-    val clawAClosedPos = 0.3
-    val clawAOpenPos = 0.6
+    val gateDepositPosition = 0.6
+    val gateClosedPosition = 0.3
+    val gateOpenPosition = 0.0
     lateinit var nonExistentClaw: Servo
     val clawBClosedPos = 0.17
     val clawBOpenPos = 0.65
@@ -132,7 +133,7 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
 //        clawA = hwMap["clawA"] as Servo
 //        clawB = hwMap["clawB"] as Servo
         clawA.direction = Servo.Direction.REVERSE
-        clawA.position = clawAOpenPos
+        clawA.position = gateOpenPosition
         nonExistentClaw.position = clawBOpenPos
 
 //        leftArm = hwMap["leftArm"] as Servo
