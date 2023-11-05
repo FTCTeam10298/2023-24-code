@@ -142,11 +142,12 @@ class ThreeDayTeleOp: OpMode() {
             )
 //        }
         println("targets: lift  ${depoState.liftTarget} gate  ${depositorTarget.gatePosition} ")
-        hardware.clawA.position = when (depositorTarget.gatePosition) {
-            GatePosition.Intake -> hardware.gateOpenPosition
-            GatePosition.Closed -> hardware.gateClosedPosition
-            GatePosition.Deposit -> hardware.gateDepositPosition
-        }
+        hardware.clawA.position = depositorTarget.gatePosition.position
+//        when (depositorTarget.gatePosition) {
+//            GatePosition.Intake -> hardware.gateOpenPosition
+//            GatePosition.Closed -> hardware.gateClosedPosition
+//            GatePosition.Deposit -> hardware.gateDepositPosition
+//        }
 //        hardware.clawB.position =
 //            if (clawTarget.clawB) {
 //                hardware.clawBOpenPos

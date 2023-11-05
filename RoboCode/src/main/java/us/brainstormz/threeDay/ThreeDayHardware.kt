@@ -28,10 +28,10 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
     lateinit var nonExistentClaw: Servo
     val clawBClosedPos = 0.17
     val clawBOpenPos = 0.65
-    enum class GatePosition{
-        Closed,
-        Deposit,
-        Intake;
+    enum class GatePosition(val position:Double) {
+        Deposit(0.0),
+        Closed(0.5),
+        Intake(0.8)
     }
 
     lateinit var leftArm: Servo
