@@ -9,6 +9,7 @@ import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
 import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
+import us.brainstormz.threeDay.ThreeDayHardware.GatePosition
 
 @Autonomous
 class ThreeDayAuto: LinearOpMode() {
@@ -38,7 +39,7 @@ class ThreeDayAuto: LinearOpMode() {
         waitForStart()
         /** AUTONOMOUS  PHASE */
 
-        hardware.clawA.position = hardware.gateClosedPosition
+        hardware.clawA.position = GatePosition.Closed.position
 
         val movementSignBasedOnAlliance = when (wizard.wasItemChosen("alliance", "Blue")) {
             true -> { //blue
@@ -58,7 +59,7 @@ class ThreeDayAuto: LinearOpMode() {
         hardware.rightArm.position = ArmPos.Out.position
         hardware.leftArm.position = ArmPos.Out.position
         sleep(400)
-        hardware.clawA.position = hardware.gateOpenPosition
+        hardware.clawA.position = GatePosition.Deposit.position
         sleep(1500)
         hardware.rightArm.position = ArmPos.In.position
         hardware.leftArm.position = ArmPos.In.position

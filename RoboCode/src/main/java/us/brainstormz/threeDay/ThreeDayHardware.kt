@@ -22,12 +22,6 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
     lateinit var collector: DcMotor
 
     lateinit var clawA: Servo
-    val gateDepositPosition = 0.6
-    val gateClosedPosition = 0.3
-    val gateOpenPosition = 0.0
-    lateinit var nonExistentClaw: Servo
-    val clawBClosedPos = 0.17
-    val clawBOpenPos = 0.65
     enum class GatePosition(val position:Double) {
         Deposit(0.0),
         Closed(0.5),
@@ -54,8 +48,7 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
 
     enum class ArmPos(val position:Double) {
         In(0.02),
-//        Out(0.66)
-        Out(0.6)
+        Out(0.58)
     }
 
     lateinit var lift: DcMotorEx
@@ -63,7 +56,6 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         Min(0),
         Grabbing(0),
         Collecting(0),
-//        Collecting(80),
         ArmClearance(700),
         NonExistentPosition(800),
         High(1500),
@@ -98,9 +90,6 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
             throw Exception("Expansion Hub not found!")
         }
 
-//        wiggleTest()
-
-
         //Motors
         lBDrive =       ctrlHub.getMotor(0)
         lFDrive =       ctrlHub.getMotor(1)
@@ -114,16 +103,11 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         //Servos
         autoClaw =      ctrlHub.getServo(0)
         clawA =         ctrlHub.getServo(2)
-        nonExistentClaw =         exHub.getServo(1)
         leftArm =       ctrlHub.getServo(3)
         rightArm =      ctrlHub.getServo(4)
         launcher =      ctrlHub.getServo(5)
 
         // Drivetrain
-//        lFDrive = hwMap["lFDrive"] as DcMotorEx
-//        rFDrive = hwMap["rFDrive"] as DcMotorEx
-//        lBDrive = hwMap["lBDrive"] as DcMotorEx
-//        rBDrive = hwMap["rBDrive"] as DcMotorEx
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
         rFDrive.direction = DcMotorSimple.Direction.REVERSE
         lBDrive.direction = DcMotorSimple.Direction.FORWARD
@@ -133,22 +117,16 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         lBDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         rBDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-//        collector = hwMap["collector"] as DcMotor
         collector.direction = DcMotorSimple.Direction.REVERSE
 
-//        clawA = hwMap["clawA"] as Servo
-//        clawB = hwMap["clawB"] as Servo
         clawA.direction = Servo.Direction.REVERSE
         clawA.position = GatePosition.Closed.position
 
-//        leftArm = hwMap["leftArm"] as Servo
-//        rightArm = hwMap["rightArm"] as Servo
         leftArm.direction = Servo.Direction.FORWARD
         rightArm.direction = Servo.Direction.REVERSE
         leftArm.position = ArmPos.In.position
         rightArm.position = ArmPos.In.position
 
-//        lift = hwMap["lift"] as DcMotorEx
         lift.direction = DcMotorSimple.Direction.REVERSE
         lift.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         lift.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -156,13 +134,9 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         lift.mode = DcMotor.RunMode.RUN_TO_POSITION
         lift.setPositionPIDFCoefficients(10.0)
 
-//        autoClaw = hwMap["autoClaw"] as Servo
         autoClaw.direction = Servo.Direction.FORWARD
         autoClaw.position = autoClawUp
 
-//        launcher = hwMap["launcher"] as Servo
-
-//        hangRotator = hwMap["rotator"] as DcMotorEx
         hangRotator.direction = DcMotorSimple.Direction.REVERSE
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         hangRotator.targetPosition = 0
@@ -170,7 +144,6 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         hangRotator.setPositionPIDFCoefficients(22.0)
         hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-//        screw = hwMap["screw"] as DcMotor
         screw.direction = DcMotorSimple.Direction.REVERSE
         screw.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         screw.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
