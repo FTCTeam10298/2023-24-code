@@ -9,6 +9,7 @@ import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
 import kotlin.math.abs
+import us.brainstormz.threeDay.ThreeDayHardware.GatePosition
 
 @TeleOp
 class ThreeDayTeleOp: OpMode() {
@@ -24,13 +25,8 @@ class ThreeDayTeleOp: OpMode() {
     var previousLiftPosition = previousDepoState.liftTarget.position
     val liftWaitForArmTimeMilis = 800
 
-    enum class GatePosition{
-        Closed,
-        Deposit,
-        Intake;
-    }
     data class DepositorTarget(
-            val gatePosition: GatePosition,
+        val gatePosition: GatePosition,
 //        val clawB: Boolean
     )
     var depositorTarget = DepositorTarget(
@@ -117,22 +113,19 @@ class ThreeDayTeleOp: OpMode() {
             val collectorIsOn = hardware.collector.power != 0.0
             val eitherBumperIsPressed = (gamepad1.right_bumper || gamepad2.right_bumper)
             val desiredGatePosition = if (eitherBumperIsPressed && !eitherBumperWasPressedLastLoop) {
-
-                when(depoState.liftTarget){
-                    LiftPos.High -> when(depositorTarget.gatePosition){
-                        GatePosition.Intake -> GatePosition.Closed
-                        GatePosition.Deposit -> GatePosition.Closed
-                        GatePosition.Closed -> GatePosition.Deposit
-                    }
-                    else -> when(depositorTarget.gatePosition){
-                        GatePosition.Intake -> GatePosition.Closed
-                        GatePosition.Deposit -> GatePosition.Closed
-                        GatePosition.Closed -> GatePosition.Intake
+                when (depositorTarget.gatePosition) {
+                    GatePosition.Intake -> GatePosition.Closed
+                    GatePosition.Deposit -> GatePosition.Closed
+                    GatePosition.Closed -> {
+                        when (depoState.liftTarget) {
+                            LiftPos.High -> GatePosition.Deposit
+                            else -> GatePosition.Intake
+                        }
                     }
                 }
-            }else if (collectorIsOn) {
+            } else if (collectorIsOn) {
                 GatePosition.Intake
-            }else {
+            } else {
                 depositorTarget.gatePosition
             }
             eitherBumperWasPressedLastLoop = gamepad1.right_bumper || gamepad2.right_bumper
@@ -149,7 +142,7 @@ class ThreeDayTeleOp: OpMode() {
             )
 //        }
         println("targets: lift  ${depoState.liftTarget} gate  ${depositorTarget.gatePosition} ")
-        hardware.clawA.position = when(depositorTarget.gatePosition){
+        hardware.clawA.position = when (depositorTarget.gatePosition) {
             GatePosition.Intake -> hardware.gateOpenPosition
             GatePosition.Closed -> hardware.gateClosedPosition
             GatePosition.Deposit -> hardware.gateDepositPosition
