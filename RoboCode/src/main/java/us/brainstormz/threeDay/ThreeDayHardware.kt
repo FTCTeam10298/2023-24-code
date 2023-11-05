@@ -47,14 +47,15 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
     enum class RotatorPos(val position:Int) {
         Rest(position = 0),
         LiftClearance(position = 180),
-        StraightUp(position = 200)
+        StraightUp(position = 198)
     }
 
     lateinit var screw: DcMotor
 
     enum class ArmPos(val position:Double) {
         In(0.02),
-        Out(0.66)
+//        Out(0.66)
+        Out(0.6)
     }
 
     lateinit var lift: DcMotorEx
@@ -138,8 +139,7 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
 //        clawA = hwMap["clawA"] as Servo
 //        clawB = hwMap["clawB"] as Servo
         clawA.direction = Servo.Direction.REVERSE
-        clawA.position = gateOpenPosition
-        nonExistentClaw.position = clawBOpenPos
+        clawA.position = GatePosition.Closed.position
 
 //        leftArm = hwMap["leftArm"] as Servo
 //        rightArm = hwMap["rightArm"] as Servo
@@ -154,7 +154,7 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         lift.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         lift.targetPosition = 0
         lift.mode = DcMotor.RunMode.RUN_TO_POSITION
-        lift.setPositionPIDFCoefficients(15.0)
+        lift.setPositionPIDFCoefficients(10.0)
 
 //        autoClaw = hwMap["autoClaw"] as Servo
         autoClaw.direction = Servo.Direction.FORWARD
@@ -167,7 +167,7 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         hangRotator.targetPosition = 0
         hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
-        hangRotator.setPositionPIDFCoefficients(25.0)
+        hangRotator.setPositionPIDFCoefficients(22.0)
         hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
 //        screw = hwMap["screw"] as DcMotor
