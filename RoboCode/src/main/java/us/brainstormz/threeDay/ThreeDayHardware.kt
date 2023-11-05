@@ -122,6 +122,8 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         clawA.direction = Servo.Direction.REVERSE
         clawA.position = GatePosition.Closed.position
 
+        launcher.direction = Servo.Direction.REVERSE
+
         leftArm.direction = Servo.Direction.FORWARD
         rightArm.direction = Servo.Direction.REVERSE
         leftArm.position = ArmPos.In.position
