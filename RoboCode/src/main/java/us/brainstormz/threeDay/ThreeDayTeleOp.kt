@@ -89,46 +89,33 @@ class ThreeDayTeleOp: OpMode() {
                 previousDepoState
             }
         }
-        previousDepoState = depoState
-        telemetry.addLine("Depo State: $depoState")
 
         //Claw
-//        clawTarget = if (!gamepad1.right_bumper) {
-//            when (depoState.liftTarget) {
-////                LiftPos.Grabbing -> {
-////                    if (hardware.lift.currentPosition <= LiftPos.Grabbing.position) {
-////                        ClawTarget(clawA = false, clawB = false)
-////                    } else {
-////                        ClawTarget(clawA = true, clawB = true)
-////                    }
-////                }
-////                LiftPos.Collecting -> {
-////                    ClawTarget(clawA = true, clawB = true)
-////                }
-//                else -> {
-//                    clawTarget
-//                }
-//            }
-//        } else {
-            val collectorIsOn = hardware.collector.power != 0.0
-            val eitherBumperIsPressed = (gamepad1.right_bumper || gamepad2.right_bumper)
-            val desiredGatePosition = if (eitherBumperIsPressed && !eitherBumperWasPressedLastLoop) {
-                when (depositorTarget.gatePosition) {
-                    GatePosition.Intake -> GatePosition.Closed
-                    GatePosition.Deposit -> GatePosition.Closed
-                    GatePosition.Closed -> {
-                        when (depoState.liftTarget) {
-                            LiftPos.High -> GatePosition.Deposit
-                            else -> GatePosition.Intake
-                        }
+        val collectorIsOn = hardware.collector.power != 0.0
+        val liftIsMoving = (previousDepoState.liftTarget != depoState.liftTarget)
+        val eitherBumperIsPressed = (gamepad1.right_bumper || gamepad2.right_bumper)
+        val desiredGatePosition = if (eitherBumperIsPressed && !eitherBumperWasPressedLastLoop) {
+            when (depositorTarget.gatePosition) {
+                GatePosition.Intake -> GatePosition.Closed
+                GatePosition.Deposit -> GatePosition.Closed
+                GatePosition.Closed -> {
+                    when (depoState.liftTarget) {
+                        LiftPos.High -> GatePosition.Deposit
+                        else -> GatePosition.Intake
                     }
                 }
-            } else if (collectorIsOn) {
-                GatePosition.Intake
-            } else {
-                depositorTarget.gatePosition
             }
-            eitherBumperWasPressedLastLoop = gamepad1.right_bumper || gamepad2.right_bumper
+        } else if (collectorIsOn) {
+            GatePosition.Intake
+        } else if (liftIsMoving) {
+            val message = "Gate detected lift moving so it closed the gate"
+            telemetry.addLine(message)
+            println(message + System.currentTimeMillis())
+            GatePosition.Closed
+        } else {
+            depositorTarget.gatePosition
+        }
+        eitherBumperWasPressedLastLoop = gamepad1.right_bumper || gamepad2.right_bumper
 
 
 //            val clawBPosition = if (gamepad1.left_bumper && !clawBButtonPrevious)
@@ -137,9 +124,9 @@ class ThreeDayTeleOp: OpMode() {
 //                clawTarget.clawB
 //            clawBButtonPrevious = gamepad1.left_bumper
 
-            depositorTarget = DepositorTarget(
-                gatePosition = desiredGatePosition,
-            )
+        depositorTarget = DepositorTarget(
+            gatePosition = desiredGatePosition,
+        )
 //        }
         println("targets: lift  ${depoState.liftTarget} gate  ${depositorTarget.gatePosition} ")
         hardware.clawA.position = depositorTarget.gatePosition.position
@@ -231,5 +218,7 @@ class ThreeDayTeleOp: OpMode() {
         }
         telemetry.addLine("hangRotatorPosition " + hardware.hangRotator.targetPosition)
 
+        previousDepoState = depoState
+        telemetry.addLine("Depo State: $depoState")
     }
 }
