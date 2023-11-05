@@ -31,9 +31,9 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
     private val tseThreshold = 135
 
     private val orangePlaces = listOf(
-            Rect(Point(100.0, 240.0), Point(0.0, 100.0)),
+            Rect(Point(10.0, 100.0), Point(105.0, 200.0)),
             Rect(Point(210.0, 100.0), Point(110.0, 240.0)),
-            Rect(Point(220.0, 100.0), Point(300.0, 240.0)) )
+            Rect(Point(220.0, 100.0), Point(310.0, 200.0)) )
 
     private val regions = listOf(
             PropPosition.Left to orangePlaces[0],
@@ -67,34 +67,41 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
     private var intermediateHoldingFrame = Mat()
     fun processFrame(frame: Mat): Mat {
 
+        Imgproc.cvtColor(frame, intermediateHoldingFrame, Imgproc.COLOR_RGB2HSV)
+
+        var DETECT_RED: Boolean = true;
+        var MINIMUM_VALUES: Double = 100.0;
+        var MAXIMUM_VALUES: Double = 255.0;
+        var MINIMUM_BLUE_HUE: Double = 100.0;
+        var MAXIMUM_BLUE_HUE: Double = 115.0;
+        var MINIMUM_RED_LOW_HUE: Double = 0.0;
+        var MAXIMUM_RED_LOW_HUE: Double = 25.0;
+        var MINIMUM_RED_HIGH_HUE: Double = 160.0;
+        var MAXIMUM_RED_HIGH_HUE: Double = 255.0;
+
+        var MINIMUM_BLUE: Scalar = Scalar(MINIMUM_BLUE_HUE,MINIMUM_VALUES, MINIMUM_VALUES)
+        var MAXIMUM_BLUE: Scalar = Scalar(MAXIMUM_BLUE_HUE, MAXIMUM_VALUES, MAXIMUM_VALUES)
+        var MINIMUM_RED_LOW: Scalar = Scalar(MINIMUM_RED_LOW_HUE, MINIMUM_VALUES, MINIMUM_VALUES)
+        var MAXIMUM_RED_LOW: Scalar = Scalar(MAXIMUM_RED_LOW_HUE, MAXIMUM_VALUES, MAXIMUM_VALUES)
+        var MINIMUM_RED_HIGH: Scalar = Scalar(MINIMUM_RED_HIGH_HUE, MINIMUM_VALUES, MINIMUM_VALUES)
+        var MAXIMUM_RED_HIGH: Scalar = Scalar(MAXIMUM_RED_HIGH_HUE, MAXIMUM_VALUES, MAXIMUM_VALUES)
+
         fun colorInRect(rect: Mat): Int {
             return Core.mean(rect).`val`[0].toInt()
         }
 
-        //
-//    /**
-//     * This function takes the RGB frame
-//     * and then extracts some channel to some variable
-//     */
-
-
-        fun inputToColor(frame: Mat, colorToReturn: PropColors): Mat {
-            //subtract red from blue in detection
-
-            //coi explanation: input, output, color channel iso. in output: 0 -> R, 1 -> G?, 2 -> B
-//            Imgproc.cvtColor(input, yCrCb, Imgproc.COLOR_RGB2YCrCb)
-            var coi = when (colorToReturn) {
-                PropColors.Red -> 0
-                PropColors.Blue -> 2
+            if (theColorWeAreLookingFor != PropColors.Red) {
+                //Blue value
+                Core.inRange(intermediateHoldingFrame, MINIMUM_BLUE, MAXIMUM_BLUE, intermediateHoldingFrame);
+            } else {
+                //Red value
+                var mat1: Mat = intermediateHoldingFrame.clone()
+                var mat2: Mat = intermediateHoldingFrame.clone()
+                Core.inRange(mat1, MINIMUM_RED_LOW, MAXIMUM_RED_LOW, mat1)
+                Core.inRange(mat2, MINIMUM_RED_HIGH, MAXIMUM_RED_HIGH, mat2)
+                Core.bitwise_or(mat1, mat2, intermediateHoldingFrame)
             }
-            Core.extractChannel(frame, intermediateHoldingFrame, coi)
-            return intermediateHoldingFrame
-        }
-
-//        blueFrame = inputToColor(frame, PropColors.Blue)
-//        redFrame = inputToColor(frame, PropColors.Red)
-        Core.split(frame, listOf(blueFrame, redFrame))
-
+//
         submatsBlue = regions.map {
             it.first to intermediateHoldingFrame.submat(it.second)
         }
@@ -122,18 +129,6 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
             val redRect = it.second
             val redColor = colorInRect(redRect.second)
             telemetry.addLine("redColor: $redColor, ${it.first.first}")
-
-            //fix this stuff
-            val fixedBlue = blueColor - redColor
-            telemetry.addLine("fixedBlue: $fixedBlue")
-            result = PropPosition.Left
-
-            if (fixedBlue > prevColor) {
-                telemetry.addLine("hiiiiiiii!")
-
-                prevColor = fixedBlue
-                result = it.first.first
-            }
         }
 
 
@@ -169,7 +164,7 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
         telemetry.addLine("Highest Color: $prevColor")
         telemetry.update()
 
-        return blueFrame
+        return frame
     }
 //
 
