@@ -48,7 +48,7 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
 
     enum class ArmPos(val position:Double) {
         In(0.02),
-        Out(0.58)
+        Out(0.62)
     }
 
     lateinit var lift: DcMotorEx
