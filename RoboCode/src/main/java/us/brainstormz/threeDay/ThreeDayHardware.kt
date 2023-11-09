@@ -1,6 +1,7 @@
 package us.brainstormz.threeDay
 
 import com.qualcomm.hardware.lynx.LynxModule
+import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -12,8 +13,7 @@ import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 import java.lang.Thread.sleep
 
-
-class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
+class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHardware {
     override lateinit var lFDrive: DcMotorEx
     override lateinit var rFDrive: DcMotorEx
     override lateinit var lBDrive: DcMotorEx
@@ -39,9 +39,9 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
 
     lateinit var hangRotator: DcMotorEx
     enum class RotatorPos(val position:Int) {
-        Rest(position = 0),
-        LiftClearance(position = 180),
-        StraightUp(position = 198)
+        Rest(position = 140),
+        LiftClearance(position = 375),
+        StraightUp(position = 455)
     }
 
     lateinit var screw: DcMotor
@@ -87,7 +87,7 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         if (!this::exHub.isInitialized) {
             telemetry.addLine("Expansion Hub not found!")
             telemetry.update()
-            throw Exception("Expansion Hub not found!")
+            opmode.requestOpModeStop()
         }
 
         //Motors
@@ -144,7 +144,7 @@ class ThreeDayHardware(val telemetry:Telemetry) : MecanumHardware {
         hangRotator.targetPosition = 0
         hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
         hangRotator.setPositionPIDFCoefficients(22.0)
-        hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
 
         screw.direction = DcMotorSimple.Direction.REVERSE
         screw.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER

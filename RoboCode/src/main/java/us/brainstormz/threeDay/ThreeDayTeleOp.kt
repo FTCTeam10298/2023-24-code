@@ -10,11 +10,12 @@ import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
 import kotlin.math.abs
 import us.brainstormz.threeDay.ThreeDayHardware.GatePosition
+import kotlin.math.absoluteValue
 
 @TeleOp
 class ThreeDayTeleOp: OpMode() {
 
-    val hardware = ThreeDayHardware(telemetry)
+    val hardware = ThreeDayHardware(telemetry,this)
     val movement = MecanumDriveTrain(hardware)
 
     data class DepoTarget(val liftTarget: LiftPos, val armTarget: ArmPos, val milisSinceStateChange: Long, val gateTarget: GatePosition)
@@ -25,16 +26,7 @@ class ThreeDayTeleOp: OpMode() {
     var previousLiftPosition = previousDepoState.liftTarget.position
     val liftWaitForArmTimeMilis = 800
 
-    data class DepositorTarget(
-        val gatePosition: GatePosition,
-//        val clawB: Boolean
-    )
-//    var depositorTarget = DepositorTarget(
-//        gatePosition = GatePosition.Intake,
-////        clawB = true,
-//    )
     var eitherBumperWasPressedLastLoop = true
-    var clawBButtonPrevious = true
 
 
     override fun init() {
@@ -118,31 +110,12 @@ class ThreeDayTeleOp: OpMode() {
         eitherBumperWasPressedLastLoop = gamepad1.right_bumper || gamepad2.right_bumper
         previousDepoState = previousDepoState.copy(gateTarget = desiredGatePosition)
 
-
-//            val clawBPosition = if (gamepad1.left_bumper && !clawBButtonPrevious)
-//                !clawTarget.clawB
-//            else
-//                clawTarget.clawB
-//            clawBButtonPrevious = gamepad1.left_bumper
-
-//        }
         println("targets: lift  ${depoState.liftTarget} gate  ${depoState.gateTarget} ")
         hardware.clawA.position = depoState.gateTarget.position
-//        when (depositorTarget.gatePosition) {
-//            GatePosition.Intake -> hardware.gateOpenPosition
-//            GatePosition.Closed -> hardware.gateClosedPosition
-//            GatePosition.Deposit -> hardware.gateDepositPosition
-//        }
-//        hardware.clawB.position =
-//            if (clawTarget.clawB) {
-//                hardware.clawBOpenPos
-//            } else {
-//                hardware.clawBClosedPos
-//            }
 
         //Lift
         when {
-            gamepad2.right_stick_y !in -0.1..0.1 -> {
+            gamepad2.right_stick_y.absoluteValue > 0.5 -> {
                 telemetry.addLine("Manual lift")
                 hardware.lift.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
                 hardware.lift.power = -gamepad2.right_stick_y.toDouble()
@@ -210,11 +183,17 @@ class ThreeDayTeleOp: OpMode() {
             hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
             hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.LiftClearance.position
             hardware.hangRotator.power = 1.0
-        } else {
+        } else if (hardware.hangRotator.mode == DcMotor.RunMode.RUN_TO_POSITION && hardware.hangRotator.power == 0.0) {
+            hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
+            hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.Rest.position
+            hardware.hangRotator.power = 0.5
+        }else if (gamepad2.right_stick_x.absoluteValue > 0.2){
             hardware.hangRotator.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-            hardware.hangRotator.power = gamepad2.right_stick_x.toDouble()//0.0 //down position
+            hardware.hangRotator.power = gamepad2.right_stick_x.toDouble()
+        }  else {
+            hardware.hangRotator.power = 0.0
         }
-        telemetry.addLine("hangRotatorPosition " + hardware.hangRotator.targetPosition)
+        telemetry.addLine("hang Rotator Position " + hardware.hangRotator.currentPosition)
 
         previousDepoState = depoState.copy(gateTarget = desiredGatePosition)
         telemetry.addLine("Depo State: $depoState")
