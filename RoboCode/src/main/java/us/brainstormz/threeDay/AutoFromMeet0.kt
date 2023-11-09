@@ -12,9 +12,9 @@ import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 import us.brainstormz.threeDay.ThreeDayHardware.GatePosition
 
 @Autonomous
-class ThreeDayAuto: LinearOpMode() {
+class AutoFromMeet0: LinearOpMode() {
 
-    val hardware = ThreeDayHardware(telemetry)
+    val hardware = ThreeDayHardware(telemetry, this)
     val console = TelemetryConsole(telemetry)
     val wizard = TelemetryWizard(console, this)
     val movement = EncoderDriveMovement(hardware, console)
