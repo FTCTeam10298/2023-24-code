@@ -66,10 +66,6 @@ class ThreeDayTeleOp: OpMode() {
 //                retracted
                 DepoTarget(LiftPos.Collecting, ArmPos.In, System.currentTimeMillis(), GatePosition.Closed)
             }
-            gamepad1.dpad_left || gamepad2.dpad_left -> {
-//                low
-                DepoTarget(LiftPos.NonExistentPosition, ArmPos.Out, System.currentTimeMillis(), GatePosition.Closed)
-            }
             gamepad1.dpad_up || gamepad2.dpad_up -> {
 //                middle
                 DepoTarget(LiftPos.High, ArmPos.Out, System.currentTimeMillis(), GatePosition.Closed)

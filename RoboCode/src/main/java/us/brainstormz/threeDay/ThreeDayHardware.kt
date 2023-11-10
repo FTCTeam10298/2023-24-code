@@ -57,7 +57,6 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
         Grabbing(0),
         Collecting(0),
         ArmClearance(700),
-        NonExistentPosition(800),
         High(1500),
         Max(1500)
     }
