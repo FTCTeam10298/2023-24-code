@@ -34,14 +34,16 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
     lateinit var launcher: Servo
 
     lateinit var autoClaw: Servo
-    val autoClawUp = 0.9
-    val autoClawDown = 0.5
+    enum class AutoClawPos(val position: Double) {
+        Up(0.9),
+        Down(0.3)
+    }
 
     lateinit var hangRotator: DcMotorEx
     enum class RotatorPos(val position:Int) {
-        Rest(position = 140),
+        Rest(position = 120),
         LiftClearance(position = 375),
-        StraightUp(position = 455)
+        StraightUp(position = 465)
     }
 
     lateinit var screw: DcMotor
@@ -136,7 +138,7 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
         lift.setPositionPIDFCoefficients(10.0)
 
         autoClaw.direction = Servo.Direction.FORWARD
-        autoClaw.position = autoClawUp
+        autoClaw.position = AutoClawPos.Up.position
 
         hangRotator.direction = DcMotorSimple.Direction.REVERSE
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
