@@ -42,8 +42,8 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
     lateinit var hangRotator: DcMotorEx
     enum class RotatorPos(val position:Int) {
         Rest(position = 120),
-        LiftClearance(position = 375),
-        StraightUp(position = 465)
+        LiftClearance(position = 400),
+        StraightUp(position = 475)
     }
 
     lateinit var screw: DcMotor
@@ -146,7 +146,7 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         hangRotator.targetPosition = 0
         hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
-        hangRotator.setPositionPIDFCoefficients(20.0)
+        hangRotator.setPositionPIDFCoefficients(18.0)
         hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
 
         screw.direction = DcMotorSimple.Direction.REVERSE

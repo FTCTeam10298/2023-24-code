@@ -2,13 +2,9 @@ package us.brainstormz.potatoBot
 
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
-import us.brainstormz.examples.ExampleHardware
-import us.brainstormz.telemetryWizard.TelemetryConsole
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.openftc.easyopencv.OpenCvCameraRotation
-import us.brainstormz.hardwareClasses.EncoderDriveMovement
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 
 class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector.PropColors) {
@@ -27,12 +23,16 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
     private val black = Scalar(255.0, 0.0, 255.0)
     private val transparent = Scalar(0.0, 255.0, 0.0)
 
-
+    private val centerDetectorHalfWidth: Double = 25.0
+    private val centerDetectorLocation: Double = 285.0
+    private val leftDetectorHalfWidth: Double = 1.5 * centerDetectorHalfWidth
+    private val leftDetectorLocation: Double = 115.0
     private val tseThreshold = 135
 
+    //Gabe:s marv3lous f0rmul@: (X2 + X1)/2 + Tweak Variable = calculate midpoint, have tweak variable be width
     private val orangePlaces = listOf(
-            Rect(Point(10.0, 100.0), Point(105.0, 200.0)),
-            Rect(Point(210.0, 100.0), Point(110.0, 240.0)),
+            Rect(Point((leftDetectorLocation/2) - leftDetectorHalfWidth, 100.0), Point((leftDetectorLocation/2) + leftDetectorHalfWidth, 200.0)),
+            Rect(Point(((centerDetectorLocation)/2) - centerDetectorHalfWidth, 100.0), Point((centerDetectorLocation/2) + centerDetectorHalfWidth, 240.0)),
             Rect(Point(220.0, 100.0), Point(310.0, 200.0)) )
 
     private val regions = listOf(
