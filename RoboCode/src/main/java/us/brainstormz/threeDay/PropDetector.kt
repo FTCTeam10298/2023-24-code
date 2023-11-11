@@ -16,11 +16,7 @@ enum class PropColors {
     Red, Blue
 }
 
-class PropDetector(private val telemetry: Telemetry, private val colorToDetect: PropColors/*, private val frameType: FrameType = FrameType.Input*/) {
-//    enum class FrameType {
-//        Input,
-//        ColorFiltered
-//    }
+class PropDetector(private val telemetry: Telemetry, private val colorToDetect: PropColors) {
 
     private val rects = listOf(
         Rect(Point(0.0, 60.0), Point(40.0, 100.0)),
@@ -38,6 +34,7 @@ class PropDetector(private val telemetry: Telemetry, private val colorToDetect: 
     private val green = Scalar(0.0, 255.0, 0.0)
     private val red = Scalar(255.0, 0.0, 0.0)
     private val white = Scalar(255.0, 255.0, 255.0)
+    private val black = Scalar(0.0, 0.0, 0.0)
     private val rectanglesMappedToBorderColors = listOf(
         positionsMappedToRects[0] to red,
         positionsMappedToRects[1] to green,
@@ -82,6 +79,10 @@ class PropDetector(private val telemetry: Telemetry, private val colorToDetect: 
             Core.sumElems(it).`val`[0]
         }
 
+        regions.forEach {
+            it.release()
+        }
+
         val leftValue = values[0]
         val centerValue = values[1]
         val rightValue = values[2]
@@ -96,12 +97,15 @@ class PropDetector(private val telemetry: Telemetry, private val colorToDetect: 
 
         telemetry.addLine("propPosition: $propPosition")
 
-//        Imgproc.cvtColor(frame, mat, Imgproc.COLOR_RGB2HSV)
-//        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB)
-
         rectanglesMappedToBorderColors.forEach { it ->
             val borderColor = if (it.first.first == propPosition) white else it.second
             Imgproc.rectangle(frame, it.first.second, borderColor, 3)
+        }
+
+        val sizePerColor = 10.0
+        Colors.values().forEachIndexed {i, it ->
+            val rect = Rect(Point(i*sizePerColor, 0.0), Point((i*sizePerColor)+sizePerColor, 10.0))
+            Imgproc.rectangle(frame, rect, it.scalar, 2)
         }
 
         telemetry.update()
