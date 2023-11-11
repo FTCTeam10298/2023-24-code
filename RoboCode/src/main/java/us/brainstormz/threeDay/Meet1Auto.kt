@@ -28,7 +28,7 @@ class Meet1Auto: LinearOpMode() {
         hardware.clawA.position = GatePosition.Closed.position
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "autoCycles", firstMenu = true)
-        wizard.newMenu("autoCycles", "How many auto cycles should we do?", listOf("0", "1"))
+//        wizard.newMenu("autoCycles", "How many auto cycles should we do?", listOf("0", "1"))
         wizard.summonWizardBlocking(gamepad1)
 
         val opencv = OpenCvAbstraction(this)
