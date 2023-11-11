@@ -54,111 +54,280 @@ class Meet1Auto: LinearOpMode() {
         val propPosition = propDetector.propPosition
         val normalMovementSpeed = 0.4
 
-        when (propPosition) {
-            PropPosition.Left -> {
-                //Spike Pixel
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
-                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
-                movement.driveRobotStrafe(power = 0.3, inches = 20.0, smartAccel = true)
-                sleep(500)
+        when (allianceColor) {
+            PropColors.Blue -> {
+                when (startingSide) {
+                    StartingSide.Backboard -> {
+                        when (propPosition) {
+                            PropPosition.Left -> {
+                                //Spike Pixel
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+                                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = 0.3, inches = 20.0, smartAccel = true)
+                                sleep(500)
 
-                hardware.autoClaw.position = AutoClawPos.Up.position
+                                hardware.autoClaw.position = AutoClawPos.Up.position
+                                //Deposit
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
+                                movement.driveRobotTurn(power = normalMovementSpeed, degree = 90.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
+                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+                                movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
 
-                //Deposit
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
-                movement.driveRobotTurn(power = normalMovementSpeed, degree = 90.0, smartAccel = true)
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
-                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
-                movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
+                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
 
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
-                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+                                deposit()
 
-                deposit()
+                                //Park
+                                moveRotator(0)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+                                hardware.hangRotator.power = 0.0
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 35.0, smartAccel = true)
+                            }
+                            PropPosition.Center -> {
+                                //Spike Pixel
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -28.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+                                movement.driveRobotTurn(power = 0.5, degree = 90.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+                                sleep(500)
 
-                //Park
-                moveRotator(0)
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
-                hardware.hangRotator.power = 0.0
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 35.0, smartAccel = true)
+                                hardware.autoClaw.position = AutoClawPos.Up.position
+                                //Deposit
+                                movement.driveRobotStrafe(power = 0.3, inches = 3.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 23.0, smartAccel = true)
+                                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
+                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+                                movement.driveRobotPosition(power = 0.2, inches = 5.0, smartAccel = true)
+
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+                                movement.driveRobotPosition(power = 0.2, inches = -5.0, smartAccel = false)
+
+                                deposit()
+
+                                //Park
+                                moveRotator(0)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+                                hardware.hangRotator.power = 0.0
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 30.0, smartAccel = true)
+                            }
+                            PropPosition.Right -> {
+                                //Spike Pixel
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+                                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -7.6, smartAccel = true)
+                                sleep(500)
+
+                                hardware.autoClaw.position = AutoClawPos.Up.position
+                                //Deposit
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
+                                movement.driveRobotTurn(power = normalMovementSpeed, degree = 90.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -32.0, smartAccel = true)
+                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+                                movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
+
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 8.0, smartAccel = true)
+                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+
+                                deposit()
+
+                                //Park
+                                moveRotator(0)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+                                hardware.hangRotator.power = 0.0
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 22.0, smartAccel = true)
+                            }
+                        }
+                    }
+                    StartingSide.Audience -> {
+                        when (propPosition) {
+                            PropPosition.Left -> {
+                                //Spike Pixel
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 3.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -5.0, smartAccel = true)
+                                sleep(500)
+
+                                hardware.autoClaw.position = AutoClawPos.Up.position
+
+                                //Navigate
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 3.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -22.0, smartAccel = true)
+                                movement.driveRobotTurn(power = normalMovementSpeed, degree = -86.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -70.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+
+                                //Deposit
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -15.0, smartAccel = true)
+                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+//                                movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
+
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -6.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+
+                                deposit()
+
+                                //Park
+                                moveRotator(0)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+                                hardware.hangRotator.power = 0.0
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 35.0, smartAccel = true)
+                            }
+                            PropPosition.Center -> {
+//                                //Spike Pixel
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -28.0, smartAccel = true)
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+//                                movement.driveRobotTurn(power = 0.5, degree = 90.0, smartAccel = true)
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+//                                sleep(500)
+//
+//                                hardware.autoClaw.position = AutoClawPos.Up.position
+//                                //Deposit
+//                                movement.driveRobotStrafe(power = 0.3, inches = 3.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 23.0, smartAccel = true)
+//                                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+//                                movement.driveRobotPosition(power = 0.2, inches = 5.0, smartAccel = true)
+//
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -5.0, smartAccel = false)
+//
+//                                deposit()
+//
+//                                //Park
+//                                moveRotator(0)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+//                                hardware.hangRotator.power = 0.0
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 30.0, smartAccel = true)
+                            }
+                            PropPosition.Right -> {
+//                                //Spike Pixel
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+//                                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -7.6, smartAccel = true)
+//                                sleep(500)
+//
+//                                hardware.autoClaw.position = AutoClawPos.Up.position
+//                                //Deposit
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
+//                                movement.driveRobotTurn(power = normalMovementSpeed, degree = 90.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -32.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+//                                movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
+//
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 8.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+//
+//                                deposit()
+//
+//                                //Park
+//                                moveRotator(0)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+//                                hardware.hangRotator.power = 0.0
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 22.0, smartAccel = true)
+                            }
+                        }
+                    }
+                }
             }
-            PropPosition.Center -> {
-                //Spike Pixel
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = -28.0, smartAccel = true)
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
-                movement.driveRobotTurn(power = 0.5, degree = 90.0, smartAccel = true)
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
-                sleep(500)
-//                sleep(1000)
-                hardware.autoClaw.position = AutoClawPos.Up.position
+            PropColors.Red -> {
+                when (startingSide) {
+                    StartingSide.Backboard -> {
+                        when (propPosition) {
+                            PropPosition.Left -> {
+                                //Spike Pixel
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+                                sleep(500)
 
-                //Deposit
-                movement.driveRobotStrafe(power = 0.3, inches = 3.0, smartAccel = true)
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = 23.0, smartAccel = true)
-                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
-                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
-                movement.driveRobotPosition(power = 0.2, inches = 5.0, smartAccel = true)
+                                hardware.autoClaw.position = AutoClawPos.Up.position
 
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
-                movement.driveRobotPosition(power = 0.2, inches = -5.0, smartAccel = false)
+                                //Deposit
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
+                                movement.driveRobotTurn(power = normalMovementSpeed, degree = 90.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -34.0, smartAccel = true)
+                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+//                                movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
 
-                deposit()
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -7.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
 
-                //Park
-                moveRotator(0)
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
-                hardware.hangRotator.power = 0.0
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 30.0, smartAccel = true)
-            }
-            PropPosition.Right -> {
-                //Spike Pixel
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
-                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -7.6, smartAccel = true)
-                sleep(500)
+                                deposit()
 
-                hardware.autoClaw.position = AutoClawPos.Up.position
+                                //Park
+                                moveRotator(0)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+                                hardware.hangRotator.power = 0.0
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -24.0, smartAccel = true)
+                            }
+                            PropPosition.Center -> {
+//                                //Spike Pixel
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -28.0, smartAccel = true)
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+//                                movement.driveRobotTurn(power = 0.5, degree = 90.0, smartAccel = true)
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+//                                sleep(500)
+//
+//                                hardware.autoClaw.position = AutoClawPos.Up.position
+//                                //Deposit
+//                                movement.driveRobotStrafe(power = 0.3, inches = 3.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 23.0, smartAccel = true)
+//                                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+//                                movement.driveRobotPosition(power = 0.2, inches = 5.0, smartAccel = true)
+//
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -5.0, smartAccel = false)
+//
+//                                deposit()
+//
+//                                //Park
+//                                moveRotator(0)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+//                                hardware.hangRotator.power = 0.0
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 30.0, smartAccel = true)
+                            }
+                            PropPosition.Right -> {
+//                                //Spike Pixel
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+//                                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -7.6, smartAccel = true)
+//                                sleep(500)
+//
+//                                hardware.autoClaw.position = AutoClawPos.Up.position
+//                                //Deposit
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
+//                                movement.driveRobotTurn(power = normalMovementSpeed, degree = 90.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -32.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+//                                movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
+//
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 8.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+//
+//                                deposit()
+//
+//                                //Park
+//                                moveRotator(0)
+//                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+//                                hardware.hangRotator.power = 0.0
+//                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 22.0, smartAccel = true)
+                            }
+                        }
+                    }
+                    StartingSide.Audience -> {
 
-                //Deposit
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
-                movement.driveRobotTurn(power = normalMovementSpeed, degree = 90.0, smartAccel = true)
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = -32.0, smartAccel = true)
-                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
-                movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
-
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 8.0, smartAccel = true)
-                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
-
-                deposit()
-
-                //Park
-                moveRotator(0)
-                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
-                hardware.hangRotator.power = 0.0
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 22.0, smartAccel = true)
+                    }
+                }
             }
         }
-//        movement.driveRobotPosition(power = 0.6, inches = -38.0, smartAccel = true)
-//
-//        //drop
-//        moveLiftBlocking(LiftPos.High.position)
-//        moveRotator(ThreeDayHardware.RotatorPos.LiftClearance.position)
-//        hardware.rightArm.position = ArmPos.Out.position
-//        hardware.leftArm.position = ArmPos.Out.position
-//        sleep(400)
-//        hardware.clawA.position = GatePosition.Deposit.position
-//        sleep(1500)
-//        hardware.rightArm.position = ArmPos.In.position
-//        hardware.leftArm.position = ArmPos.In.position
-//        moveLiftBlocking(LiftPos.Min.position)
-//
-//        //Park
-//        movement.driveRobotPosition(power = 1.0, inches = 5.0, smartAccel = true)
-//        movement.driveRobotStrafe(power = 1.0, inches = movementSignBasedOnAlliance * -30.0, smartAccel = true)
-//        movement.driveRobotPosition(power = 1.0, inches = -15.0, smartAccel = true)
     }
     fun deposit() {
         moveLiftBlocking(LiftPos.Low.position)
