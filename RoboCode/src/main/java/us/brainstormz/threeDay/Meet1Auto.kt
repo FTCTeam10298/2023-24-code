@@ -3,15 +3,14 @@ package us.brainstormz.threeDay
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.DcMotor
+import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.hardwareClasses.EncoderDriveMovement
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
-import us.brainstormz.potatoBot.TeamPropDetector
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.threeDay.ThreeDayHardware.LiftPos
 import us.brainstormz.threeDay.ThreeDayHardware.AutoClawPos
 import us.brainstormz.threeDay.ThreeDayHardware.GatePosition
-import us.brainstormz.potatoBot.TeamPropDetector.PropPosition
 import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 
 @Autonomous
@@ -29,31 +28,33 @@ class Meet1Auto: LinearOpMode() {
         hardware.clawA.position = GatePosition.Closed.position
         hardware.autoClaw.position = AutoClawPos.Down.position
 
-        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "autoCycles", firstMenu = true)
+        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), firstMenu = true)
 //        wizard.newMenu("autoCycles", "How many auto cycles should we do?", listOf("0", "1"))
         wizard.summonWizardBlocking(gamepad1)
+        val allianceColor = if (wizard.wasItemChosen("alliance", "Blue")) PropColors.Blue else PropColors.Red
+
 
         val opencv = OpenCvAbstraction(this)
-        val movementSignBasedOnAlliance = when (wizard.wasItemChosen("alliance", "Blue")) {
-            true -> { //blue
+        val propDetector = PropDetector(telemetry, allianceColor)
+        opencv.init(hardwareMap)
+        opencv.internalCamera = false
+        opencv.cameraName = "Webcam 1"
+        opencv.cameraOrientation = OpenCvCameraRotation.UPSIDE_DOWN
+        opencv.onNewFrame(propDetector::processFrame)
+
+        val movementSignBasedOnAlliance = when (allianceColor) {
+            PropColors.Blue -> { //blue
                 1
             }
-            false -> { //red
+            PropColors.Red -> { //red
                 -1
             }
         }
-        val allianceColor = if (wizard.wasItemChosen("alliance", "Blue")) TeamPropDetector.PropColors.Blue else TeamPropDetector.PropColors.Red
-        val teamPropDetector = TeamPropDetector(telemetry, allianceColor)
-//        opencv.init(hardwareMap)
-//        opencv.internalCamera = false
-//        opencv.cameraName = "Webcam 1"
-//        opencv.cameraOrientation = OpenCvCameraRotation.SIDEWAYS_LEFT
-//        opencv.onNewFrame(teamPropDetector::processFrame)
 
         waitForStart()
         /** AUTONOMOUS  PHASE */
 
-        val propPosition = PropPosition.Right//teamPropDetector.position
+        val propPosition = propDetector.propPosition
         val normalMovementSpeed = 0.4
 
         when (propPosition) {
