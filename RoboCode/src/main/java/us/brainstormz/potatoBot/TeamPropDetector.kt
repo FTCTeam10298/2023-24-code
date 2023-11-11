@@ -16,7 +16,7 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
         Red, Blue
     }
 
-    var theColorWeAreLookingFor = PropColors.Red
+    var theColorWeAreLookingFor: PropColors = PropColors.Red
 
     private val blue = Scalar(0.0, 0.0, 255.0)
     private val red = Scalar(225.0, 0.0, 0.0)
@@ -132,13 +132,26 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
         }
 
 
-//        submatsBlue.forEach {
-//            val color = colorInRect(it.second)
-//            if (color > prevColor) {
-//                prevColor = color
-//                result = it.first
-//            }
-//        }
+        when (theColorWeAreLookingFor) {
+            PropColors.Blue -> {
+                submatsBlue.forEach {
+                    val color = colorInRect(it.second)
+                    if (color > prevColor) {
+                        prevColor = color
+                        result = it.first
+                    }
+                }
+            }
+            PropColors.Red -> {
+                submatsBlue.forEach {
+                    val color = colorInRect(it.second)
+                    if (color > prevColor) {
+                        prevColor = color
+                        result = it.first
+                }
+            }
+        }
+    }
 
 /*
      allthecolorsLOL = submatsRed.map {
