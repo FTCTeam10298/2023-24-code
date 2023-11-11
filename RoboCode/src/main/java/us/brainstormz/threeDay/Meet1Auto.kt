@@ -53,7 +53,7 @@ class Meet1Auto: LinearOpMode() {
         waitForStart()
         /** AUTONOMOUS  PHASE */
 
-        val propPosition = PropPosition.Left//teamPropDetector.position
+        val propPosition = PropPosition.Right//teamPropDetector.position
         val normalMovementSpeed = 0.4
 
         when (propPosition) {
@@ -62,12 +62,10 @@ class Meet1Auto: LinearOpMode() {
                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
                 movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
                 movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
-                movement.driveRobotStrafe(power = 0.3, inches = 23.0, smartAccel = true)
+                movement.driveRobotStrafe(power = 0.3, inches = 20.0, smartAccel = true)
                 sleep(500)
 
                 hardware.autoClaw.position = AutoClawPos.Up.position
-//                hardware.autoClaw.position = AutoClawPos.Down.position
-//                sleep(1000)
 
                 //Deposit
                 movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
@@ -76,7 +74,7 @@ class Meet1Auto: LinearOpMode() {
                 movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
                 movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
 
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -11.0, smartAccel = true)
+                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
                 movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
 
                 deposit()
@@ -92,10 +90,9 @@ class Meet1Auto: LinearOpMode() {
                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -28.0, smartAccel = true)
                 movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
                 movement.driveRobotTurn(power = 0.5, degree = 90.0, smartAccel = true)
+                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
                 sleep(500)
-
-                hardware.autoClaw.position = AutoClawPos.Down.position
-                sleep(1000)
+//                sleep(1000)
                 hardware.autoClaw.position = AutoClawPos.Up.position
 
                 //Deposit
@@ -104,9 +101,37 @@ class Meet1Auto: LinearOpMode() {
                 movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -10.0, smartAccel = true)
                 movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
+                movement.driveRobotPosition(power = 0.2, inches = 5.0, smartAccel = true)
+
+                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+                movement.driveRobotPosition(power = 0.2, inches = -5.0, smartAccel = false)
+
+                deposit()
+
+                //Park
+                moveRotator(0)
+                movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
+                hardware.hangRotator.power = 0.0
+                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 30.0, smartAccel = true)
+            }
+            PropPosition.Right -> {
+                //Spike Pixel
+                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -2.0, smartAccel = true)
+                movement.driveRobotTurn(power = 0.5, degree = 180.0, smartAccel = true)
+                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -7.6, smartAccel = true)
+                sleep(500)
+
+                hardware.autoClaw.position = AutoClawPos.Up.position
+
+                //Deposit
+                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
+                movement.driveRobotTurn(power = normalMovementSpeed, degree = 90.0, smartAccel = true)
+                movement.driveRobotPosition(power = normalMovementSpeed, inches = -32.0, smartAccel = true)
+                movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
                 movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
 
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -5.0, smartAccel = true)
+                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 8.0, smartAccel = true)
                 movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
 
                 deposit()
@@ -115,10 +140,7 @@ class Meet1Auto: LinearOpMode() {
                 moveRotator(0)
                 movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
                 hardware.hangRotator.power = 0.0
-                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 35.0, smartAccel = true)
-            }
-            PropPosition.Right -> {
-
+                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 22.0, smartAccel = true)
             }
         }
 //        movement.driveRobotPosition(power = 0.6, inches = -38.0, smartAccel = true)
