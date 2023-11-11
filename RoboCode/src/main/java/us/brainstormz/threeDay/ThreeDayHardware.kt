@@ -34,30 +34,33 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
     lateinit var launcher: Servo
 
     lateinit var autoClaw: Servo
-    val autoClawUp = 0.9
-    val autoClawDown = 0.5
+    enum class AutoClawPos(val position: Double) {
+        Up(0.9),
+        Down(0.3)
+    }
 
     lateinit var hangRotator: DcMotorEx
     enum class RotatorPos(val position:Int) {
-        Rest(position = 140),
+        Rest(position = 120),
         LiftClearance(position = 375),
-        StraightUp(position = 455)
+        StraightUp(position = 465)
     }
 
     lateinit var screw: DcMotor
 
     enum class ArmPos(val position:Double) {
         In(0.02),
-        Out(0.62)
+        Out(0.64)
     }
 
     lateinit var lift: DcMotorEx
+    val liftWaitForArmTimeMilis = 800
     enum class LiftPos(val position:Int) {
         Min(0),
         Grabbing(0),
         Collecting(0),
         ArmClearance(700),
-        NonExistentPosition(800),
+        Low(1100),
         High(1500),
         Max(1500)
     }
@@ -137,13 +140,13 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
         lift.setPositionPIDFCoefficients(10.0)
 
         autoClaw.direction = Servo.Direction.FORWARD
-        autoClaw.position = autoClawUp
+        autoClaw.position = AutoClawPos.Up.position
 
         hangRotator.direction = DcMotorSimple.Direction.REVERSE
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         hangRotator.targetPosition = 0
         hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
-        hangRotator.setPositionPIDFCoefficients(22.0)
+        hangRotator.setPositionPIDFCoefficients(20.0)
         hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
 
         screw.direction = DcMotorSimple.Direction.REVERSE

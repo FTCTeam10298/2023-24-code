@@ -24,7 +24,6 @@ class ThreeDayTeleOp: OpMode() {
     var previousArmPosition = previousDepoState.armTarget.position
 
     var previousLiftPosition = previousDepoState.liftTarget.position
-    val liftWaitForArmTimeMilis = 800
 
     var eitherBumperWasPressedLastLoop = true
 
@@ -41,7 +40,12 @@ class ThreeDayTeleOp: OpMode() {
         /** TELE-OP PHASE */
         //x is slow, keep arm up when driving, up more when gamepad 2 a,
 
-        telemetry.addLine("motors: ${hardware.hwMap.getAll(DcMotor::class.java).map { it as DcMotorEx; it.getCurrent(CurrentUnit.MILLIAMPS)}}")
+        telemetry.addLine(
+            "motors: ${
+                hardware.hwMap.getAll(DcMotor::class.java)
+                    .map { it as DcMotorEx; it.getCurrent(CurrentUnit.MILLIAMPS) }
+            }"
+        )
 
         // DRONE DRIVE
         val yInput = gamepad1.left_stick_y.toDouble()
@@ -51,32 +55,49 @@ class ThreeDayTeleOp: OpMode() {
         val y = -yInput
         val x = xInput
         val r = -rInput * abs(rInput)
-        movement.driveSetPower((y + x - r),
-                               (y - x + r),
-                               (y - x - r),
-                               (y + x + r))
+        movement.driveSetPower(
+            (y + x - r),
+            (y - x + r),
+            (y - x - r),
+            (y + x + r)
+        )
 
         // Collector
-        hardware.collector.power = gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()
+        hardware.collector.power =
+            gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()
 
 
         //Depo
         val depoState = when {
             gamepad1.dpad_down || gamepad2.dpad_down -> {
 //                retracted
-                DepoTarget(LiftPos.Collecting, ArmPos.In, System.currentTimeMillis(), GatePosition.Closed)
+                DepoTarget(
+                    LiftPos.Collecting,
+                    ArmPos.In,
+                    System.currentTimeMillis(),
+                    GatePosition.Closed
+                )
             }
-            gamepad1.dpad_left || gamepad2.dpad_left -> {
-//                low
-                DepoTarget(LiftPos.NonExistentPosition, ArmPos.Out, System.currentTimeMillis(), GatePosition.Closed)
-            }
+
             gamepad1.dpad_up || gamepad2.dpad_up -> {
 //                middle
-                DepoTarget(LiftPos.High, ArmPos.Out, System.currentTimeMillis(), GatePosition.Closed)
+                DepoTarget(
+                    LiftPos.High,
+                    ArmPos.Out,
+                    System.currentTimeMillis(),
+                    GatePosition.Closed
+                )
             }
+
             gamepad1.x -> {
-                DepoTarget(LiftPos.Grabbing, ArmPos.In, System.currentTimeMillis(), GatePosition.Closed)
+                DepoTarget(
+                    LiftPos.Grabbing,
+                    ArmPos.In,
+                    System.currentTimeMillis(),
+                    GatePosition.Closed
+                )
             }
+
             else -> {
                 previousDepoState
             }
@@ -120,17 +141,20 @@ class ThreeDayTeleOp: OpMode() {
                 hardware.lift.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
                 hardware.lift.power = -gamepad2.right_stick_y.toDouble()
             }
+
             gamepad2.x -> {
 //                reset
                 telemetry.addLine("Zero lift")
                 hardware.lift.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
             }
+
             else -> {
                 hardware.lift.mode = DcMotor.RunMode.RUN_TO_POSITION
 
-                val timeSinceStateStarted = System.currentTimeMillis() - depoState.milisSinceStateChange
+                val timeSinceStateStarted =
+                    System.currentTimeMillis() - depoState.milisSinceStateChange
                 hardware.lift.targetPosition =
-                    if ((depoState.liftTarget.position <= LiftPos.ArmClearance.position && timeSinceStateStarted < liftWaitForArmTimeMilis) || hardware.hangRotator.isBusy) {
+                    if ((depoState.liftTarget.position <= LiftPos.ArmClearance.position && timeSinceStateStarted < hardware.liftWaitForArmTimeMilis) || hardware.hangRotator.isBusy) {
                         telemetry.addLine("Lift waiting for arm. timeSinceStateStarted $timeSinceStateStarted")
                         previousLiftPosition
                     } else {
@@ -170,8 +194,10 @@ class ThreeDayTeleOp: OpMode() {
 
         //hang
         hardware.screw.power = gamepad2.left_stick_y.toDouble()
-
-        if (hardware.lift.currentPosition > LiftPos.ArmClearance.position || depoState.liftTarget.position > LiftPos.ArmClearance.position){
+        if (gamepad2.right_stick_button) {
+            hardware.hangRotator.power = 0.0
+            hardware.hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        } else if (hardware.lift.currentPosition > LiftPos.ArmClearance.position || depoState.liftTarget.position > LiftPos.ArmClearance.position){
             hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
             hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.LiftClearance.position //up position
             hardware.hangRotator.power = 1.0
@@ -190,7 +216,7 @@ class ThreeDayTeleOp: OpMode() {
         }else if (gamepad2.right_stick_x.absoluteValue > 0.2){
             hardware.hangRotator.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
             hardware.hangRotator.power = gamepad2.right_stick_x.toDouble()
-        }  else {
+        } else {
             hardware.hangRotator.power = 0.0
         }
         telemetry.addLine("hang Rotator Position " + hardware.hangRotator.currentPosition)
