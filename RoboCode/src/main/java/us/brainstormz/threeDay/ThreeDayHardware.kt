@@ -50,15 +50,17 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
 
     enum class ArmPos(val position:Double) {
         In(0.02),
-        Out(0.62)
+        Out(0.64)
     }
 
     lateinit var lift: DcMotorEx
+    val liftWaitForArmTimeMilis = 800
     enum class LiftPos(val position:Int) {
         Min(0),
         Grabbing(0),
         Collecting(0),
         ArmClearance(700),
+        Low(1100),
         High(1500),
         Max(1500)
     }
@@ -144,7 +146,7 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
         hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         hangRotator.targetPosition = 0
         hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
-        hangRotator.setPositionPIDFCoefficients(22.0)
+        hangRotator.setPositionPIDFCoefficients(20.0)
         hangRotator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
 
         screw.direction = DcMotorSimple.Direction.REVERSE

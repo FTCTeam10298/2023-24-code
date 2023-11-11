@@ -24,7 +24,6 @@ class ThreeDayTeleOp: OpMode() {
     var previousArmPosition = previousDepoState.armTarget.position
 
     var previousLiftPosition = previousDepoState.liftTarget.position
-    val liftWaitForArmTimeMilis = 800
 
     var eitherBumperWasPressedLastLoop = true
 
@@ -126,7 +125,7 @@ class ThreeDayTeleOp: OpMode() {
 
                 val timeSinceStateStarted = System.currentTimeMillis() - depoState.milisSinceStateChange
                 hardware.lift.targetPosition =
-                    if ((depoState.liftTarget.position <= LiftPos.ArmClearance.position && timeSinceStateStarted < liftWaitForArmTimeMilis) || hardware.hangRotator.isBusy) {
+                    if ((depoState.liftTarget.position <= LiftPos.ArmClearance.position && timeSinceStateStarted < hardware.liftWaitForArmTimeMilis) || hardware.hangRotator.isBusy) {
                         telemetry.addLine("Lift waiting for arm. timeSinceStateStarted $timeSinceStateStarted")
                         previousLiftPosition
                     } else {
