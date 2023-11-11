@@ -22,12 +22,12 @@ class Meet1Auto: LinearOpMode() {
     val wizard = TelemetryWizard(console, this)
     val movement = EncoderDriveMovement(hardware, console)
 
-
     override fun runOpMode() {
         /** INIT PHASE */
 
         hardware.init(hardwareMap)
         hardware.clawA.position = GatePosition.Closed.position
+        hardware.autoClaw.position = AutoClawPos.Down.position
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "autoCycles", firstMenu = true)
 //        wizard.newMenu("autoCycles", "How many auto cycles should we do?", listOf("0", "1"))
@@ -53,7 +53,7 @@ class Meet1Auto: LinearOpMode() {
         waitForStart()
         /** AUTONOMOUS  PHASE */
 
-        val propPosition = PropPosition.Center//teamPropDetector.position
+        val propPosition = PropPosition.Left//teamPropDetector.position
         val normalMovementSpeed = 0.4
 
         when (propPosition) {
@@ -65,9 +65,9 @@ class Meet1Auto: LinearOpMode() {
                 movement.driveRobotStrafe(power = 0.3, inches = 23.0, smartAccel = true)
                 sleep(500)
 
-                hardware.autoClaw.position = AutoClawPos.Down.position
-                sleep(1000)
                 hardware.autoClaw.position = AutoClawPos.Up.position
+//                hardware.autoClaw.position = AutoClawPos.Down.position
+//                sleep(1000)
 
                 //Deposit
                 movement.driveRobotStrafe(power = normalMovementSpeed, inches = 6.0, smartAccel = true)
