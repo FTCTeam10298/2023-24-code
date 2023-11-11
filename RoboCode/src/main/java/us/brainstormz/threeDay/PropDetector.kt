@@ -97,16 +97,16 @@ class PropDetector(private val telemetry: Telemetry, private val colorToDetect: 
         telemetry.addLine("propPosition: $propPosition")
 
 //        Imgproc.cvtColor(frame, mat, Imgproc.COLOR_RGB2HSV)
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB)
+//        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB)
 
         rectanglesMappedToBorderColors.forEach { it ->
             val borderColor = if (it.first.first == propPosition) white else it.second
-            Imgproc.rectangle(mat, it.first.second, borderColor, 3)
+            Imgproc.rectangle(frame, it.first.second, borderColor, 3)
         }
 
         telemetry.update()
 
-        return mat
+        return frame
     }
 }
 
