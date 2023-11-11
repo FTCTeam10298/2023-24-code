@@ -5,6 +5,7 @@ import org.opencv.imgproc.Imgproc
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 
 class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector.PropColors) {
@@ -16,29 +17,22 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
         Red, Blue
     }
 
-    var theColorWeAreLookingFor: PropColors = PropColors.Red
-
     private val blue = Scalar(0.0, 0.0, 255.0)
     private val red = Scalar(225.0, 0.0, 0.0)
     private val black = Scalar(255.0, 0.0, 255.0)
     private val transparent = Scalar(0.0, 255.0, 0.0)
 
-    private val centerDetectorHalfWidth: Double = 25.0
-    private val centerDetectorLocation: Double = 285.0
-    private val leftDetectorHalfWidth: Double = 1.5 * centerDetectorHalfWidth
-    private val leftDetectorLocation: Double = 115.0
     private val tseThreshold = 135
 
-    //Gabe:s marv3lous f0rmul@: (X2 + X1)/2 + Tweak Variable = calculate midpoint, have tweak variable be width
-    private val orangePlaces = listOf(
-            Rect(Point((leftDetectorLocation/2) - leftDetectorHalfWidth, 100.0), Point((leftDetectorLocation/2) + leftDetectorHalfWidth, 200.0)),
-            Rect(Point(((centerDetectorLocation)/2) - centerDetectorHalfWidth, 100.0), Point((centerDetectorLocation/2) + centerDetectorHalfWidth, 240.0)),
-            Rect(Point(220.0, 100.0), Point(310.0, 200.0)) )
+    private val boxLocations = listOf(
+        Rect(Point(0.0, 60.0), Point(40.0, 100.0)),
+        Rect(Point(150.0, 60.0), Point(180.0, 100.0)),
+        Rect(Point(290.0, 60.0), Point(320.0, 100.0)) )
 
     private val regions = listOf(
-            PropPosition.Left to orangePlaces[0],
-            PropPosition.Center to orangePlaces[1],
-            PropPosition.Right to orangePlaces[2],
+            PropPosition.Left to boxLocations[0],
+            PropPosition.Center to boxLocations[1],
+            PropPosition.Right to boxLocations[2],
     )
 
     private val colors = listOf(
@@ -90,7 +84,7 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
             return Core.mean(rect).`val`[0].toInt()
         }
 
-            if (theColorWeAreLookingFor != PropColors.Red) {
+            if (propColor != PropColors.Red) {
                 //Blue value
                 Core.inRange(intermediateHoldingFrame, MINIMUM_BLUE, MAXIMUM_BLUE, intermediateHoldingFrame);
             } else {
@@ -132,7 +126,7 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
         }
 
 
-        when (theColorWeAreLookingFor) {
+        when (propColor) {
             PropColors.Blue -> {
                 submatsBlue.forEach {
                     val color = colorInRect(it.second)
@@ -148,10 +142,10 @@ class TeamPropDetector(val telemetry: Telemetry, val propColor: TeamPropDetector
                     if (color > prevColor) {
                         prevColor = color
                         result = it.first
+                    }
                 }
             }
         }
-    }
 
 /*
      allthecolorsLOL = submatsRed.map {
@@ -201,7 +195,7 @@ class ThuUnderstudyTest/** Change Depending on robot */: LinearOpMode() {
         opencv.init(hardwareMap)
         opencv.internalCamera = false
         opencv.cameraName = "Webcam 1" //DEFINE THIS IN HW CONFIG ON HUB!!
-//        opencv.cameraOrientation = OpenCvCameraRotation.SIDEWAYS_LEFT
+        opencv.cameraOrientation = OpenCvCameraRotation.UPSIDE_DOWN
         hardwareMap.allDeviceMappings.forEach { m ->
             println("HW: ${m.deviceTypeClass} ${m.entrySet().map{it.key}.joinToString(",")}")
         }
