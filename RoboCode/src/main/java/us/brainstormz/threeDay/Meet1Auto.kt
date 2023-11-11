@@ -16,6 +16,11 @@ import us.brainstormz.threeDay.ThreeDayHardware.ArmPos
 @Autonomous
 class Meet1Auto: LinearOpMode() {
 
+    enum class StartingSide {
+        Audience,
+        Backboard
+    }
+
     val hardware = ThreeDayHardware(telemetry, this)
     val console = TelemetryConsole(telemetry)
     val wizard = TelemetryWizard(console, this)
@@ -28,11 +33,11 @@ class Meet1Auto: LinearOpMode() {
         hardware.clawA.position = GatePosition.Closed.position
         hardware.autoClaw.position = AutoClawPos.Down.position
 
-        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), firstMenu = true)
-//        wizard.newMenu("autoCycles", "How many auto cycles should we do?", listOf("0", "1"))
+        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
+        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"))
         wizard.summonWizardBlocking(gamepad1)
         val allianceColor = if (wizard.wasItemChosen("alliance", "Blue")) PropColors.Blue else PropColors.Red
-
+        val startingSide = if (wizard.wasItemChosen("startingPos", "Audience")) StartingSide.Audience else StartingSide.Backboard
 
         val opencv = OpenCvAbstraction(this)
         val propDetector = PropDetector(telemetry, allianceColor)
@@ -42,14 +47,6 @@ class Meet1Auto: LinearOpMode() {
         opencv.cameraOrientation = OpenCvCameraRotation.UPSIDE_DOWN
         opencv.onNewFrame(propDetector::processFrame)
 
-        val movementSignBasedOnAlliance = when (allianceColor) {
-            PropColors.Blue -> { //blue
-                1
-            }
-            PropColors.Red -> { //red
-                -1
-            }
-        }
 
         waitForStart()
         /** AUTONOMOUS  PHASE */
