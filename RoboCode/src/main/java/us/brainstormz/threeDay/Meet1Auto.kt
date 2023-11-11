@@ -290,21 +290,22 @@ class Meet1Auto: LinearOpMode() {
                             }
                             PropPosition.Right -> {
 //                                //Spike Pixel
-                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -3.0, smartAccel = true)
                                 movement.driveRobotStrafe(power = normalMovementSpeed, inches = 24.0, smartAccel = true)
+                                movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -1.0, smartAccel = true)
                                 sleep(500)
 
                                 hardware.autoClaw.position = AutoClawPos.Up.position
                                 sleep(500)
 
                                 //Deposit
-                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 4.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 8.0, smartAccel = true)
                                 movement.driveRobotTurn(power = normalMovementSpeed, degree = 90.0, smartAccel = true)
                                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -20.0, smartAccel = true)
                                 movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
                                 movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
-
-                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 8.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 15.0, smartAccel = true)
                                 movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
 
                                 deposit()
