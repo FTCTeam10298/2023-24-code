@@ -241,6 +241,8 @@ class Meet1Auto: LinearOpMode() {
                     StartingSide.Backboard -> {
                         when (propPosition) {
                             PropPosition.Left -> {
+                                telemetry.addLine("Running left red auto")
+                                telemetry.update()
                                 //Spike Pixel
                                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
                                 sleep(500)
@@ -263,9 +265,11 @@ class Meet1Auto: LinearOpMode() {
                                 moveRotator(0)
                                 movement.driveRobotPosition(power = normalMovementSpeed, inches = 5.0, smartAccel = true)
                                 hardware.hangRotator.power = 0.0
-                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -24.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = -20.0, smartAccel = true)
                             }
                             PropPosition.Center -> {
+                                telemetry.addLine("Running center red auto")
+                                telemetry.update()
                                 //Spike Pixel
                                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -28.0, smartAccel = true)
                                 movement.driveRobotTurn(power = 0.5, degree = 90.0, smartAccel = true)
@@ -276,9 +280,9 @@ class Meet1Auto: LinearOpMode() {
                                 movement.driveRobotStrafe(power = 0.3, inches = 2.0, smartAccel = true)
                                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -38.0, smartAccel = true)
                                 movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
-                                movement.driveRobotPosition(power = 0.2, inches = 5.0, smartAccel = false)
-                                movement.driveRobotPosition(power = normalMovementSpeed, inches = 3.0, smartAccel = true)
-                                movement.driveRobotPosition(power = 0.2, inches = -5.0, smartAccel = false)
+//                                movement.driveRobotPosition(power = 0.2, inches = 5.0, smartAccel = false)
+////                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 3.0, smartAccel = true)
+//                                movement.driveRobotPosition(power = 0.2, inches = -5.0, smartAccel = false)
 
                                 deposit()
 
@@ -289,7 +293,9 @@ class Meet1Auto: LinearOpMode() {
                                 movement.driveRobotStrafe(power = normalMovementSpeed, inches = -28.0, smartAccel = true)
                             }
                             PropPosition.Right -> {
-//                                //Spike Pixel
+                                telemetry.addLine("Running right red auto")
+                                telemetry.update()
+//                              //Spike Pixel
                                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -3.0, smartAccel = true)
                                 movement.driveRobotStrafe(power = normalMovementSpeed, inches = 24.0, smartAccel = true)
                                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -30.0, smartAccel = true)
@@ -305,7 +311,7 @@ class Meet1Auto: LinearOpMode() {
                                 movement.driveRobotPosition(power = normalMovementSpeed, inches = -20.0, smartAccel = true)
                                 movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
                                 movement.driveRobotPosition(power = 0.2, inches = 9.0, smartAccel = true)
-                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 15.0, smartAccel = true)
+                                movement.driveRobotStrafe(power = normalMovementSpeed, inches = 16.5, smartAccel = true)
                                 movement.driveRobotPosition(power = 0.2, inches = -9.0, smartAccel = false)
 
                                 deposit()

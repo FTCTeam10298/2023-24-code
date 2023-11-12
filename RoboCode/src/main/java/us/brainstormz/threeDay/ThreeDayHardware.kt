@@ -36,13 +36,13 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
     lateinit var autoClaw: Servo
     enum class AutoClawPos(val position: Double) {
         Up(0.9),
-        Down(0.0)
+        Down(0.03)
     }
 
     lateinit var hangRotator: DcMotorEx
     enum class RotatorPos(val position:Int) {
         Rest(position = 120),
-        LiftClearance(position = 400),
+        LiftClearance(position = 410),
         StraightUp(position = 475)
     }
 
