@@ -7,8 +7,8 @@ import us.brainstormz.RobotStateManager
 class ExampleReactiveAuto : OpMode(){
     val hardware = ExampleHardware()
 
-    data class ExampleTargetRobot(val driveMotorPositions: List<Int>)
-    data class ExampleActualState(val driveMotors: List<DcMotor>, val timestampMilis: Long)
+    open class ExampleTargetRobot(val driveMotorPositions: List<Int>)
+    class ExampleActualState(driveMotorPositions: List<Int>, val timestampMilis: Long): ExampleTargetRobot(driveMotorPositions)
 
     override fun init() {
         hardware.init(hardwareMap)
@@ -18,7 +18,7 @@ class ExampleReactiveAuto : OpMode(){
     override fun loop() {
         robotStateManager.loop(
             actualStateGetter = {
-                ExampleActualState(driveMotors= hardware.driveMotors, timestampMilis= System.currentTimeMillis())
+                ExampleActualState(driveMotorPositions= hardware.driveMotors.map { it.currentPosition }, timestampMilis= System.currentTimeMillis())
             },
             targetStateFetcher = { previousTargetState, actualState ->
                 ExampleTargetRobot(driveMotorPositions = previousTargetState?.driveMotorPositions?.map { it + 1 } ?: listOf(0, 0, 0, 0))

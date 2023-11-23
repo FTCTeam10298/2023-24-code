@@ -1,6 +1,6 @@
 package us.brainstormz
 
-class RobotStateManager<TargetState, ActualState> {
+class RobotStateManager<TargetState, ActualState: TargetState> {
     private var previousTargetState: TargetState? = null
     fun loop(   actualStateGetter: ()->ActualState,
                 targetStateFetcher:  (previousTargetState: TargetState?, actualState: ActualState)->TargetState,
