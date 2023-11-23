@@ -1,13 +1,13 @@
 package us.brainstormz.examples
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import us.brainstormz.IterativeOpMode
-import us.brainstormz.IterativeOpMode.*
+import us.brainstormz.OldIterativeOpMode
+import us.brainstormz.OldIterativeOpMode.*
 
 //@Autonomous
 class ExampleIterativeAuto/** Change depending on robot */: OpMode() {
     val hardware = ExampleHardware()/** Change depending on robot */
-    val iterativeOpMode = IterativeOpMode(this)
+    val iterativeOpMode = OldIterativeOpMode(this)
 
     /** AUTONOMOUS TASKS */
     var autoTasks: List<AutoTask> = listOf(

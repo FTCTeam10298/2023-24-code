@@ -29,6 +29,8 @@ interface MecanumHardware: HardwareClass {
     val rFDrive: DcMotor
     val lBDrive: DcMotor
     val rBDrive: DcMotor
+    val driveMotors: List<DcMotor>
+        get() = listOf(lFDrive, rFDrive, lBDrive, rBDrive)
 }
 
 interface ThreeWheelOdometry: HardwareClass {

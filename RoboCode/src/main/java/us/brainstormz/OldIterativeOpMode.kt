@@ -1,11 +1,8 @@
 package us.brainstormz
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import us.brainstormz.hardwareClasses.HardwareClass
-import us.brainstormz.telemetryWizard.TelemetryConsole
-import us.brainstormz.telemetryWizard.TelemetryWizard
 
-class IterativeOpMode(private val opMode: OpMode) {
+class OldIterativeOpMode(private val opMode: OpMode) {
 
     private lateinit var autoTasks: List<AutoTask>
     private lateinit var autoTaskIterator: ListIterator<AutoTask> // FIXME: Duplicate of AutoTaskManager's taskListIterator?  Potential race condition?
