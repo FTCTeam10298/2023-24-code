@@ -1,9 +1,7 @@
 package us.brainstormz.examples
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.hardware.DcMotor
-import us.brainstormz.OldIterativeOpMode
-import us.brainstormz.RobotStateManager
+import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 
 class ExampleListBasedReactiveAuto: OpMode() {
     val hardware = ExampleHardware()
@@ -21,13 +19,16 @@ class ExampleListBasedReactiveAuto: OpMode() {
         ExampleTargetRobot(driveMotorPositions = listOf(10,10,10,10))
     )
 
-    private val robotStateManager = RobotStateManager<ExampleTargetRobot, ExampleActualState>()
+    private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<ExampleTargetRobot, ExampleActualState>()
     override fun loop() {
-        robotStateManager.loop(
+        functionalReactiveAutoRunner.loop(
             actualStateGetter = {
-                ExampleActualState(driveMotorPositions= hardware.driveMotors.map { it.currentPosition }, timestampMilis= System.currentTimeMillis())
+                ExampleActualState(
+                    driveMotorPositions= hardware.driveMotors.map { it.currentPosition },
+                    timestampMilis= System.currentTimeMillis()
+                )
             },
-            targetStateFetcher = { previousTargetState, actualState ->
+            targetStateFetcher = { previousTargetState, actualState, previousActualState ->
                 if (previousTargetState == null) {
                     targets.first()
                 } else {
