@@ -28,6 +28,7 @@
  */
 package us.brainstormz.localizer
 
+import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection
@@ -61,27 +62,20 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
 @TeleOp(name = "AprilTagger", group = "Concept") //@Disabled
-
 class AprilTagger : LinearOpMode() {
-    /**
-     * The variable to store our instance of the AprilTag processor.
-     */
-    private var aprilTag: AprilTagProcessor? = null
 
-    /**
-     * The variable to store our instance of the vision portal.
-     */
-    private var visionPortal: VisionPortal? = null
+    private val foo = Foo("Webcam 1")
     override fun runOpMode() {
-        initAprilTag()
+
+        foo.init(hardwareMap)
 
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream")
         telemetry.addData(">", "Touch Play to start OpMode")
+        sleep(2000)
         telemetry.update()
-        waitForStart()
-        if (opModeIsActive()) {
-            while (opModeIsActive()) {
+        if (true) {
+            while (true) {
                 telemetryAprilTag()
 
                 // Push telemetry to the Driver Station.
@@ -89,9 +83,9 @@ class AprilTagger : LinearOpMode() {
 
                 // Save CPU resources; can resume streaming when needed.
                 if (gamepad1.dpad_down) {
-                    visionPortal!!.stopStreaming()
+//                    visionPortal!!.stopStreaming()
                 } else if (gamepad1.dpad_up) {
-                    visionPortal!!.resumeStreaming()
+                    foo!!.resumeStreaming()
                 }
 
                 // Share the CPU.
@@ -100,58 +94,15 @@ class AprilTagger : LinearOpMode() {
         }
 
         // Save more CPU resources when camera is no longer needed.
-        visionPortal!!.close()
+        foo!!.close()
     } // end method runOpMode()
-
-    /**
-     * Initialize the AprilTag processor.
-     */
-    private fun initAprilTag() {
-
-        // Create the AprilTag processor.
-        // There are many options commented out in the Java version, see this for more configurability...
-        aprilTag = AprilTagProcessor.Builder() // The following default settings are available to un-comment and edit as needed.
-                .build()
-
-        // Create the vision portal by using a builder.
-        val builder = VisionPortal.Builder()
-
-        // Set the camera (webcam vs. built-in RC phone camera).
-        if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName::class.java, "Webcam 1"))
-        } else {
-            builder.setCamera(BuiltinCameraDirection.BACK)
-        }
-
-        // Choose a camera resolution. Not all cameras support all resolutions.
-        //...
-
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        //...
-
-        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-        //...
-
-        // Choose whether or not LiveView stops if no processors are enabled.
-        // If set "true", monitor shows solid orange screen if no processors enabled.
-        // If set "false", monitor shows camera view without annotations.
-        //...
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag)
-
-        // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build()
-
-        // Disable or re-enable the aprilTag processor at any time.
-        //...
-    } //...
 
     /**
      * Add telemetry about AprilTag detections.
      */
     private fun telemetryAprilTag() {
-        val currentDetections: List<AprilTagDetection> = aprilTag!!.detections
+
+        val currentDetections: List<AprilTagDetection> = foo.detections()
         telemetry.addData("# AprilTags Detected", currentDetections.size)
 
         // Step through the list of detections and display info for each one.
