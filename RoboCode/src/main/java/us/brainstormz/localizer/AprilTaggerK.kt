@@ -31,11 +31,8 @@ package us.brainstormz.localizer
 import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 
 /*
  * This OpMode illustrates the basics of AprilTag recognition and pose estimation,
@@ -64,10 +61,13 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 @TeleOp(name = "AprilTagger", group = "Concept") //@Disabled
 class AprilTagger : LinearOpMode() {
 
-    private val foo = Foo("Webcam 1")
+    private val aprilTagThings = listOf(
+            Foo("Webcam 1", Size(1920, 1080)),
+            Foo("Webcam 2", Size(1280, 720))
+    )
     override fun runOpMode() {
-
-        foo.init(hardwareMap)
+        val viewContainerIds = VisionPortal.makeMultiPortalView(aprilTagThings.size, VisionPortal.MultiPortalLayout.VERTICAL).toList()
+        aprilTagThings.zip(viewContainerIds).forEach{ (foo, viewContainerId) -> foo.init(viewContainerId, hardwareMap)}
 
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream")
@@ -85,7 +85,7 @@ class AprilTagger : LinearOpMode() {
                 if (gamepad1.dpad_down) {
 //                    visionPortal!!.stopStreaming()
                 } else if (gamepad1.dpad_up) {
-                    foo!!.resumeStreaming()
+                    aprilTagThings.forEach { it.resumeStreaming() }
                 }
 
                 // Share the CPU.
@@ -94,7 +94,7 @@ class AprilTagger : LinearOpMode() {
         }
 
         // Save more CPU resources when camera is no longer needed.
-        foo!!.close()
+        aprilTagThings.forEach { it.close() }
     } // end method runOpMode()
 
     /**
@@ -102,7 +102,7 @@ class AprilTagger : LinearOpMode() {
      */
     private fun telemetryAprilTag() {
 
-        val currentDetections: List<AprilTagDetection> = foo.detections()
+        val currentDetections: List<AprilTagDetection> = aprilTagThings.flatMap{it.detections()}
         telemetry.addData("# AprilTags Detected", currentDetections.size)
 
         // Step through the list of detections and display info for each one.
