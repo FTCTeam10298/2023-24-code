@@ -34,22 +34,26 @@ class RobotTwoTeleOp: OpMode() {
 
         //Collector
         val collectorTriggerActivation = 0.2
-        when {
+        when {  
             gamepad1.right_trigger > collectorTriggerActivation -> {
-                spinCollector(1.0)
-                //turn on collector servos at full speed
-                //move out at trigger pressed velocity
+                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
+                powerExtendo(gamepad1.right_trigger.toDouble())
             }
             gamepad1.left_trigger > collectorTriggerActivation -> {
-                spinCollector(-1.0)
-
-                //turn on collector servos at full speed
-                //move in at trigger pressed velocity
+                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
+                powerExtendo(-gamepad1.left_trigger.toDouble())
             }
             transferState() != emptyPixelHandler -> {
-
+                spinCollector(RobotTwoHardware.CollectorPowers.Eject.power)
+                moveExtendoTowardPosition(RobotTwoHardware.ExtendoPositions.Min.position)
+            }
+            else -> {
+                powerExtendo(0.0)
             }
         }
+
+        //Lift
+        powerLift(gamepad2.left_stick_x.toDouble())
     }
 
     enum class PixelHandlerState {
@@ -71,8 +75,54 @@ class RobotTwoTeleOp: OpMode() {
         return TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
     }
 
+
+    enum class LiftToggleOptions {
+        SetLine1,
+        SetLine2,
+        SetLine3
+    }
+    private fun powerLift(power: Double) {
+        val currentPosition = hardware.liftMotorMaster.currentPosition.toDouble()
+        val allowedPower = power
+        if (currentPosition > RobotTwoHardware.LiftPositions.Max.position) {
+            power.coerceAtMost(0.0)
+        } else if (currentPosition < RobotTwoHardware.LiftPositions.Min.position) {
+            power.coerceAtLeast(0.0)
+        } else {
+            power
+        }
+
+        hardware.liftMotorMaster.power = allowedPower
+        hardware.liftMotorSlave.power = allowedPower
+    }
+    private fun moveLiftTowardPosition(targetPosition: Double) {
+        val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
+        val power = hardware.extendoPositionPID.calcPID(targetPosition, currentPosition)
+        powerExtendo(power)
+    }
+
+
     private fun spinCollector(power: Double) {
         hardware.collectorServo1.power = power
         hardware.collectorServo2.power = power
+    }
+    private fun powerExtendo(power: Double) {
+        val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
+        val allowedPower = power
+            if (currentPosition > RobotTwoHardware.ExtendoPositions.Max.position) {
+                power.coerceAtMost(0.0)
+            } else if (currentPosition < RobotTwoHardware.ExtendoPositions.Min.position) {
+                power.coerceAtLeast(0.0)
+            } else {
+                power
+            }
+
+        hardware.extendoMotorMaster.power = allowedPower
+        hardware.extendoMotorSlave.power = allowedPower
+    }
+    private fun moveExtendoTowardPosition(targetPosition: Double) {
+        val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
+        val power = hardware.extendoPositionPID.calcPID(targetPosition, currentPosition)
+        powerExtendo(power)
     }
 }

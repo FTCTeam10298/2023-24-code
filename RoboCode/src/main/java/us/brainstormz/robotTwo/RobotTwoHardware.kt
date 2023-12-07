@@ -16,14 +16,23 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.hardwareClasses.EnhancedDCMotor
 import us.brainstormz.hardwareClasses.MecOdometry
 import us.brainstormz.hardwareClasses.SmartLynxModule
+import us.brainstormz.pid.PID
 import java.lang.Thread.sleep
 
-class RobotTwoHardware(val telemetry:Telemetry, val opmode: OpMode): MecOdometry {
+class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecOdometry {
     override lateinit var lFDrive: DcMotor
     override lateinit var rFDrive: DcMotor
     override lateinit var lBDrive: DcMotor
     override lateinit var rBDrive: DcMotor
 
+    enum class LiftPositions(val position: Double) {
+        Min(0.0),
+        BackboardBottomRow(1.0),
+        SetLine1(2.0),
+        SetLine2(3.0),
+        SetLine3(4.0),
+        Max(500.0)
+    }
     lateinit var liftMotorMaster: DcMotorEx
     lateinit var liftMotorSlave: DcMotor
     lateinit var liftMagnetLimit: TouchSensor
@@ -35,13 +44,24 @@ class RobotTwoHardware(val telemetry:Telemetry, val opmode: OpMode): MecOdometry
 
     lateinit var leftClawServo: Servo
     lateinit var rightClawServo: Servo
-    lateinit var topColorSensor: RevColorSensorV3
-    lateinit var bottomColorSensor: RevColorSensorV3
+    lateinit var leftColorSensor: RevColorSensorV3
+    lateinit var rightColorSensor: RevColorSensorV3
 
+    enum class ExtendoPositions(val position: Double) {
+        Min(0.0),
+        Max(500.0),
+    }
+    val extendoOperationRange = ExtendoPositions.Min.position..ExtendoPositions.Max.position
+    val extendoPositionPID = PID(kp = 1.0)
     lateinit var extendoMotorMaster: DcMotorEx
     lateinit var extendoMotorSlave: DcMotor
     lateinit var extendoMagnetLimit: TouchSensor
 
+    enum class CollectorPowers(val power: Double) {
+        Off(0.0),
+        Intake(1.0),
+        Eject(1.0)
+    }
     lateinit var collectorServo1: CRServo
     lateinit var collectorServo2: CRServo
     lateinit var leftCollectorPixelSensor: RevColorSensorV3
@@ -53,6 +73,7 @@ class RobotTwoHardware(val telemetry:Telemetry, val opmode: OpMode): MecOdometry
     lateinit var rightTransferSensor: RevColorSensorV3
 
     lateinit var hangReleaseServo: Servo
+
     override lateinit var lOdom: EnhancedDCMotor
     override lateinit var rOdom: EnhancedDCMotor
     override lateinit var cOdom: EnhancedDCMotor
@@ -90,14 +111,14 @@ class RobotTwoHardware(val telemetry:Telemetry, val opmode: OpMode): MecOdometry
         rBDrive =       ctrlHub.getMotor(1)
         lBDrive =       ctrlHub.getMotor(2)
         lFDrive =       ctrlHub.getMotor(3)
-//        collector =     exHub.getMotor(0)
-//        lift =          exHub.getMotor(1)
-//        hangRotator =   exHub.getMotor(2)
-//        screw =         exHub.getMotor(3)
-//
-//        //Servos
-//        autoClaw =      ctrlHub.getServo(0)
-//        clawA =         ctrlHub.getServo(2)
+        extendoMotorMaster =    exHub.getMotor(0)
+        extendoMotorSlave =     exHub.getMotor(1)
+        liftMotorMaster =       exHub.getMotor(2)
+        liftMotorSlave =        exHub.getMotor(3)
+
+        //Servos
+        collectorServo1 =   ctrlHub.getCRServo(0)
+        collectorServo2 =   ctrlHub.getCRServo(1)
 //        leftArm =       ctrlHub.getServo(3)
 //        rightArm =      ctrlHub.getServo(4)
 //        launcher =      ctrlHub.getServo(5)
@@ -107,10 +128,36 @@ class RobotTwoHardware(val telemetry:Telemetry, val opmode: OpMode): MecOdometry
         rFDrive.direction = DcMotorSimple.Direction.REVERSE
         lBDrive.direction = DcMotorSimple.Direction.FORWARD
         rBDrive.direction = DcMotorSimple.Direction.REVERSE
+        lFDrive.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        rFDrive.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        lBDrive.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        rBDrive.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         lFDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         rFDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         lBDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         rBDrive.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        //Collector
+        extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        extendoMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        extendoMotorSlave.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+
+        extendoMotorMaster.direction = DcMotorSimple.Direction.FORWARD
+        extendoMotorSlave.direction = DcMotorSimple.Direction.REVERSE
+
+        extendoMotorMaster.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        extendoMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        //Lift
+        liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        liftMotorSlave.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+
+        liftMotorMaster.direction = DcMotorSimple.Direction.FORWARD
+        liftMotorSlave.direction = DcMotorSimple.Direction.REVERSE
+
+        liftMotorMaster.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        liftMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
     }
 
 
