@@ -47,7 +47,7 @@ class ExampleListBasedReactiveAuto: OpMode() {
                     val targetOverActual = it.toDouble() / actualState.driveMotorPositions[i]
                     hardware.driveMotors[i].power = 1 - targetOverActual
                 }
-            },
+            }
         )
     }
 }

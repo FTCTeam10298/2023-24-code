@@ -1,15 +1,28 @@
 package us.brainstormz.operationFramework
 
-class GoalBasedAuto {
 
-    interface ScoringStrategy {
-        val steps: List<RobotState>
-    }
+class GoalBasedAuto<ScoringStrategy,
+                    TargetWorld,
+                    ActualWorld: TargetWorld >{
 
-    interface RobotState
-    interface ExtraRobotState
-    open class TargetWorld(val targetRobot: RobotState, val targetExtraRobot: ExtraRobotState)
-    class ActualWorld(val scoringStrategy: ScoringStrategy, val actualRobot: RobotState, val actualExtraRobot: ExtraRobotState, val timestampMilis: Long): TargetWorld(actualRobot, actualExtraRobot)
+//    interface ScoringStrategy{
+//        val steps: List<ScoringStep>
+//    }
+//
+//    interface ScoringStep {
+//        fun successCondition(actualWorld: ActualWorld): Boolean
+//    }
+//    interface RobotState
+//    interface NonRobotState
+//    interface TargetWorld {
+//        val targetRobot: RobotState
+//        val targetExtraRobot: NonRobotState
+//    }
+//    interface ActualWorld: TargetWorld {
+//        val actualRobot: RobotState
+//        val actualExtraRobot: NonRobotState
+//        val timestampMilis: Long
+//    }
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     fun loop(
