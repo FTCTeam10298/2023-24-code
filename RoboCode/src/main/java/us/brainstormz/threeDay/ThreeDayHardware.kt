@@ -42,6 +42,7 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
     lateinit var hangRotator: DcMotorEx
     enum class RotatorPos(val position:Int) {
         Rest(position = 120),
+        CollectionClearance(position = 260),
         LiftClearance(position = 410),
         StraightUp(position = 475)
     }

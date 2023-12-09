@@ -99,24 +99,32 @@ class ThreeDayTeleOp: OpMode() {
                     GatePosition.Closed
                 )
             }
-
             else -> {
                 previousDepoState
             }
         }
 
         //Claw
-        val collectorIsOn = hardware.collector.power != 0.0
-        val liftIsMoving = (previousDepoState.liftTarget != depoState.liftTarget)
+        val collectorIsOn = hardware.collector.power.absoluteValue > 0.2
+        val liftTargetReachedTolerance = 100
+        val liftIsMoving = (hardware.lift.targetPosition - hardware.lift.currentPosition).absoluteValue > liftTargetReachedTolerance //(previousDepoState.liftTarget != depoState.liftTarget)
         val eitherBumperIsPressed = (gamepad1.right_bumper || gamepad2.right_bumper)
         val desiredGatePosition = if (eitherBumperIsPressed && !eitherBumperWasPressedLastLoop) {
             when (depoState.gateTarget) {
-                GatePosition.Intake -> GatePosition.Closed
-                GatePosition.Deposit -> GatePosition.Closed
+                GatePosition.Intake -> {
+                    GatePosition.Closed
+                }
+                GatePosition.Deposit -> {
+                    GatePosition.Closed
+                }
                 GatePosition.Closed -> {
                     when (depoState.liftTarget) {
-                        LiftPos.High -> GatePosition.Deposit
-                        else -> GatePosition.Intake
+                        LiftPos.High -> {
+                            GatePosition.Deposit
+                        }
+                        else -> {
+                            GatePosition.Intake
+                        }
                     }
                 }
             }
@@ -196,7 +204,10 @@ class ThreeDayTeleOp: OpMode() {
 
         //hang
         hardware.screw.power = gamepad2.left_stick_y.toDouble()
-        if (gamepad2.right_stick_button) {
+        if (gamepad2.right_stick_x.absoluteValue > 0.2){
+            hardware.hangRotator.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+            hardware.hangRotator.power = gamepad2.right_stick_x.toDouble()
+        } else if (gamepad2.right_stick_button) {
             hardware.hangRotator.power = 0.0
             hardware.hangRotator.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         } else if (hardware.lift.currentPosition > LiftPos.ArmClearance.position || depoState.liftTarget.position > LiftPos.ArmClearance.position){
@@ -207,18 +218,15 @@ class ThreeDayTeleOp: OpMode() {
             hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
             hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.StraightUp.position
             hardware.hangRotator.power = 1.0
-        } else if (hardware.collector.power != 0.0) {
+        } else if (collectorIsOn) {
             hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
-            hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.LiftClearance.position
+            hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.CollectionClearance.position
             hardware.hangRotator.power = 1.0
         } else if (hardware.hangRotator.mode == DcMotor.RunMode.RUN_TO_POSITION && hardware.hangRotator.power == 0.0) {
             hardware.hangRotator.mode = DcMotor.RunMode.RUN_TO_POSITION
             hardware.hangRotator.targetPosition = ThreeDayHardware.RotatorPos.Rest.position
             hardware.hangRotator.power = 0.5
-        }else if (gamepad2.right_stick_x.absoluteValue > 0.2){
-            hardware.hangRotator.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-            hardware.hangRotator.power = gamepad2.right_stick_x.toDouble()
-        } else {
+        }else {
             hardware.hangRotator.power = 0.0
         }
         telemetry.addLine("hang Rotator Position " + hardware.hangRotator.currentPosition)
