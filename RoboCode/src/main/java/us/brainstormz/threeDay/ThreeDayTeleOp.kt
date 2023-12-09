@@ -34,18 +34,20 @@ class ThreeDayTeleOp: OpMode() {
 
         telemetry.addLine("pid: ${hardware.lift.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION)}")
         telemetry.addLine("lift tolerance: ${hardware.lift.targetPositionTolerance}")
+
     }
 
     override fun loop() {
         /** TELE-OP PHASE */
-        //x is slow, keep arm up when driving, up more when gamepad 2 a,
-
-        telemetry.addLine(
-            "motors: ${
-                hardware.hwMap.getAll(DcMotor::class.java)
-                    .map { it as DcMotorEx; it.getCurrent(CurrentUnit.MILLIAMPS) }
-            }"
-        )
+//        hardware.hwMap.getAll(DcMotor::class.java).mapIndexed {i, it -> it as DcMotorEx
+//            telemetry.addLine(
+//                "motor #$i \n" +
+//                "   miliamps ${it.getCurrent(CurrentUnit.MILLIAMPS)} " +
+//                "   position ${it.currentPosition} \n" +
+//                "   target ${it.currentPosition} \n" +
+//                "   mode ${it.currentPosition}"
+//            )
+//        }
 
         // DRONE DRIVE
         val yInput = gamepad1.left_stick_y.toDouble()
