@@ -70,7 +70,6 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
     lateinit var ctrlHub: SmartLynxModule
     lateinit var exHub: SmartLynxModule
 
-    lateinit var allUsedMotors: List<DcMotor>
     override fun init(ahwMap: HardwareMap) {
 
         hwMap = ahwMap
@@ -104,7 +103,6 @@ class ThreeDayHardware(val telemetry:Telemetry, val opmode: OpMode) : MecanumHar
         lift =          exHub.getMotor(1)
         hangRotator =   exHub.getMotor(2)
         screw =         exHub.getMotor(3)
-        allUsedMotors = listOf(lFDrive, lBDrive, rFDrive, rBDrive, collector, hangRotator, screw, lift)
 
         //Servos
         autoClaw =      ctrlHub.getServo(0)
