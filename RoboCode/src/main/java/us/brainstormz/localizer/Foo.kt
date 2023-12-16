@@ -8,11 +8,11 @@ import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 
 
-class Foo(private val name:String, val size:Size) {
+class Foo(private val name:String, val size:Size?) {
     private var aprilTag: AprilTagProcessor? = null
     private var visionPortal: VisionPortal? = null
 
-    fun init(viewContainerId:Int, hardwareMap:HardwareMap) {
+    fun init(viewContainerId:Int?, hardwareMap:HardwareMap) {
 
         aprilTag = AprilTagProcessor.Builder().build()
 
@@ -21,9 +21,9 @@ class Foo(private val name:String, val size:Size) {
 
         val builder = VisionPortal.Builder()
                 .enableLiveView(true)
-                .setLiveViewContainerId(viewContainerId)
-                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .setCameraResolution(size)
+                .setStreamFormat(VisionPortal.StreamFormat.YUY2)
+        viewContainerId?.let(builder::setLiveViewContainerId)
+        size?.let{builder.setCameraResolution(size)}
 //                .setCameraResolution(Size(2304, 1536))
 
         builder.setCamera(hardwareMap.get(WebcamName::class.java, name))

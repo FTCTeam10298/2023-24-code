@@ -58,16 +58,27 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
+
+/* [640x480], [160x90], [160x120], [176x144], [320x180], [320x240], [352x288], [432x240], [640x360], [800x448],
+[800x600], [864x480], [960x720], [1024x576], [1280x720], [1600x896], [1920x1080], [2560x1472],
+ */
 @TeleOp(name = "AprilTagger", group = "Concept") //@Disabled
 class AprilTagger : LinearOpMode() {
 
     private val aprilTagThings = listOf(
-            Foo("Webcam 1", Size(1920, 1080)),
-            Foo("Webcam 2", Size(1280, 720))
+            Foo("Webcam 1", Size(160, 90)),
+            Foo("Webcam 2", Size(320, 180)),
+            Foo("Webcam 3", Size(640, 480)),
     )
     override fun runOpMode() {
-        val viewContainerIds = VisionPortal.makeMultiPortalView(aprilTagThings.size, VisionPortal.MultiPortalLayout.VERTICAL).toList()
-        aprilTagThings.zip(viewContainerIds).forEach{ (foo, viewContainerId) -> foo.init(viewContainerId, hardwareMap)}
+        if(aprilTagThings.size<2){
+            aprilTagThings.forEach {
+                it.init(null, hardwareMap)
+            }
+        }else{
+            val viewContainerIds = VisionPortal.makeMultiPortalView(aprilTagThings.size, VisionPortal.MultiPortalLayout.VERTICAL).toList()
+            aprilTagThings.zip(viewContainerIds).forEach{ (foo, viewContainerId) -> foo.init(viewContainerId, hardwareMap)}
+        }
 
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream")
@@ -80,13 +91,13 @@ class AprilTagger : LinearOpMode() {
 
                 // Push telemetry to the Driver Station.
                 telemetry.update()
-
                 // Save CPU resources; can resume streaming when needed.
                 if (gamepad1.dpad_down) {
 //                    visionPortal!!.stopStreaming()
                 } else if (gamepad1.dpad_up) {
                     aprilTagThings.forEach { it.resumeStreaming() }
                 }
+
 
                 // Share the CPU.
                 sleep(20)
