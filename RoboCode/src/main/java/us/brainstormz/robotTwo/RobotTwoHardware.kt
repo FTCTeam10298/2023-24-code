@@ -33,6 +33,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         SetLine3(4.0),
         Max(500.0)
     }
+    val liftPositionPID = PID(kp = 1.0)
     lateinit var liftMotorMaster: DcMotorEx
     lateinit var liftMotorSlave: DcMotor
     lateinit var liftMagnetLimit: TouchSensor

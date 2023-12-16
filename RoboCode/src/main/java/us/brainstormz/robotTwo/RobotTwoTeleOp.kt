@@ -92,13 +92,13 @@ class RobotTwoTeleOp: OpMode() {
             power
         }
 
-        hardware.liftMotorMaster.power = allowedPower
-        hardware.liftMotorSlave.power = allowedPower
+//        hardware.liftMotorMaster.power = allowedPower
+//        hardware.liftMotorSlave.power = allowedPower
     }
     private fun moveLiftTowardPosition(targetPosition: Double) {
-        val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
-        val power = hardware.extendoPositionPID.calcPID(targetPosition, currentPosition)
-        powerExtendo(power)
+        val currentPosition = hardware.liftMotorMaster.currentPosition.toDouble()
+        val power = hardware.liftPositionPID.calcPID(targetPosition, currentPosition)
+        powerLift(power)
     }
 
 
@@ -109,16 +109,16 @@ class RobotTwoTeleOp: OpMode() {
     private fun powerExtendo(power: Double) {
         val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
         val allowedPower = power
-            if (currentPosition > RobotTwoHardware.ExtendoPositions.Max.position) {
-                power.coerceAtMost(0.0)
-            } else if (currentPosition < RobotTwoHardware.ExtendoPositions.Min.position) {
-                power.coerceAtLeast(0.0)
-            } else {
-                power
-            }
+        if (currentPosition > RobotTwoHardware.ExtendoPositions.Max.position) {
+            power.coerceAtMost(0.0)
+        } else if (currentPosition < RobotTwoHardware.ExtendoPositions.Min.position) {
+            power.coerceAtLeast(0.0)
+        } else {
+            power
+        }
 
-        hardware.extendoMotorMaster.power = allowedPower
-        hardware.extendoMotorSlave.power = allowedPower
+//        hardware.extendoMotorMaster.power = allowedPower
+//        hardware.extendoMotorSlave.power = allowedPower
     }
     private fun moveExtendoTowardPosition(targetPosition: Double) {
         val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
