@@ -67,7 +67,7 @@ class AprilTagger : LinearOpMode() {
 
     private val aprilTagThings = listOf(
             Foo("Webcam 1", Size(160, 90)),
-            Foo("Webcam 2", Size(320, 180)),
+            Foo("Webcam 2", Size(160, 120)),
             Foo("Webcam 3", Size(640, 480)),
     )
     override fun runOpMode() {
