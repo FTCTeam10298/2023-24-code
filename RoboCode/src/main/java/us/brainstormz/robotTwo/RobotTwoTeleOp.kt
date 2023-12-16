@@ -36,19 +36,30 @@ class RobotTwoTeleOp: OpMode() {
         val collectorTriggerActivation = 0.2
         when {  
             gamepad1.right_trigger > collectorTriggerActivation -> {
-                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
                 powerExtendo(gamepad1.right_trigger.toDouble())
             }
             gamepad1.left_trigger > collectorTriggerActivation -> {
-                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
+//                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
                 powerExtendo(-gamepad1.left_trigger.toDouble())
             }
             transferState() != emptyPixelHandler -> {
-                spinCollector(RobotTwoHardware.CollectorPowers.Eject.power)
+//                spinCollector(RobotTwoHardware.CollectorPowers.Eject.power)
                 moveExtendoTowardPosition(RobotTwoHardware.ExtendoPositions.Min.position)
             }
             else -> {
                 powerExtendo(0.0)
+            }
+        }
+
+        when {
+            gamepad1.right_bumper -> {
+                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
+            }
+            gamepad1.left_bumper -> {
+                spinCollector(RobotTwoHardware.CollectorPowers.Eject.power)
+            }
+            else -> {
+                spinCollector(0.0)
             }
         }
 

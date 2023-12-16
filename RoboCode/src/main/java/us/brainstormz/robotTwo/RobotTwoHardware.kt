@@ -61,7 +61,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     enum class CollectorPowers(val power: Double) {
         Off(0.0),
         Intake(1.0),
-        Eject(1.0)
+        Eject(-1.0)
     }
     lateinit var collectorServo1: CRServo
     lateinit var collectorServo2: CRServo
@@ -148,6 +148,9 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         extendoMotorMaster.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         extendoMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        collectorServo1.direction = DcMotorSimple.Direction.FORWARD
+        collectorServo2.direction = DcMotorSimple.Direction.REVERSE
 
         //Lift
         liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
