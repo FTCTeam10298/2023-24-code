@@ -65,11 +65,13 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 @TeleOp(name = "AprilTagger", group = "Concept") //@Disabled
 class AprilTagger : LinearOpMode() {
 
+    //This is 4 cameras at lowest possible res. (maybe just return b/w? IDK how, but sounds good. Also, there's bitcrushing.)
     private val aprilTagThings = listOf(
-            Foo("Webcam 1", Size(160, 120)),
+            Foo("Webcam 1", Size(320, 240)),
             Foo("Webcam 2", Size(320, 240)),
-            Foo("Webcam 3", Size(640, 480)),
-//            Foo("Webcam 4", Size(320, 180)) - Not working. Each bus seems to support 2 cameras.
+            Foo("Webcam 3", Size(320, 240)),
+//          Foo("Webcam 4", Size(320, 240)) - Not working. Each bus seems to support 2 cameras.
+            // Idea: Half res for all other cameras, then add the other on its lowest res (320 by 240)...
     )
     override fun runOpMode() {
         if(aprilTagThings.size<2){
