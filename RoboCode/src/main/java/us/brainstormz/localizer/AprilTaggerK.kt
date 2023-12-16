@@ -66,9 +66,10 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 class AprilTagger : LinearOpMode() {
 
     private val aprilTagThings = listOf(
-            Foo("Webcam 1", Size(160, 90)),
-            Foo("Webcam 2", Size(160, 120)),
+            Foo("Webcam 1", Size(160, 120)),
+            Foo("Webcam 2", Size(320, 240)),
             Foo("Webcam 3", Size(640, 480)),
+//            Foo("Webcam 4", Size(320, 180)) - Not working. Each bus seems to support 2 cameras.
     )
     override fun runOpMode() {
         if(aprilTagThings.size<2){
