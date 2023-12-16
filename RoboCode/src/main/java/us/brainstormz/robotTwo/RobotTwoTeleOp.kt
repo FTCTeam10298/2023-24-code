@@ -2,8 +2,13 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
+import us.brainstormz.robotTwo.RobotTwoHardware.ArmPos
+import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
+import us.brainstormz.robotTwo.RobotTwoHardware.ClawPosition
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 
 @TeleOp
 class RobotTwoTeleOp: OpMode() {
@@ -16,6 +21,14 @@ class RobotTwoTeleOp: OpMode() {
         hardware.init(hardwareMap)
     }
 
+    private var previousGamepad1State: Gamepad = Gamepad()
+    private var previousGamepad2State: Gamepad = Gamepad()
+    private var previousRobotState = RobotState(
+        armPos = ArmPos.In,
+        liftPosition = RobotTwoHardware.LiftPositions.Min,
+        leftClawPosition = ClawPosition.Gripping,
+        rightClawPosition = ClawPosition.Gripping
+    )
     override fun loop() {
         /** TELE-OP PHASE */
 
@@ -65,6 +78,42 @@ class RobotTwoTeleOp: OpMode() {
 
         //Lift
         powerLift(gamepad2.left_stick_x.toDouble())
+        //Claws
+        val leftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
+            when (previousRobotState.leftClawPosition) {
+                ClawPosition.Gripping -> ClawPosition.Retracted
+                ClawPosition.Retracted -> ClawPosition.Gripping
+            }
+        } else {
+            previousRobotState.leftClawPosition
+        }
+        hardware.leftClawServo.position = leftClawPosition.position
+
+        val rightClawPosition = if (gamepad2.right_bumper && !previousGamepad2State.right_bumper) {
+            when (previousRobotState.rightClawPosition) {
+                ClawPosition.Gripping -> ClawPosition.Retracted
+                ClawPosition.Retracted -> ClawPosition.Gripping
+            }
+        } else {
+            previousRobotState.rightClawPosition
+        }
+        hardware.rightClawServo.position = rightClawPosition.position
+        telemetry.addLine("rightClawPosition: $rightClawPosition")
+        telemetry.addLine("gamepad2.right_bumper: ${gamepad2.right_bumper}")
+        telemetry.addLine("previousGamepad2State.right_bumper: ${previousGamepad2State.right_bumper}")
+
+
+
+        //Previous state
+        previousRobotState = RobotState(
+            armPos = armPosition,
+            liftPosition = liftPosition,
+            leftClawPosition = leftClawPosition,
+            rightClawPosition = rightClawPosition
+        )
+        previousGamepad1State.copy(gamepad1)
+        previousGamepad2State.copy(gamepad2)
+        telemetry.update()
     }
 
     enum class PixelHandlerState {

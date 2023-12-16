@@ -43,6 +43,10 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var armEncoder: AnalogInput
     lateinit var encoderReader: AxonEncoderReader
 
+    enum class ClawPosition(val position: Double) {
+        Retracted(1.0),
+        Gripping(0.7)
+    }
     lateinit var leftClawServo: Servo
     lateinit var rightClawServo: Servo
     lateinit var leftColorSensor: RevColorSensorV3
@@ -78,6 +82,14 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     override lateinit var lOdom: EnhancedDCMotor
     override lateinit var rOdom: EnhancedDCMotor
     override lateinit var cOdom: EnhancedDCMotor
+
+
+    data class RobotState(
+        val armPos: ArmPos,
+        val liftPosition: LiftPositions,
+        val leftClawPosition: ClawPosition,
+        val rightClawPosition: ClawPosition
+    )
 
     override lateinit var hwMap: HardwareMap
     lateinit var ctrlHub: SmartLynxModule
@@ -120,6 +132,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         //Servos
         collectorServo1 =   ctrlHub.getCRServo(0)
         collectorServo2 =   ctrlHub.getCRServo(1)
+        leftClawServo = ctrlHub.getServo(4)// left/right from driver 2 perspective when depositing
+        rightClawServo = ctrlHub.getServo(5)
 //        leftArm =       ctrlHub.getServo(3)
 //        rightArm =      ctrlHub.getServo(4)
 //        launcher =      ctrlHub.getServo(5)
@@ -162,6 +176,10 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         liftMotorMaster.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         liftMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        //Claw
+        leftClawServo.direction = Servo.Direction.FORWARD
+        rightClawServo.direction = Servo.Direction.REVERSE
     }
 
 
