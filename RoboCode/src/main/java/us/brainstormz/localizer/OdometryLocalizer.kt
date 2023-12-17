@@ -87,7 +87,7 @@ class OdometryLocalizer(private val odomHardware: MecOdometry) : Localizer {
         previousC = currentC
     }
 
-    override fun startNewMovement() {}
+//    override fun startNewMovement() {}
 }
 
 //@TeleOp(name= "Odom Localiaztion Test")

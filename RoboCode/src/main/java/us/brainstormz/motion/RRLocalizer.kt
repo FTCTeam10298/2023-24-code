@@ -33,9 +33,9 @@ class RRLocalizer(hardware: ThreeWheelOdometry): Localizer {
         //roadRunner.localizer.poseEstimate = Pose2d(y ?:0.0, x ?:0.0, Math.toRadians(r ?:0.0))
     }
 
-    override fun startNewMovement() {
-        print("startNewMovement does nothing")
-    }
+//    override fun startNewMovement() {
+//        print("startNewMovement does nothing")
+//    }
 }
 
 /*class Foo(private val hardware: PaddieMatrickHardware, private val telemetry:Telemetry){
