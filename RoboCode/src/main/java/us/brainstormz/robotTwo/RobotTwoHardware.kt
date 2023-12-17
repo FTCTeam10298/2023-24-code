@@ -27,6 +27,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     enum class LiftPositions(val position: Double) {
         Min(0.0),
+        Transfer(0.5),
         BackboardBottomRow(1.0),
         SetLine1(2.0),
         SetLine2(3.0),
@@ -38,14 +39,29 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var liftMotorSlave: DcMotor
     lateinit var liftMagnetLimit: TouchSensor
 
-    lateinit var armServo1: CRServo
-    lateinit var armServo2: CRServo
-    lateinit var armEncoder: AnalogInput
-    lateinit var encoderReader: AxonEncoderReader
 
-    enum class ClawPosition(val position: Double) {
+    enum class ArmPos(val position:Double) {
+        In(0.04),
+        Transfer(0.058),
+        Horizontal(0.23),
+        Out(0.6)
+    }
+    lateinit var armServo1: Servo
+    lateinit var armServo2: Servo
+    lateinit var armEncoder: AnalogInput
+    lateinit var armEncoderReader: AxonEncoderReader
+
+//    enum class ClawPosition {
+//        Retracted,
+//        Gripping
+//    }
+    enum class RightClawPosition(val position: Double) {
         Retracted(1.0),
         Gripping(0.7)
+    }
+    enum class LeftClawPosition(val position: Double) {
+        Retracted(1.0),
+        Gripping(0.78)
     }
     lateinit var leftClawServo: Servo
     lateinit var rightClawServo: Servo
@@ -87,8 +103,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     data class RobotState(
         val armPos: ArmPos,
         val liftPosition: LiftPositions,
-        val leftClawPosition: ClawPosition,
-        val rightClawPosition: ClawPosition
+        val leftClawPosition: LeftClawPosition,
+        val rightClawPosition: RightClawPosition
     )
 
     override lateinit var hwMap: HardwareMap
@@ -132,11 +148,15 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         //Servos
         collectorServo1 =   ctrlHub.getCRServo(0)
         collectorServo2 =   ctrlHub.getCRServo(1)
-        leftClawServo = ctrlHub.getServo(4)// left/right from driver 2 perspective when depositing
-        rightClawServo = ctrlHub.getServo(5)
-//        leftArm =       ctrlHub.getServo(3)
-//        rightArm =      ctrlHub.getServo(4)
-//        launcher =      ctrlHub.getServo(5)
+        armServo1 = ctrlHub.getServo(2)
+        armServo2 = ctrlHub.getServo(3)
+
+        leftClawServo =     exHub.getServo(0)// left/right from driver 2 perspective when depositing
+        rightClawServo =    exHub.getServo(1)
+        rightTransferServo = exHub.getCRServo(2)
+        leftTransferServo = ctrlHub.getCRServo(5)
+        //Encoders
+//        armEncoder = ctrlHub.getAnalogInput(0)
 
         // Drivetrain
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
@@ -166,16 +186,24 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         collectorServo1.direction = DcMotorSimple.Direction.FORWARD
         collectorServo2.direction = DcMotorSimple.Direction.REVERSE
 
+        //Transfer
+        rightTransferServo.direction = DcMotorSimple.Direction.FORWARD
+
         //Lift
         liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         liftMotorSlave.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-        liftMotorMaster.direction = DcMotorSimple.Direction.FORWARD
-        liftMotorSlave.direction = DcMotorSimple.Direction.REVERSE
+        liftMotorMaster.direction = DcMotorSimple.Direction.REVERSE
+        liftMotorSlave.direction = DcMotorSimple.Direction.FORWARD
 
         liftMotorMaster.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         liftMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        //Arm
+        armServo1.direction = Servo.Direction.FORWARD
+        armServo2.direction = Servo.Direction.REVERSE
+//        armEncoderReader = AxonEncoderReader(armEncoder)
 
         //Claw
         leftClawServo.direction = Servo.Direction.FORWARD

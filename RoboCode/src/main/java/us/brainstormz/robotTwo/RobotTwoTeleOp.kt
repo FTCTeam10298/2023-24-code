@@ -6,7 +6,8 @@ import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.robotTwo.RobotTwoHardware.ArmPos
 import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
-import us.brainstormz.robotTwo.RobotTwoHardware.ClawPosition
+import us.brainstormz.robotTwo.RobotTwoHardware.LeftClawPosition
+import us.brainstormz.robotTwo.RobotTwoHardware.RightClawPosition
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -26,8 +27,8 @@ class RobotTwoTeleOp: OpMode() {
     private var previousRobotState = RobotState(
         armPos = ArmPos.In,
         liftPosition = RobotTwoHardware.LiftPositions.Min,
-        leftClawPosition = ClawPosition.Gripping,
-        rightClawPosition = ClawPosition.Gripping
+        leftClawPosition = LeftClawPosition.Retracted,
+        rightClawPosition = RightClawPosition.Retracted
     )
     override fun loop() {
         /** TELE-OP PHASE */
@@ -55,10 +56,10 @@ class RobotTwoTeleOp: OpMode() {
 //                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
                 powerExtendo(-gamepad1.left_trigger.toDouble())
             }
-            transferState() != emptyPixelHandler -> {
-//                spinCollector(RobotTwoHardware.CollectorPowers.Eject.power)
-                moveExtendoTowardPosition(RobotTwoHardware.ExtendoPositions.Min.position)
-            }
+//            transferState() != emptyPixelHandler -> {
+////                spinCollector(RobotTwoHardware.CollectorPowers.Eject.power)
+//                moveExtendoTowardPosition(RobotTwoHardware.ExtendoPositions.Min.position)
+//            }
             else -> {
                 powerExtendo(0.0)
             }
@@ -76,13 +77,63 @@ class RobotTwoTeleOp: OpMode() {
             }
         }
 
+        hardware.rightTransferServo.power = when {
+            gamepad1.dpad_up -> 1.0
+            gamepad1.dpad_right -> -1.0
+            else -> 0.0
+        }
+        hardware.leftTransferServo.power = when {
+            gamepad1.dpad_left -> 1.0
+            gamepad1.dpad_down -> -1.0
+            else -> 0.0
+        }
+
         //Lift
-        powerLift(gamepad2.left_stick_x.toDouble())
+        val liftPosition = when {
+            gamepad2.dpad_up -> {
+                RobotTwoHardware.LiftPositions.SetLine2
+            }
+            gamepad2.dpad_down -> {
+                RobotTwoHardware.LiftPositions.Transfer
+            }
+            else -> {
+                previousRobotState.liftPosition
+            }
+        }
+
+        if (gamepad2.left_stick_y.absoluteValue > 0.2) {
+            powerLift(gamepad2.left_stick_y.toDouble())
+        } else {
+            powerLift(0.0)
+//            moveLiftTowardPosition(liftPosition.position)
+        }
+
+
+        //Arm
+        val armPosition = when {
+            gamepad2.dpad_left -> {
+                ArmPos.In
+            }
+            gamepad2.dpad_down -> {
+                ArmPos.Transfer
+            }
+            gamepad2.dpad_up -> {
+                ArmPos.Horizontal
+            }
+            gamepad2.dpad_right -> {
+                ArmPos.Out
+            }
+            else -> {
+                previousRobotState.armPos
+            }
+        }
+        moveArmTowardPosition(armPosition.position)
+
         //Claws
         val leftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
             when (previousRobotState.leftClawPosition) {
-                ClawPosition.Gripping -> ClawPosition.Retracted
-                ClawPosition.Retracted -> ClawPosition.Gripping
+                LeftClawPosition.Gripping -> LeftClawPosition.Retracted
+                LeftClawPosition.Retracted -> LeftClawPosition.Gripping
             }
         } else {
             previousRobotState.leftClawPosition
@@ -91,16 +142,17 @@ class RobotTwoTeleOp: OpMode() {
 
         val rightClawPosition = if (gamepad2.right_bumper && !previousGamepad2State.right_bumper) {
             when (previousRobotState.rightClawPosition) {
-                ClawPosition.Gripping -> ClawPosition.Retracted
-                ClawPosition.Retracted -> ClawPosition.Gripping
+                RightClawPosition.Gripping -> RightClawPosition.Retracted
+                RightClawPosition.Retracted -> RightClawPosition.Gripping
             }
         } else {
             previousRobotState.rightClawPosition
         }
         hardware.rightClawServo.position = rightClawPosition.position
-        telemetry.addLine("rightClawPosition: $rightClawPosition")
-        telemetry.addLine("gamepad2.right_bumper: ${gamepad2.right_bumper}")
-        telemetry.addLine("previousGamepad2State.right_bumper: ${previousGamepad2State.right_bumper}")
+//        telemetry.addLine("rightClawPosition: $rightClawPosition")
+//        telemetry.addLine("gamepad2.right_bumper: ${gamepad2.right_bumper}")
+//        telemetry.addLine("previousGamepad2State.right_bumper: ${previousGamepad2State.right_bumper}")
+        telemetry.addLine("previousRobotState: $previousRobotState")
 
 
 
@@ -135,6 +187,10 @@ class RobotTwoTeleOp: OpMode() {
         return TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
     }
 
+    private fun moveArmTowardPosition(targetPosition: Double) {
+        hardware.armServo1.position = targetPosition
+        hardware.armServo2.position = targetPosition
+    }
 
     enum class LiftToggleOptions {
         SetLine1,
@@ -144,16 +200,16 @@ class RobotTwoTeleOp: OpMode() {
     private fun powerLift(power: Double) {
         val currentPosition = hardware.liftMotorMaster.currentPosition.toDouble()
         val allowedPower = power
-        if (currentPosition > RobotTwoHardware.LiftPositions.Max.position) {
-            power.coerceAtMost(0.0)
-        } else if (currentPosition < RobotTwoHardware.LiftPositions.Min.position) {
-            power.coerceAtLeast(0.0)
-        } else {
-            power
-        }
+//        if (currentPosition > RobotTwoHardware.LiftPositions.Max.position) {
+//            power.coerceAtMost(0.0)
+//        } else if (currentPosition < RobotTwoHardware.LiftPositions.Min.position) {
+//            power.coerceAtLeast(0.0)
+//        } else {
+//            power
+//        }
 
-//        hardware.liftMotorMaster.power = allowedPower
-//        hardware.liftMotorSlave.power = allowedPower
+        hardware.liftMotorMaster.power = allowedPower
+        hardware.liftMotorSlave.power = allowedPower
     }
     private fun moveLiftTowardPosition(targetPosition: Double) {
         val currentPosition = hardware.liftMotorMaster.currentPosition.toDouble()
@@ -169,13 +225,13 @@ class RobotTwoTeleOp: OpMode() {
     private fun powerExtendo(power: Double) {
         val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
         val allowedPower = power
-        if (currentPosition > RobotTwoHardware.ExtendoPositions.Max.position) {
-            power.coerceAtMost(0.0)
-        } else if (currentPosition < RobotTwoHardware.ExtendoPositions.Min.position) {
-            power.coerceAtLeast(0.0)
-        } else {
-            power
-        }
+//        if (currentPosition > RobotTwoHardware.ExtendoPositions.Max.position) {
+//            power.coerceAtMost(0.0)
+//        } else if (currentPosition < RobotTwoHardware.ExtendoPositions.Min.position) {
+//            power.coerceAtLeast(0.0)
+//        } else {
+//            power
+//        }
 
 //        hardware.extendoMotorMaster.power = allowedPower
 //        hardware.extendoMotorSlave.power = allowedPower
