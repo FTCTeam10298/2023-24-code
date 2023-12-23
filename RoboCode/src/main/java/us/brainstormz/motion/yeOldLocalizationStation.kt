@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.util.Range
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.hardwareClasses.*
+import us.brainstormz.localizer.RRLocalizer
 import us.brainstormz.pid.PID
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import kotlin.math.*
