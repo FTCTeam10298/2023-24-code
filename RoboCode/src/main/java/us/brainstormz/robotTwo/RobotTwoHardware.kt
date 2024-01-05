@@ -183,8 +183,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         extendoMotorMaster.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         extendoMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-        collectorServo1.direction = DcMotorSimple.Direction.FORWARD
-        collectorServo2.direction = DcMotorSimple.Direction.REVERSE
+        collectorServo1.direction = DcMotorSimple.Direction.REVERSE
+        collectorServo2.direction = DcMotorSimple.Direction.FORWARD
 
         //Transfer
         rightTransferServo.direction = DcMotorSimple.Direction.FORWARD

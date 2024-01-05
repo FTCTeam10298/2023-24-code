@@ -233,8 +233,8 @@ class RobotTwoTeleOp: OpMode() {
 //            power
 //        }
 
-//        hardware.extendoMotorMaster.power = allowedPower
-//        hardware.extendoMotorSlave.power = allowedPower
+        hardware.extendoMotorMaster.power = allowedPower
+        hardware.extendoMotorSlave.power = allowedPower
     }
     private fun moveExtendoTowardPosition(targetPosition: Double) {
         val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
