@@ -31,8 +31,11 @@ package us.brainstormz.localizer
 import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.vision.VisionPortal
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
+import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
+import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary
+
 
 /*
  * This OpMode illustrates the basics of AprilTag recognition and pose estimation,
@@ -65,23 +68,24 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 @TeleOp(name = "AprilTagger", group = "Concept") //@Disabled
 class AprilTagger : LinearOpMode() {
 
+
     //This is 4 cameras at lowest possible res. (maybe just return b/w? IDK how, but sounds good. Also, there's bitcrushing.)
     private val aprilTagThings = listOf(
             Foo("Webcam 1", Size(320, 240)),
-            Foo("Webcam 2", Size(320, 240)),
-            Foo("Webcam 3", Size(320, 240)),
+//            Foo("Webcam 2", Size(320, 240)),
+//            Foo("Webcam 3", Size(320, 240)),
 //          Foo("Webcam 4", Size(320, 240)) - Not working. Each bus seems to support 2 cameras.
             // Idea: Half res for all other cameras, then add the other on its lowest res (320 by 240)...
     )
     override fun runOpMode() {
-        if(aprilTagThings.size<2){
-            aprilTagThings.forEach {
-                it.init(null, hardwareMap)
+//        if(aprilTagThings.size < 2){
+        aprilTagThings.forEach {
+            it.init(null, hardwareMap)
             }
-        }else{
-            val viewContainerIds = VisionPortal.makeMultiPortalView(aprilTagThings.size, VisionPortal.MultiPortalLayout.VERTICAL).toList()
-            aprilTagThings.zip(viewContainerIds).forEach{ (foo, viewContainerId) -> foo.init(viewContainerId, hardwareMap)}
-        }
+//        }else{
+//            val viewContainerIds = VisionPortal.makeMultiPortalView(aprilTagThings.size, VisionPortal.MultiPortalLayout.VERTICAL).toList()
+//            aprilTagThings.zip(viewContainerIds).forEach{ (foo, viewContainerId) -> foo.init(viewContainerId, hardwareMap)}
+//        }
 
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream")
@@ -126,6 +130,8 @@ class AprilTagger : LinearOpMode() {
                 telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z))
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
                 telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+                val muchData = getAprilTagLocation(detection.id)
+                telemetry.addLine("Random Madness!! $muchData")
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id))
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y))
@@ -141,4 +147,15 @@ class AprilTagger : LinearOpMode() {
     companion object {
         private const val USE_WEBCAM = true // true for webcam, false for phone camera
     }
-} // ...
+
+
+    /**Returns the position of an april tag when told the id of the tag */
+    fun getAprilTagLocation(tagId: Int): AprilTagPositionOnField {
+        val library = AprilTagGameDatabase.getCenterStageTagLibrary()
+        return AprilTagPositionOnField(library.lookupTag(tagId).fieldPosition)
+    }
+}
+
+
+/**April tag location on the field, where the center of the field is (0, 0, 0) */
+data class AprilTagPositionOnField(val vector: VectorF)
