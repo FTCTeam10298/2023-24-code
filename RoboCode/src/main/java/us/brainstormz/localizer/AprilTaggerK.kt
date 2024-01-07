@@ -71,7 +71,8 @@ class AprilTagger : LinearOpMode() {
 
     //This is 4 cameras at lowest possible res. (maybe just return b/w? IDK how, but sounds good. Also, there's bitcrushing.)
     private val aprilTagThings = listOf(
-            Foo("Webcam 1", Size(320, 240)),
+//            Size(2304, 1536)
+            Foo("Webcam 1", Size(640, 480)),
 //            Foo("Webcam 2", Size(320, 240)),
 //            Foo("Webcam 3", Size(320, 240)),
 //          Foo("Webcam 4", Size(320, 240)) - Not working. Each bus seems to support 2 cameras.
@@ -137,8 +138,15 @@ class AprilTagger : LinearOpMode() {
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y))
             }
         } // ...
-        val currentPositionOfRobot = getCameraPositionOnField(currentDetections[0])
-        telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
+        if (currentDetections.isNotEmpty()) {
+            val theTag = currentDetections[0]
+            //todo: get tag name, figure out if this thing is off!! - use FTCCenterStageTaglibrary?
+            val currentPositionOfRobot = getCameraPositionOnField(theTag)
+            val tagPosition = getAprilTagLocation(theTag.id)
+            telemetry.addLine("Sir, I found ")
+            telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
+            telemetry.addLine("BUT the tag position is: $tagPosition")
+        }
         // Add "key" information to telemetry
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.")
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)")
@@ -167,12 +175,11 @@ class AprilTagger : LinearOpMode() {
         val tagRelativeToFieldY = tagRelativeToField.get(1)
         val tagRelativeToFieldZ = tagRelativeToField.get(2)
 
-        val robotRelativeToFieldX = (tagRelativeToCamera.x + tagRelativeToFieldX).toDouble()
-        val robotRelativeToFieldY = (tagRelativeToCamera.y + tagRelativeToFieldY).toDouble()
-        val robotRelativeToFieldZ = (tagRelativeToCamera.z + tagRelativeToFieldZ).toDouble()
+        val robotRelativeToFieldX = (tagRelativeToCamera.x + tagRelativeToFieldX)
+        val robotRelativeToFieldY = (tagRelativeToCamera.y + tagRelativeToFieldY)
+        val robotRelativeToFieldZ = (tagRelativeToCamera.z + tagRelativeToFieldZ)
 
         return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, 0.0))
-
     }
 
     /**Returns the position of an april tag when told the id of the tag */
