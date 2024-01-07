@@ -137,7 +137,8 @@ class AprilTagger : LinearOpMode() {
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y))
             }
         } // ...
-
+        val currentPositionOfRobot = getCameraPositionOnField(currentDetections[0])
+        telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
         // Add "key" information to telemetry
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.")
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)")
@@ -148,6 +149,31 @@ class AprilTagger : LinearOpMode() {
         private const val USE_WEBCAM = true // true for webcam, false for phone camera
     }
 
+    /**Returns the position of the camera when given an april tag detection*/
+    fun getCameraPositionOnField(aprilTagDetection: AprilTagDetection): RobotPositionOnField {
+
+        /** adds relative position to position of tags on field, because both are calculated with
+         * the same origin (point with an x and y of 0), because then we reflect how much more/less the bot
+         * position is than the apriltag position.
+         */
+
+        val angle = 0
+
+        val tagRelativeToCamera = aprilTagDetection.ftcPose
+//        tagRelativeToCamera.x
+
+        val tagRelativeToField = getAprilTagLocation(aprilTagDetection.id).vector
+        val tagRelativeToFieldX = tagRelativeToField.get(0)
+        val tagRelativeToFieldY = tagRelativeToField.get(1)
+        val tagRelativeToFieldZ = tagRelativeToField.get(2)
+
+        val robotRelativeToFieldX = (tagRelativeToCamera.x + tagRelativeToFieldX).toDouble()
+        val robotRelativeToFieldY = (tagRelativeToCamera.y + tagRelativeToFieldY).toDouble()
+        val robotRelativeToFieldZ = (tagRelativeToCamera.z + tagRelativeToFieldZ).toDouble()
+
+        return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, 0.0))
+
+    }
 
     /**Returns the position of an april tag when told the id of the tag */
     fun getAprilTagLocation(tagId: Int): AprilTagPositionOnField {
@@ -159,3 +185,9 @@ class AprilTagger : LinearOpMode() {
 
 /**April tag location on the field, where the center of the field is (0, 0, 0) */
 data class AprilTagPositionOnField(val vector: VectorF)
+
+
+/**Robot location on the field, where the center of the field is (0, 0).
+ * x and y are the 2d position. unit is Inches
+ * r is the rotation. unit is Degrees*/
+data class RobotPositionOnField(val posAndRot: PositionAndRotation)
