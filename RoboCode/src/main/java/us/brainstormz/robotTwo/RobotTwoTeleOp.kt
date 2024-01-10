@@ -4,10 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
-import us.brainstormz.robotTwo.RobotTwoHardware.ArmPos
 import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.robotTwo.RobotTwoHardware.LeftClawPosition
 import us.brainstormz.robotTwo.RobotTwoHardware.RightClawPosition
+import us.brainstormz.threeDay.ThreeDayHardware
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -16,16 +16,21 @@ class RobotTwoTeleOp: OpMode() {
 
     private val hardware = RobotTwoHardware(telemetry, this)
     val movement = MecanumDriveTrain(hardware)
+    private lateinit var arm: Arm
 
     override fun init() {
         /** INIT PHASE */
         hardware.init(hardwareMap)
+        arm = Arm(
+                encoder= hardware.armEncoder,
+                armServo1= hardware.armServo1,
+                armServo2= hardware.armServo2)
     }
 
     private var previousGamepad1State: Gamepad = Gamepad()
     private var previousGamepad2State: Gamepad = Gamepad()
     private var previousRobotState = RobotState(
-        armPos = ArmPos.In,
+        armPos = Arm.Positions.In,
         liftPosition = RobotTwoHardware.LiftPositions.Min,
         leftClawPosition = LeftClawPosition.Retracted,
         rightClawPosition = RightClawPosition.Retracted
@@ -112,22 +117,23 @@ class RobotTwoTeleOp: OpMode() {
         //Arm
         val armPosition = when {
             gamepad2.dpad_left -> {
-                ArmPos.In
+                Arm.Positions.In
             }
             gamepad2.dpad_down -> {
-                ArmPos.Transfer
+                Arm.Positions.Transfer
             }
             gamepad2.dpad_up -> {
-                ArmPos.Horizontal
+                Arm.Positions.Horizontal
             }
             gamepad2.dpad_right -> {
-                ArmPos.Out
+                Arm.Positions.Out
             }
             else -> {
                 previousRobotState.armPos
             }
         }
-        moveArmTowardPosition(armPosition.position)
+        arm.moveArmTowardPosition(armPosition.angleDegrees)
+        telemetry.addLine("arm pos: ${arm.getArmAngleDegrees()}")
 
         //Claws
         val leftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
@@ -185,11 +191,6 @@ class RobotTwoTeleOp: OpMode() {
     private fun clawState(): TwoPixelHandlerState {
         //TODO Put logic here and sensors on the robot
         return TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
-    }
-
-    private fun moveArmTowardPosition(targetPosition: Double) {
-        hardware.armServo1.position = targetPosition
-        hardware.armServo2.position = targetPosition
     }
 
     enum class LiftToggleOptions {

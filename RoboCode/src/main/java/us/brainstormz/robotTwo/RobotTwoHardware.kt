@@ -39,17 +39,9 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var liftMotorSlave: DcMotor
     lateinit var liftMagnetLimit: TouchSensor
 
-
-    enum class ArmPos(val position:Double) {
-        In(0.04),
-        Transfer(0.058),
-        Horizontal(0.23),
-        Out(0.6)
-    }
-    lateinit var armServo1: Servo
-    lateinit var armServo2: Servo
+    lateinit var armServo1: CRServo
+    lateinit var armServo2: CRServo
     lateinit var armEncoder: AnalogInput
-    lateinit var armEncoderReader: AxonEncoderReader
 
 //    enum class ClawPosition {
 //        Retracted,
@@ -57,11 +49,11 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 //    }
     enum class RightClawPosition(val position: Double) {
         Retracted(1.0),
-        Gripping(0.7)
+        Gripping(0.4)
     }
     enum class LeftClawPosition(val position: Double) {
         Retracted(1.0),
-        Gripping(0.78)
+        Gripping(0.56)
     }
     lateinit var leftClawServo: Servo
     lateinit var rightClawServo: Servo
@@ -101,7 +93,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
 
     data class RobotState(
-        val armPos: ArmPos,
+        val armPos: Arm.Positions,
         val liftPosition: LiftPositions,
         val leftClawPosition: LeftClawPosition,
         val rightClawPosition: RightClawPosition
@@ -148,15 +140,17 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         //Servos
         collectorServo1 =   ctrlHub.getCRServo(0)
         collectorServo2 =   ctrlHub.getCRServo(1)
-        armServo1 = ctrlHub.getServo(2)
-        armServo2 = ctrlHub.getServo(3)
+        armServo1 = ctrlHub.getCRServo(2)
+        armServo2 = ctrlHub.getCRServo(3)
 
         leftClawServo =     exHub.getServo(0)// left/right from driver 2 perspective when depositing
         rightClawServo =    exHub.getServo(1)
         rightTransferServo = exHub.getCRServo(2)
         leftTransferServo = ctrlHub.getCRServo(5)
-        //Encoders
-//        armEncoder = ctrlHub.getAnalogInput(0)
+
+        //Sensors
+//        armEncoder = ctrlHub.getAnalogInput(1)
+        armEncoder = hwMap["a"] as AnalogInput
 
         // Drivetrain
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
@@ -201,13 +195,12 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         liftMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
         //Arm
-        armServo1.direction = Servo.Direction.FORWARD
-        armServo2.direction = Servo.Direction.REVERSE
-//        armEncoderReader = AxonEncoderReader(armEncoder)
+        armServo1.direction = DcMotorSimple.Direction.REVERSE
+        armServo2.direction = DcMotorSimple.Direction.FORWARD
 
         //Claw
         leftClawServo.direction = Servo.Direction.FORWARD
-        rightClawServo.direction = Servo.Direction.REVERSE
+        rightClawServo.direction = Servo.Direction.FORWARD
     }
 
 
