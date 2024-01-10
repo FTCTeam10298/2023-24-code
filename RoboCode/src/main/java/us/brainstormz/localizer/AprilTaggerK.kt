@@ -31,8 +31,11 @@ package us.brainstormz.localizer
 import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.vision.VisionPortal
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
+import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
+import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary
+
 
 /*
  * This OpMode illustrates the basics of AprilTag recognition and pose estimation,
@@ -65,23 +68,25 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 @TeleOp(name = "AprilTagger", group = "Concept") //@Disabled
 class AprilTagger : LinearOpMode() {
 
+
     //This is 4 cameras at lowest possible res. (maybe just return b/w? IDK how, but sounds good. Also, there's bitcrushing.)
     private val aprilTagThings = listOf(
-            Foo("Webcam 1", Size(320, 240)),
-            Foo("Webcam 2", Size(320, 240)),
-            Foo("Webcam 3", Size(320, 240)),
+//            Size(2304, 1536)
+            Foo("Webcam 1", Size(640, 480)),
+//            Foo("Webcam 2", Size(320, 240)),
+//            Foo("Webcam 3", Size(320, 240)),
 //          Foo("Webcam 4", Size(320, 240)) - Not working. Each bus seems to support 2 cameras.
             // Idea: Half res for all other cameras, then add the other on its lowest res (320 by 240)...
     )
     override fun runOpMode() {
-        if(aprilTagThings.size<2){
-            aprilTagThings.forEach {
-                it.init(null, hardwareMap)
+//        if(aprilTagThings.size < 2){
+        aprilTagThings.forEach {
+            it.init(null, hardwareMap)
             }
-        }else{
-            val viewContainerIds = VisionPortal.makeMultiPortalView(aprilTagThings.size, VisionPortal.MultiPortalLayout.VERTICAL).toList()
-            aprilTagThings.zip(viewContainerIds).forEach{ (foo, viewContainerId) -> foo.init(viewContainerId, hardwareMap)}
-        }
+//        }else{
+//            val viewContainerIds = VisionPortal.makeMultiPortalView(aprilTagThings.size, VisionPortal.MultiPortalLayout.VERTICAL).toList()
+//            aprilTagThings.zip(viewContainerIds).forEach{ (foo, viewContainerId) -> foo.init(viewContainerId, hardwareMap)}
+//        }
 
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream")
@@ -126,12 +131,24 @@ class AprilTagger : LinearOpMode() {
                 telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z))
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
                 telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+                val muchData = getAprilTagLocation(detection.id)
+                telemetry.addLine("Random Madness!! $muchData")
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id))
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y))
             }
         } // ...
+        if (currentDetections.isNotEmpty()) {
+            val theTag = currentDetections[0]
+            val whatTag = theTag.id
+            //find units of cam relative to tag and tag relative to field
+            val currentPositionOfRobot = getCameraPositionOnField(theTag)
 
+            val tagPosition = getAprilTagLocation(theTag.id)
+            telemetry.addLine("Sir, I found $whatTag")
+            telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
+            telemetry.addLine("BUT the tag position is: $tagPosition")
+        }
         // Add "key" information to telemetry
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.")
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)")
@@ -141,4 +158,52 @@ class AprilTagger : LinearOpMode() {
     companion object {
         private const val USE_WEBCAM = true // true for webcam, false for phone camera
     }
-} // ...
+
+    /**Returns the position of the camera when given an april tag detection*/
+    fun getCameraPositionOnField(aprilTagDetection: AprilTagDetection): RobotPositionOnField {
+
+        /** adds relative position to position of tags on field, because both are calculated with
+         * the same origin (point with an x and y of 0), because then we reflect how much more/less the bot
+         * position is than the apriltag position.
+         */
+
+        val angle = 0
+
+        val tagRelativeToCamera = aprilTagDetection.ftcPose
+        val tagRelativeToCameraOurCoordinateSystem = PositionAndRotation(
+                x= tagRelativeToCamera.x,
+                y= -tagRelativeToCamera.y,
+                r= 0.0
+        )
+
+        val tagRelativeToField = getAprilTagLocation(aprilTagDetection.id).posAndRot
+
+        val robotRelativeToFieldX = tagRelativeToField.x + tagRelativeToCameraOurCoordinateSystem.x
+        val robotRelativeToFieldY = tagRelativeToField.y + tagRelativeToCameraOurCoordinateSystem.y
+//        val robotRelativeToFieldZ = (tagRelativeToCamera.z + tagRelativeToFieldZ)
+
+        return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, 0.0))
+    }
+
+    /**Returns the position of an april tag when told the id of the tag */
+    fun getAprilTagLocation(tagId: Int): AprilTagPositionOnField {
+        val library = AprilTagGameDatabase.getCenterStageTagLibrary()
+        val sdkPositionOnField = library.lookupTag(tagId).fieldPosition
+        val tagRelativeToFieldOurCoordinateSystem = PositionAndRotation(
+                x= sdkPositionOnField.get(1).toDouble(),
+                y= sdkPositionOnField.get(0).toDouble(),
+                r= 0.0
+        )
+        return AprilTagPositionOnField(tagRelativeToFieldOurCoordinateSystem)
+    }
+}
+
+
+/**April tag location on the field, where the center of the field is (0, 0, 0) */
+data class AprilTagPositionOnField(val posAndRot: PositionAndRotation)
+
+
+/**Robot location on the field, where the center of the field is (0, 0).
+ * x and y are the 2d position. unit is Inches
+ * r is the rotation. unit is Degrees*/
+data class RobotPositionOnField(val posAndRot: PositionAndRotation)
