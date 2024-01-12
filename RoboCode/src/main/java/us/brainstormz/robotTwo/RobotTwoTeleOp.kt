@@ -20,6 +20,14 @@ class RobotTwoTeleOp: OpMode() {
     private lateinit var arm: Arm
     private lateinit var collctor: Collector
 
+    private val initialRobotState = RobotState(
+            armPos = Arm.Positions.In,
+            liftPosition = RobotTwoHardware.LiftPositions.Min,
+            leftClawPosition = LeftClawPosition.Retracted,
+            rightClawPosition = RightClawPosition.Retracted
+    )
+
+
     override fun init() {
         /** INIT PHASE */
         hardware.init(hardwareMap)
@@ -32,12 +40,7 @@ class RobotTwoTeleOp: OpMode() {
 
     private var previousGamepad1State: Gamepad = Gamepad()
     private var previousGamepad2State: Gamepad = Gamepad()
-    private var previousRobotState = RobotState(
-        armPos = Arm.Positions.In,
-        liftPosition = RobotTwoHardware.LiftPositions.Min,
-        leftClawPosition = LeftClawPosition.Retracted,
-        rightClawPosition = RightClawPosition.Retracted
-    )
+    private var previousRobotState = initialRobotState
     override fun loop() {
         /** TELE-OP PHASE */
 
