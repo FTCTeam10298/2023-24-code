@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.robotTwo.RobotTwoHardware.LeftClawPosition
@@ -17,14 +18,16 @@ class RobotTwoTeleOp: OpMode() {
     private val hardware = RobotTwoHardware(telemetry, this)
     val movement = MecanumDriveTrain(hardware)
     private lateinit var arm: Arm
+    private lateinit var collctor: Collector
 
     override fun init() {
         /** INIT PHASE */
         hardware.init(hardwareMap)
-        arm = Arm(
-                encoder= hardware.armEncoder,
-                armServo1= hardware.armServo1,
-                armServo2= hardware.armServo2)
+        arm = Arm(  encoder= hardware.armEncoder,
+                    armServo1= hardware.armServo1,
+                    armServo2= hardware.armServo2)
+        collctor = Collector(   extendoMotorMaster= hardware.extendoMotorMaster,
+                                extendoMotorSlave= hardware.extendoMotorSlave)
     }
 
     private var previousGamepad1State: Gamepad = Gamepad()
@@ -55,18 +58,18 @@ class RobotTwoTeleOp: OpMode() {
         val collectorTriggerActivation = 0.2
         when {  
             gamepad1.right_trigger > collectorTriggerActivation -> {
-                powerExtendo(gamepad1.right_trigger.toDouble())
+                collctor.powerExtendo(gamepad1.right_trigger.toDouble())
             }
             gamepad1.left_trigger > collectorTriggerActivation -> {
 //                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
-                powerExtendo(-gamepad1.left_trigger.toDouble())
+                collctor.powerExtendo(-gamepad1.left_trigger.toDouble())
             }
 //            transferState() != emptyPixelHandler -> {
 ////                spinCollector(RobotTwoHardware.CollectorPowers.Eject.power)
 //                moveExtendoTowardPosition(RobotTwoHardware.ExtendoPositions.Min.position)
 //            }
             else -> {
-                powerExtendo(0.0)
+                collctor.powerExtendo(0.0)
             }
         }
 
@@ -158,6 +161,9 @@ class RobotTwoTeleOp: OpMode() {
 //        telemetry.addLine("rightClawPosition: $rightClawPosition")
 //        telemetry.addLine("gamepad2.right_bumper: ${gamepad2.right_bumper}")
 //        telemetry.addLine("previousGamepad2State.right_bumper: ${previousGamepad2State.right_bumper}")
+        val maxSafeCurrentAmps = 5.5
+        hardware.extendoMotorMaster.setCurrentAlert(maxSafeCurrentAmps, CurrentUnit.AMPS)
+        telemetry.addLine("Extendo motor current: ${hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS)} \n Is over current of $maxSafeCurrentAmps amps: ${hardware.extendoMotorMaster.isOverCurrent}")
         telemetry.addLine("previousRobotState: $previousRobotState")
 
         //Hang
@@ -228,24 +234,5 @@ class RobotTwoTeleOp: OpMode() {
     private fun spinCollector(power: Double) {
         hardware.collectorServo1.power = power
         hardware.collectorServo2.power = power
-    }
-    private fun powerExtendo(power: Double) {
-        val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
-        val allowedPower = power
-//        if (currentPosition > RobotTwoHardware.ExtendoPositions.Max.position) {
-//            power.coerceAtMost(0.0)
-//        } else if (currentPosition < RobotTwoHardware.ExtendoPositions.Min.position) {
-//            power.coerceAtLeast(0.0)
-//        } else {
-//            power
-//        }
-
-        hardware.extendoMotorMaster.power = allowedPower
-        hardware.extendoMotorSlave.power = allowedPower
-    }
-    private fun moveExtendoTowardPosition(targetPosition: Double) {
-        val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
-        val power = hardware.extendoPositionPID.calcPID(targetPosition, currentPosition)
-        powerExtendo(power)
     }
 }
