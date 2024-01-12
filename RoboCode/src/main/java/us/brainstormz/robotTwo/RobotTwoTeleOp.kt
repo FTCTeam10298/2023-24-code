@@ -160,6 +160,12 @@ class RobotTwoTeleOp: OpMode() {
 //        telemetry.addLine("previousGamepad2State.right_bumper: ${previousGamepad2State.right_bumper}")
         telemetry.addLine("previousRobotState: $previousRobotState")
 
+        //Hang
+        hardware.hangReleaseServo.power = if (gamepad2.y) {
+            1.0
+        } else {
+            0.0
+        }
 
 
         //Previous state

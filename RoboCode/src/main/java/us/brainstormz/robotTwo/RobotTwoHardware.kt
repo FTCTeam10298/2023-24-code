@@ -85,7 +85,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var leftTransferSensor: RevColorSensorV3
     lateinit var rightTransferSensor: RevColorSensorV3
 
-    lateinit var hangReleaseServo: Servo
+    lateinit var hangReleaseServo: CRServo
 
     override lateinit var lOdom: EnhancedDCMotor
     override lateinit var rOdom: EnhancedDCMotor
@@ -147,6 +147,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         rightClawServo =    exHub.getServo(1)
         rightTransferServo = exHub.getCRServo(2)
         leftTransferServo = ctrlHub.getCRServo(5)
+
+        hangReleaseServo = exHub.getCRServo(5)
 
         //Sensors
 //        armEncoder = ctrlHub.getAnalogInput(1)
