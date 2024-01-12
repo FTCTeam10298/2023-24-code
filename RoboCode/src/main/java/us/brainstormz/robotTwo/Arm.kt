@@ -20,10 +20,10 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
         Out(60.0)
     }
 
-    val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0)
+    private val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0)
 
-    private val pid = PID(kp= 0.0041, ki= 0.000002)
-    val holdingConstant = 0.04
+    private val pid = PID(kp= 0.0038, ki= 0.00000)
+    val holdingConstant = 0.041
     val weightHorizontalDegrees = 218
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
 
@@ -42,8 +42,7 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
         val errorDegrees = (targetDegrees - currentDegrees) % 360
         println("errorDegrees: $errorDegrees")
         println("errorDegrees no wrap: ${targetDegrees - currentDegrees}")
-        return pid.calcPID(errorDegrees) +
-                (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
+        return pid.calcPID(errorDegrees) + (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
     }
 
     /** 0 angle is where the flat face of the claws is facing parallel to the ground */
