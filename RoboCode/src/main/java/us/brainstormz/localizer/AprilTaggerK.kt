@@ -126,7 +126,21 @@ class AprilTagger : LinearOpMode() {
 
         // Step through the list of detections and display info for each one.
         for (detection in currentDetections) {
-            if (detection.metadata != null) {
+            if (currentDetections.isNotEmpty()) {
+
+
+                val theTag = currentDetections[0]
+                val whatTag = theTag.id
+                //find units of cam relative to tag and tag relative to field
+                val currentPositionOfRobot = getCameraPositionOnField(theTag)
+                val orientation = currentPositionOfRobot.posAndRot.r
+
+                val tagPosition = getAprilTagLocation(whatTag)
+                telemetry.addLine("Sir, I found AprilTag ID 2.")
+                telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
+                telemetry.addLine("BUT the tag position is: $tagPosition")
+//                telemetry.addLine("Orientation Found: $orientation")
+
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
                 //
                 telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z))
@@ -138,23 +152,12 @@ class AprilTagger : LinearOpMode() {
                 telemetry.addLine("Random Madness!! $muchData")
 
 
-            } else {
-                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id))
-                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y))
-            }
+//            } else {
+//                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id))
+//                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y))
+//            }
         } // ...
-        if (currentDetections.isNotEmpty()) {
-            val theTag = currentDetections[0]
-            val whatTag = theTag.id
-            //find units of cam relative to tag and tag relative to field
-            val currentPositionOfRobot = getCameraPositionOnField(theTag)
-            val orientation = currentPositionOfRobot.posAndRot.r
 
-            val tagPosition = getAprilTagLocation(theTag.id)
-            telemetry.addLine("Sir, I found AprilTag ID $whatTag.")
-            telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
-            telemetry.addLine("BUT the tag position is: $tagPosition")
-            telemetry.addLine("Orientation Found: $orientation")
         }
         // Add "key" information to telemetry
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.")
@@ -186,13 +189,15 @@ class AprilTagger : LinearOpMode() {
 
         val tagRelativeToField = getAprilTagLocation(aprilTagDetection.id).posAndRot
 
-        var robotRelativeToFieldX = tagRelativeToField.x + tagRelativeToCameraOurCoordinateSystem.x
-        var robotRelativeToFieldY = tagRelativeToField.y + tagRelativeToCameraOurCoordinateSystem.y
+        //I guess subtraction works? Some things should just be worked out with experimentation.
+        //TODO: THIS IS INACCURATE AT MOST ANGLES. BEWARE!!
+        val robotRelativeToFieldX = tagRelativeToField.x - tagRelativeToCameraOurCoordinateSystem.x
+        val robotRelativeToFieldY = tagRelativeToField.y + tagRelativeToCameraOurCoordinateSystem.y
 //        val robotRelativeToFieldZ = (tagRelativeToCamera.z + tagRelativeToFieldZ)
 
         val robotRelativeToFieldRotation = tagRelativeToCameraOurCoordinateSystem.r
 
-        //TRIGONOMETRYYYY
+        //TODO: TRIGONOMETRYYYY
         //We're trying to find the angle between the AprilTag Y Axis and the bot. Draw this out:
         //There are two relevant angles: bearing, angle between us and the AprilTag, and
         //the angle between that bearing. If we find all of these, we can finish the triangle with
@@ -214,29 +219,19 @@ class AprilTagger : LinearOpMode() {
         //So, what length of AprilTagY is that? That's just the x of that point we just made.
 
         var distanceBetweenBotAndAprilTagXAxis = tagRelativeToField.x - robotRelativeToFieldX
+        println("Robot X Distance: $distanceBetweenBotAndAprilTagXAxis")
 
         var distanceBetweenBotAndAprilTagYAxis = tagRelativeToField.y - robotRelativeToFieldY
-
-        distanceBetweenBotAndAprilTagXAxis = (sqrt(2.0)/2)
-        distanceBetweenBotAndAprilTagYAxis = distanceBetweenBotAndAprilTagXAxis
-
-
 
         val tangentOfAngleBetweenCenterOfAprilTagAndBot =
                 distanceBetweenBotAndAprilTagYAxis/distanceBetweenBotAndAprilTagXAxis
 
         val angleBetweenCenterOfAprilTagAndRobot = Math.toDegrees(atan(tangentOfAngleBetweenCenterOfAprilTagAndBot))
-        println("Robot-AprilTag Angle Found: $angleBetweenCenterOfAprilTagAndRobot")
+//        println("Robot-AprilTag Angle Found: $angleBetweenCenterOfAprilTagAndRobot")
         val angleBetweenAprilTagYAxisAndRobot = 90 - angleBetweenCenterOfAprilTagAndRobot
-        println("Robot-AprilTag Axis Angle Found: $angleBetweenAprilTagYAxisAndRobot")
+//        println("Robot-AprilTag Axis Angle Found: $angleBetweenAprilTagYAxisAndRobot")
         //arctangent takes us home to the first angle! Yay!
 //        val angleBetween
-
-        val angleBetweenAprilTagYAndLineBetweenCenterOfBotAndAprilTagCenter =
-                tagRelativeToCamera.bearing
-
-        val angleBetweenAprilTagYAndCenterOfCamera =
-                angleBetweenCenterOfAprilTagAndRobot + angleBetweenAprilTagYAndLineBetweenCenterOfBotAndAprilTagCenter
 
         return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, angleBetweenAprilTagYAxisAndRobot))
     }
