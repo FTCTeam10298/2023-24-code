@@ -186,6 +186,7 @@ class AprilTagger : LinearOpMode() {
 //        val robotRelativeToFieldZ = (tagRelativeToCamera.z + tagRelativeToFieldZ)
 
         val robotRelativeToFieldRotation = tagRelativeToCameraOurCoordinateSystem.r
+
         //TRIGONOMETRYYYY
         //We're trying to find the angle between the AprilTag Y Axis and the bot. Draw this out:
         //There are two relevant angles: bearing, angle between us and the AprilTag, and
@@ -194,7 +195,6 @@ class AprilTagger : LinearOpMode() {
 
         //what is the point on AprilTagY that is at RobotX? A point that is (RobotX, AprilTagY).
 
-//        val intersectionBetweenBotAndAprilTagYAxis =
         val intersectionBetweenBotAndAprilTagYAxis = PositionAndRotation(
                 x= robotRelativeToFieldX,
                 y= tagRelativeToField.y,
@@ -207,7 +207,7 @@ class AprilTagger : LinearOpMode() {
         val distanceBetweenBotAndAprilTagYAxis = robotRelativeToFieldY - tagRelativeToField.y
 
         val tangentOfAngleBetweenCenterOfAprilTagAndBot =
-                aprilTagYBetweenBotLocationAndAprilTag/distanceBetweenBotAndAprilTagYAxis
+                distanceBetweenBotAndAprilTagYAxis/aprilTagYBetweenBotLocationAndAprilTag
         val angleBetweenCenterOfAprilTagAndRobot = atan(tangentOfAngleBetweenCenterOfAprilTagAndBot)
         //arctangent takes us home to the first angle! Yay!
 //        val angleBetween
