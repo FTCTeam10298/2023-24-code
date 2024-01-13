@@ -72,7 +72,7 @@ class AprilTagger : LinearOpMode() {
     //This is 4 cameras at lowest possible res. (maybe just return b/w? IDK how, but sounds good. Also, there's bitcrushing.)
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
-            Foo("Webcam 1", Size(640, 480)),
+            Foo("Webcam 1", Size(1920, 1080)),
 //            Foo("Webcam 2", Size(320, 240)),
 //            Foo("Webcam 3", Size(320, 240)),
 //          Foo("Webcam 4", Size(320, 240)) - Not working. Each bus seems to support 2 cameras.
