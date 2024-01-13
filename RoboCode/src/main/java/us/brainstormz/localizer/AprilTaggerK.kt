@@ -143,11 +143,13 @@ class AprilTagger : LinearOpMode() {
             val whatTag = theTag.id
             //find units of cam relative to tag and tag relative to field
             val currentPositionOfRobot = getCameraPositionOnField(theTag)
+            val orientation = currentPositionOfRobot.posAndRot.r
 
             val tagPosition = getAprilTagLocation(theTag.id)
-            telemetry.addLine("Sir, I found $whatTag")
+            telemetry.addLine("Sir, I found AprilTag ID $whatTag.")
             telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
             telemetry.addLine("BUT the tag position is: $tagPosition")
+            telemetry.addLine("Orientation Found: $orientation")
         }
         // Add "key" information to telemetry
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.")
@@ -173,7 +175,7 @@ class AprilTagger : LinearOpMode() {
         val tagRelativeToCameraOurCoordinateSystem = PositionAndRotation(
                 x= tagRelativeToCamera.x,
                 y= -tagRelativeToCamera.y,
-                r= 0.0
+                r= tagRelativeToCamera.bearing
         )
 
         val tagRelativeToField = getAprilTagLocation(aprilTagDetection.id).posAndRot
@@ -182,7 +184,11 @@ class AprilTagger : LinearOpMode() {
         val robotRelativeToFieldY = tagRelativeToField.y + tagRelativeToCameraOurCoordinateSystem.y
 //        val robotRelativeToFieldZ = (tagRelativeToCamera.z + tagRelativeToFieldZ)
 
-        return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, 0.0))
+        val robotRelativeToFieldRotation = tagRelativeToCameraOurCoordinateSystem.r
+        //TRIGONOMETRYYYY
+        //find distance between
+
+        return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, robotRelativeToFieldRotation))
     }
 
     /**Returns the position of an april tag when told the id of the tag */
