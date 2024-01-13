@@ -35,6 +35,7 @@ import org.firstinspires.ftc.robotcore.external.matrices.VectorF
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary
+import kotlin.math.atan
 
 
 /*
@@ -186,9 +187,38 @@ class AprilTagger : LinearOpMode() {
 
         val robotRelativeToFieldRotation = tagRelativeToCameraOurCoordinateSystem.r
         //TRIGONOMETRYYYY
-        //find distance between
+        //We're trying to find the angle between the AprilTag Y Axis and the bot. Draw this out:
+        //There are two relevant angles: bearing, angle between us and the AprilTag, and
+        //the angle between that bearing. If we find all of these, we can finish the triangle with
+        //180 - those two angles, which means the angle between this angle and
 
-        return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, robotRelativeToFieldRotation))
+        //what is the point on AprilTagY that is at RobotX? A point that is (RobotX, AprilTagY).
+
+//        val intersectionBetweenBotAndAprilTagYAxis =
+        val intersectionBetweenBotAndAprilTagYAxis = PositionAndRotation(
+                x= robotRelativeToFieldX,
+                y= tagRelativeToField.y,
+                r= 0.0 //there really isn't one.
+        )
+        //So, what length of AprilTagY is that? That's just the x of that point we just made.
+
+        val aprilTagYBetweenBotLocationAndAprilTag = robotRelativeToFieldX
+
+        val distanceBetweenBotAndAprilTagYAxis = robotRelativeToFieldY - tagRelativeToField.y
+
+        val tangentOfAngleBetweenCenterOfAprilTagAndBot =
+                aprilTagYBetweenBotLocationAndAprilTag/distanceBetweenBotAndAprilTagYAxis
+        val angleBetweenCenterOfAprilTagAndRobot = atan(tangentOfAngleBetweenCenterOfAprilTagAndBot)
+        //arctangent takes us home to the first angle! Yay!
+//        val angleBetween
+
+        val angleBetweenAprilTagYAndLineBetweenCenterOfBotAndAprilTagCenter =
+                tagRelativeToCamera.bearing
+
+        val angleBetweenAprilTagYAndCenterOfCamera =
+                angleBetweenCenterOfAprilTagAndRobot + angleBetweenAprilTagYAndLineBetweenCenterOfBotAndAprilTagCenter
+
+        return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, angleBetweenAprilTagYAndCenterOfCamera))
     }
 
     /**Returns the position of an april tag when told the id of the tag */
