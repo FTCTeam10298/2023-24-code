@@ -203,8 +203,8 @@ class AprilTagger : LinearOpMode() {
 
         val distanceBetweenAprilTagAndBot = tagRelativeToCamera.range
 
-        robotRelativeToFieldY = sqrt(2.0)/2
-        robotRelativeToFieldX = sqrt(2.0)/2
+//        robotRelativeToFieldY = (sqrt(2.0)/2)
+//        robotRelativeToFieldX = (sqrt(2.0)/2)
 
         val intersectionBetweenBotAndAprilTagYAxis = PositionAndRotation(
                 x= robotRelativeToFieldX,
@@ -213,15 +213,22 @@ class AprilTagger : LinearOpMode() {
         )
         //So, what length of AprilTagY is that? That's just the x of that point we just made.
 
-        val distanceBetweenBotAndAprilTagXAxis = tagRelativeToField.x - robotRelativeToFieldX
+        var distanceBetweenBotAndAprilTagXAxis = tagRelativeToField.x - robotRelativeToFieldX
 
-        val distanceBetweenBotAndAprilTagYAxis = tagRelativeToField.y - robotRelativeToFieldY
+        var distanceBetweenBotAndAprilTagYAxis = tagRelativeToField.y - robotRelativeToFieldY
+
+        distanceBetweenBotAndAprilTagXAxis = (sqrt(2.0)/2)
+        distanceBetweenBotAndAprilTagYAxis = distanceBetweenBotAndAprilTagXAxis
+
+
 
         val tangentOfAngleBetweenCenterOfAprilTagAndBot =
                 distanceBetweenBotAndAprilTagYAxis/distanceBetweenBotAndAprilTagXAxis
-        println("Robot Tangent Found: $tangentOfAngleBetweenCenterOfAprilTagAndBot")
-        val angleBetweenCenterOfAprilTagAndRobot = atan(tangentOfAngleBetweenCenterOfAprilTagAndBot)
+
+        val angleBetweenCenterOfAprilTagAndRobot = Math.toDegrees(atan(tangentOfAngleBetweenCenterOfAprilTagAndBot))
+        println("Robot-AprilTag Angle Found: $angleBetweenCenterOfAprilTagAndRobot")
         val angleBetweenAprilTagYAxisAndRobot = 90 - angleBetweenCenterOfAprilTagAndRobot
+        println("Robot-AprilTag Axis Angle Found: $angleBetweenAprilTagYAxisAndRobot")
         //arctangent takes us home to the first angle! Yay!
 //        val angleBetween
 
