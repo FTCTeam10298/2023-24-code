@@ -151,10 +151,10 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         hangReleaseServo = exHub.getCRServo(5)
 
         //Sensors
-        armEncoder = hwMap["a"] as AnalogInput //ctrlHub.getAnalogInput(1)
+        armEncoder = ctrlHub.getAnalogInput(3)
         leftCollectorPixelSensor = hwMap["leftSensor"] as ColorSensor
         rightCollectorPixelSensor = hwMap["rightSensor"] as RevColorSensorV3
-
+        imu = hwMap["imu"] as IMU
         sideOdom = MotorEncoderOnly(ctrlHub.getMotor(0), reversed= false)
         centerOdom = MotorEncoderOnly(ctrlHub.getMotor(3), reversed= false)
 
@@ -214,11 +214,11 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         rightClawServo.direction = Servo.Direction.FORWARD
 
         //IMU
-        imu = hwMap["imu"] as IMU
-                val parameters:IMU.Parameters = IMU.Parameters(RevHubOrientationOnRobot(
-                                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
-                                RevHubOrientationOnRobot.UsbFacingDirection.DOWN))
-        imu.initialize(parameters);
+        val parameters:IMU.Parameters = IMU.Parameters(RevHubOrientationOnRobot(
+                        RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                        RevHubOrientationOnRobot.UsbFacingDirection.DOWN))
+        imu.initialize(parameters)
+        imu.resetYaw()
     }
 
 
