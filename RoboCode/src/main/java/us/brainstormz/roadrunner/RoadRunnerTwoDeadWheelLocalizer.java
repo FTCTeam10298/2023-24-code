@@ -11,15 +11,13 @@ import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry;
 
-public final class TwoDeadWheelLocalizer implements Localizer {
+public final class RoadRunnerTwoDeadWheelLocalizer implements Localizer {
     public static class Params {
         public double parYTicks = 0.0; // y position of the parallel encoder (in tick units)
         public double perpXTicks = 0.0; // x position of the perpendicular encoder (in tick units)
@@ -37,9 +35,9 @@ public final class TwoDeadWheelLocalizer implements Localizer {
 
     private double lastRawHeadingVel, headingVelOffset;
 
-    public TwoDeadWheelLocalizer(TwoWheelImuOdometry hardware, double inPerTick) {
-        par = new OverflowEncoder(new RawEncoder((DcMotorEx) hardware.getSideOdom()));
-        perp = new OverflowEncoder(new RawEncoder((DcMotorEx) hardware.getCenterOdom()));
+    public RoadRunnerTwoDeadWheelLocalizer(TwoWheelImuOdometry hardware, double inPerTick) {
+        par = new OverflowEncoder(new RawEncoder((DcMotorEx) hardware.getSideOdom().getMotor()));
+        perp = new OverflowEncoder(new RawEncoder((DcMotorEx) hardware.getCenterOdom().getMotor()));
 
         this.imu = hardware.getImu();
 

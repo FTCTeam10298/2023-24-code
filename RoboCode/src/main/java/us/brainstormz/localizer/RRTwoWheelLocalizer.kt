@@ -2,7 +2,7 @@ package us.brainstormz.localizer
 
 import com.acmerobotics.roadrunner.Pose2d
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
-import us.brainstormz.roadrunner.TwoDeadWheelLocalizer
+import us.brainstormz.roadrunner.RoadRunnerTwoDeadWheelLocalizer
 import java.util.LinkedList
 import kotlin.math.PI
 
@@ -13,15 +13,13 @@ class RRTwoWheelLocalizer(hardware: TwoWheelImuOdometry): Localizer {
     val wheelCircumferenceInches = wheelCircumferenceMM / 25.4
     val inchesPerTick = wheelCircumferenceInches/countsPerRotation
 
-    val roadRunnerLocalizer = TwoDeadWheelLocalizer(hardware, inchesPerTick)
-
+    val roadRunnerLocalizer = RoadRunnerTwoDeadWheelLocalizer(hardware, inchesPerTick)
     override fun currentPositionAndRotation(): PositionAndRotation {
-        val (x, y) = pose.position;
-        val heading = pose.heading.real;
+        val (x, y) = pose.position
+        val heading = pose.heading.real
         //rr switches x and y
         return PositionAndRotation(x= y, y= x, r= Math.toDegrees(heading))
     }
-
 
     val defaultInitPose = Pose2d(0.0, 0.0, 0.0)
     var pose: Pose2d = defaultInitPose
