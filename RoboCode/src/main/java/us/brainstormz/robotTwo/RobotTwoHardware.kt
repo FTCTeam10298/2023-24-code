@@ -85,8 +85,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     lateinit var hangReleaseServo: CRServo
 
-    override lateinit var sideOdom: MotorEncoderOnly
-    override lateinit var centerOdom: MotorEncoderOnly
+    override lateinit var parallelOdom: MotorEncoderOnly
+    override lateinit var perpendicularOdom: MotorEncoderOnly
     override lateinit var imu: IMU
 
 
@@ -155,12 +155,12 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         leftCollectorPixelSensor = hwMap["leftSensor"] as ColorSensor
         rightCollectorPixelSensor = hwMap["rightSensor"] as RevColorSensorV3
         imu = hwMap["imu"] as IMU
-        sideOdom = MotorEncoderOnly(ctrlHub.getMotor(0), reversed= false)
-        centerOdom = MotorEncoderOnly(ctrlHub.getMotor(3), reversed= false)
+        parallelOdom = MotorEncoderOnly(ctrlHub.getMotor(0), reversed= false)
+        perpendicularOdom = MotorEncoderOnly(ctrlHub.getMotor(3), reversed= false)
 
         // Drivetrain
-        sideOdom.motor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        centerOdom.motor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        parallelOdom.motor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        perpendicularOdom.motor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
 
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
         rFDrive.direction = DcMotorSimple.Direction.REVERSE

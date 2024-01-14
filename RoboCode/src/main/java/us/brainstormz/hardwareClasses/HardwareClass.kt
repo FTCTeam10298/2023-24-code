@@ -1,6 +1,7 @@
 package us.brainstormz.hardwareClasses
 
 import com.qualcomm.robotcore.hardware.*
+import posePlanner.Point2D
 
 interface HardwareClass {
 
@@ -41,6 +42,8 @@ interface ThreeWheelOdometry: HardwareClass {
 
 interface TwoWheelImuOdometry: HardwareClass {
     val imu: IMU
-    val sideOdom: MotorEncoderOnly
-    val centerOdom: MotorEncoderOnly
+    val parallelOdom: MotorEncoderOnly
+    val parallelOdomOffsetFromCenter: Point2D
+    val perpendicularOdom: MotorEncoderOnly
+    val perpendicularOdomOffsetFromCenter: Point2D
 }

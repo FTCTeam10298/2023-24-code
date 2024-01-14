@@ -36,8 +36,8 @@ public final class RoadRunnerTwoDeadWheelLocalizer implements Localizer {
     private double lastRawHeadingVel, headingVelOffset;
 
     public RoadRunnerTwoDeadWheelLocalizer(TwoWheelImuOdometry hardware, double inPerTick) {
-        par = new OverflowEncoder(new RawEncoder((DcMotorEx) hardware.getSideOdom().getMotor()));
-        perp = new OverflowEncoder(new RawEncoder((DcMotorEx) hardware.getCenterOdom().getMotor()));
+        par = new OverflowEncoder(new RawEncoder((DcMotorEx) hardware.getParallelOdom().getMotor()));
+        perp = new OverflowEncoder(new RawEncoder((DcMotorEx) hardware.getPerpendicularOdom().getMotor()));
 
         this.imu = hardware.getImu();
 
