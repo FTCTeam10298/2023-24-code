@@ -129,8 +129,9 @@ class AprilTagger : LinearOpMode() {
             if (currentDetections.isNotEmpty()) {
 
 
-                val theTag = currentDetections[0]
+                val theTag = detection
                 val whatTag = theTag.id
+                val tagBadness = theTag.hamming //not necessary... yaw = distortion, typically
                 //find units of cam relative to tag and tag relative to field
                 val currentPositionOfRobot = getCameraPositionOnField(theTag)
                 val orientation = currentPositionOfRobot.posAndRot.r
@@ -139,6 +140,7 @@ class AprilTagger : LinearOpMode() {
                 telemetry.addLine("Sir, I found AprilTag ID 2.")
                 telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
                 telemetry.addLine("BUT the tag position is: $tagPosition")
+                telemetry.addLine("Error Correction Bits Added (hamming): $tagBadness")
 //                telemetry.addLine("Orientation Found: $orientation")
 
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
