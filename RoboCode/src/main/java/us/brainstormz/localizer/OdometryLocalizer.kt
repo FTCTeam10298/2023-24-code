@@ -1,13 +1,7 @@
 package us.brainstormz.localizer
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.DcMotor
-import us.brainstormz.hardwareClasses.EnhancedDCMotor
 import us.brainstormz.hardwareClasses.MecOdometry
-import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.telemetryWizard.GlobalConsole
-import us.brainstormz.telemetryWizard.TelemetryConsole
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -72,9 +66,9 @@ class OdometryLocalizer(private val odomHardware: MecOdometry) : Localizer {
     }
 
     private fun calcEncoderDeltas() {
-        val currentL = -odomHardware.lOdom.currentPosition.toDouble() / (OdometryFacts.ticksPerRotation / OdometryFacts.rotationsPerInch)
-        val currentR = -odomHardware.rOdom.currentPosition.toDouble() / (OdometryFacts.ticksPerRotation / OdometryFacts.rotationsPerInch)
-        val currentC = odomHardware.cOdom.currentPosition.toDouble() / (OdometryFacts.ticksPerRotation / OdometryFacts.rotationsPerInch)
+        val currentL = -odomHardware.lOdom.getCurrentPosition().toDouble() / (OdometryFacts.ticksPerRotation / OdometryFacts.rotationsPerInch)
+        val currentR = -odomHardware.rOdom.getCurrentPosition().toDouble() / (OdometryFacts.ticksPerRotation / OdometryFacts.rotationsPerInch)
+        val currentC = odomHardware.cOdom.getCurrentPosition().toDouble() / (OdometryFacts.ticksPerRotation / OdometryFacts.rotationsPerInch)
 
         deltaL = currentL - previousL
         deltaR = currentR - previousR

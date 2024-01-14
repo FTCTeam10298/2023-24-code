@@ -16,8 +16,7 @@ import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.TouchSensor
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import us.brainstormz.hardwareClasses.EnhancedDCMotor
-import us.brainstormz.hardwareClasses.MecOdometry
+import us.brainstormz.hardwareClasses.MotorEncoderOnly
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
@@ -86,8 +85,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     lateinit var hangReleaseServo: CRServo
 
-    override lateinit var sideOdom: EnhancedDCMotor
-    override lateinit var centerOdom: EnhancedDCMotor
+    override lateinit var sideOdom: MotorEncoderOnly
+    override lateinit var centerOdom: MotorEncoderOnly
     override lateinit var imu: IMU
 
 
@@ -156,12 +155,12 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         leftCollectorPixelSensor = hwMap["leftSensor"] as ColorSensor
         rightCollectorPixelSensor = hwMap["rightSensor"] as RevColorSensorV3
 
-        sideOdom = EnhancedDCMotor(ctrlHub.getMotor(0), reversed= false)
-        centerOdom = EnhancedDCMotor(ctrlHub.getMotor(3), reversed= false)
+        sideOdom = MotorEncoderOnly(ctrlHub.getMotor(0), reversed= false)
+        centerOdom = MotorEncoderOnly(ctrlHub.getMotor(3), reversed= false)
 
         // Drivetrain
-        sideOdom.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        centerOdom.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        sideOdom.motor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        centerOdom.motor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
 
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
         rFDrive.direction = DcMotorSimple.Direction.REVERSE

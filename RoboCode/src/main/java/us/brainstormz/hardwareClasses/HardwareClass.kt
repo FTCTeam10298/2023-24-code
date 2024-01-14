@@ -34,13 +34,13 @@ interface MecanumHardware: HardwareClass {
 }
 
 interface ThreeWheelOdometry: HardwareClass {
-    val lOdom: EnhancedDCMotor
-    val rOdom: EnhancedDCMotor
-    val cOdom: EnhancedDCMotor
+    val lOdom: MotorEncoderOnly
+    val rOdom: MotorEncoderOnly
+    val cOdom: MotorEncoderOnly
 }
 
 interface TwoWheelImuOdometry: HardwareClass {
     val imu: IMU
-    val sideOdom: EnhancedDCMotor
-    val centerOdom: EnhancedDCMotor
+    val sideOdom: MotorEncoderOnly
+    val centerOdom: MotorEncoderOnly
 }

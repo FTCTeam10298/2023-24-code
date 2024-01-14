@@ -1,11 +1,9 @@
 package us.brainstormz.hardwareClasses
 
 import com.qualcomm.robotcore.hardware.*
-import us.brainstormz.telemetryWizard.GlobalConsole
 
-open class EnhancedDCMotor(private val motor:DcMotor, val reversed: Boolean = false):DcMotor by motor {
-
-    override fun getCurrentPosition(): Int {
+open class MotorEncoderOnly(val motor:DcMotor, val reversed: Boolean = false) {
+    fun getCurrentPosition(): Int {
 //        val console = GlobalConsole.console
 //        console.display(5, "gettingReversedPosition")
         return motor.currentPosition * when (reversed) {

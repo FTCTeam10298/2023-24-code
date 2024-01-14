@@ -6,11 +6,10 @@ import org.firstinspires.ftc.robotcore.external.Func
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.Telemetry.Item
 import org.firstinspires.ftc.robotcore.external.Telemetry.Log
-import us.brainstormz.hardwareClasses.EnhancedDCMotor
+import us.brainstormz.hardwareClasses.MotorEncoderOnly
 import us.brainstormz.hardwareClasses.MecOdometry
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.telemetryWizard.GlobalConsole
-import us.brainstormz.telemetryWizard.TelemetryConsole
 import kotlin.math.*
 
 class EncoderLocalizer(private val hardware: MecanumHardware): Localizer {
@@ -100,9 +99,9 @@ class EncoderLocalizer(private val hardware: MecanumHardware): Localizer {
 //}
 
 class PhoHardware(): MecOdometry {
-    override val lOdom = EnhancedDCMotor(PhoMotor())
-    override val rOdom = EnhancedDCMotor(PhoMotor())
-    override val cOdom = EnhancedDCMotor(PhoMotor())
+    override val lOdom = MotorEncoderOnly(PhoMotor())
+    override val rOdom = MotorEncoderOnly(PhoMotor())
+    override val cOdom = MotorEncoderOnly(PhoMotor())
 
     override val lFDrive = PhoMotor()
     override val rFDrive = PhoMotor()
