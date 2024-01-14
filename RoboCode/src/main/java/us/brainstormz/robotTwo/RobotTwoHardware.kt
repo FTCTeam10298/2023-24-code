@@ -5,6 +5,7 @@ import com.qualcomm.hardware.rev.RevColorSensorV3
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.CRServo
+import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -43,10 +44,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var armServo2: CRServo
     lateinit var armEncoder: AnalogInput
 
-//    enum class ClawPosition {
-//        Retracted,
-//        Gripping
-//    }
+
     enum class RightClawPosition(val position: Double) {
         Retracted(1.0),
         Gripping(0.4)
@@ -70,20 +68,17 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var extendoMotorSlave: DcMotor
     lateinit var extendoMagnetLimit: TouchSensor
 
-    enum class CollectorPowers(val power: Double) {
-        Off(0.0),
-        Intake(1.0),
-        Eject(-1.0)
-    }
     lateinit var collectorServo1: CRServo
     lateinit var collectorServo2: CRServo
-    lateinit var leftCollectorPixelSensor: RevColorSensorV3
+    lateinit var leftCollectorPixelSensor: ColorSensor
     lateinit var rightCollectorPixelSensor: RevColorSensorV3
 
     lateinit var leftTransferServo: CRServo
     lateinit var rightTransferServo: CRServo
     lateinit var leftTransferSensor: RevColorSensorV3
     lateinit var rightTransferSensor: RevColorSensorV3
+    //Aka throbber
+    lateinit var transferDirectorServo: CRServo
 
     lateinit var hangReleaseServo: CRServo
 
@@ -96,7 +91,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         val armPos: Arm.Positions,
         val liftPosition: LiftPositions,
         val leftClawPosition: LeftClawPosition,
-        val rightClawPosition: RightClawPosition
+        val rightClawPosition: RightClawPosition,
+        val collectorState: Collector.CollectorPowers
     )
 
     override lateinit var hwMap: HardwareMap
@@ -146,13 +142,16 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         leftClawServo =     exHub.getServo(0)// left/right from driver 2 perspective when depositing
         rightClawServo =    exHub.getServo(1)
         rightTransferServo = exHub.getCRServo(2)
-        leftTransferServo = ctrlHub.getCRServo(5)
+        leftTransferServo = exHub.getCRServo(3)
+        transferDirectorServo = ctrlHub.getCRServo(5)
 
         hangReleaseServo = exHub.getCRServo(5)
 
         //Sensors
 //        armEncoder = ctrlHub.getAnalogInput(1)
         armEncoder = hwMap["a"] as AnalogInput
+        leftCollectorPixelSensor = hwMap["leftSensor"] as ColorSensor
+        rightCollectorPixelSensor = hwMap["rightSensor"] as RevColorSensorV3
 
         // Drivetrain
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
@@ -184,6 +183,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         //Transfer
         rightTransferServo.direction = DcMotorSimple.Direction.FORWARD
+        leftTransferServo.direction = DcMotorSimple.Direction.REVERSE
+
 
         //Lift
         liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
