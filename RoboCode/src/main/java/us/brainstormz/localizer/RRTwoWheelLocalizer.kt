@@ -11,7 +11,7 @@ class RRTwoWheelLocalizer(hardware: TwoWheelImuOdometry, inchesPerTick: Double):
     val roadRunnerLocalizer = RoadRunnerTwoDeadWheelLocalizer(hardware, inchesPerTick)
     override fun currentPositionAndRotation(): PositionAndRotation {
         val (x, y) = pose.position
-        val heading = pose.heading.real
+        val heading = pose.heading.toDouble()
         //rr switches x and y
         return PositionAndRotation(x= y, y= x, r= Math.toDegrees(heading))
     }
