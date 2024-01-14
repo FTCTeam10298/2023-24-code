@@ -2,6 +2,7 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevColorSensorV3
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.CRServo
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.TouchSensor
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
@@ -211,6 +213,13 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         //Claw
         leftClawServo.direction = Servo.Direction.FORWARD
         rightClawServo.direction = Servo.Direction.FORWARD
+
+        //IMU
+        imu = hwMap["imu"] as IMU
+                val parameters:IMU.Parameters = IMU.Parameters(RevHubOrientationOnRobot(
+                                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                                RevHubOrientationOnRobot.UsbFacingDirection.DOWN))
+        imu.initialize(parameters);
     }
 
 
