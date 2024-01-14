@@ -6,12 +6,7 @@ import us.brainstormz.roadrunner.RoadRunnerTwoDeadWheelLocalizer
 import java.util.LinkedList
 import kotlin.math.PI
 
-class RRTwoWheelLocalizer(hardware: TwoWheelImuOdometry): Localizer {
-    val countsPerRotation = 4096
-    val wheelDiameterMM = 35
-    val wheelCircumferenceMM = PI * wheelDiameterMM
-    val wheelCircumferenceInches = wheelCircumferenceMM / 25.4
-    val inchesPerTick = wheelCircumferenceInches/countsPerRotation
+class RRTwoWheelLocalizer(hardware: TwoWheelImuOdometry, inchesPerTick: Double): Localizer {
 
     val roadRunnerLocalizer = RoadRunnerTwoDeadWheelLocalizer(hardware, inchesPerTick)
     override fun currentPositionAndRotation(): PositionAndRotation {

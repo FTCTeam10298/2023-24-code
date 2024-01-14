@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import android.graphics.Point
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevColorSensorV3
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
@@ -16,18 +17,40 @@ import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.TouchSensor
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import posePlanner.Point2D
 import us.brainstormz.hardwareClasses.MotorEncoderOnly
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.pid.PID
 import java.lang.Thread.sleep
+import kotlin.math.PI
 
 class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
     override lateinit var lFDrive: DcMotor
     override lateinit var rFDrive: DcMotor
     override lateinit var lBDrive: DcMotor
     override lateinit var rBDrive: DcMotor
+
+    override lateinit var imu: IMU
+
+    operator fun Point2D.times(other: Point2D): Point2D =
+            Point2D(x= this.x * other.x, y= this.y * other.y)
+    val mmToInchConversionMultiplier = 1/25.4
+    val mmToInchConversionPointMultiplier = Point2D(mmToInchConversionMultiplier,mmToInchConversionMultiplier)
+
+    override lateinit var parallelOdom: MotorEncoderOnly
+    val parOdomOffsetFromCenterMM = Point2D(x= 24.0, y= -81.51231)
+    override val parallelOdomOffsetFromCenterInch = parOdomOffsetFromCenterMM * mmToInchConversionPointMultiplier
+    override lateinit var perpendicularOdom: MotorEncoderOnly
+    val perpOdomOffsetFromCenterMM = Point2D(x= -24.0, y= -81.51231)
+    override val perpendicularOdomOffsetFromCenterInch = perpOdomOffsetFromCenterMM * mmToInchConversionPointMultiplier
+
+    val countsPerRotation = 4096
+    val wheelDiameterMM = 35
+    val wheelCircumferenceMM = PI * wheelDiameterMM
+    val wheelCircumferenceInches = wheelCircumferenceMM * mmToInchConversionMultiplier
+    val inchesPerTick = wheelCircumferenceInches/countsPerRotation
 
     enum class LiftPositions(val position: Double) {
         Min(0.0),
@@ -84,11 +107,6 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var transferDirectorServo: CRServo
 
     lateinit var hangReleaseServo: CRServo
-
-    override lateinit var parallelOdom: MotorEncoderOnly
-    override lateinit var perpendicularOdom: MotorEncoderOnly
-    override lateinit var imu: IMU
-
 
     data class RobotState(
         val armPos: Arm.Positions,

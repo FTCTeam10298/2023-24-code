@@ -43,7 +43,7 @@ interface ThreeWheelOdometry: HardwareClass {
 interface TwoWheelImuOdometry: HardwareClass {
     val imu: IMU
     val parallelOdom: MotorEncoderOnly
-    val parallelOdomOffsetFromCenter: Point2D
+    val parallelOdomOffsetFromCenterInch: Point2D
     val perpendicularOdom: MotorEncoderOnly
-    val perpendicularOdomOffsetFromCenter: Point2D
+    val perpendicularOdomOffsetFromCenterInch: Point2D
 }

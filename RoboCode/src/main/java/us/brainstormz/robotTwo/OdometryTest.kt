@@ -11,7 +11,7 @@ class OdometryTest: OpMode() {
     lateinit var localizer: RRTwoWheelLocalizer
     override fun init() {
         hardware.init(hardwareMap)
-        localizer = RRTwoWheelLocalizer(hardware= hardware)
+        localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
     }
     override fun loop() {
         localizer.recalculatePositionAndRotation()
