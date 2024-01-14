@@ -41,6 +41,9 @@ public final class RoadRunnerTwoDeadWheelLocalizer implements Localizer {
 
         this.imu = hardware.getImu();
 
+        PARAMS.parYTicks = hardware.getParallelOdomOffsetFromCenterInch().getX() / inPerTick;
+        PARAMS.perpXTicks = hardware.getPerpendicularOdomOffsetFromCenterInch().getY() / inPerTick;
+
         lastParPos = par.getPositionAndVelocity().position;
         lastPerpPos = perp.getPositionAndVelocity().position;
         lastHeading = Rotation2d.exp(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
