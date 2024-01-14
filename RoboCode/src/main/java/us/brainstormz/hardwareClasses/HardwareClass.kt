@@ -38,3 +38,9 @@ interface ThreeWheelOdometry: HardwareClass {
     val rOdom: EnhancedDCMotor
     val cOdom: EnhancedDCMotor
 }
+
+interface TwoWheelImuOdometry: HardwareClass {
+    val imu: IMU
+    val sideOdom: EnhancedDCMotor
+    val centerOdom: EnhancedDCMotor
+}

@@ -16,11 +16,13 @@ import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.hardwareClasses.EnhancedDCMotor
 import us.brainstormz.hardwareClasses.MecOdometry
+import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
+import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.pid.PID
 import java.lang.Thread.sleep
 
-class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecOdometry {
+class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
     override lateinit var lFDrive: DcMotor
     override lateinit var rFDrive: DcMotor
     override lateinit var lBDrive: DcMotor
@@ -82,9 +84,9 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     lateinit var hangReleaseServo: CRServo
 
-    override lateinit var lOdom: EnhancedDCMotor
-    override lateinit var rOdom: EnhancedDCMotor
-    override lateinit var cOdom: EnhancedDCMotor
+    override lateinit var sideOdom: EnhancedDCMotor
+    override lateinit var centerOdom: EnhancedDCMotor
+    override lateinit var imu: IMU
 
 
     data class RobotState(
@@ -148,12 +150,17 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         hangReleaseServo = exHub.getCRServo(5)
 
         //Sensors
-//        armEncoder = ctrlHub.getAnalogInput(1)
-        armEncoder = hwMap["a"] as AnalogInput
+        armEncoder = hwMap["a"] as AnalogInput //ctrlHub.getAnalogInput(1)
         leftCollectorPixelSensor = hwMap["leftSensor"] as ColorSensor
         rightCollectorPixelSensor = hwMap["rightSensor"] as RevColorSensorV3
 
+        sideOdom = EnhancedDCMotor(ctrlHub.getMotor(0), reversed= false)
+        centerOdom = EnhancedDCMotor(ctrlHub.getMotor(3), reversed= false)
+
         // Drivetrain
+        sideOdom.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        centerOdom.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
         rFDrive.direction = DcMotorSimple.Direction.REVERSE
         lBDrive.direction = DcMotorSimple.Direction.FORWARD

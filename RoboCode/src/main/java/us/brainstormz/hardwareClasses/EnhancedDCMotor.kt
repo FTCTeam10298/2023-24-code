@@ -3,8 +3,7 @@ package us.brainstormz.hardwareClasses
 import com.qualcomm.robotcore.hardware.*
 import us.brainstormz.telemetryWizard.GlobalConsole
 
-open class EnhancedDCMotor(private val motor:DcMotor):DcMotor by motor {
-    var reversed: Boolean = false
+open class EnhancedDCMotor(private val motor:DcMotor, val reversed: Boolean = false):DcMotor by motor {
 
     override fun getCurrentPosition(): Int {
 //        val console = GlobalConsole.console

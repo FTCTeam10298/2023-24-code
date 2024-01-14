@@ -194,7 +194,6 @@ class RobotTwoTeleOp: OpMode() {
             0.0
         }
 
-
         //Previous state
         previousRobotState = RobotState(
             armPos = armPosition,
