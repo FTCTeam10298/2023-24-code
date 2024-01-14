@@ -22,7 +22,7 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
 
     private val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0)
 
-    private val pid = PID(kp= 0.0038, ki= 0.00000)
+    private val pid = PID(kp= 0.0038, ki= 0.0000002)
     val holdingConstant = 0.041
     val weightHorizontalDegrees = 218
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
