@@ -14,7 +14,7 @@ class OdometryTrackingTest: OpMode() {
     override fun init() {
         hardware.init(hardwareMap)
         localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
-        localizer.setPositionAndRotation(PositionAndRotation(0.0, 0.0, 0.0))
+        localizer.setPositionAndRotation(PositionAndRotation(0.0, 0.0, 90.0))
     }
     override fun loop() {
         val perpPos = hardware.perpendicularEncoder.getPositionAndVelocity().position
