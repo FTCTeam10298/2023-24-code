@@ -1,6 +1,8 @@
-package us.brainstormz.localizer
+package us.brainstormz.localizer.aprilTagLocalization
 
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
+import us.brainstormz.localizer.Localizer
+import us.brainstormz.localizer.PositionAndRotation
 
 interface AprilTagAndOdometryLocalizer: Localizer {
     val aprilTagPositionFinder: AprilTagPositionFinder
@@ -17,9 +19,9 @@ interface AprilTagDetector {
         Back
     }
     data class RobotRelativeAprilTagDetection (
-        val detection: AprilTagDetection,
-        val detectingCamera: CamerasOnOurRobot,
-        val detectionConfidence: Int
+            val detection: AprilTagDetection,
+            val detectingCamera: CamerasOnOurRobot,
+            val detectionConfidence: Int
     ) {
         val tagId = detection.id
         val tagPosition = detection.ftcPose
