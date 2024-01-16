@@ -104,8 +104,8 @@ class MecanumMovement(override val localizer: Localizer, override val hardware: 
         }
 
         // Calculate the error in x and y and use the PID to find the error in angle
-        val speedX: Double = xTranslationPID.calcPID(sin(angleRad) * distanceErrorY + cos(angleRad) * -distanceErrorX)
-        val speedY: Double = yTranslationPID.calcPID(cos(angleRad) * distanceErrorY + sin(angleRad) * distanceErrorX)
+        val speedX: Double = xTranslationPID.calcPID(sin(angleRad) * distanceErrorY + cos(angleRad) * distanceErrorX)
+        val speedY: Double = yTranslationPID.calcPID(cos(angleRad) * distanceErrorY + sin(angleRad) * -distanceErrorX)
         val speedA: Double = rotationPID.calcPID(angleError)
 
 //        telemetry.addLine("\ndistance error: $distanceError, \nangle error degrees: ${Math.toDegrees(angleError)}\n")

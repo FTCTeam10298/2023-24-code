@@ -18,7 +18,7 @@ class OdometryTrackingTest: OpMode() {
     override fun init() {
         hardware.init(hardwareMap)
         localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
-        localizer.setPositionAndRotation(PositionAndRotation(0.0, 0.0, 90.0))
+        localizer.setPositionAndRotation(PositionAndRotation(0.0, 0.0, 0.0))
     }
     override fun loop() {
         val perpPos = hardware.perpendicularEncoder.getPositionAndVelocity().position
@@ -56,6 +56,19 @@ class OdometryMovementTest: OpMode() {
         movement = MecanumMovement(hardware= hardware, localizer= localizer, telemetry= telemetry)
     }
 
+    val positions = listOf<PositionAndRotation>(
+            PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 10.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+    )
+    var currentTarget: PositionAndRotation = positions.first()
     override fun loop() {
 //        localizer.recalculatePositionAndRotation()
 
@@ -76,9 +89,14 @@ class OdometryMovementTest: OpMode() {
 //            motor.power = 0.0
 //        }
 //
-        movement.setSpeedAll(vY= 0.0, vX = 0.5, vA = 0.0, minPower = -1.0, maxPower = 1.0)
+//        movement.setSpeedAll(vY= 0.0, vX = 0.5, vA = 0.0, minPower = -1.0, maxPower = 1.0)
 
-//        movement.moveTowardTarget(PositionAndRotation(x= 10.0, y= 0.0, r= 0.0))
+
+        telemetry.addLine("currentTarget: $currentTarget")
+        val isAtTarget = movement.moveTowardTarget(currentTarget)
+
+        if (isAtTarget)
+            currentTarget = positions[positions.indexOf(currentTarget) + 1]
 
         telemetry.update()
     }
