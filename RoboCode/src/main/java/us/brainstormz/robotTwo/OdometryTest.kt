@@ -69,6 +69,9 @@ class OdometryMovementTest: OpMode() {
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
     )
     var currentTarget: PositionAndRotation = positions.first()
+    var currentTargetStartTimeMilis: Long = 0
+    data class PositionDataPoint(val target: PositionAndRotation, val timeToSuccessMilis: Long, val finalPosition: PositionAndRotation)
+    val positionData = mutableListOf<PositionDataPoint>()
     override fun loop() {
 //        localizer.recalculatePositionAndRotation()
 
@@ -95,8 +98,19 @@ class OdometryMovementTest: OpMode() {
         telemetry.addLine("currentTarget: $currentTarget")
         val isAtTarget = movement.moveTowardTarget(currentTarget)
 
-        if (isAtTarget)
-            currentTarget = positions[positions.indexOf(currentTarget) + 1]
+        if (isAtTarget) {
+            val index = positions.indexOf(currentTarget)
+            if (index != (positions.size - 1)) {
+
+                val timeToComplete = System.currentTimeMillis() - currentTargetStartTimeMilis
+                positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
+
+                currentTarget = PositionAndRotation(Math.random() * 10, Math.random() * 10,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+                currentTargetStartTimeMilis = System.currentTimeMillis()
+            }
+        }
+
+        telemetry.addLine("\n\npositionData: \n$positionData")
 
         telemetry.update()
     }
