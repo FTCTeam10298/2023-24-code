@@ -26,8 +26,33 @@ class OdometryTrackingTest: OpMode() {
 
         localizer.recalculatePositionAndRotation()
         val currentPosition = localizer.currentPositionAndRotation()
-        telemetry.addLine("rr current position: $currentPosition")
+        telemetry.addLine("current position: $currentPosition")
+        telemetry.addLine("Road runner internal current position: ${localizer.pose}")
 
         telemetry.update()
     }
+}
+
+@Autonomous
+class OdometryMovementTest: OpMode() {
+    val hardware = RobotTwoHardware(opmode= this, telemetry= telemetry)
+    lateinit var localizer: RRTwoWheelLocalizer
+    lateinit var movement: MecanumMovement
+    override fun init() {
+        hardware.init(hardwareMap)
+        localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
+        movement = MecanumMovement(hardware= hardware, localizer= localizer, telemetry= telemetry)
+    }
+
+    override fun loop() {
+        localizer.recalculatePositionAndRotation()
+
+        val currentPosition = localizer.currentPositionAndRotation()
+        telemetry.addLine("rr current position: $currentPosition")
+
+        movement.setSpeedAll(vY= 0.5, vX = 0.0, vA = 0.0, minPower = 0.0, maxPower = 1.0)
+
+        telemetry.update()
+    }
+
 }
