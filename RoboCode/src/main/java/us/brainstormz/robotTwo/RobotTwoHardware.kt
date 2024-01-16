@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo
 
-import android.graphics.Point
+import com.acmerobotics.roadrunner.ftc.OverflowEncoder
+import com.acmerobotics.roadrunner.ftc.RawEncoder
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevColorSensorV3
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
@@ -18,7 +19,6 @@ import com.qualcomm.robotcore.hardware.TouchSensor
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import posePlanner.Point2D
-import us.brainstormz.hardwareClasses.MotorEncoderOnly
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
@@ -39,10 +39,10 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     val mmToInchConversionMultiplier = 1/25.4
     val mmToInchConversionPointMultiplier = Point2D(mmToInchConversionMultiplier,mmToInchConversionMultiplier)
 
-    override lateinit var parallelOdom: MotorEncoderOnly
+    override lateinit var parallelEncoder: OverflowEncoder
     val parOdomOffsetFromCenterMM = Point2D(x= 24.0, y= -81.51231)
     override val parallelOdomOffsetFromCenterInch = parOdomOffsetFromCenterMM * mmToInchConversionPointMultiplier
-    override lateinit var perpendicularOdom: MotorEncoderOnly
+    override lateinit var perpendicularEncoder: OverflowEncoder
     val perpOdomOffsetFromCenterMM = Point2D(x= -24.0, y= -81.51231)
     override val perpendicularOdomOffsetFromCenterInch = perpOdomOffsetFromCenterMM * mmToInchConversionPointMultiplier
 
@@ -173,12 +173,16 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         leftCollectorPixelSensor = hwMap["leftSensor"] as ColorSensor
         rightCollectorPixelSensor = hwMap["rightSensor"] as RevColorSensorV3
         imu = hwMap["imu"] as IMU
-        parallelOdom = MotorEncoderOnly(ctrlHub.getMotor(0), reversed= false)
-        perpendicularOdom = MotorEncoderOnly(ctrlHub.getMotor(3), reversed= false)
+        val parallelOdomMotor = ctrlHub.getMotor(0)
+        parallelEncoder = OverflowEncoder(RawEncoder(parallelOdomMotor))
+        val perpendicularOdomMotor = ctrlHub.getMotor(3)
+        perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
         // Drivetrain
-        parallelOdom.motor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        perpendicularOdom.motor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        parallelEncoder.direction = DcMotorSimple.Direction.REVERSE
+        perpendicularEncoder.direction = DcMotorSimple.Direction.REVERSE
+        parallelOdomMotor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        perpendicularOdomMotor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
 
         lFDrive.direction = DcMotorSimple.Direction.FORWARD
         rFDrive.direction = DcMotorSimple.Direction.REVERSE

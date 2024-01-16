@@ -1,5 +1,6 @@
 package us.brainstormz.hardwareClasses
 
+import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.qualcomm.robotcore.hardware.*
 import posePlanner.Point2D
 
@@ -42,8 +43,8 @@ interface ThreeWheelOdometry: HardwareClass {
 
 interface TwoWheelImuOdometry: HardwareClass {
     val imu: IMU
-    val parallelOdom: MotorEncoderOnly
+    val parallelEncoder: OverflowEncoder
     val parallelOdomOffsetFromCenterInch: Point2D
-    val perpendicularOdom: MotorEncoderOnly
+    val perpendicularEncoder: OverflowEncoder
     val perpendicularOdomOffsetFromCenterInch: Point2D
 }
