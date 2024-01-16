@@ -11,9 +11,9 @@ class RRTwoWheelLocalizer(hardware: TwoWheelImuOdometry, inchesPerTick: Double):
     val roadRunnerLocalizer = RoadRunnerTwoDeadWheelLocalizer(hardware, inchesPerTick)
     override fun currentPositionAndRotation(): PositionAndRotation {
         val (x, y) = pose.position
-        val heading = pose.heading.toDouble()
+        val headingDegrees = Math.toDegrees(pose.heading.toDouble()) + 90
         //rr switches x and y
-        return PositionAndRotation(x= y, y= x, r= Math.toDegrees(heading))
+        return PositionAndRotation(x= x, y= y, r= headingDegrees)
     }
 
     val defaultInitPose = Pose2d(0.0, 0.0, 0.0)
@@ -29,8 +29,7 @@ class RRTwoWheelLocalizer(hardware: TwoWheelImuOdometry, inchesPerTick: Double):
 //        return twist.velocity().value()
     }
 
-    override fun setPositionAndRotation(x: Double?, y: Double?, r: Double?) {
-        pose = Pose2d(y ?:0.0, x ?:0.0, Math.toRadians(r ?:0.0))
+    override fun setPositionAndRotation(newPosition: PositionAndRotation) {
+        pose = Pose2d(positionY= newPosition.y, positionX= newPosition.x, heading= Math.toRadians(newPosition.r - 90))
     }
-
 }

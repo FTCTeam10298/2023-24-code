@@ -61,8 +61,8 @@ class OdometryLocalizer(private val odomHardware: MecOdometry) : Localizer {
 //            r -= 2 * Math.PI
     }
 
-    override fun setPositionAndRotation(x: Double?, y: Double?, r: Double?){
-        this.currentPositionAndRotation.setCoordinate(x=x, y=y, r=r)
+    override fun setPositionAndRotation(newPosition: PositionAndRotation){
+        this.currentPositionAndRotation.setCoordinate(x=newPosition.x, y=newPosition.y, r=newPosition.r)
     }
 
     private fun calcEncoderDeltas() {

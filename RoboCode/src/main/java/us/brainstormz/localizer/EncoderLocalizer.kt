@@ -50,8 +50,8 @@ class EncoderLocalizer(private val hardware: MecanumHardware): Localizer {
         currentPos = PositionAndRotation(currentX, currentY, currentR)
     }
 
-    override fun setPositionAndRotation(x: Double?, y: Double?, r: Double?) {
-        currentPos.setCoordinate(x, y, r)
+    override fun setPositionAndRotation(newPosition: PositionAndRotation) {
+        currentPos.setCoordinate(newPosition.x, newPosition.y, newPosition.r)
     }
 
 //    override fun startNewMovement() {
