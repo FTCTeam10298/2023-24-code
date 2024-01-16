@@ -162,7 +162,7 @@ class MecanumMovement(override val localizer: Localizer, override val hardware: 
         println("Powers: $fl, $bl, $fr, $br")
 
         // Set powers
-        driveSetPower(-fl, fr, -bl, br)
+        driveSetPower(fl, fr, bl, br)
     }
 
 }

@@ -2,10 +2,12 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.motion.MecanumMovement
+import java.lang.Thread.sleep
 
 @Autonomous
 class OdometryTrackingTest: OpMode() {
@@ -50,7 +52,20 @@ class OdometryMovementTest: OpMode() {
         val currentPosition = localizer.currentPositionAndRotation()
         telemetry.addLine("rr current position: $currentPosition")
 
-        movement.setSpeedAll(vY= 0.5, vX = 0.0, vA = 0.0, minPower = 0.0, maxPower = 1.0)
+//        val driveMotors = mapOf<String, DcMotor>(
+//                "left front" to hardware.lFDrive,
+//                "right front" to hardware.rFDrive,
+//                "left back" to hardware.lBDrive,
+//                "right back" to hardware.rBDrive
+//        )
+//        driveMotors.forEach{ (name, motor) ->
+//            telemetry.addLine("name: $name")
+//            telemetry.update()
+//            motor.power = 0.5
+//            sleep(2000)
+//            motor.power = 0.0
+//        }
+        movement.setSpeedAll(vY= 0.0, vX = 0.0, vA = 0.5, minPower = -1.0, maxPower = 1.0)
 
         telemetry.update()
     }

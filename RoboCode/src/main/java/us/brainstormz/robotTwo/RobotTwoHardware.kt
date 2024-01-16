@@ -145,10 +145,10 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         }
 
         //Motors
-        rFDrive =       ctrlHub.getMotor(0)
-        rBDrive =       ctrlHub.getMotor(1)
-        lBDrive =       ctrlHub.getMotor(2)
-        lFDrive =       ctrlHub.getMotor(3)
+        lFDrive =       ctrlHub.getMotor(0)
+        rFDrive =       ctrlHub.getMotor(3)
+        lBDrive =       ctrlHub.getMotor(1)
+        rBDrive =       ctrlHub.getMotor(2)
         extendoMotorMaster =    exHub.getMotor(0)
         extendoMotorSlave =     exHub.getMotor(1)
         liftMotorMaster =       exHub.getMotor(2)
