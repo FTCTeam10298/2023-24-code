@@ -6,14 +6,22 @@ import us.brainstormz.roadrunner.RoadRunnerTwoDeadWheelLocalizer
 import java.util.LinkedList
 import kotlin.math.PI
 
+/** This class reconciles our coordinate system (the official one) with RR's */
 class RRTwoWheelLocalizer(hardware: TwoWheelImuOdometry, inchesPerTick: Double): Localizer {
+    val roadRunnerLocalizer = RoadRunnerTwoDeadWheelLocalizer(
+            hardware.parallelEncoder,
+            hardware.perpendicularEncoder,
+            hardware.imu,
+            hardware.parallelOdomOffsetFromCenterInch.x / inchesPerTick,
+            hardware.perpendicularOdomOffsetFromCenterInch.y / inchesPerTick,
+            inchesPerTick)
 
-    val roadRunnerLocalizer = RoadRunnerTwoDeadWheelLocalizer(hardware, inchesPerTick)
     override fun currentPositionAndRotation(): PositionAndRotation {
         val (x, y) = pose.position
-        val headingDegrees = Math.toDegrees(pose.heading.toDouble()) + 90
+        val headingDegrees = Math.toDegrees(pose.heading.toDouble())
+
         //rr switches x and y
-        return PositionAndRotation(x= x, y= y, r= headingDegrees)
+        return PositionAndRotation(x= -y, y= x, r= headingDegrees)
     }
 
     val defaultInitPose = Pose2d(0.0, 0.0, 0.0)
@@ -30,6 +38,6 @@ class RRTwoWheelLocalizer(hardware: TwoWheelImuOdometry, inchesPerTick: Double):
     }
 
     override fun setPositionAndRotation(newPosition: PositionAndRotation) {
-        pose = Pose2d(positionY= newPosition.y, positionX= newPosition.x, heading= Math.toRadians(newPosition.r - 90))
+        pose = Pose2d(positionY= -newPosition.x, positionX= newPosition.y, heading= Math.toRadians(newPosition.r))
     }
 }

@@ -7,6 +7,7 @@ import kotlin.math.hypot
  * @param x X position
  * @param y Y position
  * @param r Angle, in degrees
+ * Matches the official coordinate system
  */
 data class PositionAndRotation(var x: Double = 0.0, var y: Double = 0.0, var r: Double = 0.0) {
 

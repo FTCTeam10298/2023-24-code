@@ -180,7 +180,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         // Drivetrain
         parallelEncoder.direction = DcMotorSimple.Direction.REVERSE
-        perpendicularEncoder.direction = DcMotorSimple.Direction.REVERSE
+        perpendicularEncoder.direction = DcMotorSimple.Direction.FORWARD
         parallelOdomMotor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         perpendicularOdomMotor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
 
