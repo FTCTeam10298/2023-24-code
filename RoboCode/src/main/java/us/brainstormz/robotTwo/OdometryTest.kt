@@ -105,9 +105,11 @@ class OdometryMovementTest: OpMode() {
                 val timeToComplete = System.currentTimeMillis() - currentTargetStartTimeMilis
                 positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
 
-                currentTarget = PositionAndRotation(Math.random() * 10, Math.random() * 10,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+                val distanceInches = 20
+                currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches)//,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
                 currentTargetStartTimeMilis = System.currentTimeMillis()
             }
+            sleep(500)
         }
 
         telemetry.addLine("\n\npositionData: \n$positionData")
