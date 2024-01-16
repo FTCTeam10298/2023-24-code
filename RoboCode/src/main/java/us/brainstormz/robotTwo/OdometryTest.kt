@@ -7,6 +7,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.motion.MecanumMovement
+import us.brainstormz.telemetryWizard.TelemetryConsole
+import us.brainstormz.telemetryWizard.TelemetryWizard
 import java.lang.Thread.sleep
 
 @Autonomous
@@ -40,14 +42,22 @@ class OdometryMovementTest: OpMode() {
     val hardware = RobotTwoHardware(opmode= this, telemetry= telemetry)
     lateinit var localizer: RRTwoWheelLocalizer
     lateinit var movement: MecanumMovement
+
+//    val console = TelemetryConsole(telemetry)
+//    val wizard = TelemetryWizard(console, null)
+
+
     override fun init() {
+//        wizard.newMenu("testType", "What test to run?", listOf("Drive motor", "Movement directions", "Full odom movement"), firstMenu = true)
+//        wizard.summonWizardBlocking(gamepad1)
+
         hardware.init(hardwareMap)
         localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         movement = MecanumMovement(hardware= hardware, localizer= localizer, telemetry= telemetry)
     }
 
     override fun loop() {
-        localizer.recalculatePositionAndRotation()
+//        localizer.recalculatePositionAndRotation()
 
         val currentPosition = localizer.currentPositionAndRotation()
         telemetry.addLine("rr current position: $currentPosition")
@@ -65,7 +75,10 @@ class OdometryMovementTest: OpMode() {
 //            sleep(2000)
 //            motor.power = 0.0
 //        }
-        movement.setSpeedAll(vY= 0.0, vX = 0.0, vA = 0.5, minPower = -1.0, maxPower = 1.0)
+//
+        movement.setSpeedAll(vY= 0.0, vX = 0.5, vA = 0.0, minPower = -1.0, maxPower = 1.0)
+
+//        movement.moveTowardTarget(PositionAndRotation(x= 10.0, y= 0.0, r= 0.0))
 
         telemetry.update()
     }
