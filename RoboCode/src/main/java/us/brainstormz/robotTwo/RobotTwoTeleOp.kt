@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
+import us.brainstormz.localizer.PositionAndRotation
+import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.robotTwo.RobotTwoHardware.LeftClawPosition
 import us.brainstormz.robotTwo.RobotTwoHardware.RightClawPosition
@@ -19,12 +21,30 @@ class RobotTwoTeleOp: OpMode() {
     private lateinit var arm: Arm
     private lateinit var collector: Collector
 
+    private lateinit var odometryLocalizer: RRTwoWheelLocalizer
+
+//    private val initialRobotState = RobotState(
+//            armPos = Arm.Positions.In,
+//            liftPosition = RobotTwoHardware.LiftPositions.Min,
+//            leftClawPosition = LeftClawPosition.Retracted,
+//            rightClawPosition = RightClawPosition.Retracted,
+//            collectorState = Collector.CollectorPowers.Off
+//    )
     private val initialRobotState = RobotState(
-            armPos = Arm.Positions.In,
-            liftPosition = RobotTwoHardware.LiftPositions.Min,
-            leftClawPosition = LeftClawPosition.Retracted,
-            rightClawPosition = RightClawPosition.Retracted,
-            collectorState = Collector.CollectorPowers.Off
+            positionAndRotation = PositionAndRotation(),
+            collectorState = Collector.CollectorState(
+                    collectorState = Collector.CollectorPowers.Off,
+                    extendoPosition = RobotTwoHardware.ExtendoPositions.Min,
+                    transferRollersState = Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off),
+                    transferLeftSensorState = Collector.TransferHalfState(false, 0),
+                    transferRightSensorState = Collector.TransferHalfState(false, 0)
+            ),
+            depoState = RobotTwoAuto.DepoState(
+                    liftPosition = RobotTwoHardware.LiftPositions.Min,
+                    armPos = Arm.Positions.In,
+                    leftClawPosition = LeftClawPosition.Retracted,
+                    rightClawPosition = RightClawPosition.Retracted,
+            ),
     )
 
 
@@ -44,6 +64,8 @@ class RobotTwoTeleOp: OpMode() {
                                 leftCollectorPixelSensor= hardware.leftCollectorPixelSensor,
                                 rightCollectorPixelSensor= hardware.rightCollectorPixelSensor,
                                 telemetry= telemetry)
+
+        odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
     }
 
     private var previousGamepad1State: Gamepad = Gamepad()
@@ -125,7 +147,7 @@ class RobotTwoTeleOp: OpMode() {
                 RobotTwoHardware.LiftPositions.Transfer
             }
             else -> {
-                previousRobotState.liftPosition
+                previousRobotState.depoState.liftPosition
             }
         }
         if (gamepad2.left_stick_y.absoluteValue > 0.2) {
@@ -151,7 +173,7 @@ class RobotTwoTeleOp: OpMode() {
                 Arm.Positions.Out
             }
             else -> {
-                previousRobotState.armPos
+                previousRobotState.depoState.armPos
             }
         }
         arm.moveArmTowardPosition(armPosition.angleDegrees)
@@ -160,22 +182,22 @@ class RobotTwoTeleOp: OpMode() {
 
         //Claws
         val leftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
-            when (previousRobotState.leftClawPosition) {
+            when (previousRobotState.depoState.leftClawPosition) {
                 LeftClawPosition.Gripping -> LeftClawPosition.Retracted
                 LeftClawPosition.Retracted -> LeftClawPosition.Gripping
             }
         } else {
-            previousRobotState.leftClawPosition
+            previousRobotState.depoState.leftClawPosition
         }
         hardware.leftClawServo.position = leftClawPosition.position
 
         val rightClawPosition = if (gamepad2.right_bumper && !previousGamepad2State.right_bumper) {
-            when (previousRobotState.rightClawPosition) {
+            when (previousRobotState.depoState.rightClawPosition) {
                 RightClawPosition.Gripping -> RightClawPosition.Retracted
                 RightClawPosition.Retracted -> RightClawPosition.Gripping
             }
         } else {
-            previousRobotState.rightClawPosition
+            previousRobotState.depoState.rightClawPosition
         }
         hardware.rightClawServo.position = rightClawPosition.position
 //        telemetry.addLine("rightClawPosition: $rightClawPosition")

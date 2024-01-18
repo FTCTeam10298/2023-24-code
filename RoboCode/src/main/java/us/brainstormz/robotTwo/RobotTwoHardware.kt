@@ -22,6 +22,9 @@ import posePlanner.Point2D
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
+import us.brainstormz.localizer.Localizer
+import us.brainstormz.localizer.PositionAndRotation
+import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.pid.PID
 import java.lang.Thread.sleep
 import kotlin.math.PI
@@ -109,11 +112,9 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var hangReleaseServo: CRServo
 
     data class RobotState(
-        val armPos: Arm.Positions,
-        val liftPosition: LiftPositions,
-        val leftClawPosition: LeftClawPosition,
-        val rightClawPosition: RightClawPosition,
-        val collectorState: Collector.CollectorPowers
+            val positionAndRotation: PositionAndRotation,
+            val depoState: RobotTwoAuto.DepoState,
+            val collectorState: Collector.CollectorState
     )
 //
 //    data class HardwareHalves (
@@ -265,6 +266,37 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     }
 
+
+    private fun getLiftPos(power: Double): RobotTwoHardware.LiftPositions = RobotTwoHardware.LiftPositions.entries.firstOrNull { it ->
+        power == it.position
+    } ?: RobotTwoHardware.LiftPositions.Min
+
+    fun getActualState(previousActualState: RobotTwoAuto.ActualWorld?, arm: Arm, localizer: Localizer, collector: Collector): RobotTwoAuto.ActualWorld {
+        val depoState = RobotTwoAuto.DepoState(
+                liftPosition = getLiftPos(liftMotorMaster.currentPosition.toDouble()),
+
+                armPos = arm.getArmState(),
+
+                leftClawPosition = LeftClawPosition.entries.firstOrNull { it ->
+                    leftClawServo.position == it.position
+                } ?: LeftClawPosition.Retracted,
+
+                rightClawPosition = RightClawPosition.entries.firstOrNull { it ->
+                    rightClawServo.position == it.position
+                } ?: RightClawPosition.Retracted,
+        )
+
+        val actualRobot = RobotTwoAuto.RobotState(
+                positionAndRotation = localizer.currentPositionAndRotation(),
+                collectorState = collector.getCurrentState(previousActualState?.actualRobot?.collectorState),
+                depoState = depoState
+        )
+
+        return RobotTwoAuto.ActualWorld(
+                actualRobot = actualRobot,
+                System.currentTimeMillis()
+        )
+    }
 
     fun wiggleTest() {
         print("Wiggle test going")
