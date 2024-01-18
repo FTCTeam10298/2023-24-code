@@ -6,6 +6,7 @@ import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
+import us.brainstormz.robotTwo.RobotTwoHardware.UnchangingRobotAttributes.alliance
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 
@@ -68,6 +69,10 @@ class RobotTwoAuto: OpMode() {
     class ActualWorld(val actualRobot: RobotState,
                       val timestampMilis: Long)
 
+    enum class StartPosition {
+        Backboard,
+        Audience
+    }
 
     private val console = TelemetryConsole(telemetry)
     private val wizard = TelemetryWizard(console, null)
@@ -78,6 +83,8 @@ class RobotTwoAuto: OpMode() {
     private lateinit var collector: Collector
 
     private lateinit var arm: Arm
+
+    private lateinit var startPosition: StartPosition
 
     override fun init() {
         hardware.init(hardwareMap)
@@ -100,6 +107,8 @@ class RobotTwoAuto: OpMode() {
         arm = Arm(  encoder= hardware.armEncoder,
                 armServo1= hardware.armServo1,
                 armServo2= hardware.armServo2)
+
+        alliance = RobotTwoHardware.Alliance.Red
     }
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()

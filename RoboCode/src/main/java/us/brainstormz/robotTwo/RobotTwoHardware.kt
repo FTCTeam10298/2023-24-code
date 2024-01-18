@@ -125,6 +125,15 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 //    lateinit var leftHalf: HardwareHalves
 //    lateinit var rightHalf: HardwareHalves
 
+    enum class Alliance {
+        Red,
+        Blue
+    }
+
+    object UnchangingRobotAttributes {
+        var alliance = Alliance.Red
+    }
+
     override lateinit var hwMap: HardwareMap
     lateinit var ctrlHub: SmartLynxModule
     lateinit var exHub: SmartLynxModule
