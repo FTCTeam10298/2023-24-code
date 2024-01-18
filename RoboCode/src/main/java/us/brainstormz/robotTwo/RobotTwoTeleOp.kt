@@ -216,13 +216,7 @@ class RobotTwoTeleOp: OpMode() {
         }
 
         //Previous state
-        previousRobotState = RobotState(
-            armPos = armPosition,
-            liftPosition = liftPosition,
-            leftClawPosition = leftClawPosition,
-            rightClawPosition = rightClawPosition,
-            collectorState = Collector.CollectorPowers.Off
-        )
+        previousRobotState = hardware.getActualState(RobotTwoAuto.ActualWorld(previousRobotState, 0), arm, odometryLocalizer, collector).actualRobot
         previousGamepad1State.copy(gamepad1)
         previousGamepad2State.copy(gamepad2)
         telemetry.update()

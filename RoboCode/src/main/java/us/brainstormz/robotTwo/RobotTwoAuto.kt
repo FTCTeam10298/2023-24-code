@@ -9,6 +9,7 @@ import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.RobotTwoHardware.UnchangingRobotAttributes.alliance
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
+import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 
 @Autonomous
 class RobotTwoAuto: OpMode() {
@@ -62,12 +63,6 @@ class RobotTwoAuto: OpMode() {
         }
     }
 
-    data class RobotState(
-            val positionAndRotation: PositionAndRotation,
-            val depoState: DepoState,
-            val collectorState: Collector.CollectorState
-    )
-
     data class DepoState(
             val armPos: Arm.Positions,
             val liftPosition: RobotTwoHardware.LiftPositions,
@@ -76,7 +71,7 @@ class RobotTwoAuto: OpMode() {
     )
 
     open class TargetWorld(
-            val targetRobot: RobotState,
+            val targetRobot: RobotTwoHardware.RobotState,
             val isTargetReached: (previousTargetState: TargetWorld?, actualState: ActualWorld) -> Boolean)
     class ActualWorld(val actualRobot: RobotState,
                       val timestampMilis: Long)
