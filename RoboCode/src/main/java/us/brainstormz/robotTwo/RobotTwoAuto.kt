@@ -64,13 +64,8 @@ class RobotTwoAuto: OpMode() {
             val rightClawPosition: RobotTwoHardware.RightClawPosition,
     )
 
-//    data class NonRobotState(val isPreloadScored: Boolean)
-
     open class TargetWorld( val targetRobot: RobotState)
-//    open class TargetWorld( val targetRobot: RobotState,
-//                            val targetExtraRobot: NonRobotState)
     class ActualWorld(val actualRobot: RobotState,
-//                      val actualExtraRobot: NonRobotState,
                       val timestampMilis: Long)
 
 
