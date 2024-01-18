@@ -45,19 +45,61 @@ class RobotTwoAuto: OpMode() {
         )
     }
 
+    private val backBoardAuto: List<TargetWorld> = listOf(
 
+    )
+
+    private val audienceAuto: List<TargetWorld> = listOf(
+
+    )
+
+    private fun calcAutoTargetStateList(
+            alliance: RobotTwoHardware.Alliance,
+            startPosition: StartPosition,
+    ): List<TargetWorld> {
+
+        val startPosAccounted = when (startPosition) {
+            StartPosition.Backboard -> backBoardAuto
+            StartPosition.Audience -> audienceAuto
+        }
+
+        val allianceAccounted = flipAutoToOtherSide(startPosAccounted)
+
+        return allianceAccounted
+    }
+
+    private fun flipAutoToOtherSide(auto: List<TargetWorld>): List<TargetWorld> {
+        TODO()
+    }
+
+
+
+    private lateinit var autoStateList: List<TargetWorld>
+    private val autoListIterator = autoStateList.listIterator()
     private fun nextTargetState(
             previousTargetState: TargetWorld?,
             actualState: ActualWorld,
             previousActualState: ActualWorld?): TargetWorld {
-
+        return when {
+            previousTargetState == null -> {
+                autoListIterator.next()
+            }
+            previousTargetState.isTargetReached(previousTargetState, actualState) -> {
+                autoListIterator.next()
+            }
+            else -> {
+                previousTargetState
+            }
+        }
     }
+
 
     data class RobotState(
             val positionAndRotation: PositionAndRotation,
             val depoState: DepoState,
             val collectorState: Collector.CollectorState
     )
+
     data class DepoState(
             val armPos: Arm.Positions,
             val liftPosition: RobotTwoHardware.LiftPositions,
@@ -65,7 +107,9 @@ class RobotTwoAuto: OpMode() {
             val rightClawPosition: RobotTwoHardware.RightClawPosition,
     )
 
-    open class TargetWorld( val targetRobot: RobotState)
+    open class TargetWorld(
+            val targetRobot: RobotState,
+            val isTargetReached: (previousTargetState: TargetWorld?, actualState: ActualWorld) -> Boolean)
     class ActualWorld(val actualRobot: RobotState,
                       val timestampMilis: Long)
 
@@ -109,6 +153,9 @@ class RobotTwoAuto: OpMode() {
                 armServo2= hardware.armServo2)
 
         alliance = RobotTwoHardware.Alliance.Red
+
+
+        autoStateList = calcAutoTargetStateList(alliance, startPosition)
     }
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
