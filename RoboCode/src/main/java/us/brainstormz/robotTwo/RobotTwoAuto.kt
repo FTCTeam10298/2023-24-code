@@ -1,66 +1,16 @@
 package us.brainstormz.robotTwo
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
-import us.brainstormz.localizer.RRLocalizer
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
-import us.brainstormz.robotTwo.Collector.CollectorPowers
-import us.brainstormz.robotTwo.Collector.TransferState
-import us.brainstormz.threeDay.ThreeDayHardware
 
+@Autonomous
 class RobotTwoAuto: OpMode() {
-//    enum class RandomizationSteps: ScoringStep {
-//        AlignToSpike {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = true
-//        },
-//        DropOnSpike {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = false
-//        },
-//        AlignToBackboard {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = false
-//        },
-//        DropOnBackboard {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = false
-//        }
-//    }
-//    enum class CycleSteps: ScoringStep {
-//        AlignToStack {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = false
-//        },
-//        CollectPixel {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = false
-//        },
-//        AlignToBackboard {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = false
-//        },
-//        DepositPixels {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = false
-//        }
-//    }
-//    enum class ParkSteps: ScoringStep {
-//        GetToPosition {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = false
-//        },
-//        GetBotReadyForTeleOp {
-//            override fun successCondition(actualWorld: ActualWorld): Boolean = false
-//        }
-//    }
-//    enum class ScoringStrategies: ScoringStrategy {
-//        RandomizationTasks {
-//            override val steps: List<RandomizationSteps> = RandomizationSteps.entries
-//        },
-//        Cycles {
-//            override val steps: List<CycleSteps> = CycleSteps.entries
-//        },
-//        Park {
-//            override val steps: List<ParkSteps> = ParkSteps.entries
-//        }
-//    }
-
 
     private fun getLiftPos(power: Double): RobotTwoHardware.LiftPositions = RobotTwoHardware.LiftPositions.entries.firstOrNull { it ->
         power == it.position
@@ -94,23 +44,12 @@ class RobotTwoAuto: OpMode() {
         )
     }
 
-//    private fun strategySetter(previousTargetState: TargetWorld?, actualState: ActualWorld, previousActualState: ActualWorld?): ScoringStrategies {
-//
-//    }
-//    private fun nextStepFinder(
-//            scoringStrategies: ScoringStrategies,
-//            previousTargetState: TargetWorld?,
-//            actualState: ActualWorld,
-//            previousActualState: ActualWorld?): ScoringStep {
-//
-//    }
 
     private fun nextTargetState(
-//            scoringStep: ScoringStep,
             previousTargetState: TargetWorld?,
             actualState: ActualWorld,
             previousActualState: ActualWorld?): TargetWorld {
-        
+
     }
 
     data class RobotState(
@@ -173,8 +112,6 @@ class RobotTwoAuto: OpMode() {
         functionalReactiveAutoRunner.loop(
             actualStateGetter = ::actualStateReader,
             targetStateFetcher = { previousTargetState, actualState, previousActualState ->
-//                val strategy = strategySetter(previousTargetState, actualState, previousActualState)
-//                val nextStep = nextStepFinder(strategy, previousTargetState, actualState, previousActualState)
                 nextTargetState(previousTargetState, actualState, previousActualState)
             },
             stateFulfiller = { targetState, actualState ->
@@ -182,11 +119,4 @@ class RobotTwoAuto: OpMode() {
             }
         )
     }
-
-//    interface ScoringStrategy{
-//        val steps: List<ScoringStep>
-//    }
-//    interface ScoringStep {
-//        fun successCondition(actualWorld: ActualWorld): Boolean
-//    }
 }
