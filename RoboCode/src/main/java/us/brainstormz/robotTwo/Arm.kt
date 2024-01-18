@@ -49,6 +49,11 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
     fun getArmAngleDegrees(): Double {
         return encoderReader.getPositionDegrees()
     }
+
+    fun getArmState(): Arm.Positions = Arm.Positions.entries.firstOrNull { it ->
+        getArmAngleDegrees() == it.angleDegrees
+    } ?: Arm.Positions.Horizontal
+
 }
 
 @Autonomous

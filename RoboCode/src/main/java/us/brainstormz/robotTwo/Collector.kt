@@ -39,19 +39,17 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
             driverInput
     }
 
-
-
     fun spinCollector(power: Double) {
         collectorServo1.power = power
         collectorServo2.power = power
     }
-
 
     enum class DirectorState(val power: Double) {
         Left(1.0),
         Right(-1.0),
         Off(0.0)
     }
+
     data class TransferState(val leftServoCollect: CollectorPowers, val rightServoCollect: CollectorPowers, val directorState: DirectorState)
     data class TransferHalfState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
     var previousLeftTransferState = TransferHalfState(false, 0)
@@ -148,4 +146,60 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
 //        val power = hardware.extendoPositionPID.calcPID(targetPosition, currentPosition)
 //        powerExtendo(power)
 //    }
+
+    data class CollectorState(
+            val collectorState: CollectorPowers,
+            val extendoPosition: RobotTwoHardware.ExtendoPositions,
+            val transferRollersState: TransferState,
+            val transferLeftSensorState: TransferHalfState,
+            val transferRightSensorState: TransferHalfState,
+    )
+
+    private fun getCollectorPowerState(power: Double) = CollectorPowers.entries.firstOrNull { it ->
+        power == it.power
+    } ?: CollectorPowers.Off
+
+    private fun getDirectorPowerState(power: Double): Collector.DirectorState = Collector.DirectorState.entries.firstOrNull { it ->
+        power == it.power
+    } ?: Collector.DirectorState.Off
+
+    enum class Side {
+        Left,
+        Right
+    }
+
+    private fun getTransferHalfState(half: Side, previousState: TransferHalfState): TransferHalfState {
+        val sensor = when (half) {
+            Side.Left -> leftCollectorPixelSensor
+            Side.Right -> rightCollectorPixelSensor
+        }
+        val isSeeingPixel = isPixelIn(sensor)
+
+        val timeOfSeeingPixelMilis = when {
+            !previousState.hasPixelBeenSeen && isSeeingPixel-> System.currentTimeMillis()
+            !isSeeingPixel -> 0
+            else -> previousState.timeOfSeeingMilis
+        }
+        return TransferHalfState(isSeeingPixel, timeOfSeeingPixelMilis)
+    }
+
+    private val defaultPreviousState = TransferHalfState(false, 0)
+    fun getCurrentState(previousState: CollectorState?): CollectorState {
+        val collectorPowerState: CollectorPowers = getCollectorPowerState(collectorServo1.power)
+        val extendoPosition = RobotTwoHardware.ExtendoPositions.Min
+        val transferRollersState = TransferState(
+                leftServoCollect = getCollectorPowerState(leftTransferServo.power),
+                rightServoCollect = getCollectorPowerState(rightTransferServo.power),
+                directorState = getDirectorPowerState(transferDirectorServo.power),
+        )
+        val transferLeftSensorState = getTransferHalfState(Side.Left, previousState?.transferLeftSensorState ?: defaultPreviousState)
+        val transferRightSensorState = getTransferHalfState(Side.Right, previousState?.transferRightSensorState ?: defaultPreviousState)
+        return CollectorState(
+                collectorState = collectorPowerState,
+                extendoPosition = extendoPosition,
+                transferRollersState = transferRollersState,
+                transferLeftSensorState = transferLeftSensorState,
+                transferRightSensorState = transferRightSensorState
+        )
+    }
 }

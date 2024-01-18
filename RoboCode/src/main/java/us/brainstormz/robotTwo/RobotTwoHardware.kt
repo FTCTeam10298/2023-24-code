@@ -115,6 +115,15 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         val rightClawPosition: RightClawPosition,
         val collectorState: Collector.CollectorPowers
     )
+//
+//    data class HardwareHalves (
+//        val collectorServo: CRServo,
+//        val transferServo: Servo,
+//        val collectorSensor: ColorSensor,
+//        val transferSensor: ColorSensor
+//    )
+//    lateinit var leftHalf: HardwareHalves
+//    lateinit var rightHalf: HardwareHalves
 
     override lateinit var hwMap: HardwareMap
     lateinit var ctrlHub: SmartLynxModule
@@ -177,6 +186,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         parallelEncoder = OverflowEncoder(RawEncoder(parallelOdomMotor))
         val perpendicularOdomMotor = ctrlHub.getMotor(3)
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
+
 
         // Drivetrain
         parallelEncoder.direction = DcMotorSimple.Direction.REVERSE
@@ -241,6 +251,9 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
                         RevHubOrientationOnRobot.UsbFacingDirection.DOWN))
         imu.initialize(parameters)
         imu.resetYaw()
+
+        //Difineing Halves
+
     }
 
 

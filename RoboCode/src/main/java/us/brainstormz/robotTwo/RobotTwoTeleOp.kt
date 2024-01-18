@@ -128,7 +128,6 @@ class RobotTwoTeleOp: OpMode() {
                 previousRobotState.liftPosition
             }
         }
-
         if (gamepad2.left_stick_y.absoluteValue > 0.2) {
             powerLift(gamepad2.left_stick_y.toDouble())
         } else {
