@@ -65,8 +65,8 @@ class RobotTwoTeleOp: OpMode() {
                                 rightTransferServo=hardware. rightTransferServo,
                                 leftTransferServo= hardware.leftTransferServo,
                                 transferDirectorServo= hardware.transferDirectorServo,
-                                leftCollectorPixelSensor= hardware.leftCollectorPixelSensor,
-                                rightCollectorPixelSensor= hardware.rightCollectorPixelSensor,
+                                leftTransferPixelSensor= hardware.leftTransferSensor,
+                                rightTransferPixelSensor= hardware.rightTransferSensor,
                                 telemetry= telemetry)
 
         odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
@@ -134,13 +134,21 @@ class RobotTwoTeleOp: OpMode() {
         val autoTransferState = collector.getAutoTransferState(isCollecting= gamepad1.right_bumper)
         val transferState = when {
             gamepad1.dpad_right ->
-                Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Eject, Collector.DirectorState.Off)
+                Collector.TransferState(leftServoCollect = Collector.CollectorPowers.Off,
+                                        rightServoCollect = Collector.CollectorPowers.Eject,
+                                        directorState = Collector.DirectorState.Off)
             gamepad1.dpad_left ->
-                Collector.TransferState(Collector.CollectorPowers.Eject, Collector.CollectorPowers.Off, Collector.DirectorState.Off)
+                Collector.TransferState(leftServoCollect = Collector.CollectorPowers.Eject,
+                                        rightServoCollect = Collector.CollectorPowers.Off,
+                                        directorState = Collector.DirectorState.Off)
             gamepad1.dpad_up ->
-                Collector.TransferState(Collector.CollectorPowers.Intake, Collector.CollectorPowers.Intake, Collector.DirectorState.Off)
+                Collector.TransferState(leftServoCollect = Collector.CollectorPowers.Intake,
+                                        rightServoCollect = Collector.CollectorPowers.Intake,
+                                        directorState = Collector.DirectorState.Off)
             gamepad1.dpad_down ->
-                Collector.TransferState(Collector.CollectorPowers.Eject, Collector.CollectorPowers.Eject, Collector.DirectorState.Off)
+                Collector.TransferState(leftServoCollect = Collector.CollectorPowers.Eject,
+                                        rightServoCollect = Collector.CollectorPowers.Eject,
+                                        directorState = Collector.DirectorState.Off)
             else -> autoTransferState
         }
 

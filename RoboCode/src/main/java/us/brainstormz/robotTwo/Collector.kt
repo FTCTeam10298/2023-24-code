@@ -15,8 +15,8 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
                 private val rightTransferServo: CRServo,
                 private val leftTransferServo: CRServo,
                 private val transferDirectorServo: CRServo,
-                private val leftCollectorPixelSensor: ColorSensor,
-                private val rightCollectorPixelSensor: ColorSensor,
+                private val leftTransferPixelSensor: ColorSensor,
+                private val rightTransferPixelSensor: ColorSensor,
                 private val telemetry: Telemetry) {
 
     enum class CollectorPowers(val power: Double) {
@@ -57,7 +57,7 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     val extraTransferRollingTimeMilis = 3000
     fun getAutoTransferState(isCollecting: Boolean): TransferState {
         //Detection:
-        val isLeftSeeingPixel = isPixelIn(leftCollectorPixelSensor)
+        val isLeftSeeingPixel = isPixelIn(leftTransferPixelSensor)
         val timeOfSeeingLeftPixelMilis = when {
             !previousLeftTransferState.hasPixelBeenSeen && isLeftSeeingPixel-> System.currentTimeMillis()
             !isLeftSeeingPixel -> 0
@@ -65,7 +65,7 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
         }
         val leftTransferState = TransferHalfState(isLeftSeeingPixel, timeOfSeeingLeftPixelMilis)
 
-        val isRightSeeingPixel = isPixelIn(rightCollectorPixelSensor)
+        val isRightSeeingPixel = isPixelIn(rightTransferPixelSensor)
         val timeOfSeeingRightPixelMilis = when {
             !previousRightTransferState.hasPixelBeenSeen && isRightSeeingPixel-> System.currentTimeMillis()
             !isRightSeeingPixel -> 0
@@ -170,8 +170,8 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
 
     private fun getTransferHalfState(half: Side, previousState: TransferHalfState): TransferHalfState {
         val sensor = when (half) {
-            Side.Left -> leftCollectorPixelSensor
-            Side.Right -> rightCollectorPixelSensor
+            Side.Left -> leftTransferPixelSensor
+            Side.Right -> rightTransferPixelSensor
         }
         val isSeeingPixel = isPixelIn(sensor)
 

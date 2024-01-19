@@ -102,13 +102,15 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     lateinit var collectorServo1: CRServo
     lateinit var collectorServo2: CRServo
-    lateinit var leftCollectorPixelSensor: ColorSensor
-    lateinit var rightCollectorPixelSensor: ColorSensor
+//    lateinit var leftCollectorPixelSensor: ColorSensor
+//    lateinit var rightCollectorPixelSensor: ColorSensor
 
     lateinit var leftTransferServo: CRServo
     lateinit var rightTransferServo: CRServo
-    lateinit var leftTransferSensor: RevColorSensorV3
-    lateinit var rightTransferSensor: RevColorSensorV3
+    lateinit var leftTransferSensor: ColorSensor
+    lateinit var rightTransferSensor: ColorSensor
+    lateinit var leftRollerEncoder: AnalogInput
+    lateinit var rightRollerEncoder: AnalogInput
     //Aka throbber
     lateinit var transferDirectorServo: CRServo
 
@@ -195,8 +197,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)
-        leftCollectorPixelSensor = hwMap["leftSensor"] as ColorSensor
-        rightCollectorPixelSensor = hwMap["rightSensor"] as ColorSensor
+        leftTransferSensor = hwMap["leftSensor"] as ColorSensor
+        rightTransferSensor = hwMap["rightSensor"] as ColorSensor
         imu = hwMap["imu"] as IMU
         val parallelOdomMotor = ctrlHub.getMotor(0)
         parallelEncoder = OverflowEncoder(RawEncoder(parallelOdomMotor))
