@@ -59,16 +59,6 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     val wheelCircumferenceInches = wheelCircumferenceMM * mmToInchConversionMultiplier
     val inchesPerTick = wheelCircumferenceInches/countsPerRotation
 
-    enum class LiftPositions(val position: Double) {
-        Min(0.0),
-        Transfer(0.5),
-        BackboardBottomRow(1.0),
-        SetLine1(2.0),
-        SetLine2(3.0),
-        SetLine3(4.0),
-        Max(500.0)
-    }
-    val liftPositionPID = PID(kp = 1.0)
     lateinit var liftMotorMaster: DcMotorEx
     lateinit var liftMotorSlave: DcMotor
     lateinit var liftMagnetLimit: DigitalChannel
@@ -282,9 +272,9 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     }
 
 
-    private fun getLiftPos(power: Double): RobotTwoHardware.LiftPositions = RobotTwoHardware.LiftPositions.entries.firstOrNull { it ->
+    private fun getLiftPos(power: Double): Lift.LiftPositions = Lift.LiftPositions.entries.firstOrNull { it ->
         power == it.position
-    } ?: RobotTwoHardware.LiftPositions.Min
+    } ?: Lift.LiftPositions.Min
 
     fun getActualState(previousActualState: RobotTwoAuto.ActualWorld?, arm: Arm, localizer: Localizer, collector: Collector): RobotTwoAuto.ActualWorld {
         val depoState = RobotTwoAuto.DepoState(

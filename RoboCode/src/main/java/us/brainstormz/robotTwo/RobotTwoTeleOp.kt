@@ -22,6 +22,7 @@ class RobotTwoTeleOp: OpMode() {
     val movement = MecanumDriveTrain(hardware)
     private lateinit var arm: Arm
     private lateinit var collector: Collector
+    private lateinit var lift: Lift
 
     private lateinit var odometryLocalizer: RRTwoWheelLocalizer
 
@@ -42,7 +43,7 @@ class RobotTwoTeleOp: OpMode() {
                     transferRightSensorState = Collector.TransferHalfState(false, 0)
             ),
             depoState = RobotTwoAuto.DepoState(
-                    liftPosition = RobotTwoHardware.LiftPositions.Min,
+                    liftPosition = Lift.LiftPositions.Min,
                     armPos = Arm.Positions.In,
                     leftClawPosition = LeftClawPosition.Retracted,
                     rightClawPosition = RightClawPosition.Retracted,
@@ -69,6 +70,9 @@ class RobotTwoTeleOp: OpMode() {
                                 leftRollerEncoder= hardware.leftRollerEncoder,
                                 rightRollerEncoder= hardware.rightRollerEncoder,
                                 telemetry= telemetry)
+        lift = Lift(liftMotor1 = hardware.liftMotorMaster,
+                    liftMotor2 = hardware.liftMotorSlave,
+                    liftLimit = hardware.liftMagnetLimit)
 
         odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
     }
@@ -161,19 +165,19 @@ class RobotTwoTeleOp: OpMode() {
         //Lift
         val liftPosition = when {
             gamepad2.dpad_up -> {
-                RobotTwoHardware.LiftPositions.SetLine2
+                Lift.LiftPositions.SetLine2
             }
             gamepad2.dpad_down -> {
-                RobotTwoHardware.LiftPositions.Transfer
+                Lift.LiftPositions.Transfer
             }
             else -> {
                 previousRobotState.depoState.liftPosition
             }
         }
         if (gamepad2.left_stick_y.absoluteValue > 0.2) {
-            powerLift(gamepad2.left_stick_y.toDouble())
+            lift.powerLift(gamepad2.left_stick_y.toDouble())
         } else {
-            powerLift(0.0)
+            lift.powerLift(0.0)
 //            moveLiftTowardPosition(liftPosition.position)
         }
 
@@ -269,31 +273,5 @@ class RobotTwoTeleOp: OpMode() {
         //TODO Put logic here and sensors on the robot
         return TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
     }
-
-    enum class LiftToggleOptions {
-        SetLine1,
-        SetLine2,
-        SetLine3
-    }
-    private fun powerLift(power: Double) {
-        val currentPosition = hardware.liftMotorMaster.currentPosition.toDouble()
-        val allowedPower = power
-//        if (currentPosition > RobotTwoHardware.LiftPositions.Max.position) {
-//            power.coerceAtMost(0.0)
-//        } else if (currentPosition < RobotTwoHardware.LiftPositions.Min.position) {
-//            power.coerceAtLeast(0.0)
-//        } else {
-//            power
-//        }
-
-        hardware.liftMotorMaster.power = allowedPower
-        hardware.liftMotorSlave.power = allowedPower
-    }
-    private fun moveLiftTowardPosition(targetPosition: Double) {
-        val currentPosition = hardware.liftMotorMaster.currentPosition.toDouble()
-        val power = hardware.liftPositionPID.calcPID(targetPosition, currentPosition)
-        powerLift(power)
-    }
-
 
 }
