@@ -178,8 +178,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         armServo1 = ctrlHub.getCRServo(3)//
         armServo2 = ctrlHub.getCRServo(4)//
 
-        rightTransferServo = exHub.getCRServo(3)//
-        leftTransferServo = ctrlHub.getCRServo(5)//
+        rightTransferServo = ctrlHub.getCRServo(5)//
+        leftTransferServo = exHub.getCRServo(3)//
         transferDirectorServo = exHub.getCRServo(2)//
 
         leftClawServo =     exHub.getServo(0)   // left/right from driver 2 perspective when depositing
@@ -189,8 +189,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)
 
-        leftTransferSensor = hwMap["leftSensor"] as ColorSensor
-        rightTransferSensor = hwMap["rightSensor"] as ColorSensor
+        leftTransferSensor = hwMap["rightSensor"] as ColorSensor
+        rightTransferSensor = hwMap["leftSensor"] as ColorSensor
         leftRollerEncoder = exHub.getAnalogInput(1)
         rightRollerEncoder = ctrlHub.getAnalogInput(1)//port not yet determined
 
@@ -239,8 +239,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         collectorServo2.direction = DcMotorSimple.Direction.FORWARD
 
         //Transfer
-        rightTransferServo.direction = DcMotorSimple.Direction.FORWARD
-        leftTransferServo.direction = DcMotorSimple.Direction.REVERSE
+        rightTransferServo.direction = DcMotorSimple.Direction.REVERSE
+        leftTransferServo.direction = DcMotorSimple.Direction.FORWARD
 
 
         //Lift

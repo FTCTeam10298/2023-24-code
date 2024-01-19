@@ -32,6 +32,11 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     }
 
     val maxSafeCurrentAmps = 5.5
+    enum class DirectorState(val power: Double) {
+        Left(-1.0),
+        Right(1.0),
+        Off(0.0)
+    }
 
     init {
         extendoMotorMaster.setCurrentAlert(maxSafeCurrentAmps, CurrentUnit.AMPS)
@@ -50,11 +55,6 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
         collectorServo2.power = power
     }
 
-    enum class DirectorState(val power: Double) {
-        Left(1.0),
-        Right(-1.0),
-        Off(0.0)
-    }
 
     data class TransferState(val leftServoCollect: CollectorPowers, val rightServoCollect: CollectorPowers, val directorState: DirectorState)
     data class TransferHalfState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
