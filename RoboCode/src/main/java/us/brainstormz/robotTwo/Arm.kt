@@ -10,21 +10,17 @@ import kotlin.math.cos
 
 class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo) {
     enum class Positions(val angleDegrees:Double) {
-//        In(0.04),
-//        Transfer(0.058),
-//        Horizontal(0.23),
-//        Out(0.6)
-        In(245.0),
-        Transfer(240.0),
+        In(255.0),
+        Transfer(235.0),
         Horizontal(180.0),
         Out(60.0)
     }
 
-    private val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0)
+    private val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0-40)
 
-    private val pid = PID(kp= 0.0038, ki= 0.0000002)
-    val holdingConstant = 0.041
-    val weightHorizontalDegrees = 218
+    private val pid = PID(kp= 0.003, kd = 0.01)
+    val holdingConstant = 0.08
+    val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
 
     fun moveArmTowardPosition(targetPosition: Double) {

@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
 import com.qualcomm.hardware.lynx.LynxModule
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.hardware.rev.RevColorSensorV3
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -15,6 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
+import com.qualcomm.robotcore.hardware.LED
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.TouchSensor
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
@@ -112,6 +114,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     lateinit var hangReleaseServo: CRServo
 
+    lateinit var lights: RevBlinkinLedDriver
+
     data class RobotState(
             val positionAndRotation: PositionAndRotation,
             val depoState: RobotTwoAuto.DepoState,
@@ -178,8 +182,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         collectorServo1 =   exHub.getCRServo(4)//
         collectorServo2 =   ctrlHub.getCRServo(1)//
 
-        armServo1 = ctrlHub.getCRServo(2)//
-        armServo2 = ctrlHub.getCRServo(3)//
+        armServo1 = ctrlHub.getCRServo(3)//
+        armServo2 = ctrlHub.getCRServo(4)//
 
         rightTransferServo = exHub.getCRServo(3)//
         leftTransferServo = ctrlHub.getCRServo(5)//
@@ -199,6 +203,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         val perpendicularOdomMotor = ctrlHub.getMotor(3)
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
+        lights = hwMap["lights"] as RevBlinkinLedDriver
 
         // Drivetrain
         parallelEncoder.direction = DcMotorSimple.Direction.REVERSE

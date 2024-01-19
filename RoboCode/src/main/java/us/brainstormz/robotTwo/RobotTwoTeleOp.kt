@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
@@ -76,6 +77,10 @@ class RobotTwoTeleOp: OpMode() {
     private var previousRobotState = initialRobotState
     override fun loop() {
         /** TELE-OP PHASE */
+
+//        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.entries[(Math.random() * RevBlinkinLedDriver.BlinkinPattern.entries.size).toInt()])
+        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
+
 
         // DRONE DRIVE
         val yInput = gamepad1.left_stick_y.toDouble()
@@ -179,11 +184,11 @@ class RobotTwoTeleOp: OpMode() {
                 previousRobotState.depoState.armPos
             }
         }
-        arm.powerArm(gamepad2.left_stick_x.toDouble())
-//        arm.moveArmTowardPosition(armPosition.angleDegrees)
+//        arm.powerArm(gamepad2.left_stick_x.toDouble())
+        arm.moveArmTowardPosition(armPosition.angleDegrees)
         telemetry.addLine("arm target angle: ${armPosition.angleDegrees}")
         telemetry.addLine("arm current angle: ${arm.getArmAngleDegrees()}")
-        telemetry.addLine("arm current angle: ${hardware.armEncoder.voltage}")
+//        telemetry.addLine("arm current angle: ${hardware.armEncoder.voltage}")
 
         //Claws
         val leftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
@@ -222,6 +227,10 @@ class RobotTwoTeleOp: OpMode() {
 
         //Previous state
         previousRobotState = hardware.getActualState(RobotTwoAuto.ActualWorld(previousRobotState, 0), arm, odometryLocalizer, collector).actualRobot
+                .copy(depoState = RobotTwoAuto.DepoState(   armPos = armPosition,
+                                                            liftPosition = liftPosition,
+                                                            leftClawPosition = leftClawPosition,
+                                                            rightClawPosition = rightClawPosition))
         previousGamepad1State.copy(gamepad1)
         previousGamepad2State.copy(gamepad2)
         telemetry.update()
