@@ -183,6 +183,7 @@ class RobotTwoTeleOp: OpMode() {
 //        arm.moveArmTowardPosition(armPosition.angleDegrees)
         telemetry.addLine("arm target angle: ${armPosition.angleDegrees}")
         telemetry.addLine("arm current angle: ${arm.getArmAngleDegrees()}")
+        telemetry.addLine("arm current angle: ${hardware.armEncoder.voltage}")
 
         //Claws
         val leftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
