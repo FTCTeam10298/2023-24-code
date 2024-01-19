@@ -62,7 +62,7 @@ class RobotTwoTeleOp: OpMode() {
                                 extendoMotorSlave= hardware.extendoMotorSlave,
                                 collectorServo1 = hardware.collectorServo1,
                                 collectorServo2 = hardware.collectorServo2,
-                                rightTransferServo=hardware. rightTransferServo,
+                                rightTransferServo=hardware.rightTransferServo,
                                 leftTransferServo= hardware.leftTransferServo,
                                 transferDirectorServo= hardware.transferDirectorServo,
                                 leftTransferPixelSensor= hardware.leftTransferSensor,
@@ -159,7 +159,10 @@ class RobotTwoTeleOp: OpMode() {
         collector.runTransfer(transferState)
 
 
+
         telemetry.addLine("left transfer roller position: ${collector.leftEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("left transfer sensor: ${collector.isPixelIn(hardware.leftTransferSensor)}")
+        telemetry.addLine("right transfer sensor: ${collector.isPixelIn(hardware.rightTransferSensor)}")
 
 
         //Lift
