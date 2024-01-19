@@ -181,8 +181,7 @@ class RobotTwoTeleOp: OpMode() {
 //            moveLiftTowardPosition(liftPosition.position)
         }
 
-        telemetry.addLine("lift limit state: ${hardware.liftMagnetLimit.state}")
-        telemetry.addLine("lift limit mode: ${hardware.liftMagnetLimit.mode}")
+        telemetry.addLine("is Limit Switch Activated: ${lift.isLimitSwitchActivated()}")
 
 
         //Arm

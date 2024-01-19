@@ -191,8 +191,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         leftTransferSensor = hwMap["leftSensor"] as ColorSensor
         rightTransferSensor = hwMap["rightSensor"] as ColorSensor
-        leftRollerEncoder = ctrlHub.getAnalogInput(2)//some port
-        rightRollerEncoder = ctrlHub.getAnalogInput(4)//some port
+        leftRollerEncoder = exHub.getAnalogInput(1)
+        rightRollerEncoder = ctrlHub.getAnalogInput(1)//port not yet determined
 
         liftMagnetLimit = ctrlHub.getDigitalController(6) as DigitalChannel
 

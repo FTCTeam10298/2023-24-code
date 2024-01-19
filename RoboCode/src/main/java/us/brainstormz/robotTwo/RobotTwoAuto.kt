@@ -70,7 +70,7 @@ class RobotTwoAuto: OpMode() {
 
     data class DepoState(
             val armPos: Arm.Positions,
-            val liftPosition: RobotTwoHardware.LiftPositions,
+            val liftPosition: Lift.LiftPositions,
             val leftClawPosition: RobotTwoHardware.LeftClawPosition,
             val rightClawPosition: RobotTwoHardware.RightClawPosition,
     )
