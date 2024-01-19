@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
@@ -76,11 +77,11 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     enum class RightClawPosition(val position: Double) {
         Retracted(1.0),
-        Gripping(0.4)
+        Gripping(0.55)
     }
     enum class LeftClawPosition(val position: Double) {
         Retracted(1.0),
-        Gripping(0.56)
+        Gripping(0.49)
     }
     lateinit var leftClawServo: Servo
     lateinit var rightClawServo: Servo
@@ -174,21 +175,22 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         liftMotorSlave =        exHub.getMotor(3)
 
         //Servos
-        collectorServo1 =   ctrlHub.getCRServo(0)
-        collectorServo2 =   ctrlHub.getCRServo(1)
-        armServo1 = ctrlHub.getCRServo(2)
-        armServo2 = ctrlHub.getCRServo(3)
+        collectorServo1 =   exHub.getCRServo(4)//
+        collectorServo2 =   ctrlHub.getCRServo(1)//
 
-        leftClawServo =     exHub.getServo(0)// left/right from driver 2 perspective when depositing
-        rightClawServo =    exHub.getServo(1)
-        rightTransferServo = exHub.getCRServo(2)
-        leftTransferServo = exHub.getCRServo(3)
-        transferDirectorServo = ctrlHub.getCRServo(5)
+        armServo1 = ctrlHub.getCRServo(2)//
+        armServo2 = ctrlHub.getCRServo(3)//
 
+        rightTransferServo = exHub.getCRServo(3)//
+        leftTransferServo = ctrlHub.getCRServo(5)//
+        transferDirectorServo = exHub.getCRServo(2)//
+
+        leftClawServo =     exHub.getServo(0)   // left/right from driver 2 perspective when depositing
+        rightClawServo =    exHub.getServo(1)//
         hangReleaseServo = exHub.getCRServo(5)
 
         //Sensors
-        armEncoder = ctrlHub.getAnalogInput(3)
+        armEncoder = ctrlHub.getAnalogInput(2)
         leftCollectorPixelSensor = hwMap["leftSensor"] as ColorSensor
         rightCollectorPixelSensor = hwMap["rightSensor"] as RevColorSensorV3
         imu = hwMap["imu"] as IMU
@@ -262,8 +264,6 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         imu.initialize(parameters)
         imu.resetYaw()
 
-        //Difineing Halves
-
     }
 
 
@@ -279,14 +279,14 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
                 leftClawPosition = LeftClawPosition.entries.firstOrNull { it ->
                     leftClawServo.position == it.position
-                } ?: LeftClawPosition.Retracted,
+                } ?: LeftClawPosition.Gripping,
 
                 rightClawPosition = RightClawPosition.entries.firstOrNull { it ->
                     rightClawServo.position == it.position
-                } ?: RightClawPosition.Retracted,
+                } ?: RightClawPosition.Gripping,
         )
 
-        val actualRobot = RobotTwoAuto.RobotState(
+        val actualRobot = RobotState(
                 positionAndRotation = localizer.currentPositionAndRotation(),
                 collectorState = collector.getCurrentState(previousActualState?.actualRobot?.collectorState),
                 depoState = depoState
@@ -298,8 +298,9 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         )
     }
 
-    fun wiggleTest() {
-        print("Wiggle test going")
+    fun wiggleTest(telemetry: Telemetry, gamepad: Gamepad) {
+        telemetry.addLine("Wiggle test going")
+        telemetry.update()
 
         //Motors
         val motorPortNumbers = 0..3
@@ -311,13 +312,6 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         }
 
         //Servos
-        val servoPortNumbers = 0..5
-        val ctrlHubServos = servoPortNumbers.map { i ->
-            i to ctrlHub.getServo(i)
-        }
-        val exHubServos = servoPortNumbers.map { i ->
-            i to exHub.getServo(i)
-        }
 
 
         //Test
@@ -362,25 +356,58 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         5
 
         */
-        ctrlHubServos.forEach{it ->
-            val portNumber = it.first
-            val servo = it.second
-            println("HWMAP ctrlHubServo: $portNumber")
-            servo.position = 0.2
-            sleep(movementDelayMs)
-            servo.position = 0.0
+
+
+//        fun testServos(portNumber: Int, servo: Servo, hubName: String) {
+//            servo.position = 1.0
+////            while (!gamepad.b){
+//                sleep(1000)
+//                telemetry.addLine("Servo, $hubName port: $portNumber")
+//                telemetry.update()
+////            }
+//            servo.position = 0.0
+//            servo.close()
+//            sleep(500)
+//        }
+//
+        val servoPortNumbers = 0..5
+//        val ctrlHubServos = servoPortNumbers.map { i ->
+//            i to ctrlHub.getServo(i)
+//        }
+//        val exHubServos = servoPortNumbers.map { i ->
+//            i to exHub.getServo(i)
+//        }
+//
+//        ctrlHubServos.forEach{it ->
+//            testServos(it.first, it.second, "ctrlHub")
+//        }
+//        exHubServos.forEach{it ->
+//            testServos(it.first, it.second, "exHub")
+//        }
+
+        fun testCRServos(portNumber: Int, servo: CRServo, hubName: String) {
+            telemetry.addLine("CRServo, $hubName port: $portNumber")
+            telemetry.update()
+            servo.power = 1.0
+//            while (!gamepad.b){
+                sleep(1000)
+//            }
+            servo.power = 0.0
             servo.close()
-            sleep(inbetweenDelayMs)
+            sleep(2000)
         }
-        exHubServos.forEach{it ->
-            val portNumber = it.first
-            val servo = it.second
-            println("HWMAP exHubServo: $portNumber")
-            servo.position = 0.2
-            sleep(movementDelayMs)
-            servo.position = 0.0
-            servo.close()
-            sleep(inbetweenDelayMs)
+
+        val ctrlHubCRServos = servoPortNumbers.map { i ->
+            i to ctrlHub.getCRServo(i)
+        }
+        val exHubCRServos = servoPortNumbers.map { i ->
+            i to exHub.getCRServo(i)
+        }
+        ctrlHubCRServos.forEach{it ->
+            testCRServos(it.first, it.second, "ctrlHub")
+        }
+        exHubCRServos.forEach{it ->
+            testCRServos(it.first, it.second, "exHub")
         }
     }
 }

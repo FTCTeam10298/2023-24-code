@@ -51,6 +51,9 @@ class RobotTwoTeleOp: OpMode() {
     override fun init() {
         /** INIT PHASE */
         hardware.init(hardwareMap)
+
+        //hardware.wiggleTest(telemetry, gamepad1)
+
         arm = Arm(  encoder= hardware.armEncoder,
                     armServo1= hardware.armServo1,
                     armServo2= hardware.armServo2)
@@ -176,7 +179,8 @@ class RobotTwoTeleOp: OpMode() {
                 previousRobotState.depoState.armPos
             }
         }
-        arm.moveArmTowardPosition(armPosition.angleDegrees)
+        arm.powerArm(gamepad2.left_stick_x.toDouble())
+//        arm.moveArmTowardPosition(armPosition.angleDegrees)
         telemetry.addLine("arm target angle: ${armPosition.angleDegrees}")
         telemetry.addLine("arm current angle: ${arm.getArmAngleDegrees()}")
 
