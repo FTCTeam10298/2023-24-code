@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -17,7 +18,12 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
                 private val transferDirectorServo: CRServo,
                 private val leftTransferPixelSensor: ColorSensor,
                 private val rightTransferPixelSensor: ColorSensor,
+                leftRollerEncoder: AnalogInput,
+                rightRollerEncoder: AnalogInput,
                 private val telemetry: Telemetry) {
+
+    val leftEncoderReader = AxonEncoderReader(leftRollerEncoder, 0.0)
+    val rightEncoderReader = AxonEncoderReader(rightRollerEncoder, 0.0)
 
     enum class CollectorPowers(val power: Double) {
         Off(0.0),

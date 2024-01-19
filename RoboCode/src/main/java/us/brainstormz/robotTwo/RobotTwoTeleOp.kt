@@ -53,8 +53,6 @@ class RobotTwoTeleOp: OpMode() {
         /** INIT PHASE */
         hardware.init(hardwareMap)
 
-        //hardware.wiggleTest(telemetry, gamepad1)
-
         arm = Arm(  encoder= hardware.armEncoder,
                     armServo1= hardware.armServo1,
                     armServo2= hardware.armServo2)
@@ -67,6 +65,8 @@ class RobotTwoTeleOp: OpMode() {
                                 transferDirectorServo= hardware.transferDirectorServo,
                                 leftTransferPixelSensor= hardware.leftTransferSensor,
                                 rightTransferPixelSensor= hardware.rightTransferSensor,
+                                leftRollerEncoder= hardware.leftRollerEncoder,
+                                rightRollerEncoder= hardware.rightRollerEncoder,
                                 telemetry= telemetry)
 
         odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
@@ -151,8 +151,11 @@ class RobotTwoTeleOp: OpMode() {
                                         directorState = Collector.DirectorState.Off)
             else -> autoTransferState
         }
-
         collector.runTransfer(transferState)
+
+
+        telemetry.addLine("left transfer roller position: ${collector.leftEncoderReader.getPositionDegrees()}")
+
 
         //Lift
         val liftPosition = when {

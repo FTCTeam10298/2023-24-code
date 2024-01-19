@@ -197,9 +197,15 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)
+
         leftTransferSensor = hwMap["leftSensor"] as ColorSensor
         rightTransferSensor = hwMap["rightSensor"] as ColorSensor
+        leftRollerEncoder = ctrlHub.getAnalogInput(2)//some port
+        rightRollerEncoder = ctrlHub.getAnalogInput(4)//some port
+
+
         imu = hwMap["imu"] as IMU
+
         val parallelOdomMotor = ctrlHub.getMotor(0)
         parallelEncoder = OverflowEncoder(RawEncoder(parallelOdomMotor))
         val perpendicularOdomMotor = ctrlHub.getMotor(3)

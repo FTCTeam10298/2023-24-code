@@ -128,8 +128,10 @@ class RobotTwoAuto: OpMode() {
                 rightTransferServo=hardware. rightTransferServo,
                 leftTransferServo= hardware.leftTransferServo,
                 transferDirectorServo= hardware.transferDirectorServo,
-                leftCollectorPixelSensor= hardware.leftCollectorPixelSensor,
-                rightCollectorPixelSensor= hardware.rightCollectorPixelSensor,
+                leftTransferPixelSensor= hardware.leftTransferSensor,
+                rightTransferPixelSensor= hardware.rightTransferSensor,
+                leftRollerEncoder= hardware.leftRollerEncoder,
+                rightRollerEncoder= hardware.rightRollerEncoder,
                 telemetry= telemetry)
 
 
