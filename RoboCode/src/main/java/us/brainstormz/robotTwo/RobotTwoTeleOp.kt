@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.DigitalChannel
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
@@ -175,6 +176,9 @@ class RobotTwoTeleOp: OpMode() {
             powerLift(0.0)
 //            moveLiftTowardPosition(liftPosition.position)
         }
+
+        telemetry.addLine("lift limit state: ${hardware.liftMagnetLimit.state}")
+        telemetry.addLine("lift limit mode: ${hardware.liftMagnetLimit.mode}")
 
 
         //Arm

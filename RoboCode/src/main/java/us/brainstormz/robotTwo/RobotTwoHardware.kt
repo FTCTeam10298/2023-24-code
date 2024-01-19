@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.hardware.DigitalChannel
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
@@ -70,7 +71,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     val liftPositionPID = PID(kp = 1.0)
     lateinit var liftMotorMaster: DcMotorEx
     lateinit var liftMotorSlave: DcMotor
-    lateinit var liftMagnetLimit: TouchSensor
+    lateinit var liftMagnetLimit: DigitalChannel
 
     lateinit var armServo1: CRServo
     lateinit var armServo2: CRServo
@@ -98,7 +99,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     val extendoPositionPID = PID(kp = 1.0)
     lateinit var extendoMotorMaster: DcMotorEx
     lateinit var extendoMotorSlave: DcMotor
-    lateinit var extendoMagnetLimit: TouchSensor
+    lateinit var extendoMagnetLimit: DigitalChannel
 
     lateinit var collectorServo1: CRServo
     lateinit var collectorServo2: CRServo
@@ -203,6 +204,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         leftRollerEncoder = ctrlHub.getAnalogInput(2)//some port
         rightRollerEncoder = ctrlHub.getAnalogInput(4)//some port
 
+        liftMagnetLimit = ctrlHub.getDigitalController(6) as DigitalChannel
 
         imu = hwMap["imu"] as IMU
 
