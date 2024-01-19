@@ -4,11 +4,12 @@ import com.qualcomm.robotcore.hardware.AnalogInput
 
 
 class AxonEncoderReader(private val axonEncoder: AnalogInput, val angleOffsetDegrees: Double = 0.0) {
-    fun getPositionDegrees(): Double {
+    fun getPositionDegrees(): Double = getRawPositionDegrees() + angleOffsetDegrees
+
+    fun getRawPositionDegrees(): Double {
         // get the voltage of our analog line
         // divide by 3.3 (the max voltage) to get a value between 0 and 1
         // multiply by 360 to convert it to 0 to 360 degrees
-        return ((axonEncoder.voltage / 3.3) * 360) + angleOffsetDegrees
+        return ((axonEncoder.voltage / 3.3) * 360)
     }
-
 }
