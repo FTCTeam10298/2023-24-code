@@ -2,7 +2,6 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
@@ -15,7 +14,13 @@ import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 class RobotTwoAuto: OpMode() {
 
     private val backBoardAuto: List<TargetWorld> = listOf(
-
+//        TargetWorld(
+//                targetRobot = RobotState(
+//
+//                ),
+//                isTargetReached = {previousTargetState: TargetWorld?, actualState: ActualWorld ->
+//
+//                })
     )
 
     private val audienceAuto: List<TargetWorld> = listOf(

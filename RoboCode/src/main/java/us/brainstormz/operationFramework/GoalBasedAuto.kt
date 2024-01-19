@@ -26,7 +26,7 @@ class GoalBasedAuto<ScoringStrategy,
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     fun loop(
-        actualStateGetter: ()->ActualWorld,
+        actualStateGetter: (ActualWorld?)->ActualWorld,
         strategySetter: (actualWorld: ActualWorld, previousActualWorld: ActualWorld?, currentTimeMilis: Long) -> ScoringStrategy,
         nextStepFinder: (scoringStrategy: ScoringStrategy, actualWorld: ActualWorld, previousTargetWorld: TargetWorld?, currentTimeMilis: Long) -> TargetWorld,
         stateFulfiller: (targetWorld: TargetWorld, actualWorld: ActualWorld)->Unit
