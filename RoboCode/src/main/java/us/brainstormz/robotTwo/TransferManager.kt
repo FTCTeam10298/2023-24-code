@@ -60,7 +60,7 @@ class TransferManager(
             }
         }
 
-        val isCollectorAllTheWayIn = collector.isCollectorAllTheWayIn()
+        val isCollectorAllTheWayIn = collector.isExtendoAllTheWayIn()
         val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
 
         telemetry.addLine("Arms: ")

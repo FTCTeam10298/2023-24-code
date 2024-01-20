@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.pid.PID
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 
 class Collector(private val extendoMotorMaster: DcMotorEx,
                 private val extendoMotorSlave: DcMotor,
@@ -71,7 +72,14 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     private val leftFlapKp = 0.43
     private val rightFlapKp = 0.4
 
-    fun isCollectorAllTheWayIn(): Boolean {
+    private val acceptablePositionErrorTicks = 50
+    fun isExtendoAtPosition(targetPositionTicks: Int): Boolean {
+        val currentPositionTicks = extendoMotorMaster.currentPosition
+        val positionErrorTicks = targetPositionTicks - currentPositionTicks
+        return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
+    }
+
+    fun isExtendoAllTheWayIn(): Boolean {
         return extendoMotorMaster.currentPosition <= 10
     }
     fun arePixelsAlignedInTransfer(): Boolean {
@@ -81,7 +89,7 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     }
 
     fun moveCollectorAllTheWayIn() {
-        if (!isCollectorAllTheWayIn()) {
+        if (!isExtendoAllTheWayIn()) {
             powerExtendo(-0.5)
         }
     }
