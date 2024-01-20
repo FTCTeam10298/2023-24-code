@@ -154,15 +154,19 @@ class RobotTwoAuto: OpMode() {
             previousTargetState: TargetWorld?,
             actualState: ActualWorld,
             previousActualState: ActualWorld?): TargetWorld {
-        return when {
-            previousTargetState == null -> {
-                autoListIterator.next()
-            }
-            previousTargetState.isTargetReached(previousTargetState!!, actualState) && autoListIterator.hasNext()-> {
-                autoListIterator.next()
-            }
-            else -> {
-                previousTargetState
+        return if (previousTargetState == null) {
+            autoListIterator.next()
+        } else {
+            val isTargetReached = previousTargetState.isTargetReached(previousTargetState!!, actualState)
+            telemetry.addLine("isTargetReached: $isTargetReached")
+
+            when {
+                isTargetReached && autoListIterator.hasNext()-> {
+                    autoListIterator.next()
+                }
+                else -> {
+                    previousTargetState
+                }
             }
         }
     }
