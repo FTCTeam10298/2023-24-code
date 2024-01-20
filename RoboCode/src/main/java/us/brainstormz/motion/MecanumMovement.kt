@@ -35,7 +35,7 @@ class MecanumMovement(override val localizer: Localizer, override val hardware: 
     var xTranslationPID = defaultXTranslationPID
     var rotationPID = defaultRotationPID
     override var precisionInches: Double = defaultPrecisionInches
-    override var precisionDegrees: Double = 3.0
+    override var precisionDegrees: Double = 2.0
 
     /**
      * Blocking function
