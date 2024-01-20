@@ -69,7 +69,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-                        hasTimeElapsed(timeToElapseMilis = 200, targetState)
+                        hasTimeElapsed(timeToElapseMilis = 220, targetState)
                     },),
             TargetWorld(
                     targetRobot = RobotState(

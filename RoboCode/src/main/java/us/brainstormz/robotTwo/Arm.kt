@@ -17,7 +17,7 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
 
     private val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0-40)
 
-    private val outPid = PID(kp= 0.0025, kd = 0.01)
+    private val outPid = PID(kp= 0.0026, kd = 0.01)
     private val outHoldingConstant = 0.08
     private val inPid = PID(kp= 0.0015, ki = 0.00000035, kd = 0.000055)
     private val inHoldingConstant = 0.035
@@ -67,23 +67,23 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
             outPid.reset()
         }
 
-        telemetry.addLine("previousIsisArmTargetInOfMidpoint: $previousIsisArmTargetInOfMidpoint")
-        telemetry.addLine("isArmTargetInOfMidpoint: $isArmTargetInOfMidpoint")
+//        telemetry.addLine("previousIsisArmTargetInOfMidpoint: $previousIsisArmTargetInOfMidpoint")
+//        telemetry.addLine("isArmTargetInOfMidpoint: $isArmTargetInOfMidpoint")
         previousIsisArmTargetInOfMidpoint = isArmTargetInOfMidpoint
 
         val pidPower = pid.calcPID(errorDegrees)
         val gravityCompPower = (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
         val power = pidPower + gravityCompPower
-        telemetry.addLine("Arm currentDegrees: $currentDegrees")
-        telemetry.addLine("Arm raw currentDegrees: ${encoderReader.getRawPositionDegrees()}")
-        telemetry.addLine("Arm encoder voltage: ${encoder.voltage}")
-        telemetry.addLine("Arm encoder MAX voltage: ${encoder.maxVoltage}")
-        telemetry.addLine("Arm targetDegrees: $targetDegrees")
-        telemetry.addLine("Arm errorDegrees no wrap: ${targetDegrees - currentDegrees}")
-        telemetry.addLine("Arm errorDegrees: $errorDegrees")
-        telemetry.addLine("Arm pidPower: $pidPower")
-        telemetry.addLine("Arm gravityCompPower: $gravityCompPower")
-        telemetry.addLine("Arm power: $power")
+//        telemetry.addLine("Arm currentDegrees: $currentDegrees")
+//        telemetry.addLine("Arm raw currentDegrees: ${encoderReader.getRawPositionDegrees()}")
+//        telemetry.addLine("Arm encoder voltage: ${encoder.voltage}")
+//        telemetry.addLine("Arm encoder MAX voltage: ${encoder.maxVoltage}")
+//        telemetry.addLine("Arm targetDegrees: $targetDegrees")
+//        telemetry.addLine("Arm errorDegrees no wrap: ${targetDegrees - currentDegrees}")
+//        telemetry.addLine("Arm errorDegrees: $errorDegrees")
+//        telemetry.addLine("Arm pidPower: $pidPower")
+//        telemetry.addLine("Arm gravityCompPower: $gravityCompPower")
+//        telemetry.addLine("Arm power: $power")
         return power
     }
 
