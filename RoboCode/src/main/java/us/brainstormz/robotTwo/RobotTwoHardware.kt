@@ -283,7 +283,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
 
     private fun getLiftPos(power: Double): Lift.LiftPositions = Lift.LiftPositions.entries.firstOrNull { it ->
-        power == it.ticks
+        power == it.ticks.toDouble()
     } ?: Lift.LiftPositions.Min
 
     fun getActualState(previousActualState: RobotTwoAuto.ActualWorld?, arm: Arm, localizer: Localizer, collectorSystem: CollectorSystem): RobotTwoAuto.ActualWorld {

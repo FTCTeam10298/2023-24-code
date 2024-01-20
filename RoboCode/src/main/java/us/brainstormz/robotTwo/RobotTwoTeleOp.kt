@@ -217,7 +217,8 @@ class RobotTwoTeleOp: OpMode() {
 //            moveLiftTowardPosition(liftPosition.position)
         }
 
-        telemetry.addLine("is Limit Switch Activated: ${lift.isLimitSwitchActivated()}")
+        telemetry.addLine("lift current Position ${hardware.liftMotorMaster.currentPosition}")
+        telemetry.addLine("is Lift limit Switch Activated: ${lift.isLimitSwitchActivated()}")
 
         //Arm
         val armPosition = when {

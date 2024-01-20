@@ -5,13 +5,14 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DigitalChannel
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.pid.PID
+import kotlin.math.absoluteValue
 
 class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, private val liftLimit: DigitalChannel) {
 
     enum class LiftPositions(val ticks: Int) {
         Min(0),
         Transfer(0),
-        BackboardBottomRow(1),
+        BackboardBottomRow(540),
         SetLine1(2),
         SetLine2(3),
         SetLine3(4),
@@ -33,6 +34,23 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
             powerLift(-0.5)
         }
     }
+
+    private val pid = PID(kp = 0.003)
+    fun moveLiftToPosition(targetPositionTicks: Int) {
+        val currentPosition = liftMotor1.currentPosition.toDouble()
+        val positionError = targetPositionTicks - currentPosition
+        val power = pid.calcPID(positionError)
+        powerLift(power)
+    }
+
+
+    private val acceptablePositionErrorTicks = 50
+    fun isLiftAtPosition(targetPositionTicks: Int): Boolean {
+        val currentPositionTicks = liftMotor1.currentPosition
+        val positionErrorTicks = targetPositionTicks - currentPositionTicks
+        return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
+    }
+
 
 //    private fun powerLift(power: Double) {
 //        val currentPosition = liftMotor1.currentPosition.toDouble()
