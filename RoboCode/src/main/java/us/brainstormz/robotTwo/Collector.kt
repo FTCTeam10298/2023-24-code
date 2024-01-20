@@ -67,6 +67,21 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     private val leftFlapKp = 0.43
     private val rightFlapKp = 0.35
 
+    fun isCollectorAllTheWayIn(): Boolean {
+        return extendoMotorMaster.currentPosition <= 10
+    }
+    fun arePixelsAlignedInTransfer(): Boolean {
+        val isLeftFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(leftEncoderReader), leftFlapTransferReadyAngleDegrees)
+        val isRightFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(rightEncoderReader), rightFlapTransferReadyAngleDegrees)
+        return isLeftFlapAngleAcceptable && isRightFlapAngleAcceptable
+    }
+
+    fun moveCollectorAllTheWayIn() {
+        if (!isCollectorAllTheWayIn()) {
+            powerExtendo(-0.5)
+        }
+    }
+
     fun getFlapAngleDegrees(encoderReader: AxonEncoderReader): Double =
             (encoderReader.getPositionDegrees() * 2) % 360
 

@@ -10,8 +10,8 @@ import kotlin.math.cos
 
 class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo) {
     enum class Positions(val angleDegrees:Double) {
+        TravelingToTransfer(290.0),
         In(255.0),
-        Transfer(235.0),
         Horizontal(180.0),
         Out(60.0)
     }
@@ -22,6 +22,14 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
     val holdingConstant = 0.08
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
+
+    val armPositioningToleranceDegrees = 5
+    fun isArmAtAngle(angleToCheckDegrees: Double): Boolean {
+        val minAcceptableAngle = angleToCheckDegrees - armPositioningToleranceDegrees
+        val maxAcceptableAngle = angleToCheckDegrees + armPositioningToleranceDegrees
+        val acceptableRange = minAcceptableAngle..maxAcceptableAngle
+        return getArmAngleDegrees() in acceptableRange
+    }
 
     fun moveArmTowardPosition(targetPosition: Double) {
         val power = calcPowerToReachTarget(targetPosition)
