@@ -39,6 +39,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     override lateinit var lBDrive: DcMotor
     override lateinit var rBDrive: DcMotor
 
+    val robotLengthInches = 17.75
+
     override lateinit var imu: IMU
 
     operator fun Point2D.times(other: Point2D): Point2D =
