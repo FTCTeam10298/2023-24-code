@@ -285,6 +285,7 @@ class RobotTwoAuto: OpMode() {
 
     override fun start() {
         propPosition = propDetector?.propPosition ?: propPosition
+        opencv.stop()
 
         val startPositionAndRotation: PositionAndRotation = when (alliance) {
             RobotTwoHardware.Alliance.Red -> startPosition.redStartPosition
