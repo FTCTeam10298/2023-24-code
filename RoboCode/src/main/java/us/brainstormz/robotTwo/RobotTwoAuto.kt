@@ -26,20 +26,45 @@ class RobotTwoAuto: OpMode() {
                                                                     myJankFlagToInjectPurplePlacement = true)
 
     //Backboard side
+    private val cycleMidPoint = PositionAndRotation(y= -36.0, x= -36.0, r= 0.0)
     private val backBoardAuto: List<TargetWorld> = listOf(
-            targetWorldToBeReplacedWithInjection,
             TargetWorld(
                     targetRobot = RobotState(
                             collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
-                            positionAndRotation = PositionAndRotation(y= -36.0, x= -36.0, r= 0.0),
+                            positionAndRotation = cycleMidPoint,
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState?.targetRobot?.positionAndRotation ?: PositionAndRotation())
                         telemetry.addLine("isRobotAtPosition: $isRobotAtPosition")
-                        telemetry.addLine("continuing with the auto after the purple")
                         isRobotAtPosition
                     },),
+            TargetWorld(
+                    targetRobot = RobotState(
+                            collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
+                            positionAndRotation = cycleMidPoint,
+                            depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+                        val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState?.targetRobot?.positionAndRotation ?: PositionAndRotation())
+                        telemetry.addLine("isRobotAtPosition: $isRobotAtPosition")
+                        val isCollectorAtPosition = collector.isExtendoAtPosition(targetState.targetRobot.collectorState.extendoPosition.ticks)
+                        isRobotAtPosition&& isCollectorAtPosition
+                    },),
+
+//            targetWorldToBeReplacedWithInjection,
+//            TargetWorld(
+//                    targetRobot = RobotState(
+//                            collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
+//                            positionAndRotation = cycleMidPoint,
+//                            depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+//                    ),
+//                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+//                        val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState?.targetRobot?.positionAndRotation ?: PositionAndRotation())
+//                        telemetry.addLine("isRobotAtPosition: $isRobotAtPosition")
+//                        telemetry.addLine("continuing with the auto after the purple")
+//                        isRobotAtPosition
+//                    },),
     )
 
     private val redBackboardPurplePixelPlacement: List<TargetWorld> = listOf(
