@@ -119,7 +119,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     data class RobotState(
             val positionAndRotation: PositionAndRotation,
             val depoState: RobotTwoAuto.DepoState,
-            val collectorState: Collector.CollectorState
+            val collectorSystemState: CollectorSystem.CollectorState
     )
 //
 //    data class HardwareHalves (
@@ -286,7 +286,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         power == it.position
     } ?: Lift.LiftPositions.Min
 
-    fun getActualState(previousActualState: RobotTwoAuto.ActualWorld?, arm: Arm, localizer: Localizer, collector: Collector): RobotTwoAuto.ActualWorld {
+    fun getActualState(previousActualState: RobotTwoAuto.ActualWorld?, arm: Arm, localizer: Localizer, collectorSystem: CollectorSystem): RobotTwoAuto.ActualWorld {
         val depoState = RobotTwoAuto.DepoState(
                 liftPosition = getLiftPos(liftMotorMaster.currentPosition.toDouble()),
 
@@ -303,7 +303,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         val actualRobot = RobotState(
                 positionAndRotation = localizer.currentPositionAndRotation(),
-                collectorState = collector.getCurrentState(previousActualState?.actualRobot?.collectorState),
+                collectorSystemState = collectorSystem.getCurrentState(previousActualState?.actualRobot?.collectorSystemState),
                 depoState = depoState
         )
 

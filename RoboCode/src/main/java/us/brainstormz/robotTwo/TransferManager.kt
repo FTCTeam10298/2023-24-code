@@ -4,7 +4,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern
 import org.firstinspires.ftc.robotcore.external.Telemetry
 
 class TransferManager(
-        private val collector: Collector,
+        private val collectorSystem: CollectorSystem,
         private val lift: Lift,
         private val arm: Arm,
         private val telemetry: Telemetry) {
@@ -60,7 +60,7 @@ class TransferManager(
             }
         }
 
-        val isCollectorAllTheWayIn = collector.isExtendoAllTheWayIn()
+        val isCollectorAllTheWayIn = collectorSystem.isExtendoAllTheWayIn()
         val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
 
         telemetry.addLine("Arms: ")

@@ -20,7 +20,7 @@ class RobotTwoTeleOp: OpMode() {
     private val hardware = RobotTwoHardware(telemetry, this)
     val movement = MecanumDriveTrain(hardware)
     private lateinit var arm: Arm
-    private lateinit var collector: Collector
+    private lateinit var collectorSystem: CollectorSystem
     private lateinit var lift: Lift
     private lateinit var transfer: TransferManager
 
@@ -35,12 +35,12 @@ class RobotTwoTeleOp: OpMode() {
 //    )
     private val initialRobotState = RobotState(
             positionAndRotation = PositionAndRotation(),
-            collectorState = Collector.CollectorState(
-                    collectorState = Collector.CollectorPowers.Off,
+            collectorSystemState = CollectorSystem.CollectorState(
+                    collectorState = CollectorSystem.CollectorPowers.Off,
                     extendoPosition = RobotTwoHardware.ExtendoPositions.Min,
-                    transferRollersState = Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off),
-                    transferLeftSensorState = Collector.TransferHalfState(false, 0),
-                    transferRightSensorState = Collector.TransferHalfState(false, 0)
+                    transferRollersState = CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off),
+                    transferLeftSensorState = CollectorSystem.TransferHalfState(false, 0),
+                    transferRightSensorState = CollectorSystem.TransferHalfState(false, 0)
             ),
             depoState = RobotTwoAuto.DepoState(
                     liftPosition = Lift.LiftPositions.Min,
@@ -58,7 +58,7 @@ class RobotTwoTeleOp: OpMode() {
         arm = Arm(  encoder= hardware.armEncoder,
                     armServo1= hardware.armServo1,
                     armServo2= hardware.armServo2, telemetry)
-        collector = Collector(  extendoMotorMaster= hardware.extendoMotorMaster,
+        collectorSystem = CollectorSystem(  extendoMotorMaster= hardware.extendoMotorMaster,
                                 extendoMotorSlave= hardware.extendoMotorSlave,
                                 collectorServo1 = hardware.collectorServo1,
                                 collectorServo2 = hardware.collectorServo2,
@@ -74,7 +74,7 @@ class RobotTwoTeleOp: OpMode() {
                     liftMotor2 = hardware.liftMotorSlave,
                     liftLimit = hardware.liftMagnetLimit)
         transfer = TransferManager(
-                collector,
+                collectorSystem,
                 lift,
                 arm,
                 telemetry)
@@ -115,11 +115,11 @@ class RobotTwoTeleOp: OpMode() {
         val collectorTriggerActivation = 0.2
         when {
             gamepad1.right_trigger > collectorTriggerActivation -> {
-                collector.powerExtendo(gamepad1.right_trigger.toDouble())
+                collectorSystem.powerExtendo(gamepad1.right_trigger.toDouble())
             }
             gamepad1.left_trigger > collectorTriggerActivation -> {
 //                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
-                collector.powerExtendo(-gamepad1.left_trigger.toDouble())
+                collectorSystem.powerExtendo(-gamepad1.left_trigger.toDouble())
             }
 //            transferState() != emptyPixelHandler -> {
 ////                spinCollector(RobotTwoHardware.CollectorPowers.Eject.power)
@@ -128,64 +128,64 @@ class RobotTwoTeleOp: OpMode() {
             shouldTransfer -> {
                 when (transferState.collectorState) {
                     TransferManager.ExtendoStateFromTransfer.MoveIn -> {
-                        collector.moveCollectorAllTheWayIn()
+                        collectorSystem.moveCollectorAllTheWayIn()
                     }
                     TransferManager.ExtendoStateFromTransfer.MoveOutOfTheWay -> {
-                        collector.moveExtendoToPosition(Collector.ExtendoPositions.ClearTransfer.ticks)
+                        collectorSystem.moveExtendoToPosition(CollectorSystem.ExtendoPositions.ClearTransfer.ticks)
                     }
                 }
             }
             else -> {
-                collector.powerExtendo(0.0)
+                collectorSystem.powerExtendo(0.0)
             }
         }
         telemetry.addLine("extendoMotorMaster.currentPosition ${hardware.extendoMotorMaster.currentPosition}")
 
 
-        val inputCollectorState = when {
+        val inputCollectorStateSystem = when {
             gamepad1.right_bumper -> {
-                Collector.CollectorPowers.Intake
+                CollectorSystem.CollectorPowers.Intake
             }
             gamepad1.left_bumper -> {
-                Collector.CollectorPowers.Eject
+                CollectorSystem.CollectorPowers.Eject
             }
             else -> {
-                Collector.CollectorPowers.Off
+                CollectorSystem.CollectorPowers.Off
             }
         }
 
-        val actualCollectorState = collector.getCollectorState(inputCollectorState)
+        val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
 
-        collector.spinCollector(actualCollectorState.power)
+        collectorSystem.spinCollector(actualCollectorState.power)
 
-        val autoTransferState = collector.getAutoTransferState(isCollecting= gamepad1.right_bumper)
+        val autoTransferState = collectorSystem.getAutoTransferState(isCollecting= gamepad1.right_bumper)
         val rollerState = when {
             gamepad1.dpad_right ->
-                Collector.TransferState(leftServoCollect = Collector.CollectorPowers.Off,
-                                        rightServoCollect = Collector.CollectorPowers.Eject,
-                                        directorState = Collector.DirectorState.Off)
+                CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Off,
+                                        rightServoCollect = CollectorSystem.CollectorPowers.Eject,
+                                        directorState = CollectorSystem.DirectorState.Off)
             gamepad1.dpad_left ->
-                Collector.TransferState(leftServoCollect = Collector.CollectorPowers.Eject,
-                                        rightServoCollect = Collector.CollectorPowers.Off,
-                                        directorState = Collector.DirectorState.Off)
+                CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
+                                        rightServoCollect = CollectorSystem.CollectorPowers.Off,
+                                        directorState = CollectorSystem.DirectorState.Off)
             gamepad1.dpad_up ->
-                Collector.TransferState(leftServoCollect = Collector.CollectorPowers.Intake,
-                                        rightServoCollect = Collector.CollectorPowers.Intake,
-                                        directorState = Collector.DirectorState.Off)
+                CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Intake,
+                                        rightServoCollect = CollectorSystem.CollectorPowers.Intake,
+                                        directorState = CollectorSystem.DirectorState.Off)
             gamepad1.dpad_down ->
-                Collector.TransferState(leftServoCollect = Collector.CollectorPowers.Eject,
-                                        rightServoCollect = Collector.CollectorPowers.Eject,
-                                        directorState = Collector.DirectorState.Off)
+                CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
+                                        rightServoCollect = CollectorSystem.CollectorPowers.Eject,
+                                        directorState = CollectorSystem.DirectorState.Off)
             else -> autoTransferState
         }
-        collector.runTransfer(rollerState)
+        collectorSystem.runTransfer(rollerState)
 
-        telemetry.addLine("left roller servo position: ${collector.leftEncoderReader.getPositionDegrees()}")
-        telemetry.addLine("left flapAngleDegrees: ${collector.getFlapAngleDegrees(collector.leftEncoderReader)}")
-        telemetry.addLine("right roller servo position: ${collector.rightEncoderReader.getPositionDegrees()}")
-        telemetry.addLine("right flapAngleDegrees: ${collector.getFlapAngleDegrees(collector.rightEncoderReader)}")
-        telemetry.addLine("left transfer sensor: ${collector.isPixelIn(hardware.leftTransferSensor)}")
-        telemetry.addLine("right transfer sensor: ${collector.isPixelIn(hardware.rightTransferSensor)}")
+        telemetry.addLine("left roller servo position: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("left flapAngleDegrees: ${collectorSystem.getFlapAngleDegrees(collectorSystem.leftEncoderReader)}")
+        telemetry.addLine("right roller servo position: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("right flapAngleDegrees: ${collectorSystem.getFlapAngleDegrees(collectorSystem.rightEncoderReader)}")
+        telemetry.addLine("left transfer sensor: ${collectorSystem.isPixelIn(hardware.leftTransferSensor)}")
+        telemetry.addLine("right transfer sensor: ${collectorSystem.isPixelIn(hardware.rightTransferSensor)}")
 
 
 //        Lift
@@ -292,7 +292,7 @@ class RobotTwoTeleOp: OpMode() {
         }
 
         //Previous state
-        previousRobotState = hardware.getActualState(RobotTwoAuto.ActualWorld(previousRobotState, 0), arm, odometryLocalizer, collector).actualRobot
+        previousRobotState = hardware.getActualState(RobotTwoAuto.ActualWorld(previousRobotState, 0), arm, odometryLocalizer, collectorSystem).actualRobot
                 .copy(depoState = RobotTwoAuto.DepoState(   armPos = armPosition,
                                                             liftPosition = liftPosition,
                                                             leftClawPosition = leftClawPosition,

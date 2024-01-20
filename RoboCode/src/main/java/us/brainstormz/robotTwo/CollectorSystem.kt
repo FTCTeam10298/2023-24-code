@@ -11,18 +11,18 @@ import us.brainstormz.pid.PID
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
-class Collector(private val extendoMotorMaster: DcMotorEx,
-                private val extendoMotorSlave: DcMotor,
-                private val collectorServo1: CRServo,
-                private val collectorServo2: CRServo,
-                private val rightTransferServo: CRServo,
-                private val leftTransferServo: CRServo,
-                private val transferDirectorServo: CRServo,
-                private val leftTransferPixelSensor: ColorSensor,
-                private val rightTransferPixelSensor: ColorSensor,
-                leftRollerEncoder: AnalogInput,
-                rightRollerEncoder: AnalogInput,
-                private val telemetry: Telemetry) {
+class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
+                      private val extendoMotorSlave: DcMotor,
+                      private val collectorServo1: CRServo,
+                      private val collectorServo2: CRServo,
+                      private val rightTransferServo: CRServo,
+                      private val leftTransferServo: CRServo,
+                      private val transferDirectorServo: CRServo,
+                      private val leftTransferPixelSensor: ColorSensor,
+                      private val rightTransferPixelSensor: ColorSensor,
+                      leftRollerEncoder: AnalogInput,
+                      rightRollerEncoder: AnalogInput,
+                      private val telemetry: Telemetry) {
 
     val maxSafeCurrentAmps = 5.5
     init {
@@ -254,9 +254,9 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
         power == it.power
     } ?: CollectorPowers.Off
 
-    private fun getDirectorPowerState(power: Double): Collector.DirectorState = Collector.DirectorState.entries.firstOrNull { it ->
+    private fun getDirectorPowerState(power: Double): CollectorSystem.DirectorState = CollectorSystem.DirectorState.entries.firstOrNull { it ->
         power == it.power
-    } ?: Collector.DirectorState.Off
+    } ?: CollectorSystem.DirectorState.Off
 
     private fun getTransferHalfState(half: Side, previousState: TransferHalfState): TransferHalfState {
         val sensor = when (half) {
