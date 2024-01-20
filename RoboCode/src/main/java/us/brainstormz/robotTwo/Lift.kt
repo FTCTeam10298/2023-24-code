@@ -28,7 +28,7 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
     private val liftBottomLimitAmps = 8.0
     fun moveLiftToBottom() {
         val isLiftStalling = liftMotor1.getCurrent(CurrentUnit.AMPS) > liftBottomLimitAmps
-        val isLiftDown = isLimitSwitchActivated() ||isLiftStalling
+        val isLiftDown = isLimitSwitchActivated() || isLiftStalling
         if (!isLiftDown) {
             powerLift(-0.5)
         }

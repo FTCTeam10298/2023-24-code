@@ -248,8 +248,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         liftMotorSlave.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-        liftMotorMaster.direction = DcMotorSimple.Direction.REVERSE
-        liftMotorSlave.direction = DcMotorSimple.Direction.FORWARD
+        liftMotorMaster.direction = DcMotorSimple.Direction.FORWARD
+        liftMotorSlave.direction = DcMotorSimple.Direction.REVERSE
 
         liftMotorMaster.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         liftMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE

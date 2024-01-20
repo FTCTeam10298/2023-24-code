@@ -100,9 +100,18 @@ class RobotTwoTeleOp: OpMode() {
             (y - x - r),
             (y + x + r))
 
+        val shouldTransfer = gamepad1.x
+        if (shouldTransfer) {
+            lift.moveLiftToBottom()
+        } else {
+
+        }
+
+        telemetry.addLine("lift current: ${hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS)}")
+
         //Collector
         val collectorTriggerActivation = 0.2
-        when {  
+        when {
             gamepad1.right_trigger > collectorTriggerActivation -> {
                 collector.powerExtendo(gamepad1.right_trigger.toDouble())
             }
@@ -181,9 +190,9 @@ class RobotTwoTeleOp: OpMode() {
             }
         }
         if (gamepad2.left_stick_y.absoluteValue > 0.2) {
-            lift.powerLift(gamepad2.left_stick_y.toDouble())
+            lift.powerLift(-gamepad2.left_stick_y.toDouble())
         } else {
-            lift.powerLift(0.0)
+            //lift.powerLift(0.0)
 //            moveLiftTowardPosition(liftPosition.position)
         }
 
