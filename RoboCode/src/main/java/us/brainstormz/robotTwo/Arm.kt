@@ -9,7 +9,7 @@ import kotlin.math.cos
 class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
     enum class Positions(val angleDegrees:Double) {
         LiftIsGoingHome(255.0),
-        In(245.0),
+        In(248.0),
         TransferringTarget(238.0),
 //        Horizontal(180.0),
         Out(60.0)
@@ -19,7 +19,7 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
 
     private val outPid = PID(kp= 0.0025, kd = 0.01)
     private val outHoldingConstant = 0.08
-    private val inPid = PID(kp= 0.0015, ki = 0.0000003, kd = 0.00004)
+    private val inPid = PID(kp= 0.0015, ki = 0.00000035, kd = 0.000055)
     private val inHoldingConstant = 0.035
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
