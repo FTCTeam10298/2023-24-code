@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.potatoBot.potatoBotHardware
+import kotlin.math.abs
 
 class Collector(private val extendoMotorMaster: DcMotorEx,
                 private val extendoMotorSlave: DcMotor,
@@ -57,12 +58,14 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     )
 
 
-    val leftEncoderReader = AxonEncoderReader(leftRollerEncoder, 0.0)
-    val rightEncoderReader = AxonEncoderReader(rightRollerEncoder, 0.0)
+    val leftEncoderReader = AxonEncoderReader(leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
+    val rightEncoderReader = AxonEncoderReader(rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
 
     private val flapAngleToleranceDegrees = 5
     private val leftFlapTransferReadyAngleDegrees = 32.0
     private val rightFlapTransferReadyAngleDegrees = 90.0 //need to find number
+    private val leftFlapKp = 0.43
+    private val rightFlapKp = 0.35
 
     fun getFlapAngleDegrees(encoderReader: AxonEncoderReader): Double =
             (encoderReader.getPositionDegrees() * 2) % 360
@@ -80,11 +83,14 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
             Side.Right -> rightEncoderReader
         }
 
-        val currentAngle = getFlapAngleDegrees(encoder) % 180
+        val currentAngle = getFlapAngleDegrees(encoder) % 360
         val angleErrorDegrees = currentAngle - targetAngleDegrees
 
-        val proportionalConstant = 0.43
-        val power = (angleErrorDegrees / 360) * proportionalConstant
+        val proportionalConstant = when (flap) {
+            Side.Left -> leftFlapKp
+            Side.Right -> rightFlapKp
+        }
+        val power = abs((angleErrorDegrees / 360) * proportionalConstant)
         telemetry.addLine("$flap roller power: $power, angle: $angleErrorDegrees")
 
         return power

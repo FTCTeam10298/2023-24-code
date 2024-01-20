@@ -2,13 +2,21 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.robotcore.hardware.AnalogInput
 
+class AxonEncoderReader(private val axonEncoder: AnalogInput, val angleOffsetDegrees: Double = 0.0, val direction: Direction = Direction.Forward) {
+    enum class Direction {
+        Forward,
+        Reverse
+    }
+    val forwardBackwardMultiplier = when (direction) {
+        Direction.Forward -> 1
+        Direction.Reverse -> -1
+    }
 
-class AxonEncoderReader(private val axonEncoder: AnalogInput, val angleOffsetDegrees: Double = 0.0) {
     /** Angle from 0..180 */
     fun getAngleFrom180Degrees(): Double = getPositionDegrees() % 180
 
     /** Angle from 0-360 */
-    fun getPositionDegrees(): Double = getRawPositionDegrees() + angleOffsetDegrees
+    fun getPositionDegrees(): Double = (getRawPositionDegrees() * forwardBackwardMultiplier) + angleOffsetDegrees
 
     /** Angle from 0-360 */
     fun getRawPositionDegrees(): Double {
