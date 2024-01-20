@@ -86,6 +86,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var rightColorSensor: RevColorSensorV3
 
     enum class ExtendoPositions(val ticks: Int) {
+        AllTheWayInTarget(-10),
         Min(0),
         FarBackboardPixelPosition(1900),
         CloserBackboardPixelPosition(500),
