@@ -91,45 +91,29 @@ class RobotTwoTeleOp: OpMode() {
     override fun loop() {
         /** TELE-OP PHASE */
 
+        /** Gamepad 1 */
         // DRONE DRIVE
         val yInput = -gamepad1.left_stick_y.toDouble()
         val xInput = gamepad1.left_stick_x.toDouble()
         val rInput = gamepad1.right_stick_x.toDouble()
 
+        //Strafe without turing for depositing
+        val slowDowMultiplier = 1.0
+        val driver2XInput = if (xInput == 0.0) {
+            gamepad2.left_stick_x.toDouble() * slowDowMultiplier
+        } else {
+            0.0
+        }
+
         val y = yInput
-        val x = xInput
+        val x = xInput + driver2XInput
         val r = -rInput * abs(rInput)
         movement.driveSetPower((y + x - r),
                 (y - x + r),
                 (y - x - r),
                 (y + x + r))
 
-        telemetry.addLine("lift current: ${hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS)}")
-        telemetry.addLine("lift position: ${hardware.liftMotorMaster.currentPosition}")
-
         //Collector
-        val collectorTriggerActivation = 0.2
-        when {
-            gamepad1.right_trigger > collectorTriggerActivation -> {
-                collectorSystem.powerExtendo(gamepad1.right_trigger.toDouble())
-            }
-
-            gamepad1.left_trigger > collectorTriggerActivation -> {
-//                spinCollector(RobotTwoHardware.CollectorPowers.Intake.power)
-                collectorSystem.powerExtendo(-gamepad1.left_trigger.toDouble())
-            }
-//            transferState() != emptyPixelHandler -> {
-////                spinCollector(RobotTwoHardware.CollectorPowers.Eject.power)
-//                moveExtendoTowardPosition(RobotTwoHardware.ExtendoPositions.Min.position)
-//            }
-
-            else -> {
-                collectorSystem.powerExtendo(0.0)
-            }
-        }
-        telemetry.addLine("extendoMotorMaster.currentPosition ${hardware.extendoMotorMaster.currentPosition}")
-
-
         val inputCollectorStateSystem = when {
             gamepad1.right_bumper -> {
                 CollectorSystem.CollectorPowers.Intake
@@ -138,7 +122,6 @@ class RobotTwoTeleOp: OpMode() {
             gamepad1.left_bumper -> {
                 CollectorSystem.CollectorPowers.Eject
             }
-
             else -> {
                 CollectorSystem.CollectorPowers.Off
             }
@@ -148,59 +131,66 @@ class RobotTwoTeleOp: OpMode() {
 
         collectorSystem.spinCollector(actualCollectorState.power)
 
-        val autoTransferState = collectorSystem.getAutoTransferState(isCollecting = gamepad1.right_bumper)
+        val autoTransferState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
         val rollerState = when {
             gamepad1.dpad_right ->
                 CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Off,
                         rightServoCollect = CollectorSystem.CollectorPowers.Eject,
                         directorState = CollectorSystem.DirectorState.Off)
-
             gamepad1.dpad_left ->
                 CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
                         rightServoCollect = CollectorSystem.CollectorPowers.Off,
                         directorState = CollectorSystem.DirectorState.Off)
-
             gamepad1.dpad_up ->
                 CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Intake,
                         rightServoCollect = CollectorSystem.CollectorPowers.Intake,
                         directorState = CollectorSystem.DirectorState.Off)
-
             gamepad1.dpad_down ->
                 CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
                         rightServoCollect = CollectorSystem.CollectorPowers.Eject,
                         directorState = CollectorSystem.DirectorState.Off)
-
             else -> autoTransferState
         }
-        collectorSystem.runTransfer(rollerState)
-
-        telemetry.addLine("left roller servo position: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
-        telemetry.addLine("left flapAngleDegrees: ${collectorSystem.getFlapAngleDegrees(collectorSystem.leftEncoderReader)}")
-        telemetry.addLine("right roller servo position: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
-        telemetry.addLine("right flapAngleDegrees: ${collectorSystem.getFlapAngleDegrees(collectorSystem.rightEncoderReader)}")
-        telemetry.addLine("left transfer sensor: ${collectorSystem.isPixelIn(hardware.leftTransferSensor)}")
-        telemetry.addLine("right transfer sensor: ${collectorSystem.isPixelIn(hardware.rightTransferSensor)}")
-
-
-        telemetry.addLine("lift current Position ${hardware.liftMotorMaster.currentPosition}")
-        telemetry.addLine("is Lift limit Switch Activated: ${lift.isLimitSwitchActivated()}")
-
-//        telemetry.addLine("arm current angle: ${hardware.armEncoder.voltage}")
-
-//        telemetry.addLine("rightClawPosition: $rightClawPosition")
-//        telemetry.addLine("gamepad2.right_bumper: ${gamepad2.right_bumper}")
-//        telemetry.addLine("previousGamepad2State.right_bumper: ${previousGamepad2State.right_bumper}")
-        val maxSafeCurrentAmps = 5.5
-        hardware.extendoMotorMaster.setCurrentAlert(maxSafeCurrentAmps, CurrentUnit.AMPS)
-        telemetry.addLine("Extendo motor current: ${hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS)} \n Is over current of $maxSafeCurrentAmps amps: ${hardware.extendoMotorMaster.isOverCurrent}")
-        telemetry.addLine("previousRobotState: $previousRobotState")
-
+        collectorSystem.runRollers(rollerState)
+        
 
         /** Gamepad 2 */
 
         //Transfer
         val shouldWeTransfer = gamepad2.a
         val transferState = transfer.getTransferState(TransferManager.ClawStateFromTransfer.Retracted, RevBlinkinLedDriver.BlinkinPattern.BLUE)
+
+        //Extendo
+        val extendoTriggerActivation = 0.1
+        val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
+        val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
+
+        when {
+//            rightTrigger && leftTrigger -> {
+//                collectorSystem.powerExtendo(0.0)
+//            }
+            rightTrigger -> {
+                collectorSystem.powerExtendo(gamepad1.right_trigger.toDouble())
+            }
+            leftTrigger -> {
+                collectorSystem.powerExtendo(-gamepad1.left_trigger.toDouble())
+            }
+            shouldWeTransfer -> {
+                val position = when (transferState.collectorState) {
+                    TransferManager.ExtendoStateFromTransfer.MoveIn -> {
+                        CollectorSystem.ExtendoPositions.Min
+                    }
+                    TransferManager.ExtendoStateFromTransfer.MoveOutOfTheWay -> {
+                        CollectorSystem.ExtendoPositions.ClearTransfer
+                    }
+                }
+                collectorSystem.moveExtendoToPosition(position.ticks)
+            }
+            else -> {
+                collectorSystem.powerExtendo(0.0)
+//                collectorSystem.moveExtendoToPosition(CollectorSystem.ExtendoPositions.Min.ticks)
+            }
+        }
 
         //Lift
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
@@ -212,7 +202,6 @@ class RobotTwoTeleOp: OpMode() {
                 gamepad2.dpad_up -> {
                     Lift.LiftPositions.SetLine3
                 }
-
                 gamepad2.dpad_down -> {
                     Lift.LiftPositions.Min
                 }
@@ -224,14 +213,12 @@ class RobotTwoTeleOp: OpMode() {
                         Lift.LiftPositions.SetLine2
                     }
                 }
-
                 shouldWeTransfer -> {
                     when (transferState.liftState) {
                         TransferManager.LiftStateFromTransfer.MoveDown -> Lift.LiftPositions.Min
                         TransferManager.LiftStateFromTransfer.None -> Lift.LiftPositions.Nothing
                     }
                 }
-
                 else -> {
                     previousRobotState.depoState.liftPosition
                 }
@@ -269,13 +256,15 @@ class RobotTwoTeleOp: OpMode() {
         val armPosition: Arm.Positions = if (armOverrideStickValue >= 0.2) {
             Arm.Positions.Manual
         } else {
-            when (liftPosition) {
-                Lift.LiftPositions.Manual -> {
+            when  {
+                liftPosition == Lift.LiftPositions.Manual -> {
                     previousRobotState.depoState.armPos
                 }
-
-                Lift.LiftPositions.Nothing -> {
+                liftPosition == Lift.LiftPositions.Nothing -> {
                     previousRobotState.depoState.armPos
+                }
+                shouldWeTransfer -> {
+                    transferState.armState
                 }
                 else -> {
                     if (hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks) {
@@ -291,7 +280,6 @@ class RobotTwoTeleOp: OpMode() {
         } else {
             arm.moveArmTowardPosition(armPosition.angleDegrees)
         }
-
 
         //Claws
         val leftClawPosition: LeftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
@@ -325,12 +313,10 @@ class RobotTwoTeleOp: OpMode() {
         hardware.rightClawServo.position = rightClawPosition.position
 
 
-        //Strafe without turing for depositing
-        //gonna wait on this one
 
 
-        //Launcher (not yet implemented)
-        hardware.launcherServo.position = if (gamepad2.y) {
+        //Launcher
+        hardware.launcherServo.position = if (gamepad2.y || gamepad1.y) {
             RobotTwoHardware.LauncherPosition.Released.position
         } else {
             RobotTwoHardware.LauncherPosition.Holding.position

@@ -10,6 +10,7 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
     enum class Positions(val angleDegrees:Double) {
         Manual(0.0),
         LiftIsGoingHome(255.0),
+        GoodEnoughForLiftToGoDown(200.0),
         In(248.0),
         TransferringTarget(238.0),
 //        Horizontal(180.0),

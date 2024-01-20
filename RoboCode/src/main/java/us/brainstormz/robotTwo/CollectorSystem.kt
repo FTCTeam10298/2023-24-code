@@ -126,10 +126,11 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 
     fun getCollectorState(driverInput: CollectorPowers): CollectorPowers {
         val bothTransfersAreFull = previousLeftTransferState.hasPixelBeenSeen && previousRightTransferState.hasPixelBeenSeen
-        return if (bothTransfersAreFull && driverInput == CollectorPowers.Intake)
+        return if (bothTransfersAreFull && (driverInput == CollectorPowers.Intake)) {
             CollectorPowers.Off
-        else
+        } else {
             driverInput
+        }
     }
 
     fun spinCollector(power: Double) {
@@ -140,7 +141,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     var previousLeftTransferState = TransferHalfState(false, 0)
     var previousRightTransferState = TransferHalfState(false, 0)
     val extraTransferRollingTimeMilis = 1000
-    fun getAutoTransferState(isCollecting: Boolean): TransferState {
+    fun getAutoPixelSortState(isCollecting: Boolean): TransferState {
         //Detection:
         val isLeftSeeingPixel = isPixelIn(leftTransferPixelSensor)
         val timeOfSeeingLeftPixelMilis = when {
@@ -186,7 +187,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
                                 directorState= directorState)
     }
 
-    fun runTransfer(transferState: TransferState) {
+    fun runRollers(transferState: TransferState) {
         leftTransferServo.power = getRollerPowerBasedOnState(Side.Left, transferState.leftServoCollect)
         rightTransferServo.power = getRollerPowerBasedOnState(Side.Right, transferState.rightServoCollect)
         transferDirectorServo.power = transferState.directorState.power
