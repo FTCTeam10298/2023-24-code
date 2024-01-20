@@ -9,14 +9,19 @@ import kotlin.math.absoluteValue
 
 class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, private val liftLimit: DigitalChannel) {
 
+
+    //these aren't right
     enum class LiftPositions(val ticks: Int) {
+        Manual(0),
+        Nothing(0),
+        ClearForArmToMove(500),
         Min(0),
         Transfer(0),
         BackboardBottomRow(600),
-        SetLine1(2),
-        SetLine2(3),
-        SetLine3(4),
-        Max(500)
+        SetLine1(650),
+        SetLine2(650),
+        SetLine3(650),
+        Max(650)
     }
 
     fun powerLift(power: Double) {

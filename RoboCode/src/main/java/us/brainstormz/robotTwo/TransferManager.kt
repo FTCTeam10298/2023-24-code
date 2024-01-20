@@ -14,6 +14,7 @@ class TransferManager(
         MoveIn,
         MoveOutOfTheWay
     }
+
     enum class LiftStateFromTransfer {
         MoveDown,
         None
