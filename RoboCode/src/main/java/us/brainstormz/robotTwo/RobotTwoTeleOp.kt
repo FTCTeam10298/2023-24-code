@@ -23,6 +23,7 @@ class RobotTwoTeleOp: OpMode() {
     private lateinit var arm: Arm
     private lateinit var collector: Collector
     private lateinit var lift: Lift
+    private lateinit var transfer: TransferManager
 
     private lateinit var odometryLocalizer: RRTwoWheelLocalizer
 
@@ -73,6 +74,15 @@ class RobotTwoTeleOp: OpMode() {
         lift = Lift(liftMotor1 = hardware.liftMotorMaster,
                     liftMotor2 = hardware.liftMotorSlave,
                     liftLimit = hardware.liftMagnetLimit)
+        transfer = TransferManager(
+                hardware.rightClawServo,
+                hardware.leftClawServo,
+                hardware.leftTransferSensor,
+                hardware.rightTransferSensor,
+                collector,
+                lift,
+                arm,
+                telemetry)
 
         odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
     }
@@ -102,50 +112,7 @@ class RobotTwoTeleOp: OpMode() {
 
         val shouldTransfer = gamepad1.x
         if (shouldTransfer) {
-
-            hardware.rightClawServo.position = RightClawPosition.Retracted.position
-            hardware.leftClawServo.position = LeftClawPosition.Retracted.position
-            collector.moveCollectorAllTheWayIn()
-
-            val isArmAtAPositionWhichAllowsTheLiftToMoveDown = arm.getArmAngleDegrees() >= Arm.Positions.TravelingToTransfer.angleDegrees
-
-            telemetry.addLine("\n\nMoving collector and claws to the transfer positions")
-            if (isArmAtAPositionWhichAllowsTheLiftToMoveDown) {
-                telemetry.addLine("\n\nMoving lift to the transfer position because arm is out of the way")
-                lift.moveLiftToBottom()
-            }
-
-            val bothExtensionsAreAllTheWayIn = lift.isLimitSwitchActivated() && collector.isCollectorAllTheWayIn()
-            if (bothExtensionsAreAllTheWayIn) {
-                telemetry.addLine("\n\nExtensions are ready to transfer")
-
-                arm.moveArmTowardPosition(Arm.Positions.In.angleDegrees)
-                val isArmReadyToTransfer = arm.getArmAngleDegrees() <= Arm.Positions.ReadyToTransfer.angleDegrees
-                telemetry.addLine("isArmReadyToTransfer: $isArmReadyToTransfer")
-                val areRollersReadyToTransfer = collector.arePixelsAlignedInTransfer()
-                telemetry.addLine("areRollersReadyToTransfer: $areRollersReadyToTransfer")
-
-                if (isArmReadyToTransfer && areRollersReadyToTransfer) {
-                    telemetry.addLine("\n\nArm and flaps are ready to transfer")
-
-                    val isPixelInLeftTransfer = collector.isPixelIn(hardware.leftTransferSensor)
-                    if (isPixelInLeftTransfer) {
-                        hardware.leftClawServo.position = LeftClawPosition.Gripping.position
-                    }
-                    val isPixelInRightTransfer = collector.isPixelIn(hardware.rightTransferSensor)
-                    if (isPixelInRightTransfer) {
-                        hardware.rightClawServo.position = RightClawPosition.Gripping.position
-                    }
-
-                    telemetry.addLine("\n\nTransfer done")
-                }
-            } else {
-                telemetry.addLine("\n\nMoving arm to the transfer position")
-
-                arm.moveArmTowardPosition(Arm.Positions.TravelingToTransfer.angleDegrees)
-            }
-        } else {
-
+            transfer.transfer()
         }
 
         telemetry.addLine("lift current: ${hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS)}")
