@@ -201,23 +201,19 @@ class RobotTwoTeleOp: OpMode() {
         //Transfer
         val shouldWeTransfer = gamepad2.a
         val transferState = transfer.getTransferState(TransferManager.ClawStateFromTransfer.Retracted, RevBlinkinLedDriver.BlinkinPattern.BLUE)
-
-
+        
         //Lift
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
         val liftPosition: Lift.LiftPositions = when {
             liftOverrideStickValue > 0.2 -> {
                 Lift.LiftPositions.Manual
             }
-
             gamepad2.dpad_up -> {
                 Lift.LiftPositions.SetLine3
             }
-
             gamepad2.dpad_down -> {
                 Lift.LiftPositions.Min
             }
-
             gamepad2.dpad_right && !previousGamepad2State.dpad_right -> {
                 if (previousRobotState.depoState.liftPosition !== Lift.LiftPositions.SetLine1) {
                     Lift.LiftPositions.SetLine1
@@ -225,14 +221,12 @@ class RobotTwoTeleOp: OpMode() {
                     Lift.LiftPositions.SetLine2
                 }
             }
-
             shouldWeTransfer -> {
                 when (transferState.liftState) {
                     TransferManager.LiftStateFromTransfer.MoveDown -> Lift.LiftPositions.Min
                     TransferManager.LiftStateFromTransfer.None -> Lift.LiftPositions.Nothing
                 }
             }
-
             else -> {
                 previousRobotState.depoState.liftPosition
             }
@@ -241,22 +235,31 @@ class RobotTwoTeleOp: OpMode() {
             Lift.LiftPositions.Manual -> {
                 lift.powerLift(-liftOverrideStickValue)
             }
-
             Lift.LiftPositions.Nothing -> {
                 lift.powerLift(0.0)
             }
-
             else -> {
-                lift.moveLiftToPosition(liftPosition.ticks)
+                val liftTargetIsBelowSafeArm = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
+                val armIsAtSafeAngle = arm.getArmAngleDegrees() >= Arm.Positions.In.angleDegrees
+                telemetry.addLine("liftTargetIsBelowSafeArm: $liftTargetIsBelowSafeArm")
+                telemetry.addLine("armIsAtSafeAngle: $armIsAtSafeAngle")
+
+                val actualPosition = if (liftTargetIsBelowSafeArm && !armIsAtSafeAngle) {
+                    telemetry.addLine("setting lift position to clearance for arm beudacse the arm isn't ready")
+                    Lift.LiftPositions.ClearForArmToMove
+                } else {
+                    telemetry.addLine("setting lift position to $liftPosition beucase ther'es no problem")
+                    liftPosition
+                }
+                lift.moveLiftToPosition(actualPosition.ticks)
             }
         }
+        telemetry.addLine("arm.getArmAngleDegrees(): ${arm.getArmAngleDegrees()}")
+        telemetry.addLine("Arm.Positions.In.angleDegrees: ${Arm.Positions.In.angleDegrees}")
 
         //Arm
-
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
-
-        //override x on right stick
         val armPosition: Arm.Positions = if (armOverrideStickValue >= 0.2) {
             Arm.Positions.Manual
         } else {
@@ -268,27 +271,19 @@ class RobotTwoTeleOp: OpMode() {
                 Lift.LiftPositions.Nothing -> {
                     previousRobotState.depoState.armPos
                 }
-
-                Lift.LiftPositions.Min -> {
-                    Arm.Positions.LiftIsGoingHome
-                }
-
-                Lift.LiftPositions.Transfer -> {
-                    Arm.Positions.LiftIsGoingHome
-                }
                 else -> {
-                    Arm.Positions.Out
+                    if (hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks) {
+                        Arm.Positions.LiftIsGoingHome
+                    } else {
+                        Arm.Positions.Out
+                    }
                 }
             }
         }
         if (armPosition == Arm.Positions.Manual) {
             arm.powerArm(armOverrideStickValue)
         } else {
-            val actualArmPosition: Arm.Positions = if (hardware.liftMotorMaster.currentPosition >= Lift.LiftPositions.ClearForArmToMove.ticks)
-                armPosition
-            else
-                Arm.Positions.LiftIsGoingHome
-            arm.moveArmTowardPosition(actualArmPosition.angleDegrees)
+            arm.moveArmTowardPosition(armPosition.angleDegrees)
         }
 
 

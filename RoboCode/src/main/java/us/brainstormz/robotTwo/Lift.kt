@@ -18,10 +18,10 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
         Min(0),
         Transfer(0),
         BackboardBottomRow(600),
-        SetLine1(650),
-        SetLine2(650),
-        SetLine3(650),
-        Max(650)
+        SetLine1(900),
+        SetLine2(1500),
+        SetLine3(2300),
+        Max(2300)
     }
 
     fun powerLift(power: Double) {
