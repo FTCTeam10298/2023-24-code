@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.CRServo
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.pid.PID
+import java.util.function.DoubleToLongFunction
 import kotlin.math.cos
 
 class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
@@ -20,8 +21,10 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
 
     private val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0-40)
 
-    private val pid = PID(kp= 0.003, kd = 0.01)
-    val holdingConstant = 0.08
+    private val outPid = PID(kp= 0.003, kd = 0.01)
+    private val outHoldingConstant = 0.08
+    private val inPid = PID(kp= 0.003)
+    private val inHoldingConstant = 0.07
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
 
@@ -43,11 +46,23 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
         armServo2.power = power
     }
 
+    private val armAngleMidpointDegrees = 150.0
     fun calcPowerToReachTarget(targetDegrees: Double): Double {
         val currentDegrees = getArmAngleDegrees()
         val errorDegrees = (targetDegrees - currentDegrees) % 360
         println("errorDegrees: $errorDegrees")
         println("errorDegrees no wrap: ${targetDegrees - currentDegrees}")
+
+        val isArmTargetInOfMidpoint = targetDegrees > armAngleMidpointDegrees
+        val pid: PID = when (isArmTargetInOfMidpoint) {
+            true -> inPid
+            false -> outPid
+        }
+        val holdingConstant: Double = when (isArmTargetInOfMidpoint) {
+            true -> inHoldingConstant
+            false -> outHoldingConstant
+        }
+
         return pid.calcPID(errorDegrees) + (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
     }
 
@@ -62,28 +77,28 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
 
 }
 
-@Autonomous
-class ArmTest: OpMode() {
-    private val hardware = RobotTwoHardware(telemetry, this)
-    val movement = MecanumDriveTrain(hardware)
-    private lateinit var arm: Arm
-
-    override fun init() {
-        /** INIT PHASE */
-        hardware.init(hardwareMap)
-        arm = Arm(
-                encoder= hardware.armEncoder,
-                armServo1= hardware.armServo1,
-                armServo2= hardware.armServo2, telemetry)
-    }
-
-    override fun loop() {
-
-        arm.powerArm(arm.holdingConstant * cos(Math.toRadians(arm.getArmAngleDegrees() - arm.holdingConstantAngleOffset)))
-
-        telemetry.addLine("power: ${hardware.armServo1.power}")
-        telemetry.addLine("angle: ${arm.getArmAngleDegrees()}")
-        telemetry.addLine("voltage: ${hardware.armEncoder.voltage}")
-        telemetry.update()
-    }
-}
+//@Autonomous
+//class ArmTest: OpMode() {
+//    private val hardware = RobotTwoHardware(telemetry, this)
+//    val movement = MecanumDriveTrain(hardware)
+//    private lateinit var arm: Arm
+//
+//    override fun init() {
+//        /** INIT PHASE */
+//        hardware.init(hardwareMap)
+//        arm = Arm(
+//                encoder= hardware.armEncoder,
+//                armServo1= hardware.armServo1,
+//                armServo2= hardware.armServo2, telemetry)
+//    }
+//
+//    override fun loop() {
+//
+//        arm.powerArm(arm.holdingConstant * cos(Math.toRadians(arm.getArmAngleDegrees() - arm.holdingConstantAngleOffset)))
+//
+//        telemetry.addLine("power: ${hardware.armServo1.power}")
+//        telemetry.addLine("angle: ${arm.getArmAngleDegrees()}")
+//        telemetry.addLine("voltage: ${hardware.armEncoder.voltage}")
+//        telemetry.update()
+//    }
+//}
