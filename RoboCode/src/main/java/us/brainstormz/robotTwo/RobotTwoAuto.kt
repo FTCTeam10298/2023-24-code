@@ -51,6 +51,26 @@ class RobotTwoAuto: OpMode() {
                         val isCollectorAtPosition = collector.isExtendoAtPosition(targetState.targetRobot.collectorState.extendoPosition.ticks)
                         isRobotAtPosition&& isCollectorAtPosition
                     },),
+            TargetWorld(
+                    targetRobot = RobotState(
+                            collectorState = Collector.CollectorState(Collector.CollectorPowers.DropPurple, RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
+                            positionAndRotation = purplePixelPlacementPosition,
+                            depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+                        val timeSinceTargetStarted = System.currentTimeMillis() - targetState.timeTargetStartedMilis
+                        val timeToEjectMilis = 1000
+                        timeSinceTargetStarted >= timeToEjectMilis
+                    },),
+            TargetWorld(
+                    targetRobot = RobotState(
+                            collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
+                            positionAndRotation = purplePixelPlacementPosition,
+                            depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+                              true
+                    },),
 
 //            targetWorldToBeReplacedWithInjection,
 //            TargetWorld(
@@ -148,6 +168,11 @@ class RobotTwoAuto: OpMode() {
         return positionAndRotation.copy(x= -positionAndRotation.x, r= -positionAndRotation.r)
     }
 
+    private fun getNextTargetFromList(): TargetWorld {
+        return autoListIterator.next().copy(timeTargetStartedMilis = System.currentTimeMillis())
+
+    }
+
     private lateinit var autoStateList: List<TargetWorld>
     private lateinit var autoListIterator: ListIterator<TargetWorld>
     private fun nextTargetState(
@@ -155,14 +180,14 @@ class RobotTwoAuto: OpMode() {
             actualState: ActualWorld,
             previousActualState: ActualWorld?): TargetWorld {
         return if (previousTargetState == null) {
-            autoListIterator.next()
+            getNextTargetFromList()
         } else {
             val isTargetReached = previousTargetState.isTargetReached(previousTargetState!!, actualState)
             telemetry.addLine("isTargetReached: $isTargetReached")
 
             when {
                 isTargetReached && autoListIterator.hasNext()-> {
-                    autoListIterator.next()
+                    getNextTargetFromList()
                 }
                 else -> {
                     previousTargetState
@@ -181,7 +206,8 @@ class RobotTwoAuto: OpMode() {
     data class TargetWorld(
             val targetRobot: RobotTwoHardware.RobotState,
             val isTargetReached: (previousTargetState: TargetWorld, actualState: ActualWorld) -> Boolean,
-            val myJankFlagToInjectPurplePlacement: Boolean = false)
+            val myJankFlagToInjectPurplePlacement: Boolean = false,
+            val timeTargetStartedMilis: Long = 0)
     class ActualWorld(val actualRobot: RobotState,
                       val timestampMilis: Long)
 
@@ -319,6 +345,7 @@ class RobotTwoAuto: OpMode() {
 
                 mecanumMovement.moveTowardTarget(targetState.targetRobot.positionAndRotation)
                 collector.moveExtendoToPosition(targetState.targetRobot.collectorState.extendoPosition.ticks)
+                collector.spinCollector(targetState.targetRobot.collectorState.collectorState.power)
             }
         )
 
