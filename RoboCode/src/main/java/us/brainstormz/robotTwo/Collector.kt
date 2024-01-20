@@ -7,8 +7,10 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
+import us.brainstormz.pid.PID
 import us.brainstormz.potatoBot.potatoBotHardware
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 
 class Collector(private val extendoMotorMaster: DcMotorEx,
                 private val extendoMotorSlave: DcMotor,
@@ -224,11 +226,17 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
         extendoMotorSlave.power = allowedPower
     }
 
-//    private fun moveExtendoTowardPosition(targetPosition: Double) {
-//        val currentPosition = hardware.extendoMotorMaster.currentPosition.toDouble()
-//        val power = hardware.extendoPositionPID.calcPID(targetPosition, currentPosition)
-//        powerExtendo(power)
-//    }
+    enum class ExtendoPositions(val ticks: Int) {
+        BeforeTransfer(230),
+        Min(0)
+    }
+    private val pid = PID(kp = 0.001)
+    fun moveExtendoToPosition(targetPositionTicks: Int) {
+        val currentPosition = extendoMotorMaster.currentPosition.toDouble()
+        val positionError = targetPositionTicks - currentPosition
+        val power = pid.calcPID(positionError)
+        powerExtendo(power)
+    }
 
     private fun getCollectorPowerState(power: Double) = CollectorPowers.entries.firstOrNull { it ->
         power == it.power
