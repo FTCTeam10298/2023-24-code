@@ -74,14 +74,9 @@ class RobotTwoTeleOp: OpMode() {
                     liftMotor2 = hardware.liftMotorSlave,
                     liftLimit = hardware.liftMagnetLimit)
         transfer = TransferManager(
-                hardware.rightClawServo,
-                hardware.leftClawServo,
-                hardware.leftTransferSensor,
-                hardware.rightTransferSensor,
                 collector,
                 lift,
                 arm,
-                hardware.lights,
                 telemetry)
 
         odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
