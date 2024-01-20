@@ -40,6 +40,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     override lateinit var rBDrive: DcMotor
 
     val robotLengthInches = 17.75
+    val tabCutoffCompensationInches = 0.5
 
     override lateinit var imu: IMU
 

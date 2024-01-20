@@ -175,7 +175,7 @@ class RobotTwoAuto: OpMode() {
         val startPositionAndRotation: PositionAndRotation = when (alliance) {
             RobotTwoHardware.Alliance.Red -> {
                 when (startPosition) {
-                    StartPosition.Backboard -> PositionAndRotation(x = -(72.0 - (hardware.robotLengthInches/2)), y= -12.0, r= -90.0)
+                    StartPosition.Backboard -> PositionAndRotation(x = -(72.0 - ((hardware.robotLengthInches/2) + hardware.tabCutoffCompensationInches)), y= -12.0, r= -90.0)
                     StartPosition.Audience -> TODO()
                 }
             }
