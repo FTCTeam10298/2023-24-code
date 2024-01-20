@@ -93,10 +93,6 @@ class RobotTwoTeleOp: OpMode() {
     override fun loop() {
         /** TELE-OP PHASE */
 
-//        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.entries[(Math.random() * RevBlinkinLedDriver.BlinkinPattern.entries.size).toInt()])
-        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
-
-
         // DRONE DRIVE
         val yInput = gamepad1.left_stick_y.toDouble()
         val xInput = gamepad1.left_stick_x.toDouble()
