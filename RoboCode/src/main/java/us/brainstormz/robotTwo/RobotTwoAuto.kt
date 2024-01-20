@@ -2,14 +2,19 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.localizer.RRTwoWheelLocalizer
+import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.RobotTwoHardware.UnchangingRobotAttributes.alliance
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
+import us.brainstormz.threeDay.PropColors
+import us.brainstormz.threeDay.PropDetector
+import us.brainstormz.threeDay.PropPosition
 
 @Autonomous
 class RobotTwoAuto: OpMode() {
@@ -111,10 +116,13 @@ class RobotTwoAuto: OpMode() {
 
     private val console = TelemetryConsole(telemetry)
     private val wizard = TelemetryWizard(console, null)
+    private var wizardWasChanged = false
     data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition)
+
     private fun runMenuWizard(): WizardResults {
         val isWizardDone = wizard.summonWizard(gamepad1)
         return if (isWizardDone) {
+            wizardWasChanged = true
             WizardResults(
                     alliance = when (wizard.wasItemChosen("alliance", "Red")) {
                         true -> RobotTwoHardware.Alliance.Red
@@ -138,7 +146,10 @@ class RobotTwoAuto: OpMode() {
 
     private lateinit var arm: Arm
 
-    private lateinit var startPosition: StartPosition
+    private var startPosition: StartPosition = StartPosition.Backboard
+
+    private val opencv: OpenCvAbstraction = OpenCvAbstraction(this)
+    private var propDetector: PropDetector? = null
 
     override fun init() {
         hardware.init(hardwareMap)
@@ -167,16 +178,37 @@ class RobotTwoAuto: OpMode() {
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
         wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"))
+
+
+        opencv.init(hardwareMap)
+        opencv.internalCamera = false
+        opencv.cameraName = "Webcam 1"
+        opencv.cameraOrientation = OpenCvCameraRotation.UPSIDE_DOWN
     }
 
+    private fun runCamera() {
+        alliance = wizardResults.alliance
+        startPosition = wizardResults.startPosition
+
+        val color: PropColors = when (alliance) {
+            RobotTwoHardware.Alliance.Blue -> PropColors.Blue
+            RobotTwoHardware.Alliance.Red -> PropColors.Red
+        }
+        propDetector = PropDetector(telemetry, color)
+        opencv.onNewFrame(propDetector!!::processFrame)
+    }
+
+    private var propPosition: PropPosition = PropPosition.Center
     private var wizardResults = WizardResults(RobotTwoHardware.Alliance.Red, StartPosition.Backboard)
     override fun init_loop() {
         wizardResults = runMenuWizard()
+        if (wizardWasChanged) {
+            runCamera()
+        }
     }
 
     override fun start() {
-        alliance = wizardResults.alliance
-        startPosition = wizardResults.startPosition
+        propPosition = propDetector?.propPosition ?: propPosition
 
         val redPositionBasedOnSide = when (startPosition) {
             StartPosition.Backboard -> {
