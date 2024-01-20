@@ -118,7 +118,6 @@ class RobotTwoTeleOp: OpMode() {
             gamepad1.right_bumper -> {
                 CollectorSystem.CollectorPowers.Intake
             }
-
             gamepad1.left_bumper -> {
                 CollectorSystem.CollectorPowers.Eject
             }
@@ -127,9 +126,9 @@ class RobotTwoTeleOp: OpMode() {
             }
         }
 
-        val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
-
-        collectorSystem.spinCollector(actualCollectorState.power)
+//        val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
+//        collectorSystem.spinCollector(actualCollectorState.power)
+        collectorSystem.spinCollector(inputCollectorStateSystem.power)
 
         val autoTransferState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
         val rollerState = when {
@@ -152,7 +151,7 @@ class RobotTwoTeleOp: OpMode() {
             else -> autoTransferState
         }
         collectorSystem.runRollers(rollerState)
-        
+
 
         /** Gamepad 2 */
 
@@ -164,7 +163,6 @@ class RobotTwoTeleOp: OpMode() {
         val extendoTriggerActivation = 0.1
         val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
         val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
-
         when {
 //            rightTrigger && leftTrigger -> {
 //                collectorSystem.powerExtendo(0.0)
@@ -188,14 +186,14 @@ class RobotTwoTeleOp: OpMode() {
             }
             else -> {
                 collectorSystem.powerExtendo(0.0)
-//                collectorSystem.moveExtendoToPosition(CollectorSystem.ExtendoPositions.Min.ticks)
             }
         }
 
         //Lift
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
+        val areManualControlsActive = liftOverrideStickValue > 0.2
 
-        val liftPosition: Lift.LiftPositions = if (liftOverrideStickValue > 0.2) {
+        val liftPosition: Lift.LiftPositions = if (areManualControlsActive) {
             Lift.LiftPositions.Manual
         } else {
             when {
@@ -205,7 +203,6 @@ class RobotTwoTeleOp: OpMode() {
                 gamepad2.dpad_down -> {
                     Lift.LiftPositions.Min
                 }
-
                 gamepad2.dpad_right && !previousGamepad2State.dpad_right -> {
                     if (previousRobotState.depoState.liftPosition !== Lift.LiftPositions.SetLine1) {
                         Lift.LiftPositions.SetLine1
@@ -224,31 +221,23 @@ class RobotTwoTeleOp: OpMode() {
                 }
             }
         }
-        when (liftPosition) {
-            Lift.LiftPositions.Manual -> {
+
+        val liftTargetIsBelowSafeArm = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
+        val armIsAtSafeAngle = arm.getArmAngleDegrees() >= Arm.Positions.In.angleDegrees
+        when {
+            liftPosition == Lift.LiftPositions.Manual -> {
                 lift.powerLift(-liftOverrideStickValue)
             }
-            Lift.LiftPositions.Nothing -> {
+            liftPosition == Lift.LiftPositions.Nothing -> {
                 lift.powerLift(0.0)
             }
+            liftTargetIsBelowSafeArm && !armIsAtSafeAngle -> {
+                lift.moveLiftToPosition(Lift.LiftPositions.ClearForArmToMove.ticks)
+            }
             else -> {
-                val liftTargetIsBelowSafeArm = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
-                val armIsAtSafeAngle = arm.getArmAngleDegrees() >= Arm.Positions.In.angleDegrees
-                telemetry.addLine("liftTargetIsBelowSafeArm: $liftTargetIsBelowSafeArm")
-                telemetry.addLine("armIsAtSafeAngle: $armIsAtSafeAngle")
-
-                val actualPosition = if (liftTargetIsBelowSafeArm && !armIsAtSafeAngle) {
-                    telemetry.addLine("setting lift position to clearance for arm beudacse the arm isn't ready")
-                    Lift.LiftPositions.ClearForArmToMove
-                } else {
-                    telemetry.addLine("setting lift position to $liftPosition beucase ther'es no problem")
-                    liftPosition
-                }
-                lift.moveLiftToPosition(actualPosition.ticks)
+                lift.moveLiftToPosition(liftPosition.ticks)
             }
         }
-        telemetry.addLine("arm.getArmAngleDegrees(): ${arm.getArmAngleDegrees()}")
-        telemetry.addLine("Arm.Positions.In.angleDegrees: ${Arm.Positions.In.angleDegrees}")
 
         //Arm
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
