@@ -8,9 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.pid.PID
-import us.brainstormz.potatoBot.potatoBotHardware
 import kotlin.math.abs
-import kotlin.math.absoluteValue
 
 class Collector(private val extendoMotorMaster: DcMotorEx,
                 private val extendoMotorSlave: DcMotor,
@@ -227,7 +225,7 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     }
 
     enum class ExtendoPositions(val ticks: Int) {
-        BeforeTransfer(230),
+        ClearTransfer(230),
         Min(0)
     }
     private val pid = PID(kp = 0.001)

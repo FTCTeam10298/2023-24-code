@@ -12,7 +12,7 @@ class TransferManager(
 
     enum class ExtendoStateFromTransfer {
         MoveIn,
-        None
+        MoveOutOfTheWay
     }
     enum class LiftStateFromTransfer {
         MoveDown,
@@ -46,7 +46,7 @@ class TransferManager(
         val liftExtensionIsAllTheWayDown = lift.isLimitSwitchActivated()
         val collectorState: ExtendoStateFromTransfer = when (liftExtensionIsAllTheWayDown) {
             true -> ExtendoStateFromTransfer.MoveIn
-            false -> ExtendoStateFromTransfer.None
+            false -> ExtendoStateFromTransfer.MoveOutOfTheWay
         }
 
         val isCollectorAllTheWayIn = collector.isCollectorAllTheWayIn()

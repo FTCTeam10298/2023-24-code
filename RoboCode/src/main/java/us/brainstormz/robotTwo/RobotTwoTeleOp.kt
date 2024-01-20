@@ -130,8 +130,8 @@ class RobotTwoTeleOp: OpMode() {
                     TransferManager.ExtendoStateFromTransfer.MoveIn -> {
                         collector.moveCollectorAllTheWayIn()
                     }
-                    TransferManager.ExtendoStateFromTransfer.None -> {
-                        collector.powerExtendo(0.0)
+                    TransferManager.ExtendoStateFromTransfer.MoveOutOfTheWay -> {
+                        collector.moveExtendoToPosition(Collector.ExtendoPositions.ClearTransfer.ticks)
                     }
                 }
             }
