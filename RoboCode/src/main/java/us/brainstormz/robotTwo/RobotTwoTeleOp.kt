@@ -160,7 +160,10 @@ class RobotTwoTeleOp: OpMode() {
 
 
 
-        telemetry.addLine("left transfer roller position: ${collector.leftEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("left roller servo position: ${collector.leftEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("left flapAngleDegrees: ${collector.getFlapAngleDegrees(collector.leftEncoderReader)}")
+        telemetry.addLine("right roller servo position: ${collector.rightEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("right flapAngleDegrees: ${collector.getFlapAngleDegrees(collector.rightEncoderReader)}")
         telemetry.addLine("left transfer sensor: ${collector.isPixelIn(hardware.leftTransferSensor)}")
         telemetry.addLine("right transfer sensor: ${collector.isPixelIn(hardware.rightTransferSensor)}")
 

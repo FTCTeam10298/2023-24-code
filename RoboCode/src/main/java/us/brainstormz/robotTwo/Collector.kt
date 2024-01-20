@@ -60,9 +60,9 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     val leftEncoderReader = AxonEncoderReader(leftRollerEncoder, 0.0)
     val rightEncoderReader = AxonEncoderReader(rightRollerEncoder, 0.0)
 
-    private val flapAngleToleranceDegrees = 10
-    private val leftFlapTransferReadyAngleDegrees = 28.0
-    private val rightFlapTransferReadyAngleDegrees = 0.0 //need to find number
+    private val flapAngleToleranceDegrees = 5
+    private val leftFlapTransferReadyAngleDegrees = 32.0
+    private val rightFlapTransferReadyAngleDegrees = 90.0 //need to find number
 
     fun getFlapAngleDegrees(encoderReader: AxonEncoderReader): Double =
             (encoderReader.getPositionDegrees() * 2) % 360
@@ -80,11 +80,12 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
             Side.Right -> rightEncoderReader
         }
 
-        val currentAngle = getFlapAngleDegrees(encoder)
+        val currentAngle = getFlapAngleDegrees(encoder) % 180
         val angleErrorDegrees = currentAngle - targetAngleDegrees
 
-        val proportionalConstant = 0.8
+        val proportionalConstant = 0.43
         val power = (angleErrorDegrees / 360) * proportionalConstant
+        telemetry.addLine("$flap roller power: $power, angle: $angleErrorDegrees")
 
         return power
     }
