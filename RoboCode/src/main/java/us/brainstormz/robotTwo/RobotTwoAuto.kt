@@ -55,7 +55,7 @@ class RobotTwoAuto: OpMode() {
 
         val allianceAccounted = when (alliance) {
             RobotTwoHardware.Alliance.Red -> startPosAccounted
-            RobotTwoHardware.Alliance.Blue -> flipRedAutoToBlue(startPosAccounted)
+            RobotTwoHardware.Alliance.Blue -> startPosAccounted//flipRedAutoToBlue(startPosAccounted)
         }
 
 
@@ -172,14 +172,15 @@ class RobotTwoAuto: OpMode() {
         alliance = wizardResults.alliance
         startPosition = wizardResults.startPosition
 
-        val startPositionAndRotation: PositionAndRotation = when (alliance) {
-            RobotTwoHardware.Alliance.Red -> {
-                when (startPosition) {
-                    StartPosition.Backboard -> PositionAndRotation(x = -(72.0 - ((hardware.robotLengthInches/2) + hardware.tabCutoffCompensationInches)), y= -12.0, r= -90.0)
-                    StartPosition.Audience -> TODO()
+        val startPositionAndRotation: PositionAndRotation = when (startPosition) {
+            StartPosition.Backboard -> {
+                val redPositionBackboard = PositionAndRotation(x = -(72.0 - ((hardware.robotLengthInches/2) + hardware.tabCutoffCompensationInches)), y= -12.0, r= -90.0)
+                when (alliance) {
+                    RobotTwoHardware.Alliance.Red -> redPositionBackboard
+                    RobotTwoHardware.Alliance.Blue -> redPositionBackboard.copy(x= -redPositionBackboard.x, r= -redPositionBackboard.r)
                 }
             }
-            RobotTwoHardware.Alliance.Blue -> {
+            StartPosition.Audience -> {
                 TODO()
             }
         }
