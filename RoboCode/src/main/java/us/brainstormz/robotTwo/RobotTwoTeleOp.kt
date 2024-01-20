@@ -82,6 +82,9 @@ class RobotTwoTeleOp: OpMode() {
         odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
     }
 
+    private var numberOfTimesColorButtonPressed: Int = 0
+    private var previousDesiredPixelLightPattern: BothPixelsWeWant = BothPixelsWeWant(pixel1 = PixelWeWant.Unknown, pixel2 = PixelWeWant.Unknown)
+    private var previousIsAnyColorButtonPressed: Boolean = false
     private var previousGamepad1State: Gamepad = Gamepad()
     private var previousGamepad2State: Gamepad = Gamepad()
     private var previousRobotState = initialRobotState
@@ -299,34 +302,98 @@ class RobotTwoTeleOp: OpMode() {
             RobotTwoHardware.HangPowers.Holding.power
         }
 
+        //Light Control
+
+        val isAnyColorButtonPressed: Boolean = gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y
+
+        val desiredPixelLightPattern: BothPixelsWeWant = if (gamepad2.dpad_left) {
+            val newOne: PixelWeWant = when {
+                gamepad2.a -> {
+                    PixelWeWant.Green
+                }
+                gamepad2.b -> {
+                    PixelWeWant.White
+                }
+                gamepad2.x -> {
+                    PixelWeWant.Purple
+                }
+                gamepad2.y -> {
+                    PixelWeWant.Yellow
+                }
+                else -> {
+                    PixelWeWant.Unknown
+                }
+            }
+
+//            val isLayerRisingEdge = gamepad2.dpad_left && !previousGamepad2State.dpad_left
+
+            val isAnyColorButtonRisingEdge = isAnyColorButtonPressed && !previousIsAnyColorButtonPressed
+
+            if (isAnyColorButtonRisingEdge) {
+                numberOfTimesColorButtonPressed += 1
+
+                when (numberOfTimesColorButtonPressed) {
+                    1 -> {
+                        previousDesiredPixelLightPattern.copy(pixel1 = newOne)
+                    }
+                    2 -> {
+                        previousDesiredPixelLightPattern.copy(pixel2 = newOne)
+                    }
+                    else -> {
+                        previousDesiredPixelLightPattern
+                    }
+                }
+            } else {
+                previousDesiredPixelLightPattern
+            }
+        } else {
+            numberOfTimesColorButtonPressed = 0
+            previousDesiredPixelLightPattern
+        }
+        previousIsAnyColorButtonPressed = isAnyColorButtonPressed
+
+        telemetry.addLine("desiredPixelLightPattern: $desiredPixelLightPattern")
+
+        /** not controls */
+
         //Previous state
         previousRobotState = hardware.getActualState(RobotTwoAuto.ActualWorld(previousRobotState, 0), arm, odometryLocalizer, collectorSystem).actualRobot
                 .copy(depoState = RobotTwoAuto.DepoState(   armPos = armPosition,
                                                             liftPosition = liftPosition,
                                                             leftClawPosition = leftClawPosition,
                                                             rightClawPosition = rightClawPosition))
+        previousDesiredPixelLightPattern = desiredPixelLightPattern
         previousGamepad1State.copy(gamepad1)
         previousGamepad2State.copy(gamepad2)
         telemetry.update()
     }
 
-    enum class PixelHandlerState {
-        None,
+    enum class PixelWeWant {
         White,
-        Purple,
         Green,
-        Yellow
+        Purple,
+        Yellow,
+        Unknown,
     }
-    data class TwoPixelHandlerState(val leftSide: PixelHandlerState, val rightSide: PixelHandlerState)
-    private val emptyPixelHandler = TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
 
-    private fun transferState(): TwoPixelHandlerState {
-        //TODO Put logic here and sensors on the robot
-        return TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
-    }
-    private fun clawState(): TwoPixelHandlerState {
-        //TODO Put logic here and sensors on the robot
-        return TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
-    }
+    data class BothPixelsWeWant(val pixel1: PixelWeWant, val pixel2: PixelWeWant)
+//    enum class PixelHandlerState {
+//        None,
+//        White,
+//        Purple,
+//        Green,
+//        Yellow
+//    }
+//    data class TwoPixelHandlerState(val leftSide: PixelHandlerState, val rightSide: PixelHandlerState)
+//    private val emptyPixelHandler = TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
+//
+//    private fun transferState(): TwoPixelHandlerState {
+//        //TODO Put logic here and sensors on the robot
+//        return TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
+//    }
+//    private fun clawState(): TwoPixelHandlerState {
+//        //TODO Put logic here and sensors on the robot
+//        return TwoPixelHandlerState(PixelHandlerState.None, PixelHandlerState.None)
+//    }
 
 }
