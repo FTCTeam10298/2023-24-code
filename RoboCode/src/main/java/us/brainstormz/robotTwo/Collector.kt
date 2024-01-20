@@ -241,7 +241,7 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
         ClearTransfer(230),
         Min(0)
     }
-    private val pid = PID(kp = 0.001)
+    private val pid = PID(kp = 0.002)
     fun moveExtendoToPosition(targetPositionTicks: Int) {
         val currentPosition = extendoMotorMaster.currentPosition.toDouble()
         val positionError = targetPositionTicks - currentPosition
