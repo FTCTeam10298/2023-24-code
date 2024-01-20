@@ -109,9 +109,13 @@ class RobotTwoAuto: OpMode() {
     class ActualWorld(val actualRobot: RobotState,
                       val timestampMilis: Long)
 
-    enum class StartPosition {
-        Backboard,
-        Audience
+    enum class StartPosition(val redStartPosition: PositionAndRotation) {
+        Backboard(PositionAndRotation(  x = RobotTwoHardware.redStartingXInches,
+                                        y= -12.0,
+                                        r= RobotTwoHardware.redStartingRDegrees)),
+        Audience(PositionAndRotation(   x = RobotTwoHardware.redStartingXInches,
+                                        y= 36.0,
+                                        r= RobotTwoHardware.redStartingRDegrees))
     }
 
     private val console = TelemetryConsole(telemetry)
@@ -210,17 +214,9 @@ class RobotTwoAuto: OpMode() {
     override fun start() {
         propPosition = propDetector?.propPosition ?: propPosition
 
-        val redPositionBasedOnSide = when (startPosition) {
-            StartPosition.Backboard -> {
-                PositionAndRotation(x = -(72.0 - ((hardware.robotLengthInches/2) + hardware.tabCutoffCompensationInches)), y= -12.0, r= -90.0)
-            }
-            StartPosition.Audience -> {
-                TODO()
-            }
-        }
         val startPositionAndRotation: PositionAndRotation = when (alliance) {
-            RobotTwoHardware.Alliance.Red -> redPositionBasedOnSide
-            RobotTwoHardware.Alliance.Blue -> flipRedPositionToBlue(redPositionBasedOnSide)
+            RobotTwoHardware.Alliance.Red -> startPosition.redStartPosition
+            RobotTwoHardware.Alliance.Blue -> flipRedPositionToBlue(startPosition.redStartPosition)
         }
 
         mecanumMovement.localizer.setPositionAndRotation(startPositionAndRotation)
