@@ -38,14 +38,16 @@ class RobotTwoAuto: OpMode() {
                                                                     myJankFlagToInjectPurplePlacement = true)
 
     //Backboard side
-    private val purplePixelPlacementPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -5.0)
+    private val purplePixelPlacementLeftPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -5.0)
+    private val purplePixelPlacementCenterPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -15.0)
+    private val purplePixelPlacementRightPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -5.0)
     private val placingOnBackboardPosition = PositionAndRotation(y= -52.5, x= -29.5, r= 0.0)
     private val parkingPosition = PositionAndRotation(y= -48.0, x= -58.0, r= 0.0)
     private val backBoardAuto: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
-                            positionAndRotation = purplePixelPlacementPosition,
+                            positionAndRotation = purplePixelPlacementLeftPosition,
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
@@ -55,7 +57,7 @@ class RobotTwoAuto: OpMode() {
             TargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
-                            positionAndRotation = purplePixelPlacementPosition,
+                            positionAndRotation = purplePixelPlacementLeftPosition,
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
@@ -66,7 +68,7 @@ class RobotTwoAuto: OpMode() {
             TargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.DropPurple, RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
-                            positionAndRotation = purplePixelPlacementPosition,
+                            positionAndRotation = purplePixelPlacementLeftPosition,
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
@@ -205,6 +207,7 @@ class RobotTwoAuto: OpMode() {
     private fun calcAutoTargetStateList(
             alliance: RobotTwoHardware.Alliance,
             startPosition: StartPosition,
+            propPosition: PropPosition
     ): List<TargetWorld> {
 
         val startPosAccounted = when (startPosition) {
@@ -212,7 +215,28 @@ class RobotTwoAuto: OpMode() {
             StartPosition.Audience -> audienceAuto
         }
 
-        val purplePixelAccounted: List<TargetWorld> = injectPurplePlacementIntoSidedAuto(startPosAccounted, startPosition)
+//        val purplePixelAccounted: List<TargetWorld> = injectPurplePlacementIntoSidedAuto(startPosAccounted, startPosition)
+        val purplePixelAccounted = startPosAccounted.map { targetWorld ->
+            if (targetWorld.targetRobot.collectorSystemState.extendoPosition == RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition) {
+                val newExtendoPosition = when (propPosition) {
+                    PropPosition.Left -> RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition
+                    PropPosition.Center -> RobotTwoHardware.ExtendoPositions.MidBackboardPixelPosition
+                    PropPosition.Right -> RobotTwoHardware.ExtendoPositions.CloserBackboardPixelPosition
+                }
+                val newRobotPosition = when (propPosition) {
+                    PropPosition.Left -> purplePixelPlacementLeftPosition
+                    PropPosition.Center -> purplePixelPlacementCenterPosition
+                    PropPosition.Right -> purplePixelPlacementRightPosition
+                }
+                targetWorld.copy(targetRobot = targetWorld.targetRobot.copy(
+                        collectorSystemState = targetWorld.targetRobot.collectorSystemState.copy(extendoPosition = newExtendoPosition),
+                        positionAndRotation = newRobotPosition
+                ))
+            } else {
+                targetWorld
+            }
+        }
+
 
         val allianceAccounted = when (alliance) {
             RobotTwoHardware.Alliance.Red -> purplePixelAccounted
@@ -390,7 +414,7 @@ class RobotTwoAuto: OpMode() {
 
         mecanumMovement.localizer.setPositionAndRotation(startPositionAndRotation)
 
-        autoStateList = calcAutoTargetStateList(alliance, startPosition)
+        autoStateList = calcAutoTargetStateList(alliance, startPosition, propPosition)
         autoListIterator = autoStateList.listIterator()
     }
 

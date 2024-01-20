@@ -89,8 +89,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         AllTheWayInTarget(-10),
         Min(0),
         FarBackboardPixelPosition(1900),
+        MidBackboardPixelPosition(1000),
         CloserBackboardPixelPosition(500),
-        MidBackboardPixelPosition(500),
         Max(500),
     }
     val extendoOperationRange = ExtendoPositions.Min.ticks..ExtendoPositions.Max.ticks
