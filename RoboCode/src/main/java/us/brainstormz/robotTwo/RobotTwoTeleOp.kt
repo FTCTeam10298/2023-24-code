@@ -201,34 +201,40 @@ class RobotTwoTeleOp: OpMode() {
         //Transfer
         val shouldWeTransfer = gamepad2.a
         val transferState = transfer.getTransferState(TransferManager.ClawStateFromTransfer.Retracted, RevBlinkinLedDriver.BlinkinPattern.BLUE)
-        
+
         //Lift
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
-        val liftPosition: Lift.LiftPositions = when {
-            liftOverrideStickValue > 0.2 -> {
-                Lift.LiftPositions.Manual
-            }
-            gamepad2.dpad_up -> {
-                Lift.LiftPositions.SetLine3
-            }
-            gamepad2.dpad_down -> {
-                Lift.LiftPositions.Min
-            }
-            gamepad2.dpad_right && !previousGamepad2State.dpad_right -> {
-                if (previousRobotState.depoState.liftPosition !== Lift.LiftPositions.SetLine1) {
-                    Lift.LiftPositions.SetLine1
-                } else {
-                    Lift.LiftPositions.SetLine2
+
+        val liftPosition: Lift.LiftPositions = if (liftOverrideStickValue > 0.2) {
+            Lift.LiftPositions.Manual
+        } else {
+            when {
+                gamepad2.dpad_up -> {
+                    Lift.LiftPositions.SetLine3
                 }
-            }
-            shouldWeTransfer -> {
-                when (transferState.liftState) {
-                    TransferManager.LiftStateFromTransfer.MoveDown -> Lift.LiftPositions.Min
-                    TransferManager.LiftStateFromTransfer.None -> Lift.LiftPositions.Nothing
+
+                gamepad2.dpad_down -> {
+                    Lift.LiftPositions.Min
                 }
-            }
-            else -> {
-                previousRobotState.depoState.liftPosition
+
+                gamepad2.dpad_right && !previousGamepad2State.dpad_right -> {
+                    if (previousRobotState.depoState.liftPosition !== Lift.LiftPositions.SetLine1) {
+                        Lift.LiftPositions.SetLine1
+                    } else {
+                        Lift.LiftPositions.SetLine2
+                    }
+                }
+
+                shouldWeTransfer -> {
+                    when (transferState.liftState) {
+                        TransferManager.LiftStateFromTransfer.MoveDown -> Lift.LiftPositions.Min
+                        TransferManager.LiftStateFromTransfer.None -> Lift.LiftPositions.Nothing
+                    }
+                }
+
+                else -> {
+                    previousRobotState.depoState.liftPosition
+                }
             }
         }
         when (liftPosition) {
