@@ -2,6 +2,7 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
@@ -14,13 +15,15 @@ import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 class RobotTwoAuto: OpMode() {
 
     private val backBoardAuto: List<TargetWorld> = listOf(
-//        TargetWorld(
-//                targetRobot = RobotState(
-//
-//                ),
-//                isTargetReached = {previousTargetState: TargetWorld?, actualState: ActualWorld ->
-//
-//                })
+        TargetWorld(
+                targetRobot = RobotState(
+                    collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
+                    positionAndRotation = PositionAndRotation(),
+                    depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                ),
+                isTargetReached = {previousTargetState: TargetWorld?, actualState: ActualWorld ->
+                    false
+                })
     )
 
     private val audienceAuto: List<TargetWorld> = listOf(
@@ -41,6 +44,7 @@ class RobotTwoAuto: OpMode() {
             RobotTwoHardware.Alliance.Red -> startPosAccounted
             RobotTwoHardware.Alliance.Blue -> flipRedAutoToBlue(startPosAccounted)
         }
+
 
         return allianceAccounted
     }

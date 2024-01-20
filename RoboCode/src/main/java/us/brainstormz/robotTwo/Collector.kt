@@ -56,6 +56,11 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
             val transferLeftSensorState: TransferHalfState,
             val transferRightSensorState: TransferHalfState,
     )
+//    data class CollectorTargetState(
+//            val collectorState: CollectorPowers,
+//            val extendoPosition: RobotTwoHardware.ExtendoPositions,
+//            val transferRollersState: TransferState
+//    )
 
 
     val leftEncoderReader = AxonEncoderReader(leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
