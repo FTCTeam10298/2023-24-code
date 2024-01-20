@@ -17,9 +17,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
-import com.qualcomm.robotcore.hardware.LED
 import com.qualcomm.robotcore.hardware.Servo
-import com.qualcomm.robotcore.hardware.TouchSensor
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import posePlanner.Point2D
@@ -28,7 +26,6 @@ import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.pid.PID
 import java.lang.Thread.sleep
 import kotlin.math.PI
@@ -88,11 +85,14 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var leftColorSensor: RevColorSensorV3
     lateinit var rightColorSensor: RevColorSensorV3
 
-    enum class ExtendoPositions(val position: Double) {
-        Min(0.0),
-        Max(500.0),
+    enum class ExtendoPositions(val ticks: Int) {
+        Min(0),
+        FarBackboardPixelPosition(1800),
+        CloserBackboardPixelPosition(500),
+        MidBackboardPixelPosition(500),
+        Max(500),
     }
-    val extendoOperationRange = ExtendoPositions.Min.position..ExtendoPositions.Max.position
+    val extendoOperationRange = ExtendoPositions.Min.ticks..ExtendoPositions.Max.ticks
     val extendoPositionPID = PID(kp = 1.0)
     lateinit var extendoMotorMaster: DcMotorEx
     lateinit var extendoMotorSlave: DcMotor
