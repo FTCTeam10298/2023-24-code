@@ -82,13 +82,15 @@ class RobotTwoAuto: OpMode() {
             startPosition: StartPosition): List<TargetWorld> {
 
         val injectPointIndex = sidedAuto.indexOfFirst {targetWorld -> targetWorld.myJankFlagToInjectPurplePlacement}
+        return if (injectPointIndex != -1) {
+            val listToInject = getPurplePixelPlacementRoutineForRedAlliance(startPosition)
 
-        val listToInject = getPurplePixelPlacementRoutineForRedAlliance(startPosition)
+            val injectedList = sidedAuto.subList(0, injectPointIndex) + listToInject + sidedAuto.subList(injectPointIndex + 1, sidedAuto.size)
 
-        /** I suspect this is wrong in a couple ways because of indexes */
-        val injectedList = sidedAuto.subList(0, injectPointIndex) + listToInject + sidedAuto.subList(injectPointIndex+1, sidedAuto.size)
-
-        return injectedList
+            injectedList
+        } else {
+            sidedAuto
+        }
     }
     
     private fun calcAutoTargetStateList(
