@@ -55,7 +55,7 @@ class RobotTwoAuto: OpMode() {
 
         val allianceAccounted = when (alliance) {
             RobotTwoHardware.Alliance.Red -> startPosAccounted
-            RobotTwoHardware.Alliance.Blue -> startPosAccounted//flipRedAutoToBlue(startPosAccounted)
+            RobotTwoHardware.Alliance.Blue -> flipRedAutoToBlue(startPosAccounted)
         }
 
 
@@ -63,7 +63,13 @@ class RobotTwoAuto: OpMode() {
     }
 
     private fun flipRedAutoToBlue(auto: List<TargetWorld>): List<TargetWorld> {
-        TODO()
+        return auto.map { targetWorld ->
+            val flippedBluePosition = flipRedPositionToBlue(targetWorld.targetRobot.positionAndRotation)
+            targetWorld.copy(targetRobot = targetWorld.targetRobot.copy(positionAndRotation = flippedBluePosition))
+        }
+    }
+    private fun flipRedPositionToBlue(positionAndRotation: PositionAndRotation): PositionAndRotation {
+        return positionAndRotation.copy(x= -positionAndRotation.x, r= -positionAndRotation.r)
     }
 
     private lateinit var autoStateList: List<TargetWorld>
@@ -92,7 +98,7 @@ class RobotTwoAuto: OpMode() {
             val rightClawPosition: RobotTwoHardware.RightClawPosition,
     )
 
-    open class TargetWorld(
+    data class TargetWorld(
             val targetRobot: RobotTwoHardware.RobotState,
             val isTargetReached: (previousTargetState: TargetWorld?, actualState: ActualWorld) -> Boolean)
     class ActualWorld(val actualRobot: RobotState,
@@ -172,18 +178,19 @@ class RobotTwoAuto: OpMode() {
         alliance = wizardResults.alliance
         startPosition = wizardResults.startPosition
 
-        val startPositionAndRotation: PositionAndRotation = when (startPosition) {
+        val redPositionBasedOnSide = when (startPosition) {
             StartPosition.Backboard -> {
-                val redPositionBackboard = PositionAndRotation(x = -(72.0 - ((hardware.robotLengthInches/2) + hardware.tabCutoffCompensationInches)), y= -12.0, r= -90.0)
-                when (alliance) {
-                    RobotTwoHardware.Alliance.Red -> redPositionBackboard
-                    RobotTwoHardware.Alliance.Blue -> redPositionBackboard.copy(x= -redPositionBackboard.x, r= -redPositionBackboard.r)
-                }
+                PositionAndRotation(x = -(72.0 - ((hardware.robotLengthInches/2) + hardware.tabCutoffCompensationInches)), y= -12.0, r= -90.0)
             }
             StartPosition.Audience -> {
                 TODO()
             }
         }
+        val startPositionAndRotation: PositionAndRotation = when (alliance) {
+            RobotTwoHardware.Alliance.Red -> redPositionBasedOnSide
+            RobotTwoHardware.Alliance.Blue -> flipRedPositionToBlue(redPositionBasedOnSide)
+        }
+
         mecanumMovement.localizer.setPositionAndRotation(startPositionAndRotation)
 
         autoStateList = calcAutoTargetStateList(alliance, startPosition)
@@ -191,7 +198,9 @@ class RobotTwoAuto: OpMode() {
     }
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
+    private var previousLoopStartTime = 0L
     override fun loop() {
+        val loopStartTime = System.currentTimeMillis()
         functionalReactiveAutoRunner.loop(
             actualStateGetter = { previousActualState ->
                 hardware.getActualState(previousActualState, arm, mecanumMovement.localizer, collector)
@@ -205,6 +214,11 @@ class RobotTwoAuto: OpMode() {
                 mecanumMovement.moveTowardTarget(targetState.targetRobot.positionAndRotation)
             }
         )
+
+        val deltaTime = loopStartTime - previousLoopStartTime
+        telemetry.addLine("delta time: $deltaTime")
+        previousLoopStartTime = loopStartTime
+
         telemetry.update()
     }
 }
