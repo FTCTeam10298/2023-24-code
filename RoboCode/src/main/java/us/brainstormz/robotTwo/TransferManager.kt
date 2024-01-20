@@ -56,10 +56,10 @@ class TransferManager(
         val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
 
         val armState: Arm.Positions = when (bothExtensionsAreAllTheWayIn) {
-            true -> Arm.Positions.In
-            false -> Arm.Positions.ReadyToTransfer
+            true -> Arm.Positions.TransferringTarget
+            false -> Arm.Positions.LiftIsGoingHome
         }
-        val isArmReadyToTransfer = arm.getArmAngleDegrees() <= Arm.Positions.ReadyToTransfer.angleDegrees
+        val isArmReadyToTransfer = arm.getArmAngleDegrees() <= Arm.Positions.In.angleDegrees
         val areRollersReadyToTransfer = true//collector.arePixelsAlignedInTransfer()
         val readyToTransfer = bothExtensionsAreAllTheWayIn && isArmReadyToTransfer && areRollersReadyToTransfer
 
