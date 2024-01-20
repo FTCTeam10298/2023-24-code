@@ -76,7 +76,7 @@ class RobotTwoAuto: OpMode() {
             previousTargetState == null -> {
                 autoListIterator.next()
             }
-            previousTargetState.isTargetReached(previousTargetState, actualState) -> {
+            previousTargetState.isTargetReached(previousTargetState, actualState) && autoListIterator.hasNext()-> {
                 autoListIterator.next()
             }
             else -> {
