@@ -40,6 +40,7 @@ class RobotTwoAuto: OpMode() {
     //Backboard side
     private val purplePixelPlacementPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -5.0)
     private val placingOnBackboardPosition = PositionAndRotation(y= -52.5, x= -29.5, r= 0.0)
+    private val parkingPosition = PositionAndRotation(y= -48.0, x= -58.0, r= 0.0)
     private val backBoardAuto: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(
@@ -118,20 +119,36 @@ class RobotTwoAuto: OpMode() {
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         hasTimeElapsed(timeToElapseMilis = 1000, targetState)
                     },),
+            TargetWorld(
+                    targetRobot = RobotState(
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            positionAndRotation = placingOnBackboardPosition,
+                            depoState = DepoState(Arm.Positions.LiftIsGoingHome, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+//                        hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                        arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees)
+                    },),
+            TargetWorld(
+                    targetRobot = RobotState(
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            positionAndRotation = placingOnBackboardPosition,
+                            depoState = DepoState(Arm.Positions.LiftIsGoingHome, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+                        lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks)
+                    },),
+            TargetWorld(
+                    targetRobot = RobotState(
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            positionAndRotation = parkingPosition,
+                            depoState = DepoState(Arm.Positions.LiftIsGoingHome, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+                        isAtPosition(targetState, actualState)
+                    },),
 
 //            targetWorldToBeReplacedWithInjection,
-//            TargetWorld(
-//                    targetRobot = RobotState(
-//                            collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
-//                            positionAndRotation = cycleMidPoint,
-//                            depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
-//                    ),
-//                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-//                        val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState?.targetRobot?.positionAndRotation ?: PositionAndRotation())
-//                        telemetry.addLine("isRobotAtPosition: $isRobotAtPosition")
-//                        telemetry.addLine("continuing with the auto after the purple")
-//                        isRobotAtPosition
-//                    },),
     )
 
     private val redBackboardPurplePixelPlacement: List<TargetWorld> = listOf(
