@@ -387,6 +387,8 @@ class RobotTwoAuto: OpMode() {
                 collectorSystem.spinCollector(targetState.targetRobot.collectorSystemState.collectorState.power)
                 lift.moveLiftToPosition(targetState.targetRobot.depoState.liftPosition.ticks)
                 arm.moveArmTowardPosition(targetState.targetRobot.depoState.armPos.angleDegrees)
+                hardware.rightClawServo.position = targetState.targetRobot.depoState.rightClawPosition.position
+                hardware.leftClawServo.position = targetState.targetRobot.depoState.leftClawPosition.position
             }
         )
 
