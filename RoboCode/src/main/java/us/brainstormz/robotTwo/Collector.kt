@@ -61,18 +61,17 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     val leftEncoderReader = AxonEncoderReader(leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
     val rightEncoderReader = AxonEncoderReader(rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
 
-    private val flapAngleToleranceDegrees = 5
     private val leftFlapTransferReadyAngleDegrees = 32.0
-    private val rightFlapTransferReadyAngleDegrees = 90.0 //need to find number
+    private val rightFlapTransferReadyAngleDegrees = 90.0
     private val leftFlapKp = 0.43
-    private val rightFlapKp = 0.35
+    private val rightFlapKp = 0.4
 
     fun isCollectorAllTheWayIn(): Boolean {
         return extendoMotorMaster.currentPosition <= 10
     }
     fun arePixelsAlignedInTransfer(): Boolean {
-        val isLeftFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(leftEncoderReader), leftFlapTransferReadyAngleDegrees)
-        val isRightFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(rightEncoderReader), rightFlapTransferReadyAngleDegrees)
+        val isLeftFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(leftEncoderReader), leftFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
+        val isRightFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(rightEncoderReader), rightFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
         return isLeftFlapAngleAcceptable && isRightFlapAngleAcceptable
     }
 
@@ -85,7 +84,7 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     fun getFlapAngleDegrees(encoderReader: AxonEncoderReader): Double =
             (encoderReader.getPositionDegrees() * 2) % 360
 
-    fun isFlapAtAngle(currentAngleDegrees: Double, angleToCheckDegrees: Double): Boolean {
+    fun isFlapAtAngle(currentAngleDegrees: Double, angleToCheckDegrees: Double, flapAngleToleranceDegrees: Double = 5.0): Boolean {
         val maxAcceptedAngle = angleToCheckDegrees + flapAngleToleranceDegrees
         val minAcceptedAngle = angleToCheckDegrees - flapAngleToleranceDegrees
         val angleTolerance = (minAcceptedAngle..maxAcceptedAngle)

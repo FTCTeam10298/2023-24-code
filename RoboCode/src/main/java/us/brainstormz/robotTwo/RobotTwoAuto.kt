@@ -137,7 +137,7 @@ class RobotTwoAuto: OpMode() {
 
         arm = Arm(  encoder= hardware.armEncoder,
                 armServo1= hardware.armServo1,
-                armServo2= hardware.armServo2)
+                armServo2= hardware.armServo2, telemetry)
 
         val wizardResults = runMenuWizard()
         alliance = wizardResults.alliance

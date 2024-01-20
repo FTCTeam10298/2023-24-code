@@ -4,13 +4,15 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.CRServo
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.pid.PID
 import kotlin.math.cos
 
-class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo) {
+class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
     enum class Positions(val angleDegrees:Double) {
-        TravelingToTransfer(290.0),
+        TravelingToTransfer(280.0),
+        ReadyToTransfer(250.0),
         In(255.0),
         Horizontal(180.0),
         Out(60.0)
@@ -23,8 +25,7 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
 
-    val armPositioningToleranceDegrees = 5
-    fun isArmAtAngle(angleToCheckDegrees: Double): Boolean {
+    fun isArmAtAngle(angleToCheckDegrees: Double, armPositioningToleranceDegrees: Double = 5.0): Boolean {
         val minAcceptableAngle = angleToCheckDegrees - armPositioningToleranceDegrees
         val maxAcceptableAngle = angleToCheckDegrees + armPositioningToleranceDegrees
         val acceptableRange = minAcceptableAngle..maxAcceptableAngle
@@ -32,6 +33,7 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
     }
 
     fun moveArmTowardPosition(targetPosition: Double) {
+        telemetry.addLine("Powering arm toward: $targetPosition")
         val power = calcPowerToReachTarget(targetPosition)
         powerArm(power)
     }
@@ -72,7 +74,7 @@ class ArmTest: OpMode() {
         arm = Arm(
                 encoder= hardware.armEncoder,
                 armServo1= hardware.armServo1,
-                armServo2= hardware.armServo2)
+                armServo2= hardware.armServo2, telemetry)
     }
 
     override fun loop() {
