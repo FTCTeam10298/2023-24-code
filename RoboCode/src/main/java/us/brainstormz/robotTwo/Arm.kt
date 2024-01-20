@@ -1,13 +1,9 @@
 package us.brainstormz.robotTwo
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.CRServo
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.pid.PID
-import java.util.function.DoubleToLongFunction
 import kotlin.math.cos
 
 class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
@@ -23,7 +19,7 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
 
     private val outPid = PID(kp= 0.0025, kd = 0.01)
     private val outHoldingConstant = 0.08
-    private val inPid = PID(kp= 0.0015, ki = 0.0000001, kd = 0.00001)
+    private val inPid = PID(kp= 0.0015, ki = 0.0000003, kd = 0.00004)
     private val inHoldingConstant = 0.035
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180

@@ -1,9 +1,6 @@
 package us.brainstormz.robotTwo
 
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern
-import com.qualcomm.robotcore.hardware.ColorSensor
-import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.Telemetry
 
 class TransferManager(
