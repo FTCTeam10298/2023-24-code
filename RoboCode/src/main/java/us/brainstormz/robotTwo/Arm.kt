@@ -45,6 +45,7 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
         armServo2.power = power
     }
 
+    private var previousIsisArmTargetInOfMidpoint = false
     private val armAngleMidpointDegrees = 150.0
     fun calcPowerToReachTarget(targetDegrees: Double): Double {
         val currentDegrees = getArmAngleDegrees()
@@ -61,6 +62,16 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
             true -> inHoldingConstant
             false -> outHoldingConstant
         }
+
+        if (isArmTargetInOfMidpoint && !previousIsisArmTargetInOfMidpoint) {
+            //Target just changed to in
+            telemetry.clearAll()
+            telemetry.addLine("resetting arm I because of a new movement")
+            inPid.reset()
+        }
+        telemetry.addLine("previousIsisArmTargetInOfMidpoint: $previousIsisArmTargetInOfMidpoint")
+        telemetry.addLine("isArmTargetInOfMidpoint: $isArmTargetInOfMidpoint")
+        previousIsisArmTargetInOfMidpoint = isArmTargetInOfMidpoint
 
         return pid.calcPID(errorDegrees) + (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
     }
