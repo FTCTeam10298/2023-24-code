@@ -14,7 +14,7 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
     enum class Positions(val angleDegrees:Double) {
         ReadyToTransfer(255.0),
         In(240.0),
-        Horizontal(180.0),
+//        Horizontal(180.0),
         Out(60.0)
     }
 
@@ -72,7 +72,7 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
 
     fun getArmState(): Arm.Positions = Arm.Positions.entries.firstOrNull { it ->
         getArmAngleDegrees() == it.angleDegrees
-    } ?: Arm.Positions.Horizontal
+    } ?: Arm.Positions.In
 
 }
 

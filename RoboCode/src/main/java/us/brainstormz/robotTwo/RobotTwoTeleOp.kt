@@ -226,9 +226,9 @@ class RobotTwoTeleOp: OpMode() {
 //            gamepad2.dpad_down -> {
 //                Arm.Positions.In
 //            }
-            gamepad2.dpad_up -> {
-                Arm.Positions.Horizontal
-            }
+//            gamepad2.dpad_up -> {
+//                Arm.Positions.Horizontal
+//            }
             gamepad2.dpad_right -> {
                 Arm.Positions.Out
             }
