@@ -12,19 +12,18 @@ import kotlin.math.cos
 
 class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
     enum class Positions(val angleDegrees:Double) {
-        TravelingToTransfer(280.0),
-        ReadyToTransfer(250.0),
-        In(255.0),
+        ReadyToTransfer(255.0),
+        In(240.0),
         Horizontal(180.0),
         Out(60.0)
     }
 
     private val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0-40)
 
-    private val outPid = PID(kp= 0.003, kd = 0.01)
+    private val outPid = PID(kp= 0.0025, kd = 0.01)
     private val outHoldingConstant = 0.08
-    private val inPid = PID(kp= 0.003)
-    private val inHoldingConstant = 0.07
+    private val inPid = PID(kp= 0.004)
+    private val inHoldingConstant = 0.035
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
 
