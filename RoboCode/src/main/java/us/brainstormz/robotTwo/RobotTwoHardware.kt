@@ -113,7 +113,17 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     //Aka throbber
     lateinit var transferDirectorServo: CRServo
 
+    enum class HangPowers(val power: Double) {
+        Holding(0.0),
+        Release(1.0)
+    }
     lateinit var hangReleaseServo: CRServo
+
+    enum class LauncherPosition(val position: Double) {
+        Holding(0.0),
+        Released(1.0)
+    }
+    lateinit var launcherServo: Servo
 
     lateinit var lights: RevBlinkinLedDriver
 
@@ -193,6 +203,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         leftClawServo =     exHub.getServo(0)   // left/right from driver 2 perspective when depositing
         rightClawServo =    exHub.getServo(1)//
         hangReleaseServo = exHub.getCRServo(5)
+
+        launcherServo = ctrlHub.getServo(0)
 
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)

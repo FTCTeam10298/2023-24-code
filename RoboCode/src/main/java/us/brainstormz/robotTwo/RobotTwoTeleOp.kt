@@ -285,11 +285,18 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("Extendo motor current: ${hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS)} \n Is over current of $maxSafeCurrentAmps amps: ${hardware.extendoMotorMaster.isOverCurrent}")
         telemetry.addLine("previousRobotState: $previousRobotState")
 
-        //Hang
-        hardware.hangReleaseServo.power = if (gamepad2.y) {
-            1.0
+        //Launcher (not yet implemented)
+        hardware.launcherServo.position = if (gamepad2.y) {
+            RobotTwoHardware.LauncherPosition.Released.position
         } else {
-            0.0
+            RobotTwoHardware.LauncherPosition.Holding.position
+        }
+
+        //Hang
+        hardware.hangReleaseServo.power = if (gamepad2.left_stick_button && gamepad2.right_stick_button) {
+            RobotTwoHardware.HangPowers.Release.power
+        } else {
+            RobotTwoHardware.HangPowers.Holding.power
         }
 
         //Previous state
