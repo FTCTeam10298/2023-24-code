@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import us.brainstormz.localizer.PositionAndRotation
+import kotlin.math.abs
 import kotlin.math.atan
 
 
@@ -124,13 +125,34 @@ class AprilTagger : LinearOpMode() {
         val currentDetections: List<AprilTagDetection> = aprilTagThings.flatMap{it.detections()}
         telemetry.addData("# AprilTags Detected", currentDetections.size)
 
+        //Step through the list of detections and find the tag with the least x value,
+        //meaning least distance from center of camera, meaning *most accurate* source of
+        //data.
+
+//        var indexOfCurrentAprilTag = 0
+//        var bestAprilTag = currentDetections[0]
+//
+//        for (detection in currentDetections) {
+//            indexOfCurrentAprilTag++
+//            val currentAprilTag = currentDetections[indexOfCurrentAprilTag]
+//
+//            when {
+//                abs(currentAprilTag.ftcPose.x) <= abs(bestAprilTag.ftcPose.x) -> bestAprilTag = currentAprilTag
+//                else -> break //do nothing—the best AprilTag reigns supreme.
+//            }
+//
+//        }
+//        //return(bestAprilTag) - when this gets functionified
+//        val relevantAprilTagId = bestAprilTag.id
+//        telemetry.addLine("Apriltag With Least Distortion: $relevantAprilTagId!")
+
         // Step through the list of detections and display info for each one.
         for (detection in currentDetections) {
             if (currentDetections.isNotEmpty()) {
 
-
                 val theTag = detection
                 val whatTag = theTag.id
+
                 val tagBadness = theTag.hamming //not necessary... yaw = distortion, typically
                 //find units of cam relative to tag and tag relative to field
                 val currentPositionOfRobot = getCameraPositionOnField(theTag)
@@ -179,6 +201,9 @@ class AprilTagger : LinearOpMode() {
          * position is than the apriltag position.
          */
 
+        //This code is meant to be used 12-14 in. from the AprilTag, and will return coords.
+        //based on the closest AprilTag, with an accuracy of +-1/2 inch.
+
         val angle = 0
 
         val tagRelativeToCamera = aprilTagDetection.ftcPose
@@ -192,7 +217,7 @@ class AprilTagger : LinearOpMode() {
         val tagRelativeToField = getAprilTagLocation(aprilTagDetection.id).posAndRot
 
         //I guess subtraction works? Some things should just be worked out with experimentation.
-        //TODO: THIS IS INACCURATE AT MOST ANGLES. BEWARE!!
+        //Has to be 12-14 inches from most on-center target for results accurate to +- one inch.
         val robotRelativeToFieldX = tagRelativeToField.x - tagRelativeToCameraOurCoordinateSystem.x
         val robotRelativeToFieldY = tagRelativeToField.y + tagRelativeToCameraOurCoordinateSystem.y
 //        val robotRelativeToFieldZ = (tagRelativeToCamera.z + tagRelativeToFieldZ)
