@@ -186,6 +186,8 @@ class RobotTwoAuto: OpMode() {
                 nextTargetState(previousTargetState, actualState, previousActualState)
             },
             stateFulfiller = { targetState, actualState ->
+                telemetry.addLine("target position: ${targetState.targetRobot.positionAndRotation}")
+                telemetry.addLine("current position: ${mecanumMovement.localizer.currentPositionAndRotation()}")
                 mecanumMovement.moveTowardTarget(targetState.targetRobot.positionAndRotation)
             }
         )

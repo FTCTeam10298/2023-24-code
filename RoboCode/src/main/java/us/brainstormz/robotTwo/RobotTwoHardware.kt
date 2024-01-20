@@ -198,9 +198,9 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         imu = hwMap["imu"] as IMU
 
-        val parallelOdomMotor = ctrlHub.getMotor(0)
+        val parallelOdomMotor = ctrlHub.getMotor(3)
         parallelEncoder = OverflowEncoder(RawEncoder(parallelOdomMotor))
-        val perpendicularOdomMotor = ctrlHub.getMotor(3)
+        val perpendicularOdomMotor = ctrlHub.getMotor(0)
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
         lights = hwMap["lights"] as RevBlinkinLedDriver
@@ -264,8 +264,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         //IMU
         val parameters:IMU.Parameters = IMU.Parameters(RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
-                        RevHubOrientationOnRobot.UsbFacingDirection.DOWN))
+                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                        RevHubOrientationOnRobot.UsbFacingDirection.LEFT))
         imu.initialize(parameters)
         imu.resetYaw()
 
