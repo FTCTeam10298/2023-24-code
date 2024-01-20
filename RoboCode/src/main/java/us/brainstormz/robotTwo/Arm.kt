@@ -6,7 +6,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.pid.PID
 import kotlin.math.cos
 
-class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
+class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
     enum class Positions(val angleDegrees:Double) {
         LiftIsGoingHome(255.0),
         In(248.0),
@@ -47,8 +47,6 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
     fun calcPowerToReachTarget(targetDegrees: Double): Double {
         val currentDegrees = getArmAngleDegrees()
         val errorDegrees = (targetDegrees - currentDegrees) % 360
-        println("errorDegrees: $errorDegrees")
-        println("errorDegrees no wrap: ${targetDegrees - currentDegrees}")
 
         val isArmTargetInOfMidpoint = targetDegrees > armAngleMidpointDegrees
         val pid: PID = when (isArmTargetInOfMidpoint) {
@@ -62,15 +60,31 @@ class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armS
 
         if (isArmTargetInOfMidpoint && !previousIsisArmTargetInOfMidpoint) {
             //Target just changed to in
-            telemetry.clearAll()
-            telemetry.addLine("resetting arm I because of a new movement")
             inPid.reset()
         }
+        if (!isArmTargetInOfMidpoint && previousIsisArmTargetInOfMidpoint) {
+            //Target just changed to in
+            outPid.reset()
+        }
+
         telemetry.addLine("previousIsisArmTargetInOfMidpoint: $previousIsisArmTargetInOfMidpoint")
         telemetry.addLine("isArmTargetInOfMidpoint: $isArmTargetInOfMidpoint")
         previousIsisArmTargetInOfMidpoint = isArmTargetInOfMidpoint
 
-        return pid.calcPID(errorDegrees) + (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
+        val pidPower = pid.calcPID(errorDegrees)
+        val gravityCompPower = (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
+        val power = pidPower + gravityCompPower
+        telemetry.addLine("Arm currentDegrees: $currentDegrees")
+        telemetry.addLine("Arm raw currentDegrees: ${encoderReader.getRawPositionDegrees()}")
+        telemetry.addLine("Arm encoder voltage: ${encoder.voltage}")
+        telemetry.addLine("Arm encoder MAX voltage: ${encoder.maxVoltage}")
+        telemetry.addLine("Arm targetDegrees: $targetDegrees")
+        telemetry.addLine("Arm errorDegrees no wrap: ${targetDegrees - currentDegrees}")
+        telemetry.addLine("Arm errorDegrees: $errorDegrees")
+        telemetry.addLine("Arm pidPower: $pidPower")
+        telemetry.addLine("Arm gravityCompPower: $gravityCompPower")
+        telemetry.addLine("Arm power: $power")
+        return power
     }
 
     /** 0 angle is where the flat face of the claws is facing parallel to the ground */
