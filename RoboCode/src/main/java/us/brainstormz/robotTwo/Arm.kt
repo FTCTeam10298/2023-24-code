@@ -12,8 +12,9 @@ import kotlin.math.cos
 
 class Arm(encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
     enum class Positions(val angleDegrees:Double) {
-        ReadyToTransfer(255.0),
+        LiftIsGoingHome(255.0),
         In(240.0),
+        TransferringTarget(238.0),
 //        Horizontal(180.0),
         Out(60.0)
     }
