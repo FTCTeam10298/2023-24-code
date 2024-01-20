@@ -33,7 +33,8 @@ class Collector(private val extendoMotorMaster: DcMotorEx,
     enum class CollectorPowers(val power: Double) {
         Off(0.0),
         Intake(1.0),
-        Eject(-1.0)
+        Eject(-1.0),
+        DropPurple(0.5)
     }
 
     enum class DirectorState(val power: Double) {
