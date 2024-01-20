@@ -34,7 +34,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         Off(0.0),
         Intake(1.0),
         Eject(-1.0),
-        DropPurple(0.09)//didn't test yet
+        DropPurple(0.08)
     }
 
     enum class DirectorState(val power: Double) {
@@ -242,7 +242,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         ClearTransfer(230),
         Min(0)
     }
-    private val pid = PID(kp = 0.003)
+    private val pid = PID(kp = 0.0035)
     fun moveExtendoToPosition(targetPositionTicks: Int) {
         val currentPosition = extendoMotorMaster.currentPosition.toDouble()
         val positionError = targetPositionTicks - currentPosition
