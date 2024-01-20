@@ -8,14 +8,14 @@ import us.brainstormz.pid.PID
 
 class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, private val liftLimit: DigitalChannel) {
 
-    enum class LiftPositions(val position: Double) {
-        Min(0.0),
-        Transfer(0.5),
-        BackboardBottomRow(1.0),
-        SetLine1(2.0),
-        SetLine2(3.0),
-        SetLine3(4.0),
-        Max(500.0)
+    enum class LiftPositions(val ticks: Int) {
+        Min(0),
+        Transfer(0),
+        BackboardBottomRow(1),
+        SetLine1(2),
+        SetLine2(3),
+        SetLine3(4),
+        Max(500)
     }
 
     fun powerLift(power: Double) {
