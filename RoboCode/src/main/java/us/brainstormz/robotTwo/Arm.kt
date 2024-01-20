@@ -13,6 +13,7 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
         GoodEnoughForLiftToGoDown(200.0),
         In(248.0),
         TransferringTarget(238.0),
+        AutoInitPosition(170.0),
 //        Horizontal(180.0),
         Out(60.0)
     }
