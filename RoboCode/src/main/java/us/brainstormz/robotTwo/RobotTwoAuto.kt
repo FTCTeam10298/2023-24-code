@@ -76,6 +76,15 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.ReverseDropPurple, RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            positionAndRotation = purplePixelPlacementLeftPosition,
+                            depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+                        hasTimeElapsed(timeToElapseMilis = 200, targetState)
+                    },),
+            TargetWorld(
+                    targetRobot = RobotState(
                             collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.AllTheWayInTarget, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)

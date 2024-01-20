@@ -34,7 +34,8 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         Off(0.0),
         Intake(1.0),
         Eject(-1.0),
-        DropPurple(0.2)
+        DropPurple(0.2),
+        ReverseDropPurple(-0.2)
     }
 
     enum class DirectorState(val power: Double) {
