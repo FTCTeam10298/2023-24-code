@@ -54,7 +54,7 @@ class RobotTwoAuto: OpMode() {
     }
 
     private lateinit var autoStateList: List<TargetWorld>
-    private val autoListIterator = autoStateList.listIterator()
+    private lateinit var autoListIterator: ListIterator<TargetWorld>
     private fun nextTargetState(
             previousTargetState: TargetWorld?,
             actualState: ActualWorld,
@@ -94,19 +94,21 @@ class RobotTwoAuto: OpMode() {
     private val wizard = TelemetryWizard(console, null)
     data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition)
     private fun runMenuWizard(): WizardResults {
-        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
-        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"))
-        wizard.summonWizard(gamepad1)
-        return WizardResults(
-                alliance = when (wizard.wasItemChosen("alliance", "Red")) {
-                    true -> RobotTwoHardware.Alliance.Red
-                    false -> RobotTwoHardware.Alliance.Blue
-                },
-                startPosition = when (wizard.wasItemChosen("startingPos", "Audience")) {
-                    true -> StartPosition.Audience
-                    false -> StartPosition.Backboard
-                }
-        )
+        val isWizardDone = wizard.summonWizard(gamepad1)
+        return if (isWizardDone) {
+            WizardResults(
+                    alliance = when (wizard.wasItemChosen("alliance", "Red")) {
+                        true -> RobotTwoHardware.Alliance.Red
+                        false -> RobotTwoHardware.Alliance.Blue
+                    },
+                    startPosition = when (wizard.wasItemChosen("startingPos", "Audience")) {
+                        true -> StartPosition.Audience
+                        false -> StartPosition.Backboard
+                    }
+            )
+        } else {
+            wizardResults
+        }
     }
 
     private val hardware = RobotTwoHardware(telemetry, this)
@@ -143,14 +145,24 @@ class RobotTwoAuto: OpMode() {
                 armServo1= hardware.armServo1,
                 armServo2= hardware.armServo2, telemetry)
 
-        val wizardResults = runMenuWizard()
+
+        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
+        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"))
+    }
+
+    private var wizardResults = WizardResults(RobotTwoHardware.Alliance.Red, StartPosition.Backboard)
+    override fun init_loop() {
+        wizardResults = runMenuWizard()
+    }
+
+    override fun start() {
         alliance = wizardResults.alliance
         startPosition = wizardResults.startPosition
 
         val startPositionAndRotation: PositionAndRotation = when (alliance) {
             RobotTwoHardware.Alliance.Red -> {
                 when (startPosition) {
-                    StartPosition.Backboard -> PositionAndRotation(x = 60.0, y= -12.0, r= -90.0)
+                    StartPosition.Backboard -> PositionAndRotation(x = -60.0, y= -12.0, r= -90.0)
                     StartPosition.Audience -> TODO()
                 }
             }
@@ -158,9 +170,10 @@ class RobotTwoAuto: OpMode() {
                 TODO()
             }
         }
-        odometryLocalizer.setPositionAndRotation(startPositionAndRotation)
+        mecanumMovement.localizer.setPositionAndRotation(startPositionAndRotation)
 
         autoStateList = calcAutoTargetStateList(alliance, startPosition)
+        autoListIterator = autoStateList.listIterator()
     }
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
