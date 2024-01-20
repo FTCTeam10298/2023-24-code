@@ -109,6 +109,7 @@ class RobotTwoTeleOp: OpMode() {
         val transferState = transfer.getTransferState(TransferManager.ClawStateFromTransfer.Retracted, RevBlinkinLedDriver.BlinkinPattern.BLUE)
 
         telemetry.addLine("lift current: ${hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS)}")
+        telemetry.addLine("lift position: ${hardware.liftMotorMaster.currentPosition}")
 
         //Collector
         val collectorTriggerActivation = 0.2
