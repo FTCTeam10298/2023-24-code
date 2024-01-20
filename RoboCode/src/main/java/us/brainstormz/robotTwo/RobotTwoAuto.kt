@@ -18,19 +18,31 @@ import us.brainstormz.threeDay.PropPosition
 
 @Autonomous
 class RobotTwoAuto: OpMode() {
+    private val targetWorldToBeReplacedWithInjection = TargetWorld( targetRobot = RobotState(collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)), positionAndRotation = PositionAndRotation(), depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)),
+                                                                    isTargetReached = {targetState: TargetWorld?, actualState: ActualWorld ->
+                                                                        println("This had better not run")
+                                                                        false
+                                                                    },
+                                                                    myJankFlagToInjectPurplePlacement = true)
 
+    //Backboard side
     private val backBoardAuto: List<TargetWorld> = listOf(
+            targetWorldToBeReplacedWithInjection,
             TargetWorld(
                     targetRobot = RobotState(
                             collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
-                            positionAndRotation = PositionAndRotation(y= -12.0, r= -90.0),
+                            positionAndRotation = PositionAndRotation(y= -36.0, x= -36.0, r= 0.0),
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld?, actualState: ActualWorld ->
                         val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState?.targetRobot?.positionAndRotation ?: PositionAndRotation())
                         telemetry.addLine("isRobotAtPosition: $isRobotAtPosition")
+                        telemetry.addLine("continuing with the auto after the purple")
                         isRobotAtPosition
-                    }),
+                    },),
+    )
+
+    private val redBackboardPurplePixelPlacement: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(
                             collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
@@ -41,12 +53,43 @@ class RobotTwoAuto: OpMode() {
                         val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState?.targetRobot?.positionAndRotation ?: PositionAndRotation())
                         telemetry.addLine("isRobotAtPosition: $isRobotAtPosition")
                         isRobotAtPosition
-                    })
+                    },),
     )
 
+
+    //Audience side
     private val audienceAuto: List<TargetWorld> = listOf(
 
     )
+
+    private fun getPurplePixelPlacementRoutineForRedAlliance(
+            startPosition: StartPosition): List<TargetWorld> {
+
+        val redInjected = when (startPosition) {
+            StartPosition.Backboard -> {
+                redBackboardPurplePixelPlacement
+            }
+            StartPosition.Audience -> {
+                TODO()
+            }
+        }
+
+        return redInjected
+    }
+
+    private fun injectPurplePlacementIntoSidedAuto(
+            sidedAuto: List<TargetWorld>,
+            startPosition: StartPosition): List<TargetWorld> {
+
+        val injectPointIndex = sidedAuto.indexOfFirst {targetWorld -> targetWorld.myJankFlagToInjectPurplePlacement}
+
+        val listToInject = getPurplePixelPlacementRoutineForRedAlliance(startPosition)
+
+        /** I suspect this is wrong in a couple ways because of indexes */
+        val injectedList = sidedAuto.subList(0, injectPointIndex) + listToInject + sidedAuto.subList(injectPointIndex+1, sidedAuto.size)
+
+        return injectedList
+    }
     
     private fun calcAutoTargetStateList(
             alliance: RobotTwoHardware.Alliance,
@@ -58,11 +101,12 @@ class RobotTwoAuto: OpMode() {
             StartPosition.Audience -> audienceAuto
         }
 
-        val allianceAccounted = when (alliance) {
-            RobotTwoHardware.Alliance.Red -> startPosAccounted
-            RobotTwoHardware.Alliance.Blue -> flipRedAutoToBlue(startPosAccounted)
-        }
+        val purplePixelAccounted: List<TargetWorld> = injectPurplePlacementIntoSidedAuto(startPosAccounted, startPosition)
 
+        val allianceAccounted = when (alliance) {
+            RobotTwoHardware.Alliance.Red -> purplePixelAccounted
+            RobotTwoHardware.Alliance.Blue -> flipRedAutoToBlue(purplePixelAccounted)
+        }
 
         return allianceAccounted
     }
@@ -105,7 +149,8 @@ class RobotTwoAuto: OpMode() {
 
     data class TargetWorld(
             val targetRobot: RobotTwoHardware.RobotState,
-            val isTargetReached: (previousTargetState: TargetWorld?, actualState: ActualWorld) -> Boolean)
+            val isTargetReached: (previousTargetState: TargetWorld?, actualState: ActualWorld) -> Boolean,
+            val myJankFlagToInjectPurplePlacement: Boolean = false)
     class ActualWorld(val actualRobot: RobotState,
                       val timestampMilis: Long)
 
