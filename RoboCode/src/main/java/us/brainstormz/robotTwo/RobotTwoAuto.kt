@@ -143,6 +143,19 @@ class RobotTwoAuto: OpMode() {
         alliance = wizardResults.alliance
         startPosition = wizardResults.startPosition
 
+        val startPositionAndRotation: PositionAndRotation = when (alliance) {
+            RobotTwoHardware.Alliance.Red -> {
+                when (startPosition) {
+                    StartPosition.Backboard -> PositionAndRotation(x = 60.0, y= -12.0, r= -90.0)
+                    StartPosition.Audience -> TODO()
+                }
+            }
+            RobotTwoHardware.Alliance.Blue -> {
+                TODO()
+            }
+        }
+        odometryLocalizer.setPositionAndRotation(startPositionAndRotation)
+
         autoStateList = calcAutoTargetStateList(alliance, startPosition)
     }
 
