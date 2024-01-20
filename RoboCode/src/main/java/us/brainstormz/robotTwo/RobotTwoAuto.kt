@@ -34,7 +34,7 @@ class RobotTwoAuto: OpMode() {
                             positionAndRotation = PositionAndRotation(y= -36.0, x= -36.0, r= 0.0),
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
-                    isTargetReached = {targetState: TargetWorld?, actualState: ActualWorld ->
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState?.targetRobot?.positionAndRotation ?: PositionAndRotation())
                         telemetry.addLine("isRobotAtPosition: $isRobotAtPosition")
                         telemetry.addLine("continuing with the auto after the purple")
@@ -49,7 +49,7 @@ class RobotTwoAuto: OpMode() {
                             positionAndRotation = PositionAndRotation(),
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
-                    isTargetReached = {targetState: TargetWorld?, actualState: ActualWorld ->
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState?.targetRobot?.positionAndRotation ?: PositionAndRotation())
                         telemetry.addLine("isRobotAtPosition: $isRobotAtPosition")
                         isRobotAtPosition
@@ -133,7 +133,7 @@ class RobotTwoAuto: OpMode() {
             previousTargetState == null -> {
                 autoListIterator.next()
             }
-            previousTargetState.isTargetReached(previousTargetState, actualState) && autoListIterator.hasNext()-> {
+            previousTargetState.isTargetReached(previousTargetState!!, actualState) && autoListIterator.hasNext()-> {
                 autoListIterator.next()
             }
             else -> {
@@ -151,7 +151,7 @@ class RobotTwoAuto: OpMode() {
 
     data class TargetWorld(
             val targetRobot: RobotTwoHardware.RobotState,
-            val isTargetReached: (previousTargetState: TargetWorld?, actualState: ActualWorld) -> Boolean,
+            val isTargetReached: (previousTargetState: TargetWorld, actualState: ActualWorld) -> Boolean,
             val myJankFlagToInjectPurplePlacement: Boolean = false)
     class ActualWorld(val actualRobot: RobotState,
                       val timestampMilis: Long)
