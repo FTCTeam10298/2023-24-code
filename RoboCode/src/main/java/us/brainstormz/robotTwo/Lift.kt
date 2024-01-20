@@ -35,7 +35,7 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
         }
     }
 
-    private val pid = PID(kp = 0.003)
+    private val pid = PID(kp = 0.004)
     fun moveLiftToPosition(targetPositionTicks: Int) {
         val currentPosition = liftMotor1.currentPosition.toDouble()
         val positionError = targetPositionTicks - currentPosition
@@ -44,7 +44,7 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
     }
 
 
-    private val acceptablePositionErrorTicks = 50
+    private val acceptablePositionErrorTicks = 100
     fun isLiftAtPosition(targetPositionTicks: Int): Boolean {
         val currentPositionTicks = liftMotor1.currentPosition
         val positionErrorTicks = targetPositionTicks - currentPositionTicks
