@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
@@ -14,7 +15,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware.RightClawPosition
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
-@TeleOp
+@TeleOp(group = "!")
 class RobotTwoTeleOp: OpMode() {
 
     private val hardware = RobotTwoHardware(telemetry, this)

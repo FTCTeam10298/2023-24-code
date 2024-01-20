@@ -17,7 +17,7 @@ import us.brainstormz.threeDay.PropColors
 import us.brainstormz.threeDay.PropDetector
 import us.brainstormz.threeDay.PropPosition
 
-@Autonomous
+@Autonomous(group = "!")
 class RobotTwoAuto: OpMode() {
 
     private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
@@ -38,10 +38,10 @@ class RobotTwoAuto: OpMode() {
                                                                     myJankFlagToInjectPurplePlacement = true)
 
     //Backboard side
-    private val purplePixelPlacementLeftPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -5.0)
+    private val purplePixelPlacementLeftPosition = PositionAndRotation(y= -36.0, x= -34.0, r= 0.0)
     private val purplePixelPlacementCenterPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -15.0)
     private val purplePixelPlacementRightPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -5.0)
-    private val placingOnBackboardPosition = PositionAndRotation(y= -52.5, x= -29.5, r= 0.0)
+    private val placingOnBackboardPosition = PositionAndRotation(y= -53.0, x= -30.0, r= 0.0)
     private val parkingPosition = PositionAndRotation(y= -48.0, x= -58.0, r= 0.0)
     private val backBoardAuto: List<TargetWorld> = listOf(
             TargetWorld(
@@ -72,7 +72,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-                        hasTimeElapsed(timeToElapseMilis = 220, targetState)
+                        hasTimeElapsed(timeToElapseMilis = 300, targetState)
                     },),
             TargetWorld(
                     targetRobot = RobotState(
@@ -110,7 +110,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-                        arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees)
+                        arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees) || hasTimeElapsed(timeToElapseMilis = 3000, targetState)
                     },),
             TargetWorld(
                     targetRobot = RobotState(
@@ -119,7 +119,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-                        hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                        hasTimeElapsed(timeToElapseMilis = 500, targetState)
                     },),
             TargetWorld(
                     targetRobot = RobotState(
@@ -128,7 +128,6 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.LiftIsGoingHome, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-//                        hasTimeElapsed(timeToElapseMilis = 1000, targetState)
                         arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees)
                     },),
             TargetWorld(
@@ -394,7 +393,7 @@ class RobotTwoAuto: OpMode() {
         opencv.onNewFrame(propDetector!!::processFrame)
     }
 
-    private var propPosition: PropPosition = PropPosition.Center
+    private var propPosition: PropPosition = PropPosition.Left
     private var wizardResults = WizardResults(RobotTwoHardware.Alliance.Red, StartPosition.Backboard)
     override fun init_loop() {
         wizardResults = runMenuWizard()
