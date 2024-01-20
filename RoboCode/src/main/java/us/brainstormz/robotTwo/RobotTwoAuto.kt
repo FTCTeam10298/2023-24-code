@@ -57,7 +57,7 @@ class RobotTwoAuto: OpMode() {
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         val timeSinceTargetStarted = System.currentTimeMillis() - targetState.timeTargetStartedMilis
-                        val timeToEjectMilis = 1000
+                        val timeToEjectMilis = 500
                         timeSinceTargetStarted >= timeToEjectMilis
                     },),
             TargetWorld(
