@@ -18,7 +18,7 @@ class RobotTwoAuto: OpMode() {
         TargetWorld(
                 targetRobot = RobotState(
                     collectorState = Collector.CollectorState(Collector.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, Collector.TransferState(Collector.CollectorPowers.Off, Collector.CollectorPowers.Off, Collector.DirectorState.Off), Collector.TransferHalfState(false, 0), Collector.TransferHalfState(false, 0)),
-                    positionAndRotation = PositionAndRotation(),
+                    positionAndRotation = PositionAndRotation(y=-12.0),
                     depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                 ),
                 isTargetReached = {previousTargetState: TargetWorld?, actualState: ActualWorld ->
