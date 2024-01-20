@@ -39,7 +39,7 @@ class RobotTwoAuto: OpMode() {
 
     //Backboard side
     private val purplePixelPlacementPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -5.0)
-    private val placingOnBackboardPosition = PositionAndRotation(y= -52.0, x= -34.0, r= 0.0)
+    private val placingOnBackboardPosition = PositionAndRotation(y= -52.5, x= -29.5, r= 0.0)
     private val backBoardAuto: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(

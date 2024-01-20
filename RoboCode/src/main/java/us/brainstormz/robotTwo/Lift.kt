@@ -12,7 +12,7 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
     enum class LiftPositions(val ticks: Int) {
         Min(0),
         Transfer(0),
-        BackboardBottomRow(540),
+        BackboardBottomRow(600),
         SetLine1(2),
         SetLine2(3),
         SetLine3(4),
@@ -42,7 +42,6 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
         val power = pid.calcPID(positionError)
         powerLift(power)
     }
-
 
     private val acceptablePositionErrorTicks = 100
     fun isLiftAtPosition(targetPositionTicks: Int): Boolean {
