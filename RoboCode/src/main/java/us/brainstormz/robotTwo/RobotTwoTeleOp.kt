@@ -258,7 +258,11 @@ class RobotTwoTeleOp: OpMode() {
                 }
                 else -> {
                     if (hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks) {
-                        Arm.Positions.LiftIsGoingHome
+                        if (hardware.liftMotorMaster.currentPosition <= 80) {
+                            Arm.Positions.TransferringTarget
+                        } else {
+                            Arm.Positions.LiftIsGoingHome
+                        }
                     } else {
                         Arm.Positions.Out
                     }

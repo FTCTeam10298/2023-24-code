@@ -41,7 +41,7 @@ class RobotTwoAuto: OpMode() {
     private val purplePixelPlacementLeftPosition = PositionAndRotation(y= -36.0, x= -34.0, r= 0.0)
     private val purplePixelPlacementCenterPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -15.0)
     private val purplePixelPlacementRightPosition = PositionAndRotation(y= -36.0, x= -34.0, r= -5.0)
-    private val placingOnBackboardPosition = PositionAndRotation(y= -53.0, x= -30.0, r= 0.0)
+    private val placingOnBackboardPosition = PositionAndRotation(y= -53.0, x= -40.0, r= 0.0)
     private val parkingPosition = PositionAndRotation(y= -48.0, x= -58.0, r= 0.0)
     private val backBoardAuto: List<TargetWorld> = listOf(
             TargetWorld(
@@ -394,11 +394,11 @@ class RobotTwoAuto: OpMode() {
         alliance = wizardResults.alliance
         startPosition = wizardResults.startPosition
 
-        val color: PropColors = when (alliance) {
+        val propColor: PropColors = when (alliance) {
             RobotTwoHardware.Alliance.Blue -> PropColors.Blue
             RobotTwoHardware.Alliance.Red -> PropColors.Red
         }
-        propDetector = PropDetector(telemetry, color)
+        propDetector = PropDetector(telemetry, propColor)
         opencv.onNewFrame(propDetector!!::processFrame)
     }
 

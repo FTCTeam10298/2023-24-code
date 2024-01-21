@@ -88,7 +88,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     enum class ExtendoPositions(val ticks: Int) {
         AllTheWayInTarget(-10),
         Min(0),
-        FarBackboardPixelPosition(1900),
+        FarBackboardPixelPosition(1750),
         MidBackboardPixelPosition(1000),
         CloserBackboardPixelPosition(500),
         Max(500),
