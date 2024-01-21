@@ -1,3 +1,6 @@
+
+# Problems to Solve (In Order Of Priority)
+
 ## Priority 1 (7 votes)
 
 - Transfer from collector to lift difficult & unreliable
@@ -5,7 +8,6 @@
 ## Priority 2 (4 votes)
 
 - Inconsistent & low-scoring auto 
-
 
 ## Priority 3 (3 votes)
 
@@ -28,7 +30,6 @@
 - Hard for the driver to drive & operate collector at same time 
 - Inaccessibility of expanion hub makes inspection painful 
 - Claws/depositor can throw pixels when rotating 
-
 
 ## Priority 6 (0 votes)
 
