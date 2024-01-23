@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.localizer.PositionAndRotation
@@ -10,6 +11,7 @@ import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.robotTwo.RobotTwoHardware.LeftClawPosition
 import us.brainstormz.robotTwo.RobotTwoHardware.RightClawPosition
+import us.brainstormz.utils.LoopTimeMeasurer
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -36,14 +38,14 @@ class RobotTwoTeleOp: OpMode() {
             positionAndRotation = PositionAndRotation(),
             collectorSystemState = CollectorSystem.CollectorState(
                     collectorState = CollectorSystem.CollectorPowers.Off,
-                    extendoPosition = CollectorSystem.ExtendoPositions.Min,
+                    extendoPosition = CollectorSystem.ExtendoPositions.Manual,
                     transferRollersState = CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off),
                     transferLeftSensorState = CollectorSystem.TransferHalfState(false, 0),
                     transferRightSensorState = CollectorSystem.TransferHalfState(false, 0)
             ),
             depoState = RobotTwoAuto.DepoState(
-                    liftPosition = Lift.LiftPositions.Min,
-                    armPos = Arm.Positions.In,
+                    liftPosition = Lift.LiftPositions.Manual,
+                    armPos = Arm.Positions.Manual,
                     leftClawPosition = LeftClawPosition.Retracted,
                     rightClawPosition = RightClawPosition.Retracted,
             ),
@@ -242,13 +244,14 @@ class RobotTwoTeleOp: OpMode() {
                 lift.powerLift(0.0)
             }
             liftNeedsToWaitForTheArm -> {
-                lift.moveLiftToPosition(Lift.LiftPositions.ClearForArmToMove.ticks+100)
+                lift.moveLiftToPosition(Lift.LiftPositions.ClearForArmToMove.ticks+150)
             }
             else -> {
                 lift.moveLiftToPosition(liftPosition.ticks)
             }
         }
 
+        val liftTargetHasntChanged = liftPosition == previousRobotState.depoState.liftPosition
         //Arm
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
@@ -261,7 +264,6 @@ class RobotTwoTeleOp: OpMode() {
         val liftPositionsWhereArmShouldBeOut = listOf(Lift.LiftPositions.SetLine1, Lift.LiftPositions.SetLine2, Lift.LiftPositions.SetLine3)
 
         val armWasManualControlLastTime = previousRobotState.depoState.armPos == Arm.Positions.Manual
-        val liftTargetHasntChanged = liftPosition == previousRobotState.depoState.liftPosition
 
         val armPosition: Arm.Positions = if (armOverrideStickValue.absoluteValue >= 0.2) {
             Arm.Positions.Manual
@@ -281,14 +283,14 @@ class RobotTwoTeleOp: OpMode() {
                         if (liftIsAtTheBottom) {
                             Arm.Positions.TransferringTarget
                         } else {
-                            Arm.Positions.ClearForLiftMovement
+                            Arm.Positions.ClearLiftMovement
                         }
                     } else {
                         Arm.Positions.AutoInitPosition
                     }
                 }
                 depositorShouldGoAllTheWayIn && !liftIsBelowFreeArmLevel-> {
-                    Arm.Positions.ClearForLiftMovement
+                    Arm.Positions.ClearLiftMovement
                 }
                 liftPosition in liftPositionsWhereArmShouldBeOut -> {
                     Arm.Positions.Out

@@ -15,6 +15,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.threeDay.PropColors
 import us.brainstormz.threeDay.PropDetector
 import us.brainstormz.threeDay.PropPosition
+import us.brainstormz.utils.LoopTimeMeasurer
 
 @Autonomous(group = "!")
 class RobotTwoAuto: OpMode() {
@@ -133,7 +134,7 @@ class RobotTwoAuto: OpMode() {
                     targetRobot = RobotState(
                             collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
-                            depoState = DepoState(Arm.Positions.ClearForLiftMovement, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                            depoState = DepoState(Arm.Positions.ClearLiftMovement, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees)
@@ -142,7 +143,7 @@ class RobotTwoAuto: OpMode() {
                     targetRobot = RobotState(
                             collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
-                            depoState = DepoState(Arm.Positions.ClearForLiftMovement, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                            depoState = DepoState(Arm.Positions.ClearLiftMovement, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks)
@@ -151,7 +152,7 @@ class RobotTwoAuto: OpMode() {
                     targetRobot = RobotState(
                             collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = parkingPosition,
-                            depoState = DepoState(Arm.Positions.ClearForLiftMovement, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
+                            depoState = DepoState(Arm.Positions.ClearLiftMovement, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         isAtPosition(targetState, actualState)
