@@ -192,7 +192,7 @@ class RobotTwoTeleOp: OpMode() {
 
         //Lift
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
-        val areManualControlsActive = liftOverrideStickValue > 0.2
+        val areManualControlsActive = liftOverrideStickValue.absoluteValue > 0.2
 
         val liftPosition: Lift.LiftPositions = if (areManualControlsActive) {
             Lift.LiftPositions.Manual
@@ -243,7 +243,7 @@ class RobotTwoTeleOp: OpMode() {
         //Arm
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
-        val armPosition: Arm.Positions = if (armOverrideStickValue >= 0.2) {
+        val armPosition: Arm.Positions = if (armOverrideStickValue.absoluteValue >= 0.2) {
             Arm.Positions.Manual
         } else {
             when  {
