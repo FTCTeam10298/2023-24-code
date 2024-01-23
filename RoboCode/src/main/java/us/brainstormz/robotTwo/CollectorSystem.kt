@@ -120,7 +120,6 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
             Side.Right -> rightFlapKp
         }
         val power = abs((angleErrorDegrees / 360) * proportionalConstant)
-        telemetry.addLine("$flap roller power: $power, angle: $angleErrorDegrees")
 
         return power
     }
@@ -144,7 +143,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     val extraTransferRollingTimeMilis = 1000
     fun getAutoPixelSortState(isCollecting: Boolean): RollerState {
         //Detection:
-        val isLeftSeeingPixel = isPixelIn(leftTransferPixelSensor)
+        val isLeftSeeingPixel = isPixelIn(leftTransferPixelSensor, Side.Left)
         val timeOfSeeingLeftPixelMilis = when {
             !previousLeftTransferState.hasPixelBeenSeen && isLeftSeeingPixel-> System.currentTimeMillis()
             !isLeftSeeingPixel -> 0
@@ -152,7 +151,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         }
         val leftTransferState = TransferHalfState(isLeftSeeingPixel, timeOfSeeingLeftPixelMilis)
 
-        val isRightSeeingPixel = isPixelIn(rightTransferPixelSensor)
+        val isRightSeeingPixel = isPixelIn(rightTransferPixelSensor, Side.Right)
         val timeOfSeeingRightPixelMilis = when {
             !previousRightTransferState.hasPixelBeenSeen && isRightSeeingPixel-> System.currentTimeMillis()
             !isRightSeeingPixel -> 0
@@ -206,10 +205,15 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         }
     }
 
-    val alphaDetectionThreshold = 1000
-    fun isPixelIn(colorSensor: ColorSensor): Boolean {
+    val leftAlphaDetectionThreshold = 1000
+    val rightAlphaDetectionThreshold = 600
+    fun isPixelIn(colorSensor: ColorSensor, side: Side): Boolean {
         val alpha = colorSensor.alpha()
-        telemetry.addLine("alpha: $alpha")
+
+        val alphaDetectionThreshold = when (side) {
+            Side.Left -> leftAlphaDetectionThreshold
+            Side.Right -> rightAlphaDetectionThreshold
+        }
 
         return alpha > alphaDetectionThreshold
     }
@@ -272,7 +276,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
             Side.Left -> leftTransferPixelSensor
             Side.Right -> rightTransferPixelSensor
         }
-        val isSeeingPixel = isPixelIn(sensor)
+        val isSeeingPixel = isPixelIn(sensor, half)
 
         val timeOfSeeingPixelMilis = when {
             !previousState.hasPixelBeenSeen && isSeeingPixel-> System.currentTimeMillis()
