@@ -177,6 +177,8 @@ class RobotTwoTeleOp: OpMode() {
         val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
         val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
 
+        val areBothPixelsIn = transferSensorState.transferLeftSensorState.hasPixelBeenSeen && transferSensorState.transferRightSensorState.hasPixelBeenSeen
+
         val extendoState: CollectorSystem.ExtendoPositions = when {
             rightTrigger -> {
                 CollectorSystem.ExtendoPositions.Manual
@@ -193,6 +195,9 @@ class RobotTwoTeleOp: OpMode() {
                         CollectorSystem.ExtendoPositions.ClearTransfer
                     }
                 }
+            }
+            areBothPixelsIn -> {
+                CollectorSystem.ExtendoPositions.Min
             }
             else -> {
                 previousRobotState.collectorSystemState.extendoPosition
