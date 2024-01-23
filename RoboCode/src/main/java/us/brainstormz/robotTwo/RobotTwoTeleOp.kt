@@ -162,8 +162,8 @@ class RobotTwoTeleOp: OpMode() {
         /** Gamepad 2 */
 
         //Transfer
-        val shouldWeTransfer = gamepad2.a
         val transferState = transfer.getTransferState(TransferManager.ClawStateFromTransfer.Retracted, RevBlinkinLedDriver.BlinkinPattern.BLUE)
+        val shouldWeTransfer = gamepad2.a && !gamepad2.dpad_left
 
         //Extendo
         val extendoTriggerActivation = 0.1
@@ -349,7 +349,7 @@ class RobotTwoTeleOp: OpMode() {
 
 
         //Launcher
-        hardware.launcherServo.position = if (gamepad2.y || gamepad1.y) {
+        hardware.launcherServo.position = if ((gamepad2.y && !gamepad2.dpad_left) || gamepad1.y) {
             RobotTwoHardware.LauncherPosition.Released.position
         } else {
             RobotTwoHardware.LauncherPosition.Holding.position
@@ -363,7 +363,6 @@ class RobotTwoTeleOp: OpMode() {
         }
 
         //Light Control
-
         val isAnyColorButtonPressed: Boolean = gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y
 
         val desiredPixelLightPattern: BothPixelsWeWant = if (gamepad2.dpad_left) {
