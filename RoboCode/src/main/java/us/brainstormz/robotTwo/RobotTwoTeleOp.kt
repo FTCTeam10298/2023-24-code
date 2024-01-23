@@ -252,6 +252,11 @@ class RobotTwoTeleOp: OpMode() {
         }
 
         val liftTargetHasntChanged = liftPosition == previousRobotState.depoState.liftPosition
+        if (lift.isLimitSwitchActivated() && liftTargetHasntChanged) {
+            hardware.liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+            hardware.liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        }
+
         //Arm
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
