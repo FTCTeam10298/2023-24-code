@@ -8,14 +8,13 @@ import kotlin.math.cos
 
 class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
     enum class Positions(val angleDegrees:Double) {
-        Manual(0.0),
-        LiftIsGoingHome(255.0),
-        GoodEnoughForLiftToGoDown(200.0),
+        ClearForLiftMovement(255.0),
         In(248.0),
+        GoodEnoughForLiftToGoDown(245.0),
         TransferringTarget(238.0),
         AutoInitPosition(170.0),
-//        Horizontal(180.0),
-        Out(60.0)
+        Out(60.0),
+        Manual(0.0),
     }
 
     private val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0-40)
@@ -35,7 +34,6 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
     }
 
     fun moveArmTowardPosition(targetPosition: Double) {
-        telemetry.addLine("Powering arm toward: $targetPosition")
         val power = calcPowerToReachTarget(targetPosition)
         powerArm(power)
     }

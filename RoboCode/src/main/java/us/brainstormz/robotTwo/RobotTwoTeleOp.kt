@@ -125,9 +125,9 @@ class RobotTwoTeleOp: OpMode() {
             }
         }
 
-//        val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
-//        collectorSystem.spinCollector(actualCollectorState.power)
-        collectorSystem.spinCollector(inputCollectorStateSystem.power)
+        val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
+        collectorSystem.spinCollector(actualCollectorState.power)
+//        collectorSystem.spinCollector(inputCollectorStateSystem.power)
 
         val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
         val rollerState = when {
@@ -163,9 +163,6 @@ class RobotTwoTeleOp: OpMode() {
         val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
         val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
         val extendoState = when {
-//            rightTrigger && leftTrigger -> {
-//                collectorSystem.powerExtendo(0.0)
-//            }
             rightTrigger -> {
                 collectorSystem.powerExtendo(gamepad1.right_trigger.toDouble())
                 CollectorSystem.ExtendoPositions.Manual
@@ -228,7 +225,10 @@ class RobotTwoTeleOp: OpMode() {
         }
 
         val liftTargetIsBelowSafeArm = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
-        val armIsAtSafeAngle = arm.getArmAngleDegrees() >= Arm.Positions.In.angleDegrees
+        val liftActualPositionIsAboveSafeArm = hardware.liftMotorMaster.currentPosition >= Lift.LiftPositions.ClearForArmToMove.ticks
+        val armIsAtSafeAngle = arm.getArmAngleDegrees() >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
+        val liftNeedsToWaitForTheArm = liftTargetIsBelowSafeArm && liftActualPositionIsAboveSafeArm && !armIsAtSafeAngle
+
         when {
             liftPosition == Lift.LiftPositions.Manual -> {
                 lift.powerLift(-liftOverrideStickValue)
@@ -236,8 +236,8 @@ class RobotTwoTeleOp: OpMode() {
             liftPosition == Lift.LiftPositions.Nothing -> {
                 lift.powerLift(0.0)
             }
-            liftTargetIsBelowSafeArm && !armIsAtSafeAngle -> {
-                lift.moveLiftToPosition(Lift.LiftPositions.ClearForArmToMove.ticks)
+            liftNeedsToWaitForTheArm -> {
+                lift.moveLiftToPosition(Lift.LiftPositions.ClearForArmToMove.ticks+100)
             }
             else -> {
                 lift.moveLiftToPosition(liftPosition.ticks)
@@ -247,37 +247,60 @@ class RobotTwoTeleOp: OpMode() {
         //Arm
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
+        val liftIsBelowFreeArmLevel = hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks
+        val liftIsAtTheBottom = lift.isLimitSwitchActivated()
+        val armIsInish = arm.getArmAngleDegrees() >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
+
+        val depositorShouldGoAllTheWayIn = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
+
+        val liftPositionsWhereArmShouldBeOut = listOf(Lift.LiftPositions.SetLine1, Lift.LiftPositions.SetLine2, Lift.LiftPositions.SetLine3)
+
+        val armWasManualControlLastTime = previousRobotState.depoState.armPos == Arm.Positions.Manual
+        val liftTargetHasntChanged = liftPosition == previousRobotState.depoState.liftPosition
+
         val armPosition: Arm.Positions = if (armOverrideStickValue.absoluteValue >= 0.2) {
             Arm.Positions.Manual
         } else {
             when  {
-                liftPosition == Lift.LiftPositions.Manual -> {
-                    previousRobotState.depoState.armPos
+                armWasManualControlLastTime && liftTargetHasntChanged -> {
+                    Arm.Positions.Manual
                 }
-                liftPosition == Lift.LiftPositions.Nothing -> {
+                liftPosition == Lift.LiftPositions.Manual || liftPosition == Lift.LiftPositions.Nothing-> {
                     previousRobotState.depoState.armPos
                 }
                 shouldWeTransfer -> {
                     transferState.armState
                 }
-                else -> {
-                    if (hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks) {
-                        if (hardware.liftMotorMaster.currentPosition <= 80) {
+                liftIsBelowFreeArmLevel  -> {
+                    if (armIsInish) {
+                        if (liftIsAtTheBottom) {
                             Arm.Positions.TransferringTarget
                         } else {
-                            Arm.Positions.LiftIsGoingHome
+                            Arm.Positions.ClearForLiftMovement
                         }
                     } else {
-                        Arm.Positions.Out
+                        Arm.Positions.AutoInitPosition
                     }
+                }
+                depositorShouldGoAllTheWayIn && !liftIsBelowFreeArmLevel-> {
+                    Arm.Positions.ClearForLiftMovement
+                }
+                liftPosition in liftPositionsWhereArmShouldBeOut -> {
+                    Arm.Positions.Out
+                }
+                else -> {
+                    previousRobotState.depoState.armPos
                 }
             }
         }
         if (armPosition == Arm.Positions.Manual) {
             arm.powerArm(armOverrideStickValue)
+            telemetry.addLine("arm power (manual override): $armOverrideStickValue")
         } else {
             arm.moveArmTowardPosition(armPosition.angleDegrees)
+            telemetry.addLine("arm target: $armPosition, angle: ${armPosition.angleDegrees}")
         }
+        telemetry.addLine("arm actual angle: ${arm.getArmAngleDegrees()}")
 
         //Claws
         val leftClawPosition: LeftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
