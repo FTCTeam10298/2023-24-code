@@ -113,7 +113,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     enum class LauncherPosition(val position: Double) {
         Holding(0.6),
-        Released(0.4)
+        Released(0.3)
     }
     lateinit var launcherServo: Servo
 
@@ -410,7 +410,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
             telemetry.update()
             servo.power = 1.0
 //            while (!gamepad.b){
-                sleep(1000)
+            sleep(1000)
 //            }
             servo.power = 0.0
             servo.close()
