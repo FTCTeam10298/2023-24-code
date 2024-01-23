@@ -28,7 +28,7 @@ class TransferManager(
 //            val leftClawPosition: RobotTwoHardware.LeftClawPosition,
             val clawPosition: ClawStateFromTransfer,
             val collectorState: ExtendoStateFromTransfer,
-            val liftState:LiftStateFromTransfer,
+            val liftState: LiftStateFromTransfer,
             val lights: BlinkinPattern,
             val armState: Arm.Positions)
 

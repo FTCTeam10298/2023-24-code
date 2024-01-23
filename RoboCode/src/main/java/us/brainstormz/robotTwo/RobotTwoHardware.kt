@@ -85,15 +85,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var leftColorSensor: RevColorSensorV3
     lateinit var rightColorSensor: RevColorSensorV3
 
-    enum class ExtendoPositions(val ticks: Int) {
-        AllTheWayInTarget(-10),
-        Min(0),
-        FarBackboardPixelPosition(1750),
-        MidBackboardPixelPosition(1000),
-        CloserBackboardPixelPosition(500),
-        Max(500),
-    }
-    val extendoOperationRange = ExtendoPositions.Min.ticks..ExtendoPositions.Max.ticks
+    val extendoOperationRange = CollectorSystem.ExtendoPositions.Min.ticks..CollectorSystem.ExtendoPositions.Max.ticks
     val extendoPositionPID = PID(kp = 1.0)
     lateinit var extendoMotorMaster: DcMotorEx
     lateinit var extendoMotorSlave: DcMotor

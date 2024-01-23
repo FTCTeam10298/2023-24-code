@@ -44,7 +44,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         Off(0.0)
     }
 
-    data class TransferState(val leftServoCollect: CollectorPowers, val rightServoCollect: CollectorPowers, val directorState: DirectorState)
+    data class RollerState(val leftServoCollect: CollectorPowers, val rightServoCollect: CollectorPowers, val directorState: DirectorState)
     data class TransferHalfState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
 
     enum class Side {
@@ -54,8 +54,8 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 
     data class CollectorState(
             val collectorState: CollectorPowers,
-            val extendoPosition: RobotTwoHardware.ExtendoPositions,
-            val transferRollersState: TransferState,
+            val extendoPosition: ExtendoPositions,
+            val transferRollersState: RollerState,
             val transferLeftSensorState: TransferHalfState,
             val transferRightSensorState: TransferHalfState,
     )
@@ -142,7 +142,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     var previousLeftTransferState = TransferHalfState(false, 0)
     var previousRightTransferState = TransferHalfState(false, 0)
     val extraTransferRollingTimeMilis = 1000
-    fun getAutoPixelSortState(isCollecting: Boolean): TransferState {
+    fun getAutoPixelSortState(isCollecting: Boolean): RollerState {
         //Detection:
         val isLeftSeeingPixel = isPixelIn(leftTransferPixelSensor)
         val timeOfSeeingLeftPixelMilis = when {
@@ -183,12 +183,12 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 
         previousRightTransferState = rightTransferState
         previousLeftTransferState = leftTransferState
-        return TransferState(   leftServoCollect= shouldLeftServoCollect,
+        return RollerState(   leftServoCollect= shouldLeftServoCollect,
                                 rightServoCollect= shouldRightServoCollect,
                                 directorState= directorState)
     }
 
-    fun runRollers(transferState: TransferState) {
+    fun runRollers(transferState: RollerState) {
         leftTransferServo.power = getRollerPowerBasedOnState(Side.Left, transferState.leftServoCollect)
         rightTransferServo.power = getRollerPowerBasedOnState(Side.Right, transferState.rightServoCollect)
         transferDirectorServo.power = transferState.directorState.power
@@ -241,9 +241,16 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     }
 
     enum class ExtendoPositions(val ticks: Int) {
+        AllTheWayInTarget(-10),
+        Min(0),
+        Manual(0),
         ClearTransfer(230),
-        Min(0)
+        FarBackboardPixelPosition(1750),
+        MidBackboardPixelPosition(1000),
+        CloserBackboardPixelPosition(500),
+        Max(500),
     }
+
     private val pid = PID(kp = 0.005)
     fun moveExtendoToPosition(targetPositionTicks: Int) {
         val currentPosition = extendoMotorMaster.currentPosition.toDouble()
@@ -278,8 +285,8 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     private val defaultPreviousState = TransferHalfState(false, 0)
     fun getCurrentState(previousState: CollectorState?): CollectorState {
         val collectorPowerState: CollectorPowers = getCollectorPowerState(collectorServo1.power)
-        val extendoPosition = RobotTwoHardware.ExtendoPositions.Min
-        val transferRollersState = TransferState(
+        val extendoPosition = ExtendoPositions.Min
+        val transferRollersState = RollerState(
                 leftServoCollect = getCollectorPowerState(leftTransferServo.power),
                 rightServoCollect = getCollectorPowerState(rightTransferServo.power),
                 directorState = getDirectorPowerState(transferDirectorServo.power),

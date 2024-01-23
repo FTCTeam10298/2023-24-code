@@ -38,8 +38,8 @@ class RobotTwoTeleOp: OpMode() {
             positionAndRotation = PositionAndRotation(),
             collectorSystemState = CollectorSystem.CollectorState(
                     collectorState = CollectorSystem.CollectorPowers.Off,
-                    extendoPosition = RobotTwoHardware.ExtendoPositions.Min,
-                    transferRollersState = CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off),
+                    extendoPosition = CollectorSystem.ExtendoPositions.Min,
+                    transferRollersState = CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off),
                     transferLeftSensorState = CollectorSystem.TransferHalfState(false, 0),
                     transferRightSensorState = CollectorSystem.TransferHalfState(false, 0)
             ),
@@ -131,25 +131,25 @@ class RobotTwoTeleOp: OpMode() {
 //        collectorSystem.spinCollector(actualCollectorState.power)
         collectorSystem.spinCollector(inputCollectorStateSystem.power)
 
-        val autoTransferState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
+        val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
         val rollerState = when {
             gamepad1.dpad_right ->
-                CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Off,
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.CollectorPowers.Off,
                         rightServoCollect = CollectorSystem.CollectorPowers.Eject,
                         directorState = CollectorSystem.DirectorState.Off)
             gamepad1.dpad_left ->
-                CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
                         rightServoCollect = CollectorSystem.CollectorPowers.Off,
                         directorState = CollectorSystem.DirectorState.Off)
             gamepad1.dpad_up ->
-                CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Intake,
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.CollectorPowers.Intake,
                         rightServoCollect = CollectorSystem.CollectorPowers.Intake,
                         directorState = CollectorSystem.DirectorState.Off)
             gamepad1.dpad_down ->
-                CollectorSystem.TransferState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
                         rightServoCollect = CollectorSystem.CollectorPowers.Eject,
                         directorState = CollectorSystem.DirectorState.Off)
-            else -> autoTransferState
+            else -> autoRollerState
         }
         collectorSystem.runRollers(rollerState)
 

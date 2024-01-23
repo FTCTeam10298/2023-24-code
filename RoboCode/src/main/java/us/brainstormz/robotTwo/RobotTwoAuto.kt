@@ -1,6 +1,5 @@
 package us.brainstormz.robotTwo
 
-import android.text.BoringLayout
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import org.openftc.easyopencv.OpenCvCameraRotation
@@ -30,7 +29,7 @@ class RobotTwoAuto: OpMode() {
         return mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetWorld.targetRobot.positionAndRotation)
     }
 
-    private val targetWorldToBeReplacedWithInjection = TargetWorld( targetRobot = RobotState(collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)), positionAndRotation = PositionAndRotation(), depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)),
+    private val targetWorldToBeReplacedWithInjection = TargetWorld( targetRobot = RobotState(collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)), positionAndRotation = PositionAndRotation(), depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)),
                                                                     isTargetReached = {targetState: TargetWorld?, actualState: ActualWorld ->
                                                                         println("This had better not run")
                                                                         false
@@ -46,7 +45,7 @@ class RobotTwoAuto: OpMode() {
     private val backBoardAuto: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = purplePixelPlacementLeftPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -56,7 +55,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.FarBackboardPixelPosition, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = purplePixelPlacementLeftPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -67,7 +66,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.DropPurple, RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.DropPurple, CollectorSystem.ExtendoPositions.FarBackboardPixelPosition, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = purplePixelPlacementLeftPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -76,7 +75,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.ReverseDropPurple, RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.ReverseDropPurple, CollectorSystem.ExtendoPositions.FarBackboardPixelPosition, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = purplePixelPlacementLeftPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -85,18 +84,18 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.AllTheWayInTarget, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.AllTheWayInTarget, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         val isRobotAtPosition = isAtPosition(targetState, actualState)
-                        val isCollectorRetracted = collectorSystem.isExtendoAtPosition(RobotTwoHardware.ExtendoPositions.Min.ticks)
+                        val isCollectorRetracted = collectorSystem.isExtendoAtPosition(CollectorSystem.ExtendoPositions.Min.ticks)
                         isRobotAtPosition && isCollectorRetracted
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.AllTheWayInTarget, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.AllTheWayInTarget, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -105,7 +104,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.AllTheWayInTarget, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.AllTheWayInTarget, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -114,7 +113,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
                             depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -123,7 +122,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
                             depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
@@ -132,7 +131,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
                             depoState = DepoState(Arm.Positions.LiftIsGoingHome, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
@@ -141,7 +140,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = placingOnBackboardPosition,
                             depoState = DepoState(Arm.Positions.LiftIsGoingHome, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
@@ -150,7 +149,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = parkingPosition,
                             depoState = DepoState(Arm.Positions.LiftIsGoingHome, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
@@ -164,7 +163,7 @@ class RobotTwoAuto: OpMode() {
     private val redBackboardPurplePixelPlacement: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, RobotTwoHardware.ExtendoPositions.Min, CollectorSystem.TransferState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorSystem.CollectorState(CollectorSystem.CollectorPowers.Off, CollectorSystem.ExtendoPositions.Min, CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off), CollectorSystem.TransferHalfState(false, 0), CollectorSystem.TransferHalfState(false, 0)),
                             positionAndRotation = PositionAndRotation(),
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
@@ -225,11 +224,11 @@ class RobotTwoAuto: OpMode() {
 
 //        val purplePixelAccounted: List<TargetWorld> = injectPurplePlacementIntoSidedAuto(startPosAccounted, startPosition)
         val purplePixelAccounted = startPosAccounted.map { targetWorld ->
-            if (targetWorld.targetRobot.collectorSystemState.extendoPosition == RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition) {
+            if (targetWorld.targetRobot.collectorSystemState.extendoPosition == CollectorSystem.ExtendoPositions.FarBackboardPixelPosition) {
                 val newExtendoPosition = when (propPosition) {
-                    PropPosition.Left -> RobotTwoHardware.ExtendoPositions.FarBackboardPixelPosition
-                    PropPosition.Center -> RobotTwoHardware.ExtendoPositions.MidBackboardPixelPosition
-                    PropPosition.Right -> RobotTwoHardware.ExtendoPositions.CloserBackboardPixelPosition
+                    PropPosition.Left -> CollectorSystem.ExtendoPositions.FarBackboardPixelPosition
+                    PropPosition.Center -> CollectorSystem.ExtendoPositions.MidBackboardPixelPosition
+                    PropPosition.Right -> CollectorSystem.ExtendoPositions.CloserBackboardPixelPosition
                 }
                 val newRobotPosition = when (propPosition) {
                     PropPosition.Left -> purplePixelPlacementLeftPosition
