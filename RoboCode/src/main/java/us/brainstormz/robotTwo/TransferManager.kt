@@ -34,37 +34,38 @@ class TransferManager(
 
 
     fun getTransferState(previousClawState: ClawStateFromTransfer, previousLights: BlinkinPattern): TransferState {
-        val isArmAtAPositionWhichAllowsTheLiftToMoveDown = arm.getArmAngleDegrees() >= Arm.Positions.In.angleDegrees
+        val isArmAtAPositionWhichAllowsTheLiftToMoveDown = arm.getArmAngleDegrees() >= Arm.Positions.ClearLiftMovement.angleDegrees
 
-        telemetry.addLine("Lift")
+//        telemetry.addLine("Lift")
         val liftState: LiftStateFromTransfer = when (isArmAtAPositionWhichAllowsTheLiftToMoveDown) {
             true -> {
-                telemetry.addLine("Moving lift down\n")
+//                telemetry.addLine("Moving lift down\n")
                 LiftStateFromTransfer.MoveDown
             }
             false -> {
-                telemetry.addLine("Not moving lift, arm is not ready\n")
+//                telemetry.addLine("Not moving lift, arm is not ready\n")
                 LiftStateFromTransfer.None
             }
         }
 
-        telemetry.addLine("Extendo: ")
-        val liftExtensionIsAllTheWayDown = lift.isLimitSwitchActivated()
-        val collectorState: ExtendoStateFromTransfer = when (liftExtensionIsAllTheWayDown) {
+//        telemetry.addLine("Extendo: ")
+        val liftIsDownEnoughForExtendoToComeIn = lift.getCurrentPositionTicks() < (Lift.LiftPositions.Min.ticks + 100)
+        val collectorState: ExtendoStateFromTransfer = when (liftIsDownEnoughForExtendoToComeIn) {
             true -> {
-                telemetry.addLine("Moving collector in")
+//                telemetry.addLine("Moving collector in")
                 ExtendoStateFromTransfer.MoveIn
             }
             false -> {
-                telemetry.addLine("Moving collector out of the way")
+//                telemetry.addLine("Moving collector out of the way")
                 ExtendoStateFromTransfer.MoveOutOfTheWay
             }
         }
 
         val isCollectorAllTheWayIn = collectorSystem.isExtendoAllTheWayIn()
+        val liftExtensionIsAllTheWayDown = lift.isLimitSwitchActivated()
         val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
 
-        telemetry.addLine("Arms: ")
+//        telemetry.addLine("Arms: ")
         val armState: Arm.Positions = when (bothExtensionsAreAllTheWayIn) {
             true -> {
                 telemetry.addLine("Moving arm to transfer")
@@ -72,7 +73,7 @@ class TransferManager(
             }
             false -> {
                 telemetry.addLine("Moving arm to avoid getting caught while lift does it's thing")
-                Arm.Positions.LiftIsGoingHome
+                Arm.Positions.ClearLiftMovement
             }
         }
         val isArmReadyToTransfer = arm.getArmAngleDegrees() <= Arm.Positions.In.angleDegrees
@@ -80,7 +81,7 @@ class TransferManager(
         val readyToTransfer = bothExtensionsAreAllTheWayIn && isArmReadyToTransfer && areRollersReadyToTransfer
 
         val clawsShouldRetract = !isCollectorAllTheWayIn && !liftExtensionIsAllTheWayDown
-        telemetry.addLine("Claws:")
+//        telemetry.addLine("Claws:")
         val clawState: ClawStateFromTransfer = when {
             readyToTransfer -> {
                 telemetry.addLine("Gripping, transfer is complete")

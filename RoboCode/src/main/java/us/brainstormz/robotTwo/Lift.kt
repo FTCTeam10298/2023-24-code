@@ -40,6 +40,10 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
         }
     }
 
+    fun getCurrentPositionTicks(): Int {
+        return  liftMotor1.currentPosition
+    }
+
     private val pid = PID(kp = 0.004)
     fun moveLiftToPosition(targetPositionTicks: Int) {
         val currentPosition = liftMotor1.currentPosition.toDouble()
