@@ -426,9 +426,9 @@ class RobotTwoAuto: OpMode() {
     }
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
-    private var previousLoopStartTime = 0L
+    private val loopTimeMeasurer = LoopTimeMeasurer()
     override fun loop() {
-        val loopStartTime = System.currentTimeMillis()
+
         functionalReactiveAutoRunner.loop(
             actualStateGetter = { previousActualState ->
                 hardware.getActualState(previousActualState, arm, mecanumMovement.localizer, collectorSystem)
@@ -450,9 +450,8 @@ class RobotTwoAuto: OpMode() {
             }
         )
 
-        val deltaTime = loopStartTime - previousLoopStartTime
-        telemetry.addLine("delta time: $deltaTime")
-        previousLoopStartTime = loopStartTime
+        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
+        telemetry.addLine("loop time: $loopTime milis")
 
         telemetry.update()
     }

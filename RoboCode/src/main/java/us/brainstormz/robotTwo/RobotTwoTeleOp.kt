@@ -81,6 +81,8 @@ class RobotTwoTeleOp: OpMode() {
         odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
     }
 
+    private val loopTimeMeasurer = LoopTimeMeasurer()
+
     private var numberOfTimesColorButtonPressed: Int = 0
     private var previousDesiredPixelLightPattern: BothPixelsWeWant = BothPixelsWeWant(pixel1 = PixelWeWant.Unknown, pixel2 = PixelWeWant.Unknown)
     private var previousIsAnyColorButtonPressed: Boolean = false
@@ -89,6 +91,9 @@ class RobotTwoTeleOp: OpMode() {
     private var previousRobotState = initialRobotState
     override fun loop() {
         /** TELE-OP PHASE */
+
+        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
+        telemetry.addLine("loop time: $loopTime milis")
 
         /** Gamepad 1 */
         // DRONE DRIVE
