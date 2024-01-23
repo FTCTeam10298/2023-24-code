@@ -1,11 +1,9 @@
 package us.brainstormz.robotTwo
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
@@ -164,18 +162,20 @@ class RobotTwoTeleOp: OpMode() {
         val extendoTriggerActivation = 0.1
         val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
         val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
-        when {
+        val extendoState = when {
 //            rightTrigger && leftTrigger -> {
 //                collectorSystem.powerExtendo(0.0)
 //            }
             rightTrigger -> {
                 collectorSystem.powerExtendo(gamepad1.right_trigger.toDouble())
+                CollectorSystem.ExtendoPositions.Manual
             }
             leftTrigger -> {
                 collectorSystem.powerExtendo(-gamepad1.left_trigger.toDouble())
+                CollectorSystem.ExtendoPositions.Manual
             }
             shouldWeTransfer -> {
-                val position = when (transferState.collectorState) {
+                when (transferState.collectorState) {
                     TransferManager.ExtendoStateFromTransfer.MoveIn -> {
                         CollectorSystem.ExtendoPositions.Min
                     }
@@ -183,12 +183,16 @@ class RobotTwoTeleOp: OpMode() {
                         CollectorSystem.ExtendoPositions.ClearTransfer
                     }
                 }
-                collectorSystem.moveExtendoToPosition(position.ticks)
             }
             else -> {
                 collectorSystem.powerExtendo(0.0)
+                CollectorSystem.ExtendoPositions.Manual
             }
         }
+        if (extendoState != CollectorSystem.ExtendoPositions.Manual){
+            collectorSystem.moveExtendoToPosition(extendoState.ticks)
+        }
+
 
         //Lift
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
@@ -377,12 +381,29 @@ class RobotTwoTeleOp: OpMode() {
 
         /** not controls */
 
+        val rollerActualState = collectorSystem.getCurrentState(previousRobotState.collectorSystemState)
+
         //Previous state
-        previousRobotState = hardware.getActualState(RobotTwoAuto.ActualWorld(previousRobotState, 0), arm, odometryLocalizer, collectorSystem).actualRobot
-                .copy(depoState = RobotTwoAuto.DepoState(   armPos = armPosition,
-                                                            liftPosition = liftPosition,
-                                                            leftClawPosition = leftClawPosition,
-                                                            rightClawPosition = rightClawPosition))
+        previousRobotState = RobotState(
+                positionAndRotation = PositionAndRotation(),
+                collectorSystemState = CollectorSystem.CollectorState(
+                        collectorState = inputCollectorStateSystem,
+                        extendoPosition = extendoState,
+                        transferRollersState = autoRollerState,
+                        transferLeftSensorState = rollerActualState.transferLeftSensorState,
+                        transferRightSensorState = rollerActualState.transferLeftSensorState
+                ),
+                depoState = RobotTwoAuto.DepoState(
+                        liftPosition = liftPosition,
+                        armPos = armPosition,
+                        leftClawPosition = leftClawPosition,
+                        rightClawPosition = rightClawPosition,
+                ))
+//                hardware.getActualState(RobotTwoAuto.ActualWorld(previousRobotState, 0), arm, odometryLocalizer, collectorSystem).actualRobot
+//                .copy(depoState = RobotTwoAuto.DepoState(   armPos = armPosition,
+//                                                            liftPosition = liftPosition,
+//                                                            leftClawPosition = leftClawPosition,
+//                                                            rightClawPosition = rightClawPosition))
         previousDesiredPixelLightPattern = desiredPixelLightPattern
         previousGamepad1State.copy(gamepad1)
         previousGamepad2State.copy(gamepad2)
