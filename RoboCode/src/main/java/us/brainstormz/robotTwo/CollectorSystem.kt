@@ -70,7 +70,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     val rightEncoderReader = AxonEncoderReader(rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
 
     private val leftFlapTransferReadyAngleDegrees = 32.0
-    private val rightFlapTransferReadyAngleDegrees = 90.0
+    private val rightFlapTransferReadyAngleDegrees = 110.0
     private val leftFlapKp = 0.43
     private val rightFlapKp = 0.4
 
