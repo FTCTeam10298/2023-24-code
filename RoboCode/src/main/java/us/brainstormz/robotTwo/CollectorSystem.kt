@@ -1,5 +1,9 @@
 package us.brainstormz.robotTwo
 
+import android.graphics.Color
+import android.graphics.ColorSpace
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.ColorSensor
@@ -216,6 +220,82 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         }
 
         return alpha > alphaDetectionThreshold
+    }
+
+    data class RGBValue(val red: Double, val green: Double, val blue: Double) {
+        constructor(red: Int, green: Int, blue: Int): this(red.toDouble(), green.toDouble(), blue.toDouble())
+    }
+    data class RGBRange(val low: RGBValue, val high: RGBValue) {
+        enum class RBGColor {
+            Red,
+            Green,
+            Blue
+        }
+        fun getRangeForColor(color: RBGColor): ClosedRange<Double> =
+                when (color) {
+                    RBGColor.Red -> low.red..high.red
+                    RBGColor.Green -> low.green..high.green
+                    RBGColor.Blue -> low.blue..high.blue
+                }
+        fun contains(color: RGBValue): Boolean {
+            val isRedGood = color.red in getRangeForColor(RBGColor.Red)
+            val isGreenGood = color.green in getRangeForColor(RBGColor.Green)
+            val isBlueGood = color.blue in getRangeForColor(RBGColor.Blue)
+            return isRedGood && isGreenGood && isBlueGood
+        }
+    }
+    data class SensorColorInformation(val purple: RGBRange, val green: RGBRange, val white: RGBRange, val yellow: RGBRange) {
+        fun mappedValues(): Map<RobotTwoTeleOp.PixelWeWant, RGBRange> {
+            return mapOf(
+                    RobotTwoTeleOp.PixelWeWant.Purple to purple,
+                    RobotTwoTeleOp.PixelWeWant.Green to green,
+                    RobotTwoTeleOp.PixelWeWant.White to white,
+                    RobotTwoTeleOp.PixelWeWant.Yellow to yellow
+            )
+        }
+    }
+
+    val leftSensorColorInformation = SensorColorInformation(
+            purple = RGBRange(
+                    RGBValue(76, 2, 171),
+                    RGBValue(198, 73, 247)
+            ),
+            green = RGBRange(
+                    RGBValue(2, 207, 2),
+                    RGBValue(66, 250, 151)
+            ),
+            white = RGBRange(
+                    RGBValue(199, 199, 199),
+                    RGBValue(225, 225, 225)
+            ),
+            yellow = RGBRange(
+                    RGBValue(217, 128, 0),
+                    RGBValue(225, 225, 128)
+            ),
+    )
+    val rightSensorColorInformation = leftSensorColorInformation//SensorColorInformation()
+
+    fun getColorInSide(colorSensor: ColorSensor, side: Side): RobotTwoTeleOp.PixelWeWant {
+        val sensorMultiplier: Double = (1.0/8.0)
+
+        val rgbValue = RGBValue(colorSensor.red() *sensorMultiplier, colorSensor.green() *sensorMultiplier, colorSensor.blue() *sensorMultiplier)
+        val findWhichColor = leftSensorColorInformation.mappedValues().entries.firstOrNull {entry ->
+            entry.value.contains(rgbValue)
+        }
+
+        telemetry.addLine("\n$side side:")
+        telemetry.addLine("rgbValue: $rgbValue")
+        telemetry.addLine("leftSensorColorInformation: $leftSensorColorInformation")
+
+        return findWhichColor?.key ?: RobotTwoTeleOp.PixelWeWant.Unknown
+//        return when {
+//            (red + blue) < green -> RobotTwoTeleOp.PixelWeWant.Green
+//            red > 2500 && green > 2500 && blue > 2500 -> RobotTwoTeleOp.PixelWeWant.White
+//            green > ((blue*2) - 50) && red > green -> RobotTwoTeleOp.PixelWeWant.Yellow
+//            blue > green && blue > red && green > red -> RobotTwoTeleOp.PixelWeWant.Purple
+//            else -> RobotTwoTeleOp.PixelWeWant.Unknown
+//        }
+//        return alpha > alphaDetectionThreshold
     }
 
     fun powerExtendo(power: Double) {

@@ -117,7 +117,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     }
     lateinit var launcherServo: Servo
 
-//    lateinit var lights: RevBlinkinLedDriver
+    lateinit var lights: RevBlinkinLedDriver
 
     data class RobotState(
             val positionAndRotation: PositionAndRotation,
@@ -215,7 +215,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         val perpendicularOdomMotor = ctrlHub.getMotor(0)
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
-//        lights = hwMap["lights"] as RevBlinkinLedDriver
+        lights = hwMap["lights"] as RevBlinkinLedDriver
 
         // Drivetrain
         parallelEncoder.direction = DcMotorSimple.Direction.REVERSE
@@ -282,8 +282,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         imu.resetYaw()
 
         //Lights
-//        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.entries[(Math.random() * RevBlinkinLedDriver.BlinkinPattern.entries.size).toInt()])
-//        lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
+        lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
     }
 
 

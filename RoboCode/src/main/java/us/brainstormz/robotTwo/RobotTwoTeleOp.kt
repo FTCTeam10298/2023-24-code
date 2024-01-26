@@ -28,13 +28,6 @@ class RobotTwoTeleOp: OpMode() {
 
     private lateinit var odometryLocalizer: RRTwoWheelLocalizer
 
-//    private val initialRobotState = RobotState(
-//            armPos = Arm.Positions.In,
-//            liftPosition = RobotTwoHardware.LiftPositions.Min,
-//            leftClawPosition = LeftClawPosition.Retracted,
-//            rightClawPosition = RightClawPosition.Retracted,
-//            collectorState = Collector.CollectorPowers.Off
-//    )
     private val initialRobotState = RobotState(
             positionAndRotation = PositionAndRotation(),
             collectorSystemState = CollectorSystem.CollectorState(
@@ -87,10 +80,14 @@ class RobotTwoTeleOp: OpMode() {
     private val loopTimeMeasurer = LoopTimeMeasurer()
 
     private var numberOfTimesColorButtonPressed: Int = 0
-    private var previousDesiredPixelLightPattern: BothPixelsWeWant = BothPixelsWeWant(pixel1 = PixelWeWant.Unknown, pixel2 = PixelWeWant.Unknown)
+    private var previousDesiredPixelLightPattern: BothPixelsWeWant = BothPixelsWeWant(leftPixel = PixelWeWant.Unknown, rightPixel = PixelWeWant.Unknown)
     private var previousIsAnyColorButtonPressed: Boolean = false
+    private var timeWhenCurrentColorStartedBeingDisplayedMilis = 0L
+    private var previousColorToBeDisplayed = previousDesiredPixelLightPattern.leftPixel
+
     private var previousGamepad1State: Gamepad = Gamepad()
     private var previousGamepad2State: Gamepad = Gamepad()
+
     private var previousRobotState = initialRobotState
     override fun loop() {
         /** TELE-OP PHASE */
@@ -426,10 +423,10 @@ class RobotTwoTeleOp: OpMode() {
 
                 when (numberOfTimesColorButtonPressed) {
                     1 -> {
-                        previousDesiredPixelLightPattern.copy(pixel1 = newOne)
+                        previousDesiredPixelLightPattern.copy(leftPixel = newOne)
                     }
                     2 -> {
-                        previousDesiredPixelLightPattern.copy(pixel2 = newOne)
+                        previousDesiredPixelLightPattern.copy(rightPixel = newOne)
                     }
                     else -> {
                         previousDesiredPixelLightPattern
@@ -443,8 +440,37 @@ class RobotTwoTeleOp: OpMode() {
             previousDesiredPixelLightPattern
         }
         previousIsAnyColorButtonPressed = isAnyColorButtonPressed
-
         telemetry.addLine("desiredPixelLightPattern: $desiredPixelLightPattern")
+
+
+        //Light actuation
+        fun getLightPatternFromPixelColor(pixelWeWant: PixelWeWant): RevBlinkinLedDriver.BlinkinPattern {
+            return when (pixelWeWant) {
+                PixelWeWant.Unknown -> RevBlinkinLedDriver.BlinkinPattern.BLUE
+                PixelWeWant.White -> RevBlinkinLedDriver.BlinkinPattern.WHITE
+                PixelWeWant.Green -> RevBlinkinLedDriver.BlinkinPattern.GREEN
+                PixelWeWant.Purple -> RevBlinkinLedDriver.BlinkinPattern.VIOLET
+                PixelWeWant.Yellow -> RevBlinkinLedDriver.BlinkinPattern.YELLOW
+            }
+        }
+
+        val timeToDisplayColorMilis = 1000
+        val timeSinceCurrentColorWasDisplayedMilis = System.currentTimeMillis() - timeWhenCurrentColorStartedBeingDisplayedMilis
+        val isTimeToChangeColor = timeSinceCurrentColorWasDisplayedMilis >= timeToDisplayColorMilis
+        val isCurrentColorObsolete = previousColorToBeDisplayed !in desiredPixelLightPattern.toList()
+        val currentColorToBeDisplayed: PixelWeWant = when {
+            isTimeToChangeColor || isCurrentColorObsolete -> {
+                timeWhenCurrentColorStartedBeingDisplayedMilis = System.currentTimeMillis()
+                desiredPixelLightPattern.toList().firstOrNull { color ->
+                    color != previousColorToBeDisplayed
+                } ?: desiredPixelLightPattern.leftPixel
+            }
+             else -> {
+                previousColorToBeDisplayed
+            }
+        }
+        previousColorToBeDisplayed = currentColorToBeDisplayed
+        hardware.lights.setPattern(getLightPatternFromPixelColor(currentColorToBeDisplayed))
 
 
         telemetry.addLine("arm actual angle: ${arm.getArmAngleDegrees()}")
@@ -488,7 +514,14 @@ class RobotTwoTeleOp: OpMode() {
         Unknown,
     }
 
-    data class BothPixelsWeWant(val pixel1: PixelWeWant, val pixel2: PixelWeWant)
+    data class BothPixelsWeWant(val leftPixel: PixelWeWant, val rightPixel: PixelWeWant) {
+        fun toList():List<PixelWeWant> {
+            return listOf(leftPixel, rightPixel)
+        }
+        fun toPair():Pair<PixelWeWant, PixelWeWant> {
+            return leftPixel to rightPixel
+        }
+    }
 //    enum class PixelHandlerState {
 //        None,
 //        White,
