@@ -442,6 +442,11 @@ class RobotTwoTeleOp: OpMode() {
         previousIsAnyColorButtonPressed = isAnyColorButtonPressed
         telemetry.addLine("desiredPixelLightPattern: $desiredPixelLightPattern")
 
+        val colorDetectedInLeftSide = collectorSystem.getColorInSide(hardware.leftTransferSensor, CollectorSystem.Side.Left)
+        val colorDetectedInRightSide = collectorSystem.getColorInSide(hardware.rightTransferSensor, CollectorSystem.Side.Right)
+        telemetry.addLine("colorDetectedInLeftSide: ${colorDetectedInLeftSide}")
+        telemetry.addLine("colorDetectedInRightSide: ${colorDetectedInRightSide}")
+
 
         //Light actuation
         fun getLightPatternFromPixelColor(pixelWeWant: PixelWeWant): RevBlinkinLedDriver.BlinkinPattern {
