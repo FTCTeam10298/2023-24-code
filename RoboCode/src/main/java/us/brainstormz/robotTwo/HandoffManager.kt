@@ -3,61 +3,61 @@ package us.brainstormz.robotTwo
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern
 import org.firstinspires.ftc.robotcore.external.Telemetry
 
-class TransferManager(
+class HandoffManager(
         private val collectorSystem: CollectorSystem,
         private val lift: Lift,
         private val arm: Arm,
         private val telemetry: Telemetry) {
 
 
-    enum class ExtendoStateFromTransfer {
+    enum class ExtendoStateFromHandoff {
         MoveIn,
         MoveOutOfTheWay
     }
 
-    enum class LiftStateFromTransfer {
+    enum class LiftStateFromHandoff {
         MoveDown,
         None
     }
-    enum class ClawStateFromTransfer {
+    enum class ClawStateFromHandoff {
         Gripping,
         Retracted
     }
-    data class TransferState(
+    data class HandoffState(
 //            val rightClawPosition: RobotTwoHardware.RightClawPosition,
 //            val leftClawPosition: RobotTwoHardware.LeftClawPosition,
-            val clawPosition: ClawStateFromTransfer,
-            val collectorState: ExtendoStateFromTransfer,
-            val liftState: LiftStateFromTransfer,
+            val clawPosition: ClawStateFromHandoff,
+            val collectorState: ExtendoStateFromHandoff,
+            val liftState: LiftStateFromHandoff,
             val lights: BlinkinPattern,
             val armState: Arm.Positions)
 
 
-    fun getTransferState(previousClawState: ClawStateFromTransfer, previousLights: BlinkinPattern): TransferState {
+    fun getHandoffState(previousClawState: ClawStateFromHandoff, previousLights: BlinkinPattern): HandoffState {
         val isArmAtAPositionWhichAllowsTheLiftToMoveDown = arm.getArmAngleDegrees() >= Arm.Positions.ClearLiftMovement.angleDegrees
 
 //        telemetry.addLine("Lift")
-        val liftState: LiftStateFromTransfer = when (isArmAtAPositionWhichAllowsTheLiftToMoveDown) {
+        val liftState: LiftStateFromHandoff = when (isArmAtAPositionWhichAllowsTheLiftToMoveDown) {
             true -> {
 //                telemetry.addLine("Moving lift down\n")
-                LiftStateFromTransfer.MoveDown
+                LiftStateFromHandoff.MoveDown
             }
             false -> {
 //                telemetry.addLine("Not moving lift, arm is not ready\n")
-                LiftStateFromTransfer.None
+                LiftStateFromHandoff.None
             }
         }
 
 //        telemetry.addLine("Extendo: ")
         val liftIsDownEnoughForExtendoToComeIn = lift.getCurrentPositionTicks() < (Lift.LiftPositions.Min.ticks + 100)
-        val collectorState: ExtendoStateFromTransfer = when (liftIsDownEnoughForExtendoToComeIn) {
+        val collectorState: ExtendoStateFromHandoff = when (liftIsDownEnoughForExtendoToComeIn) {
             true -> {
 //                telemetry.addLine("Moving collector in")
-                ExtendoStateFromTransfer.MoveIn
+                ExtendoStateFromHandoff.MoveIn
             }
             false -> {
 //                telemetry.addLine("Moving collector out of the way")
-                ExtendoStateFromTransfer.MoveOutOfTheWay
+                ExtendoStateFromHandoff.MoveOutOfTheWay
             }
         }
 
@@ -82,14 +82,14 @@ class TransferManager(
 
         val clawsShouldRetract = !isCollectorAllTheWayIn && !liftExtensionIsAllTheWayDown
 //        telemetry.addLine("Claws:")
-        val clawState: ClawStateFromTransfer = when {
+        val clawState: ClawStateFromHandoff = when {
             readyToTransfer -> {
                 telemetry.addLine("Gripping, transfer is complete")
-                ClawStateFromTransfer.Gripping
+                ClawStateFromHandoff.Gripping
             }
             clawsShouldRetract -> {
                 telemetry.addLine("Not gripping, we're not ready")
-                ClawStateFromTransfer.Retracted
+                ClawStateFromHandoff.Retracted
             }
             else -> {
                 telemetry.addLine("Not sure what to do so just doing the same thing as before")
@@ -102,7 +102,7 @@ class TransferManager(
             false -> previousLights
         }
 
-        return TransferState(
+        return HandoffState(
                 armState = armState,
                 lights = lights,
                 liftState = liftState,
