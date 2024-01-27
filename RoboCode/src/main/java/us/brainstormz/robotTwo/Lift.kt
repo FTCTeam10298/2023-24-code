@@ -10,7 +10,6 @@ import kotlin.math.absoluteValue
 class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, private val liftLimit: DigitalChannel) {
 
 
-    //these aren't right
     enum class LiftPositions(val ticks: Int) {
         Manual(0),
         Nothing(0),
@@ -25,8 +24,15 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
     }
 
     fun powerLift(power: Double) {
-        liftMotor1.power = power
-        liftMotor2.power = power
+
+        val allowedPower = if (liftMotor1.getCurrent(CurrentUnit.AMPS) > 6.0) {
+            0.0
+        } else {
+            power
+        }
+
+        liftMotor1.power = allowedPower
+        liftMotor2.power = allowedPower
     }
 
     fun isLimitSwitchActivated(): Boolean = !liftLimit.state
