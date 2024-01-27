@@ -379,11 +379,11 @@ class RobotTwoTeleOp: OpMode() {
 
 
         //Launcher
-//        hardware.launcherServo.position = if ((gamepad2.y && !gamepad2.dpad_left) || gamepad1.y) {
-//            RobotTwoHardware.LauncherPosition.Released.position
-//        } else {
-//            RobotTwoHardware.LauncherPosition.Holding.position
-//        }
+        hardware.launcherServo.position = if ((gamepad2.y && !gamepad2.dpad_left) || gamepad1.y) {
+            RobotTwoHardware.LauncherPosition.Released.position
+        } else {
+            RobotTwoHardware.LauncherPosition.Holding.position
+        }
 
         //Hang
         hardware.hangReleaseServo.power = if (gamepad2.left_stick_button && gamepad2.right_stick_button) {

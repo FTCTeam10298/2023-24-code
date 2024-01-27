@@ -112,8 +112,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     lateinit var hangReleaseServo: CRServo
 
     enum class LauncherPosition(val position: Double) {
-        Holding(0.55),
-        Released(0.3)
+        Holding(1.0),
+        Released(0.55)
     }
     lateinit var launcherServo: Servo
 
