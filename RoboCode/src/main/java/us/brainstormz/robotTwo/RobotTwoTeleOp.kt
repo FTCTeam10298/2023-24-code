@@ -33,7 +33,7 @@ class RobotTwoTeleOp: OpMode() {
             collectorSystemState = CollectorSystem.CollectorState(
                     collectorState = CollectorSystem.CollectorPowers.Off,
                     extendoPosition = CollectorSystem.ExtendoPositions.Manual,
-                    transferRollersState = CollectorSystem.RollerState(CollectorSystem.CollectorPowers.Off, CollectorSystem.CollectorPowers.Off, CollectorSystem.DirectorState.Off),
+                    transferRollersState = CollectorSystem.RollerState(CollectorSystem.RollerPowers.Off, CollectorSystem.RollerPowers.Off, CollectorSystem.DirectorState.Off),
                     transferLeftSensorState = CollectorSystem.TransferHalfState(false, 0),
                     transferRightSensorState = CollectorSystem.TransferHalfState(false, 0)
             ),
@@ -116,20 +116,20 @@ class RobotTwoTeleOp: OpMode() {
         val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
         val rollerState = when {
             gamepad1.dpad_right ->
-                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.CollectorPowers.Off,
-                        rightServoCollect = CollectorSystem.CollectorPowers.Eject,
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Off,
+                        rightServoCollect = CollectorSystem.RollerPowers.Eject,
                         directorState = CollectorSystem.DirectorState.Off)
             gamepad1.dpad_left ->
-                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
-                        rightServoCollect = CollectorSystem.CollectorPowers.Off,
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Eject,
+                        rightServoCollect = CollectorSystem.RollerPowers.Off,
                         directorState = CollectorSystem.DirectorState.Off)
             gamepad1.dpad_up ->
-                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.CollectorPowers.Intake,
-                        rightServoCollect = CollectorSystem.CollectorPowers.Intake,
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Intake,
+                        rightServoCollect = CollectorSystem.RollerPowers.Intake,
                         directorState = CollectorSystem.DirectorState.Off)
             gamepad1.dpad_down ->
-                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.CollectorPowers.Eject,
-                        rightServoCollect = CollectorSystem.CollectorPowers.Eject,
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Eject,
+                        rightServoCollect = CollectorSystem.RollerPowers.Eject,
                         directorState = CollectorSystem.DirectorState.Off)
             else -> autoRollerState
         }
@@ -144,20 +144,26 @@ class RobotTwoTeleOp: OpMode() {
         }
         val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE)
 
-        val handoffSensorState = collectorSystem.getCurrentState(previousRobotState.collectorSystemState)
+        val transferSensorState = collectorSystem.getCurrentState(previousRobotState.collectorSystemState)
 
         //Extendo
         val extendoTriggerActivation = 0.1
         val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
         val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
 
-        val areBothPixelsIn = handoffSensorState.transferLeftSensorState.hasPixelBeenSeen && handoffSensorState.transferRightSensorState.hasPixelBeenSeen
+        val areBothPixelsIn = transferSensorState.transferLeftSensorState.hasPixelBeenSeen && transferSensorState.transferRightSensorState.hasPixelBeenSeen
+
 
         val extendoState: CollectorSystem.ExtendoPositions = when {
-            rightTrigger -> {
-                CollectorSystem.ExtendoPositions.Manual
+            rightTrigger && leftTrigger -> {
+                hardware.extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+                hardware.extendoMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+                CollectorSystem.ExtendoPositions.Min
             }
             leftTrigger -> {
+                CollectorSystem.ExtendoPositions.Manual
+            }
+            rightTrigger -> {
                 CollectorSystem.ExtendoPositions.Manual
             }
             shouldWeHandoff -> {
@@ -170,7 +176,7 @@ class RobotTwoTeleOp: OpMode() {
                     }
                 }
             }
-            areBothPixelsIn -> {
+            areBothPixelsIn && !wereBothPixelsInPreviously -> {
                 CollectorSystem.ExtendoPositions.Min
             }
             else -> {
@@ -178,7 +184,11 @@ class RobotTwoTeleOp: OpMode() {
             }
         }
         if (extendoState != CollectorSystem.ExtendoPositions.Manual){
-            collectorSystem.moveExtendoToPosition(extendoState.ticks)
+            if (extendoState == CollectorSystem.ExtendoPositions.AllTheWayInTarget) {
+                collectorSystem.powerExtendo(-0.5)
+            } else {
+                collectorSystem.moveExtendoToPosition(extendoState.ticks)
+            }
         } else {
             val areTriggersOn = rightTrigger || leftTrigger
 
@@ -258,7 +268,6 @@ class RobotTwoTeleOp: OpMode() {
         val armIsAtSafeAngle = arm.getArmAngleDegrees() >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
         val liftNeedsToWaitForTheArm = liftTargetIsBelowSafeArm && liftActualPositionIsAboveSafeArm && !armIsAtSafeAngle
 
-        val liftIsDrawingTooMuchCurrent = hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS) > 5.0
 
         when {
             liftPosition == Lift.LiftPositions.Manual -> {
@@ -271,10 +280,10 @@ class RobotTwoTeleOp: OpMode() {
                 lift.moveLiftToPosition(Lift.LiftPositions.ClearForArmToMove.ticks+150)
             }
             liftPosition == Lift.LiftPositions.Transfer -> {
-                if (!lift.isLimitSwitchActivated() && !liftIsDrawingTooMuchCurrent) {
-                    lift.powerLift(-0.5)
+                if (!lift.isLimitSwitchActivated() && !lift.isLiftDrawingTooMuchCurrent()) {
+                    lift.powerLift(-0.3)
                 } else {
-                    lift.moveLiftToPosition(Lift.LiftPositions.Min.ticks)
+                    lift.powerLift(0.0)
                 }
             }
             else -> {
@@ -287,6 +296,7 @@ class RobotTwoTeleOp: OpMode() {
             hardware.liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
             hardware.liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         }
+
 
         //Arm
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
@@ -345,7 +355,13 @@ class RobotTwoTeleOp: OpMode() {
             telemetry.addLine("arm target: $armPosition, angle: ${armPosition.angleDegrees}")
         }
 
+
         //Claws
+
+        val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
+        val wasTheLiftGoindDownBefore = previousRobotState.depoState.liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
+        val shouldTheClawsRetractOnAccountOfTheLiftGoingDown = isTheLiftGoingDown && !wasTheLiftGoindDownBefore
+
         val leftClawPosition: LeftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
             when (previousRobotState.depoState.leftClawPosition) {
                 LeftClawPosition.Gripping -> LeftClawPosition.Retracted
@@ -356,7 +372,7 @@ class RobotTwoTeleOp: OpMode() {
                 HandoffManager.ClawStateFromHandoff.Gripping -> LeftClawPosition.Gripping
                 HandoffManager.ClawStateFromHandoff.Retracted -> LeftClawPosition.Retracted
             }
-        } else if (liftPosition == Lift.LiftPositions.Min) {
+        } else if (shouldTheClawsRetractOnAccountOfTheLiftGoingDown) {
             LeftClawPosition.Retracted
         } else {
             previousRobotState.depoState.leftClawPosition
@@ -373,12 +389,13 @@ class RobotTwoTeleOp: OpMode() {
                 HandoffManager.ClawStateFromHandoff.Gripping -> RightClawPosition.Gripping
                 HandoffManager.ClawStateFromHandoff.Retracted -> RightClawPosition.Retracted
             }
-        } else if (liftPosition == Lift.LiftPositions.Min) {
+        } else if (shouldTheClawsRetractOnAccountOfTheLiftGoingDown) {
             RightClawPosition.Retracted
         } else {
             previousRobotState.depoState.rightClawPosition
         }
         hardware.rightClawServo.position = rightClawPosition.position
+
 
         //Launcher
         hardware.launcherServo.position = if ((gamepad2.y && !gamepad2.dpad_left) || gamepad1.y) {
@@ -386,6 +403,7 @@ class RobotTwoTeleOp: OpMode() {
         } else {
             RobotTwoHardware.LauncherPosition.Holding.position
         }
+
 
         //Hang
         hardware.hangReleaseServo.power = if (gamepad2.left_stick_button && gamepad2.right_stick_button) {
@@ -496,6 +514,7 @@ class RobotTwoTeleOp: OpMode() {
         hardware.lights.setPattern(colorToDisplay)
 
 
+        telemetry.addLine("arm raw angle: ${arm.encoderReader.getRawPositionDegrees()}")
         telemetry.addLine("arm actual angle: ${arm.getArmAngleDegrees()}")
         telemetry.addLine("lift actual position: ${lift.getCurrentPositionTicks()}")
         telemetry.addLine("extendo actual position: ${hardware.extendoMotorMaster.currentPosition}")
@@ -509,8 +528,8 @@ class RobotTwoTeleOp: OpMode() {
                         collectorState = inputCollectorStateSystem,
                         extendoPosition = extendoState,
                         transferRollersState = autoRollerState,
-                        transferLeftSensorState = handoffSensorState.transferLeftSensorState,
-                        transferRightSensorState = handoffSensorState.transferLeftSensorState
+                        transferLeftSensorState = transferSensorState.transferLeftSensorState,
+                        transferRightSensorState = transferSensorState.transferRightSensorState
                 ),
                 depoState = RobotTwoAuto.DepoState(
                         liftPosition = liftPosition,

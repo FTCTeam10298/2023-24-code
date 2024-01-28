@@ -1,9 +1,5 @@
 package us.brainstormz.robotTwo
 
-import android.graphics.Color
-import android.graphics.ColorSpace
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.ColorSensor
@@ -42,13 +38,20 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         ReverseDropPurple(-0.2)
     }
 
+    enum class RollerPowers(val power: Double) {
+        Off(0.0),
+        GoToHoldingPosition(0.0),
+        Intake(1.0),
+        Eject(-1.0),
+    }
+
     enum class DirectorState(val power: Double) {
         Left(-1.0),
         Right(1.0),
         Off(0.0)
     }
 
-    data class RollerState(val leftServoCollect: CollectorPowers, val rightServoCollect: CollectorPowers, val directorState: DirectorState)
+    data class RollerState(val leftServoCollect: RollerPowers, val rightServoCollect: RollerPowers, val directorState: DirectorState)
     data class TransferHalfState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
 
     enum class Side {
@@ -74,8 +77,9 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     val rightEncoderReader = AxonEncoderReader(rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
 
     private val leftFlapTransferReadyAngleDegrees = 32.0
-    private val rightFlapTransferReadyAngleDegrees = 110.0
-    private val leftFlapKp = 0.43
+//    private val rightFlapTransferReadyAngleDegrees = 130.0
+    private val rightFlapTransferReadyAngleDegrees = 40.0
+    private val leftFlapKp = 0.4
     private val rightFlapKp = 0.4
 
     private val acceptablePositionErrorTicks = 50
@@ -167,14 +171,14 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         //Should collect
         val timeSinceLeftSeen = System.currentTimeMillis() - leftTransferState.timeOfSeeingMilis
         val shouldLeftServoCollect = when {
-            (!leftTransferState.hasPixelBeenSeen && isCollecting) || timeSinceLeftSeen < extraTransferRollingTimeMilis -> CollectorPowers.Intake
-            else -> CollectorPowers.Off
+            (!leftTransferState.hasPixelBeenSeen && isCollecting) || timeSinceLeftSeen < extraTransferRollingTimeMilis -> RollerPowers.Intake
+            else -> RollerPowers.Off
         }
         val timeSinceRightSeen = System.currentTimeMillis() - rightTransferState.timeOfSeeingMilis
         val shouldRightServoCollect = when {
-            !leftTransferState.hasPixelBeenSeen -> CollectorPowers.Off
-            (!rightTransferState.hasPixelBeenSeen && isCollecting) || timeSinceRightSeen < extraTransferRollingTimeMilis -> CollectorPowers.Intake
-            else -> CollectorPowers.Off
+            !leftTransferState.hasPixelBeenSeen -> RollerPowers.Off
+            (!rightTransferState.hasPixelBeenSeen && isCollecting) || timeSinceRightSeen < extraTransferRollingTimeMilis -> RollerPowers.Intake
+            else -> RollerPowers.Off
         }
 
         val directorState = when {
@@ -197,19 +201,19 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         transferDirectorServo.power = transferState.directorState.power
     }
 
-    fun getRollerPowerBasedOnState(side: Side, rollerState: CollectorPowers): Double {
+    fun getRollerPowerBasedOnState(side: Side, rollerState: RollerPowers): Double {
         val flapTransferReadyAngleDegrees = when (side) {
             Side.Left -> leftFlapTransferReadyAngleDegrees
             Side.Right -> rightFlapTransferReadyAngleDegrees
         }
-        return if (rollerState == CollectorPowers.Off) {
+        return if (rollerState == RollerPowers.Off) {
             getPowerToMoveFlapToAngle(side, flapTransferReadyAngleDegrees)
         } else {
             rollerState.power
         }
     }
 
-    val leftAlphaDetectionThreshold = 1000
+    val leftAlphaDetectionThreshold = 800
     val rightAlphaDetectionThreshold = 600
     fun isPixelIn(colorSensor: ColorSensor, side: Side): Boolean {
         val alpha = colorSensor.alpha()
@@ -329,10 +333,10 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         Min(0),
         Manual(0),
         ClearTransfer(230),
-        FarBackboardPixelPosition(1750),
-        MidBackboardPixelPosition(1000),
         CloserBackboardPixelPosition(500),
-        Max(500),
+        MidBackboardPixelPosition(1000),
+        FarBackboardPixelPosition(1750),
+        Max(2000),
     }
 
     private val pid = PID(kp = 0.005)
@@ -347,6 +351,10 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         power == it.power
     } ?: CollectorPowers.Off
 
+    private fun getRollerPowerState(power: Double) = RollerPowers.entries.firstOrNull { it ->
+        power == it.power
+    } ?: RollerPowers.Off
+
     private fun getDirectorPowerState(power: Double): CollectorSystem.DirectorState = CollectorSystem.DirectorState.entries.firstOrNull { it ->
         power == it.power
     } ?: CollectorSystem.DirectorState.Off
@@ -360,7 +368,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 
         val timeOfSeeingPixelMilis = when {
             !previousState.hasPixelBeenSeen && isSeeingPixel-> System.currentTimeMillis()
-            !isSeeingPixel -> 0
+//            !isSeeingPixel -> 0
             else -> previousState.timeOfSeeingMilis
         }
         return TransferHalfState(isSeeingPixel, timeOfSeeingPixelMilis)
@@ -371,8 +379,8 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         val collectorPowerState: CollectorPowers = getCollectorPowerState(collectorServo1.power)
         val extendoPosition = ExtendoPositions.Min
         val transferRollersState = RollerState(
-                leftServoCollect = getCollectorPowerState(leftTransferServo.power),
-                rightServoCollect = getCollectorPowerState(rightTransferServo.power),
+                leftServoCollect = getRollerPowerState(leftTransferServo.power),
+                rightServoCollect = getRollerPowerState(rightTransferServo.power),
                 directorState = getDirectorPowerState(transferDirectorServo.power),
         )
         val transferLeftSensorState = getTransferHalfState(Side.Left, previousState?.transferLeftSensorState ?: defaultPreviousState)
