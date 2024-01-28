@@ -25,7 +25,7 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
 
     fun powerLift(power: Double) {
 
-        val allowedPower = if (liftMotor1.getCurrent(CurrentUnit.AMPS) > 6.0) {
+        val allowedPower = if (isLiftDrawingTooMuchCurrent()) {
             0.0
         } else {
             power
@@ -38,11 +38,13 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
     fun isLimitSwitchActivated(): Boolean = !liftLimit.state
 
     private val liftBottomLimitAmps = 8.0
+
+    fun isLiftDrawingTooMuchCurrent() = liftMotor1.getCurrent(CurrentUnit.AMPS) > liftBottomLimitAmps
     fun moveLiftToBottom() {
-        val isLiftStalling = liftMotor1.getCurrent(CurrentUnit.AMPS) > liftBottomLimitAmps
+        val isLiftStalling = isLiftDrawingTooMuchCurrent()
         val isLiftDown = isLimitSwitchActivated() || isLiftStalling
         if (!isLiftDown) {
-            powerLift(-0.5)
+            powerLift(-0.3)
         }
     }
 
