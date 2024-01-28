@@ -97,28 +97,6 @@ class RobotTwoTeleOp: OpMode() {
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
         telemetry.addLine("loop time: $loopTime milis")
 
-        /** Gamepad 1 */
-        // DRONE DRIVE
-        val yInput = -gamepad1.left_stick_y.toDouble()
-        val xInput = gamepad1.left_stick_x.toDouble()
-        val rInput = gamepad1.right_stick_x.toDouble()
-
-        //Strafe without turing for depositing
-        val slowDowMultiplier = 1.0
-        val driver2XInput = if (xInput == 0.0) {
-            gamepad2.left_stick_x.toDouble() * slowDowMultiplier
-        } else {
-            0.0
-        }
-
-        val y = yInput
-        val x = xInput + driver2XInput
-        val r = -rInput * abs(rInput)
-        movement.driveSetPower((y + x - r),
-                (y - x + r),
-                (y - x - r),
-                (y + x + r))
-
         //Collector
         val inputCollectorStateSystem = when {
             gamepad1.right_bumper -> {
@@ -134,7 +112,6 @@ class RobotTwoTeleOp: OpMode() {
 
         val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
         collectorSystem.spinCollector(actualCollectorState.power)
-//        collectorSystem.spinCollector(inputCollectorStateSystem.power)
 
         val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
         val rollerState = when {
@@ -158,8 +135,6 @@ class RobotTwoTeleOp: OpMode() {
         }
         collectorSystem.runRollers(rollerState)
 
-
-        /** Gamepad 2 */
 
         //Transfer
         val shouldWeHandoff = gamepad2.a && !gamepad2.dpad_left
@@ -216,6 +191,34 @@ class RobotTwoTeleOp: OpMode() {
             collectorSystem.powerExtendo(power)
         }
 
+
+        // DRONE DRIVE
+        val yInput = -gamepad1.left_stick_y.toDouble()
+        val xInput = gamepad1.left_stick_x.toDouble()
+        val rInput = gamepad1.right_stick_x.toDouble()
+
+        //Strafe without turing for depositing
+        val slowDowMultiplier = 1.0
+        val driver2XInput = if (xInput == 0.0) {
+            -gamepad2.left_stick_x.toDouble() * slowDowMultiplier
+        } else {
+            0.0
+        }
+
+        val isAtTheEndOfExtendo = hardware.extendoMotorMaster.currentPosition >= CollectorSystem.ExtendoPositions.Max.ticks || hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS) > 6.0
+        val extendoCompensationPower = if (isAtTheEndOfExtendo && yInput == 0.0) {
+            gamepad1.right_trigger.toDouble()
+        } else {
+            0.0
+        }
+
+        val y = yInput + extendoCompensationPower
+        val x = xInput + driver2XInput
+        val r = -rInput * abs(rInput)
+        movement.driveSetPower((y + x - r),
+                (y - x + r),
+                (y - x - r),
+                (y + x + r))
 
         //Lift
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
