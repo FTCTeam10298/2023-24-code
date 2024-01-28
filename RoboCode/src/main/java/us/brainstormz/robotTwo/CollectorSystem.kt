@@ -144,7 +144,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 
     var previousLeftTransferState = TransferHalfState(false, 0)
     var previousRightTransferState = TransferHalfState(false, 0)
-    val extraTransferRollingTimeMilis = 1000
+    val extraTransferRollingTimeMilis = 0
     fun getAutoPixelSortState(isCollecting: Boolean): RollerState {
         //Detection:
         val isLeftSeeingPixel = isPixelIn(leftTransferPixelSensor, Side.Left)
