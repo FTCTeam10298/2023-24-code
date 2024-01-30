@@ -15,6 +15,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware.RightClawPosition
 import us.brainstormz.utils.LoopTimeMeasurer
 import kotlin.math.abs
 import kotlin.math.absoluteValue
+import kotlin.math.pow
 
 @TeleOp(group = "!")
 class RobotTwoTeleOp: OpMode() {
@@ -137,7 +138,7 @@ class RobotTwoTeleOp: OpMode() {
 
 
         //Transfer
-        val shouldWeHandoff = gamepad2.a && !gamepad2.dpad_left
+        val shouldWeHandoff = (gamepad2.a && !gamepad2.dpad_left) || gamepad1.a
         val previousBothClawState = when (previousRobotState.depoState.rightClawPosition) {
             RightClawPosition.Retracted -> HandoffManager.ClawStateFromHandoff.Retracted
             RightClawPosition.Gripping -> HandoffManager.ClawStateFromHandoff.Gripping
