@@ -301,7 +301,7 @@ class RobotTwoTeleOp: OpMode() {
         //Arm
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
-        val liftIsBelowFreeArmLevel = hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks
+        val liftIsBelowFreeArmLevel = hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks + 150
         val liftIsAtTheBottom = lift.isLimitSwitchActivated()
         val armIsInish = arm.getArmAngleDegrees() >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
 
@@ -324,11 +324,12 @@ class RobotTwoTeleOp: OpMode() {
                 }
                 liftIsBelowFreeArmLevel  -> {
                     if (armIsInish) {
-                        if (liftIsAtTheBottom) {
-                            Arm.Positions.TransferringTarget
-                        } else {
-                            Arm.Positions.ClearLiftMovement
-                        }
+                        Arm.Positions.ClearLiftMovement
+//                        if (liftIsAtTheBottom) {
+//                            Arm.Positions.TransferringTarget
+//                        } else {
+//                            Arm.Positions.ClearLiftMovement
+//                        }
                     } else {
                         Arm.Positions.AutoInitPosition
                     }
