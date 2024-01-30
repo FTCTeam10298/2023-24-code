@@ -282,7 +282,8 @@ class RobotTwoTeleOp: OpMode() {
             }
             liftPosition == Lift.LiftPositions.Transfer -> {
                 if (!lift.isLimitSwitchActivated() && !lift.isLiftDrawingTooMuchCurrent()) {
-                    lift.powerLift(-0.3)
+                    lift.powerLift(0.0)
+//                    lift.powerLift(-0.3)
                 } else {
                     lift.powerLift(0.0)
                 }
