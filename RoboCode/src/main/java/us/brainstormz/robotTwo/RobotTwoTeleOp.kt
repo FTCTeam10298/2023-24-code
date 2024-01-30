@@ -360,7 +360,8 @@ class RobotTwoTeleOp: OpMode() {
 
         val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val wasTheLiftGoindDownBefore = previousRobotState.depoState.liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
-        val shouldTheClawsRetractOnAccountOfTheLiftGoingDown = isTheLiftGoingDown && !wasTheLiftGoindDownBefore
+        val armIsIn = armPosition.angleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
+        val shouldTheClawsRetractOnAccountOfTheLiftGoingDown = isTheLiftGoingDown && !wasTheLiftGoindDownBefore && armIsIn
 
         val leftClawPosition: LeftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
             when (previousRobotState.depoState.leftClawPosition) {

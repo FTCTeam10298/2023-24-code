@@ -92,10 +92,10 @@ class HandoffManager(
                 ClawStateFromHandoff.Retracted
             }
             else -> {
-                telemetry.addLine("Not sure what to do, retracting claws")
-                ClawStateFromHandoff.Retracted
-//                telemetry.addLine("Not sure what to do so just doing the same thing as before")
-//                previousClawState
+//                telemetry.addLine("Not sure what to do, retracting claws")
+//                ClawStateFromHandoff.Retracted
+                telemetry.addLine("Not sure what to do so just doing the same thing as before")
+                previousClawState
             }
         }
 
