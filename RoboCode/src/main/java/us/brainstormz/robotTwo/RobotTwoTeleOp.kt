@@ -518,6 +518,8 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("arm actual angle: ${arm.getArmAngleDegrees()}")
         telemetry.addLine("lift actual position: ${lift.getCurrentPositionTicks()}")
         telemetry.addLine("extendo actual position: ${hardware.extendoMotorMaster.currentPosition}")
+        telemetry.addLine("left flap angle: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("right flap angle: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
 
         /** not controls */
 

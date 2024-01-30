@@ -76,10 +76,9 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     val leftEncoderReader = AxonEncoderReader(leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
     val rightEncoderReader = AxonEncoderReader(rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
 
-    private val leftFlapTransferReadyAngleDegrees = 32.0
-//    private val rightFlapTransferReadyAngleDegrees = 130.0
-    private val rightFlapTransferReadyAngleDegrees = 40.0
-    private val leftFlapKp = 0.4
+    private val leftFlapTransferReadyAngleDegrees = 20.0
+    private val rightFlapTransferReadyAngleDegrees = 305.0
+    private val leftFlapKp = 0.3
     private val rightFlapKp = 0.4
 
     private val acceptablePositionErrorTicks = 50
@@ -105,11 +104,11 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     }
 
     fun getFlapAngleDegrees(encoderReader: AxonEncoderReader): Double =
-            (encoderReader.getPositionDegrees() * 2) % 360
+            (encoderReader.getPositionDegrees() * 2).mod(360.0)
 
     fun isFlapAtAngle(currentAngleDegrees: Double, angleToCheckDegrees: Double, flapAngleToleranceDegrees: Double = 5.0): Boolean {
-        val maxAcceptedAngle = angleToCheckDegrees + flapAngleToleranceDegrees
-        val minAcceptedAngle = angleToCheckDegrees - flapAngleToleranceDegrees
+        val maxAcceptedAngle = (angleToCheckDegrees + flapAngleToleranceDegrees).mod(360.0)
+        val minAcceptedAngle = (angleToCheckDegrees - flapAngleToleranceDegrees).mod(360.0)
         val angleTolerance = (minAcceptedAngle..maxAcceptedAngle)
         return currentAngleDegrees in angleTolerance
     }
@@ -120,8 +119,8 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
             Side.Right -> rightEncoderReader
         }
 
-        val currentAngle = getFlapAngleDegrees(encoder) % 360
-        val angleErrorDegrees = currentAngle - targetAngleDegrees
+        val currentAngle = getFlapAngleDegrees(encoder)
+        val angleErrorDegrees = (currentAngle - targetAngleDegrees).mod(360.0)
 
         val proportionalConstant = when (flap) {
             Side.Left -> leftFlapKp
@@ -208,6 +207,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         }
         return if (rollerState == RollerPowers.Off) {
             getPowerToMoveFlapToAngle(side, flapTransferReadyAngleDegrees)
+//            0.0
         } else {
             rollerState.power
         }
