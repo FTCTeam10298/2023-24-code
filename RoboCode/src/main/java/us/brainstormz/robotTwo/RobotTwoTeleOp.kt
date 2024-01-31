@@ -303,9 +303,8 @@ class RobotTwoTeleOp: OpMode() {
         //Arm
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
-        val liftIsBelowFreeArmLevel = hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks + 150
-        val liftIsAtTheBottom = lift.isLimitSwitchActivated()
-        val armIsInish = arm.getArmAngleDegrees() >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
+        val liftIsBelowFreeArmLevel = hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks
+        val armIsInish = arm.getArmAngleDegrees() >= Arm.Positions.Inish.angleDegrees
 
         val depositorShouldGoAllTheWayIn = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
 
