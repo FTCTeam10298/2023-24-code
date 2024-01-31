@@ -137,8 +137,8 @@ class RobotTwoTeleOp: OpMode() {
         collectorSystem.runRollers(rollerState)
 
 
-        //Transfer
-        val shouldWeHandoff = (gamepad2.a && !gamepad2.dpad_left) || gamepad1.a
+        //Handoff
+        val shouldWeHandoff = ((gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start))
         val previousBothClawState = when (previousRobotState.depoState.rightClawPosition) {
             RightClawPosition.Retracted -> HandoffManager.ClawStateFromHandoff.Retracted
             RightClawPosition.Gripping -> HandoffManager.ClawStateFromHandoff.Gripping
