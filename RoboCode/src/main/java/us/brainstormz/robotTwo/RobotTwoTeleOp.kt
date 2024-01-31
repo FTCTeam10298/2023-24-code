@@ -372,7 +372,13 @@ class RobotTwoTeleOp: OpMode() {
             }
         } else if (shouldWeHandoff) {
             when (handoffState.clawPosition) {
-                HandoffManager.ClawStateFromHandoff.Gripping -> LeftClawPosition.Gripping
+                HandoffManager.ClawStateFromHandoff.Gripping -> {
+                    if (transferSensorState.transferLeftSensorState.hasPixelBeenSeen) {
+                        LeftClawPosition.Gripping
+                    } else {
+                        LeftClawPosition.Retracted
+                    }
+                }
                 HandoffManager.ClawStateFromHandoff.Retracted -> LeftClawPosition.Retracted
             }
         } else if (shouldTheClawsRetractOnAccountOfTheLiftGoingDown) {
@@ -389,7 +395,13 @@ class RobotTwoTeleOp: OpMode() {
             }
         } else if (shouldWeHandoff) {
             when (handoffState.clawPosition) {
-                HandoffManager.ClawStateFromHandoff.Gripping -> RightClawPosition.Gripping
+                HandoffManager.ClawStateFromHandoff.Gripping -> {
+                    if (transferSensorState.transferRightSensorState.hasPixelBeenSeen) {
+                        RightClawPosition.Gripping
+                    } else {
+                        RightClawPosition.Retracted
+                    }
+                }
                 HandoffManager.ClawStateFromHandoff.Retracted -> RightClawPosition.Retracted
             }
         } else if (shouldTheClawsRetractOnAccountOfTheLiftGoingDown) {
