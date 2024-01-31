@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import com.outoftheboxrobotics.photoncore.Photon
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -18,6 +19,7 @@ import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 
+@Photon //
 @TeleOp(group = "!")
 class RobotTwoTeleOp: OpMode() {
 

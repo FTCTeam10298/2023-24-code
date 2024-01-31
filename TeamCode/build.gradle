@@ -18,6 +18,13 @@ apply from: '../build.dependencies.gradle'
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+    dependencies {
+        implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:v3.0.1-ALPHA'
+    }
+
     packagingOptions {
         jniLibs.useLegacyPackaging true
     }
