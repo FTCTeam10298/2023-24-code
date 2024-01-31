@@ -13,6 +13,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.robotTwo.RobotTwoHardware.LeftClawPosition
 import us.brainstormz.robotTwo.RobotTwoHardware.RightClawPosition
 import us.brainstormz.utils.LoopTimeMeasurer
+import kotlin.math.E
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.pow
@@ -194,7 +195,12 @@ class RobotTwoTeleOp: OpMode() {
             val areTriggersOn = rightTrigger || leftTrigger
 
             val power = if (areTriggersOn) {
-                gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()
+                val triggerPower: Double = (gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble())
+                if (hardware.extendoMotorMaster.currentPosition <= CollectorSystem.ExtendoPositions.Min.ticks) {
+                    triggerPower.coerceIn(-0.4..0.4)
+                } else {
+                    triggerPower
+                }
             } else {
                 0.0
             }
@@ -327,11 +333,6 @@ class RobotTwoTeleOp: OpMode() {
                 liftIsBelowFreeArmLevel  -> {
                     if (armIsInish) {
                         Arm.Positions.ClearLiftMovement
-//                        if (liftIsAtTheBottom) {
-//                            Arm.Positions.TransferringTarget
-//                        } else {
-//                            Arm.Positions.ClearLiftMovement
-//                        }
                     } else {
                         Arm.Positions.AutoInitPosition
                     }
@@ -358,12 +359,11 @@ class RobotTwoTeleOp: OpMode() {
             telemetry.addLine("arm target: $armPosition, angle: ${armPosition.angleDegrees}")
         }
 
-
         //Claws
         val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val wasTheLiftGoindDownBefore = previousRobotState.depoState.liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsIn = armPosition.angleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
-        val shouldTheClawsRetractOnAccountOfTheLiftGoingDown = isTheLiftGoingDown && !wasTheLiftGoindDownBefore && armIsIn
+        val shouldTheClawsRetractOnAccountOfTheLiftGoingDown = (isTheLiftGoingDown && !wasTheLiftGoindDownBefore && armIsIn) || hardware.extendoMotorMaster.currentPosition >= CollectorSystem.ExtendoPositions.Min.ticks
 
         val leftClawPosition: LeftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
             when (previousRobotState.depoState.leftClawPosition) {
