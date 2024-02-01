@@ -41,13 +41,6 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
     private val liftBottomLimitAmps = 8.0
 
     fun isLiftDrawingTooMuchCurrent() = liftMotor1.getCurrent(CurrentUnit.AMPS) > liftBottomLimitAmps
-    fun moveLiftToBottom() {
-        val isLiftStalling = isLiftDrawingTooMuchCurrent()
-        val isLiftDown = isLimitSwitchActivated() || isLiftStalling
-        if (!isLiftDown) {
-            powerLift(-0.3)
-        }
-    }
 
     fun getCurrentPositionTicks(): Int {
         return  liftMotor1.currentPosition
@@ -55,10 +48,13 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
 
     private val pid = PID(kp = 0.004)
     fun moveLiftToPosition(targetPositionTicks: Int) {
+        powerLift(calculatePowerToMoveToPosition(targetPositionTicks))
+    }
+    fun calculatePowerToMoveToPosition(targetPositionTicks: Int): Double {
         val currentPosition = liftMotor1.currentPosition.toDouble()
         val positionError = targetPositionTicks - currentPosition
         val power = pid.calcPID(positionError)
-        powerLift(power)
+        return power
     }
 
     private val acceptablePositionErrorTicks = 100
@@ -68,31 +64,4 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
     }
 
-
-//    private fun powerLift(power: Double) {
-//        val currentPosition = liftMotor1.currentPosition.toDouble()
-//        val allowedPower = power
-//        if (currentPosition > RobotTwoHardware.LiftPositions.Max.position) {
-//            power.coerceAtMost(0.0)
-//        } else if (currentPosition < RobotTwoHardware.LiftPositions.Min.position) {
-//            power.coerceAtLeast(0.0)
-//        } else {
-//            power
-//        }
-//        liftMotor1.power = allowedPower
-//        liftMotor2.power = allowedPower
-//    }
-//    val liftPositionPID = PID(kp = 1.0)
-//
-//    enum class LiftToggleOptions {
-//        SetLine1,
-//        SetLine2,
-//        SetLine3
-//    }
-
-//    private fun moveLiftTowardPosition(targetPosition: Double) {
-//        val currentPosition = hardware.liftMotorMaster.currentPosition.toDouble()
-//        val power = hardware.liftPositionPID.calcPID(targetPosition, currentPosition)
-//        powerLift(power)
-//    }
 }

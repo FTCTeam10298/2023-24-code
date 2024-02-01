@@ -277,28 +277,29 @@ class RobotTwoTeleOp: OpMode() {
         val armIsAtSafeAngle = arm.getArmAngleDegrees() >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
         val liftNeedsToWaitForTheArm = liftTargetIsBelowSafeArm && liftActualPositionIsAboveSafeArm && !armIsAtSafeAngle
 
-        when {
+        val liftPower = when {
             liftPosition == Lift.LiftPositions.Manual -> {
-                lift.powerLift(-liftOverrideStickValue)
+                -liftOverrideStickValue
             }
             liftPosition == Lift.LiftPositions.Nothing -> {
-                lift.powerLift(0.0)
+                0.0
             }
             liftNeedsToWaitForTheArm -> {
-                lift.moveLiftToPosition(Lift.LiftPositions.WaitForArmToMove.ticks)
+                lift.calculatePowerToMoveToPosition(Lift.LiftPositions.WaitForArmToMove.ticks)
             }
             liftPosition == Lift.LiftPositions.Transfer && lift.getCurrentPositionTicks() <= Lift.LiftPositions.Transfer.ticks -> {
-                if (!lift.isLimitSwitchActivated() && !lift.isLiftDrawingTooMuchCurrent()) {
-                    lift.powerLift(0.0)
-//                    lift.powerLift(-0.3)
-                } else {
-                    lift.powerLift(0.0)
-                }
+//                if (!lift.isLimitSwitchActivated() && !lift.isLiftDrawingTooMuchCurrent()) {
+//                    -0.3
+//                } else {
+//                    0.0
+//                }
+                0.0
             }
             else -> {
-                lift.moveLiftToPosition(liftPosition.ticks)
+                lift.calculatePowerToMoveToPosition(liftPosition.ticks)
             }
         }
+        lift.powerLift(liftPower)
 
         val liftTargetHasntChanged = liftPosition == previousRobotState.depoState.liftPosition
         if (lift.isLimitSwitchActivated() && liftTargetHasntChanged) {
