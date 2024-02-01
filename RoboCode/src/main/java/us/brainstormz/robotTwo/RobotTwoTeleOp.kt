@@ -10,16 +10,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
-import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.robotTwo.RobotTwoHardware.LeftClawPosition
 import us.brainstormz.robotTwo.RobotTwoHardware.RightClawPosition
+import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.utils.LoopTimeMeasurer
-import kotlin.math.E
 import kotlin.math.abs
 import kotlin.math.absoluteValue
-import kotlin.math.pow
 
-@Photon //
+
+@Photon
 @TeleOp(group = "!")
 class RobotTwoTeleOp: OpMode() {
 
@@ -48,7 +47,6 @@ class RobotTwoTeleOp: OpMode() {
                     rightClawPosition = RightClawPosition.Retracted,
             ),
     )
-
 
     override fun init() {
         /** INIT PHASE */
@@ -94,6 +92,23 @@ class RobotTwoTeleOp: OpMode() {
     private var previousGamepad1State: Gamepad = Gamepad()
     private var previousGamepad2State: Gamepad = Gamepad()
 
+    enum class Sensors(val returnType: Any) {
+        ArmEncoder(Double),
+        LiftMagnetLimit(Boolean),
+        LeftRollerEncoder(Double),
+        RightRollerEncoder(Double),
+    }
+//    var current: PeriodicSupplier<Map<Sensors, Any>> = PeriodicSupplier(FutureSupplier {
+//        mapOf(
+//                Sensors.ArmEncoder  to hardware.armEncoder.voltage
+//        )
+//                                                                            }, 100)
+
+
+    data class RumbleInfo(val left: Double, val right: Double, val time: Long)
+    private var previousRumbeInfo = RumbleInfo(left = 1.0, right = 0.0, time= 0L)
+
+
     private var previousRobotState = initialRobotState
     override fun loop() {
         /** TELE-OP PHASE */
@@ -132,6 +147,7 @@ class RobotTwoTeleOp: OpMode() {
         val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
         collectorSystem.spinCollector(actualCollectorState.power)
 
+        //Spit out pixels with stick buttons
         val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
         val rollerState = when {
             gamepad1.dpad_right ->

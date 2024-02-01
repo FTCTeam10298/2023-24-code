@@ -2,6 +2,7 @@ package us.brainstormz.robotTwo
 
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
+//import com.outoftheboxrobotics.photoncore.hardware.motor.PhotonDcMotor
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.hardware.rev.RevColorSensorV3
@@ -31,6 +32,9 @@ import java.lang.Thread.sleep
 import kotlin.math.PI
 
 class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
+
+
+
     override lateinit var lFDrive: DcMotor
     override lateinit var rFDrive: DcMotor
     override lateinit var lBDrive: DcMotor
@@ -178,22 +182,22 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         rBDrive =       ctrlHub.getMotor(2)
         extendoMotorMaster =    exHub.getMotor(0)
         extendoMotorSlave =     exHub.getMotor(1)
-        liftMotorMaster =       exHub.getMotor(2)//Has encoder
+        liftMotorMaster =       exHub.getMotor(2) //Has encoder
         liftMotorSlave =        exHub.getMotor(3)
 
         //Servos
-        collectorServo1 =   exHub.getCRServo(4)//
-        collectorServo2 =   ctrlHub.getCRServo(1)//
+        collectorServo1 =   exHub.getCRServo(4)
+        collectorServo2 =   ctrlHub.getCRServo(1)
 
-        armServo1 = ctrlHub.getCRServo(3)//
-        armServo2 = ctrlHub.getCRServo(4)//
+        armServo1 = ctrlHub.getCRServo(3)
+        armServo2 = ctrlHub.getCRServo(4)
 
-        rightTransferServo = ctrlHub.getCRServo(5)//
-        leftTransferServo = exHub.getCRServo(3)//
-        transferDirectorServo = exHub.getCRServo(2)//
+        rightTransferServo = ctrlHub.getCRServo(5)
+        leftTransferServo = exHub.getCRServo(3)
+        transferDirectorServo = exHub.getCRServo(2)
 
         leftClawServo =     exHub.getServo(0)   // left/right from driver 2 perspective when depositing
-        rightClawServo =    exHub.getServo(1)//
+        rightClawServo =    exHub.getServo(1)
         hangReleaseServo = exHub.getCRServo(5)
 
         launcherServo = ctrlHub.getServo(0)
