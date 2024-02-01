@@ -100,6 +100,7 @@ class RobotTwoTeleOp: OpMode() {
 
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
         telemetry.addLine("loop time: $loopTime milis")
+        telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
 
         //Collector
         val inputCollectorStateSystem = when {
