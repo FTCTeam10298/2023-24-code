@@ -29,6 +29,17 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         extendoMotorMaster.setCurrentAlert(maxSafeCurrentAmps, CurrentUnit.AMPS)
     }
 
+    enum class ExtendoPositions(val ticks: Int) {
+        AllTheWayInTarget(-10),
+        Min(0),
+        Manual(0),
+        ClearTransfer(230),
+        CloserBackboardPixelPosition(500),
+        MidBackboardPixelPosition(1000),
+        FarBackboardPixelPosition(1750),
+        AudiencePurpleMiddlePosition(1900),
+        Max(2000),
+    }
 
     enum class CollectorPowers(val power: Double) {
         Off(0.0),
@@ -91,17 +102,18 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     fun isExtendoAllTheWayIn(): Boolean {
         return extendoMotorMaster.currentPosition <= 10
     }
-    fun arePixelsAlignedInTransfer(): Boolean {
-        val isLeftFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(leftEncoderReader), leftFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
-        val isRightFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(rightEncoderReader), rightFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
-        return isLeftFlapAngleAcceptable && isRightFlapAngleAcceptable
-    }
-
-    fun moveCollectorAllTheWayIn() {
-        if (!isExtendoAllTheWayIn()) {
-            powerExtendo(-0.5)
-        }
-    }
+    fun getExtendoPositionTicks(): Int = extendoMotorMaster.currentPosition
+//    fun arePixelsAlignedInTransfer(): Boolean {
+//        val isLeftFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(leftEncoderReader), leftFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
+//        val isRightFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(rightEncoderReader), rightFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
+//        return isLeftFlapAngleAcceptable && isRightFlapAngleAcceptable
+//    }
+//
+//    fun moveCollectorAllTheWayIn() {
+//        if (!isExtendoAllTheWayIn()) {
+//            powerExtendo(-0.5)
+//        }
+//    }
 
     fun getFlapAngleDegrees(encoderReader: AxonEncoderReader): Double =
             (encoderReader.getPositionDegrees() * 2).mod(360.0)
@@ -326,17 +338,6 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 
         extendoMotorMaster.power = allowedPower
         extendoMotorSlave.power = allowedPower
-    }
-
-    enum class ExtendoPositions(val ticks: Int) {
-        AllTheWayInTarget(-10),
-        Min(0),
-        Manual(0),
-        ClearTransfer(230),
-        CloserBackboardPixelPosition(500),
-        MidBackboardPixelPosition(1000),
-        FarBackboardPixelPosition(1750),
-        Max(2000),
     }
 
     private val pid = PID(kp = 0.005)

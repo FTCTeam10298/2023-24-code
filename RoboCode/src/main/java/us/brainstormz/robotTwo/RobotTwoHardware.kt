@@ -42,6 +42,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     companion object {
         val robotLengthInches = 17.75
+        val robotWidthInches = 16.21457
         val tabCutoffCompensationInches = 0.5
         val redStartingXInches = -(72.0 - ((RobotTwoHardware.robotLengthInches/2) + RobotTwoHardware.tabCutoffCompensationInches))
         val redStartingRDegrees = -90.0
