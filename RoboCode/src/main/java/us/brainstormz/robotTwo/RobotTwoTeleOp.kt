@@ -135,16 +135,11 @@ class RobotTwoTeleOp: OpMode() {
 //        gamepad1.rumble(rumbleInfo.left, rumbleInfo.right, 1000)
 
 
-        //Collector
-        //Transfer automatically
-        //up dpad
-        //eject on stick buttons
-        //up dpad top
-        //left dpad middle
-        //down dpad low
-        //auto retract lift
-        //x is hang
+        //~~up dpad top
+        //~~left dpad middle
+        //~~down dpad low
         //switch to claw mode with bumpers when brody is using lift
+        //auto retract lift
 
 
         //Handoff related inputs
@@ -157,8 +152,8 @@ class RobotTwoTeleOp: OpMode() {
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
         val areLiftManualControlsActive = liftOverrideStickValue.absoluteValue > 0.2
 
-        val depoDpadInput: Lift.LiftPositions? = when {
-            gamepad2.dpad_up -> {
+        val depoInput: Lift.LiftPositions? = when {
+            gamepad2.dpad_up-> {
                 Lift.LiftPositions.SetLine3
             }
             gamepad2.dpad_down -> {
@@ -170,6 +165,15 @@ class RobotTwoTeleOp: OpMode() {
                 } else {
                     Lift.LiftPositions.SetLine2
                 }
+            }
+            gamepad1.dpad_up-> {
+                Lift.LiftPositions.SetLine3
+            }
+            gamepad1.dpad_left -> {
+                Lift.LiftPositions.SetLine2
+            }
+            gamepad1.dpad_down -> {
+                Lift.LiftPositions.SetLine1
             }
             else -> null
         }
@@ -185,7 +189,7 @@ class RobotTwoTeleOp: OpMode() {
 
         val weWantToStartHandoff = isHandoffButtonPressed || theRobotJustCollectedTwoPixels
 
-        val inputsConflictWithTransfer = rightTrigger || (depoDpadInput != null)
+        val inputsConflictWithTransfer = rightTrigger || (depoInput != null)
 
         telemetry.addLine("\nHANDOFF:")
         val doHandoffSequence = when {
@@ -211,7 +215,6 @@ class RobotTwoTeleOp: OpMode() {
             RightClawPosition.Gripping -> HandoffManager.ClawStateFromHandoff.Gripping
         }
         val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE)
-
 
         //Collector
         fun nextPosition(isDirectionPositive: Boolean): CollectorSystem.CollectorPowers {
@@ -356,7 +359,7 @@ class RobotTwoTeleOp: OpMode() {
                     }
                 }
                 else -> {
-                    depoDpadInput ?: previousRobotState.depoState.liftPosition
+                    depoInput ?: previousRobotState.depoState.liftPosition
                 }
             }
         }
