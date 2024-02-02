@@ -188,7 +188,10 @@ class RobotTwoAuto: OpMode() {
     private val audienceSideNavigateUnderTrussWaypoint2 = audienceSideNavigateUnderTrussWaypoint1.copy(x= redDistanceFromCenterlineInches)
     private val audienceSideNavigateUnderTrussWaypoint3 = PositionAndRotation(x= redDistanceFromCenterlineInches, y=-30.0, r= 0.0)
     private val audienceSideParkPosition = PositionAndRotation(x= -10.0, y= -47.0, r= 0.0)
-    private val audienceAuto: List<TargetWorld> = listOf(
+
+
+    private val audienceSideLeftPurple: List<TargetWorld> = listOf()
+    private val audienceSideCenterPurple: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AudiencePurpleMiddlePosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
@@ -246,6 +249,15 @@ class RobotTwoAuto: OpMode() {
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         mecanumMovement.isRobotAtPosition(precisionInches = 3.0, precisionDegrees = 3.0, currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState.targetRobot.positionAndRotation)
                     },),
+    )
+    private val audienceSideRightPurple: List<TargetWorld> = listOf()
+    private val audienceSidePurpleMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
+            PropPosition.Left to audienceSideLeftPurple,
+            PropPosition.Center to audienceSideCenterPurple,
+            PropPosition.Right to audienceSideRightPurple
+    )
+
+    private val audienceDriveToBoard: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
@@ -291,6 +303,9 @@ class RobotTwoAuto: OpMode() {
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         isRobotAtPosition(targetState, actualState)
                     },),
+            )
+
+    private val audienceSideDepositCenter = listOf(
             TargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
@@ -309,6 +324,14 @@ class RobotTwoAuto: OpMode() {
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         hasTimeElapsed(1000, targetState)
                     },),
+    )
+    private val audienceSideYellowMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
+            PropPosition.Left to audienceSideLeftPurple,
+            PropPosition.Center to audienceSideCenterPurple,
+            PropPosition.Right to audienceSideRightPurple
+    )
+
+    private val audienceSidePark = listOf(
             TargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
@@ -327,83 +350,63 @@ class RobotTwoAuto: OpMode() {
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         isRobotAtPosition(targetState, actualState)
                     },),
-            )
+    )
 
 
-    private fun getPurplePixelPlacementRoutineForRedAlliance(
-            startPosition: StartPosition): List<TargetWorld> {
 
-        val redInjected = when (startPosition) {
-            StartPosition.Backboard -> {
-                redBackboardPurplePixelPlacement
-            }
-            StartPosition.Audience -> {
-                TODO()
-            }
-        }
-
-        return redInjected
-    }
-
-    private fun injectPurplePlacementIntoSidedAuto(
-            sidedAuto: List<TargetWorld>,
-            startPosition: StartPosition): List<TargetWorld> {
-
-        val injectPointIndex = sidedAuto.indexOfFirst {targetWorld -> targetWorld.myJankFlagToInjectPurplePlacement}
-        return if (injectPointIndex != -1) {
-            val listToInject = getPurplePixelPlacementRoutineForRedAlliance(startPosition)
-
-            val injectedList = sidedAuto.subList(0, injectPointIndex) + listToInject + sidedAuto.subList(injectPointIndex + 1, sidedAuto.size)
-
-            injectedList
-        } else {
-            sidedAuto
+    data class PathPreAssembled(val purplePlacementPath: Map<PropPosition, List<TargetWorld>>, val driveToBoardPath: List<TargetWorld>, val yellowDepositPath: Map<PropPosition, List<TargetWorld>>, val parkPath: List<TargetWorld>) {
+        fun assemblePath(propPosition: PropPosition): List<TargetWorld> {
+            return purplePlacementPath[propPosition]!! + driveToBoardPath + yellowDepositPath[propPosition]!! + parkPath
         }
     }
-    
     private fun calcAutoTargetStateList(
             alliance: RobotTwoHardware.Alliance,
             startPosition: StartPosition,
             propPosition: PropPosition
     ): List<TargetWorld> {
 
-        val startPosAccounted = when (startPosition) {
-            StartPosition.Backboard -> backBoardAuto
-            StartPosition.Audience -> audienceAuto
-        }
 
-//        val purplePixelAccounted: List<TargetWorld> = injectPurplePlacementIntoSidedAuto(startPosAccounted, startPosition)
-        val purplePixelAccounted = startPosAccounted.map { targetWorld ->
-            if (targetWorld.targetRobot.collectorSystemState.extendoPosition == ExtendoPositions.FarBackboardPixelPosition) {
-                val newExtendoPosition = when (propPosition) {
-                    PropPosition.Left -> ExtendoPositions.FarBackboardPixelPosition
-                    PropPosition.Center -> ExtendoPositions.MidBackboardPixelPosition
-                    PropPosition.Right -> ExtendoPositions.CloserBackboardPixelPosition
-                }
-                val newRobotPosition = when (propPosition) {
-                    PropPosition.Left -> backboarkSidePurplePixelPlacementLeftPosition
-                    PropPosition.Center -> backboarkSidePurplePixelPlacementCenterPosition
-                    PropPosition.Right -> backboarkSidePurplePixelPlacementRightPosition
-                }
-                targetWorld.copy(targetRobot = targetWorld.targetRobot.copy(
-                        collectorSystemState = targetWorld.targetRobot.collectorSystemState.copy(extendoPosition = newExtendoPosition),
-                        positionAndRotation = newRobotPosition
-                ))
-            } else {
-                targetWorld
+        val redPath: PathPreAssembled = when (startPosition) {
+            StartPosition.Backboard -> {
+                PathPreAssembled(
+                        purplePlacementPath = mapOf(),
+                        driveToBoardPath = backBoardAuto,
+                        yellowDepositPath = mapOf(),
+                        parkPath = listOf()
+                )
+            }
+            StartPosition.Audience -> {
+                PathPreAssembled(
+                        purplePlacementPath = audienceSidePurpleMapToProp,
+                        driveToBoardPath = audienceDriveToBoard,
+                        yellowDepositPath = audienceSideYellowMapToProp,
+                        parkPath = audienceSidePark
+                )
             }
         }
 
-
-        val allianceAccounted = when (alliance) {
-            RobotTwoHardware.Alliance.Red -> purplePixelAccounted
-            RobotTwoHardware.Alliance.Blue -> flipRedAutoToBlue(purplePixelAccounted)
+        val allianceIsColorBlue = alliance == RobotTwoHardware.Alliance.Blue
+        val propPositionSwappedToMatchBlue = when (propPosition) {
+            PropPosition.Left -> PropPosition.Right
+            PropPosition.Center -> PropPosition.Center  
+            PropPosition.Right -> PropPosition.Left
+        }
+        val adjustedPropPosition = if (allianceIsColorBlue) {
+            propPositionSwappedToMatchBlue
+        } else {
+            propPosition
         }
 
-        return allianceAccounted
+        val allianceMirroredAndAsList = if (allianceIsColorBlue) {
+            mirrorRedAutoToBlue(redPath.assemblePath(adjustedPropPosition))
+        } else {
+            redPath.assemblePath(adjustedPropPosition)
+        }
+
+        return allianceMirroredAndAsList
     }
 
-    private fun flipRedAutoToBlue(auto: List<TargetWorld>): List<TargetWorld> {
+    private fun mirrorRedAutoToBlue(auto: List<TargetWorld>): List<TargetWorld> {
         return auto.map { targetWorld ->
             val flippedBluePosition = flipRedPositionToBlue(targetWorld.targetRobot.positionAndRotation)
             targetWorld.copy(targetRobot = targetWorld.targetRobot.copy(positionAndRotation = flippedBluePosition))
@@ -415,8 +418,8 @@ class RobotTwoAuto: OpMode() {
 
     private fun getNextTargetFromList(): TargetWorld {
         return autoListIterator.next().copy(timeTargetStartedMilis = System.currentTimeMillis())
-
     }
+
 
     private lateinit var autoStateList: List<TargetWorld>
     private lateinit var autoListIterator: ListIterator<TargetWorld>
