@@ -538,7 +538,7 @@ class RobotTwoTeleOp: OpMode() {
 
 
         //Hang
-        hardware.hangReleaseServo.power = if (gamepad2.left_stick_button && gamepad2.right_stick_button) {
+        hardware.hangReleaseServo.power = if (gamepad1.x || (gamepad2.left_stick_button && gamepad2.right_stick_button)) {
             RobotTwoHardware.HangPowers.Release.power
         } else {
             RobotTwoHardware.HangPowers.Holding.power
