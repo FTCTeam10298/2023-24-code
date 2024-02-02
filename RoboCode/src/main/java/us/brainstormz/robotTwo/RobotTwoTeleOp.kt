@@ -133,7 +133,15 @@ class RobotTwoTeleOp: OpMode() {
 
 
         //Collector
-        //toggle
+        //Transfer automatically
+        //up dpad
+        //eject on stick buttons
+        //up dpad top
+        //left dpad middle
+        //down dpad low
+        //auto retract lift
+        //x is hang
+        //switch to claw mode with bumpers when brody is using lift
 
         fun nextPosition(isDirectionPositive: Boolean): CollectorSystem.CollectorPowers {
             val intakePowerOptions = mapOf(
@@ -142,7 +150,6 @@ class RobotTwoTeleOp: OpMode() {
                     -1 to CollectorSystem.CollectorPowers.Eject
             )
             val previousPowerInt: Int = previousRobotState.collectorSystemState.collectorState.power.toInt()
-
 
             val valueToChangeBy = if (isDirectionPositive) {
                 1
