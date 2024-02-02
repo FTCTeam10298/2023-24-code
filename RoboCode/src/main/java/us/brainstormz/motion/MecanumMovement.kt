@@ -30,6 +30,7 @@ class MecanumMovement(override val localizer: Localizer, override val hardware: 
     val defaultXTranslationPID =    PID(0.5,  0.00015, 1.5)
     val defaultRotationPID =        PID(4.05,  0.0016, 1.5)
     val defaultPrecisionInches = 5.0
+    val defaultPrecisionDegrees = 3.0
 
     var yTranslationPID = defaultYTranslationPID
     var xTranslationPID = defaultXTranslationPID
@@ -125,7 +126,7 @@ class MecanumMovement(override val localizer: Localizer, override val hardware: 
         return false
     }
 
-    fun isRobotAtPosition(currentPosition: PositionAndRotation, targetPosition: PositionAndRotation): Boolean {
+    fun isRobotAtPosition(currentPosition: PositionAndRotation, targetPosition: PositionAndRotation, precisionInches: Double = defaultPrecisionInches, precisionDegrees: Double = defaultPrecisionDegrees): Boolean {
         val angleRad = Math.toRadians(currentPosition.r)
 
         // Find the error in distance for X
