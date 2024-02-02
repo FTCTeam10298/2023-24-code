@@ -276,34 +276,6 @@ class RobotTwoTeleOp: OpMode() {
         }
 
 
-        // DRONE DRIVE
-        val yInput = -gamepad1.left_stick_y.toDouble()
-        val xInput = gamepad1.left_stick_x.toDouble()
-        val rInput = gamepad1.right_stick_x.toDouble()
-
-        //Strafe without turing for depositing
-        val slowDowMultiplier = 1.0
-        val driver2XInput = if (xInput == 0.0) {
-            -gamepad2.left_stick_x.toDouble() * slowDowMultiplier
-        } else {
-            0.0
-        }
-
-        val isAtTheEndOfExtendo = hardware.extendoMotorMaster.currentPosition >= CollectorSystem.ExtendoPositions.Max.ticks || hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS) > 6.0
-        val extendoCompensationPower = if (isAtTheEndOfExtendo && yInput == 0.0) {
-            gamepad1.right_trigger.toDouble()
-        } else {
-            0.0
-        }
-
-        val y = yInput + extendoCompensationPower
-        val x = xInput + driver2XInput
-        val r = -rInput * abs(rInput)
-        movement.driveSetPower((y + x - r),
-                (y - x + r),
-                (y - x - r),
-                (y + x + r))
-
         //Lift
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
         val areManualControlsActive = liftOverrideStickValue.absoluteValue > 0.2
@@ -483,6 +455,34 @@ class RobotTwoTeleOp: OpMode() {
         }
         hardware.rightClawServo.position = rightClawPosition.position
 
+
+        // DRONE DRIVE
+        val yInput = -gamepad1.left_stick_y.toDouble()
+        val xInput = gamepad1.left_stick_x.toDouble()
+        val rInput = gamepad1.right_stick_x.toDouble()
+
+        //Strafe without turing for depositing
+        val slowDowMultiplier = 1.0
+        val driver2XInput = if (xInput == 0.0) {
+            -gamepad2.left_stick_x.toDouble() * slowDowMultiplier
+        } else {
+            0.0
+        }
+
+        val isAtTheEndOfExtendo = hardware.extendoMotorMaster.currentPosition >= CollectorSystem.ExtendoPositions.Max.ticks || hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS) > 6.0
+        val extendoCompensationPower = if (isAtTheEndOfExtendo && yInput == 0.0) {
+            gamepad1.right_trigger.toDouble()
+        } else {
+            0.0
+        }
+
+        val y = yInput + extendoCompensationPower
+        val x = xInput + driver2XInput
+        val r = -rInput * abs(rInput)
+        movement.driveSetPower((y + x - r),
+                (y - x + r),
+                (y - x - r),
+                (y + x + r))
 
         //Launcher
         hardware.launcherServo.position = if ((gamepad2.y && !gamepad2.dpad_left) || gamepad1.y) {
