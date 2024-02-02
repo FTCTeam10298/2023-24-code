@@ -89,6 +89,8 @@ class RobotTwoTeleOp: OpMode() {
 
     var wereBothPixelsInPreviously = false
 
+    var wereWeDoingHandoffLastLoop = false
+
     private var previousGamepad1State: Gamepad = Gamepad()
     private var previousGamepad2State: Gamepad = Gamepad()
 
@@ -203,26 +205,70 @@ class RobotTwoTeleOp: OpMode() {
             else -> autoRollerState
         }
         collectorSystem.runRollers(rollerState)
+        val transferSensorState = collectorSystem.getCurrentState(previousRobotState.collectorSystemState)
 
+
+
+        //Handoff related inputs
+        val isHandoffButtonPressed = (gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start)
+
+        val extendoTriggerActivation = 0.1
+        val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
+        val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
+
+        val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
+        val areLiftManualControlsActive = liftOverrideStickValue.absoluteValue > 0.2
+
+        val depoDpadInput: Lift.LiftPositions? = when {
+            gamepad2.dpad_up -> {
+                Lift.LiftPositions.SetLine3
+            }
+            gamepad2.dpad_down -> {
+                Lift.LiftPositions.Transfer
+            }
+            gamepad2.dpad_right && !previousGamepad2State.dpad_right -> {
+                if (previousRobotState.depoState.liftPosition !== Lift.LiftPositions.SetLine1) {
+                    Lift.LiftPositions.SetLine1
+                } else {
+                    Lift.LiftPositions.SetLine2
+                }
+            }
+            else -> null
+        }
+
+        val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
+        val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= 0.2
 
         //Handoff
-        val shouldWeHandoff = ((gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start))
+        val inputsConflictWithTransfer = rightTrigger || (depoDpadInput != null)
+
+        val areBothPixelsIn = transferSensorState.transferLeftSensorState.hasPixelBeenSeen && transferSensorState.transferRightSensorState.hasPixelBeenSeen
+        val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
+
+        val weWantToStartHandoff = isHandoffButtonPressed || theRobotJustCollectedTwoPixels
+
+        val doHandoffSequence = when {
+            inputsConflictWithTransfer -> {
+                false
+            }
+            weWantToStartHandoff -> {
+                true
+            }
+            else -> {
+                wereWeDoingHandoffLastLoop
+            }
+        }
+        wereWeDoingHandoffLastLoop= doHandoffSequence
+
         val previousBothClawState = when (previousRobotState.depoState.rightClawPosition) {
             RightClawPosition.Retracted -> HandoffManager.ClawStateFromHandoff.Retracted
             RightClawPosition.Gripping -> HandoffManager.ClawStateFromHandoff.Gripping
         }
         val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE)
 
-        val transferSensorState = collectorSystem.getCurrentState(previousRobotState.collectorSystemState)
 
 
         //Extendo
-        val extendoTriggerActivation = 0.1
-        val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
-        val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
-
-        val areBothPixelsIn = transferSensorState.transferLeftSensorState.hasPixelBeenSeen && transferSensorState.transferRightSensorState.hasPixelBeenSeen
-
         val extendoState: CollectorSystem.ExtendoPositions = when {
             rightTrigger && leftTrigger -> {
                 hardware.extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -235,7 +281,10 @@ class RobotTwoTeleOp: OpMode() {
             rightTrigger -> {
                 CollectorSystem.ExtendoPositions.Manual
             }
-            shouldWeHandoff -> {
+            theRobotJustCollectedTwoPixels -> {
+                CollectorSystem.ExtendoPositions.Min
+            }
+            doHandoffSequence -> {
                 when (handoffState.collectorState) {
                     HandoffManager.ExtendoStateFromHandoff.MoveIn -> {
                         CollectorSystem.ExtendoPositions.AllTheWayInTarget
@@ -275,36 +324,20 @@ class RobotTwoTeleOp: OpMode() {
             collectorSystem.powerExtendo(power)
         }
 
-
         //Lift
-        val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
-        val areManualControlsActive = liftOverrideStickValue.absoluteValue > 0.2
 
-        val liftPosition: Lift.LiftPositions = if (areManualControlsActive) {
+        val liftPosition: Lift.LiftPositions = if (areLiftManualControlsActive) {
             Lift.LiftPositions.Manual
         } else {
             when {
-                gamepad2.dpad_up -> {
-                    Lift.LiftPositions.SetLine3
-                }
-                gamepad2.dpad_down -> {
-                    Lift.LiftPositions.Transfer
-                }
-                gamepad2.dpad_right && !previousGamepad2State.dpad_right -> {
-                    if (previousRobotState.depoState.liftPosition !== Lift.LiftPositions.SetLine1) {
-                        Lift.LiftPositions.SetLine1
-                    } else {
-                        Lift.LiftPositions.SetLine2
-                    }
-                }
-                shouldWeHandoff -> {
+                doHandoffSequence -> {
                     when (handoffState.liftState) {
                         HandoffManager.LiftStateFromHandoff.MoveDown -> Lift.LiftPositions.Transfer
                         HandoffManager.LiftStateFromHandoff.None -> Lift.LiftPositions.Nothing
                     }
                 }
                 else -> {
-                    previousRobotState.depoState.liftPosition
+                    depoDpadInput ?: previousRobotState.depoState.liftPosition
                 }
             }
         }
@@ -348,7 +381,6 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
 
         //Arm
-        val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
         val liftIsBelowFreeArmLevel = hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsInish = arm.getArmAngleDegrees() >= Arm.Positions.Inish.angleDegrees
@@ -359,14 +391,14 @@ class RobotTwoTeleOp: OpMode() {
 
         val armWasManualControlLastTime = previousRobotState.depoState.armPos == Arm.Positions.Manual
 
-        val armPosition: Arm.Positions = if (armOverrideStickValue.absoluteValue >= 0.2) {
+        val armPosition: Arm.Positions = if (isArmManualOverrideActive) {
             Arm.Positions.Manual
         } else {
             when  {
                 liftPosition == Lift.LiftPositions.Manual || liftPosition == Lift.LiftPositions.Nothing-> {
                     previousRobotState.depoState.armPos
                 }
-                shouldWeHandoff -> {
+                doHandoffSequence -> {
                     telemetry.addLine("using the transfer to decide where to move")
                     handoffState.armState
                 }
@@ -414,7 +446,7 @@ class RobotTwoTeleOp: OpMode() {
                 LeftClawPosition.Gripping -> LeftClawPosition.Retracted
                 LeftClawPosition.Retracted -> LeftClawPosition.Gripping
             }
-        } else if (shouldWeHandoff) {
+        } else if (doHandoffSequence) {
             when (handoffState.clawPosition) {
                 HandoffManager.ClawStateFromHandoff.Gripping -> {
                     if (transferSensorState.transferLeftSensorState.hasPixelBeenSeen) {
@@ -437,7 +469,7 @@ class RobotTwoTeleOp: OpMode() {
                 RightClawPosition.Gripping -> RightClawPosition.Retracted
                 RightClawPosition.Retracted -> RightClawPosition.Gripping
             }
-        } else if (shouldWeHandoff) {
+        } else if (doHandoffSequence) {
             when (handoffState.clawPosition) {
                 HandoffManager.ClawStateFromHandoff.Gripping -> {
                     if (transferSensorState.transferRightSensorState.hasPixelBeenSeen) {
