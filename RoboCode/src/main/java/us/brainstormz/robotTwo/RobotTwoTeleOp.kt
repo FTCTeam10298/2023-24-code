@@ -394,7 +394,7 @@ class RobotTwoTeleOp: OpMode() {
 
         val armWasManualControlLastTime = previousRobotState.depoState.armPos == Arm.Positions.Manual
 
-        val armPosition: Arm.Positions = if (isArmManualOverrideActive) {
+        val armPosition: Arm.Positions = if (isArmManualOverrideActive || armWasManualControlLastTime && liftTargetHasntChanged) {
             Arm.Positions.Manual
         } else {
             when  {
@@ -417,9 +417,6 @@ class RobotTwoTeleOp: OpMode() {
                 }
                 liftPosition in liftPositionsWhereArmShouldBeOut -> {
                     Arm.Positions.Out
-                }
-                armWasManualControlLastTime && liftTargetHasntChanged -> {
-                    Arm.Positions.Manual
                 }
                 else -> {
                     previousRobotState.depoState.armPos
