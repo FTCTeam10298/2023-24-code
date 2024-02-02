@@ -46,7 +46,7 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
         armServo2.power = power
     }
 
-    private var previousIsisArmTargetInOfMidpoint = false
+    private var previousArmTargetDegrees = 0.0
     private val armAngleMidpointDegrees = 150.0
     fun calcPowerToReachTarget(targetDegrees: Double): Double {
         val currentDegrees = getArmAngleDegrees()
@@ -62,18 +62,12 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
             false -> outHoldingConstant
         }
 
-        if (isArmTargetInOfMidpoint && !previousIsisArmTargetInOfMidpoint) {
-            //Target just changed to in
+        if (targetDegrees != previousArmTargetDegrees) {
+            //Target just changed
             inPid.reset()
-        }
-        if (!isArmTargetInOfMidpoint && previousIsisArmTargetInOfMidpoint) {
-            //Target just changed to in
             outPid.reset()
         }
-
-//        telemetry.addLine("previousIsisArmTargetInOfMidpoint: $previousIsisArmTargetInOfMidpoint")
-//        telemetry.addLine("isArmTargetInOfMidpoint: $isArmTargetInOfMidpoint")
-        previousIsisArmTargetInOfMidpoint = isArmTargetInOfMidpoint
+        previousArmTargetDegrees = targetDegrees
 
         val pidPower = pid.calcPID(errorDegrees)
         val gravityCompPower = (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
