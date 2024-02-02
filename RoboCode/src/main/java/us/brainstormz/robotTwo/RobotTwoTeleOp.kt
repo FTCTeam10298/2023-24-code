@@ -146,69 +146,6 @@ class RobotTwoTeleOp: OpMode() {
         //x is hang
         //switch to claw mode with bumpers when brody is using lift
 
-        fun nextPosition(isDirectionPositive: Boolean): CollectorSystem.CollectorPowers {
-            val intakePowerOptions = mapOf(
-                    1 to CollectorSystem.CollectorPowers.Intake,
-                    0 to CollectorSystem.CollectorPowers.Off,
-                    -1 to CollectorSystem.CollectorPowers.Eject
-            )
-            val previousPowerInt: Int = previousRobotState.collectorSystemState.collectorState.power.toInt()
-
-            val valueToChangeBy = if (isDirectionPositive) {
-                1
-            } else {
-                -1
-            }
-            val nonRangedChange = previousPowerInt + valueToChangeBy
-            val newPowerOption =if (nonRangedChange !in -1..1) {
-                0
-            } else {
-                nonRangedChange
-            }
-
-            return intakePowerOptions[newPowerOption] ?: CollectorSystem.CollectorPowers.Off
-        }
-
-        val inputCollectorStateSystem = when {
-            gamepad1.right_bumper && !previousGamepad1State.right_bumper -> {
-                nextPosition(true)
-            }
-            gamepad1.left_bumper && !previousGamepad1State.left_bumper -> {
-                nextPosition(false)
-            }
-            else -> {
-                previousRobotState.collectorSystemState.collectorState
-            }
-        }
-
-        val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
-        collectorSystem.spinCollector(actualCollectorState.power)
-
-        //Spit out pixels with stick buttons
-        val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
-        val rollerState = when {
-            gamepad1.dpad_right ->
-                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Off,
-                        rightServoCollect = CollectorSystem.RollerPowers.Eject,
-                        directorState = CollectorSystem.DirectorState.Off)
-            gamepad1.dpad_left ->
-                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Eject,
-                        rightServoCollect = CollectorSystem.RollerPowers.Off,
-                        directorState = CollectorSystem.DirectorState.Off)
-            gamepad1.dpad_up ->
-                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Intake,
-                        rightServoCollect = CollectorSystem.RollerPowers.Intake,
-                        directorState = CollectorSystem.DirectorState.Off)
-            gamepad1.dpad_down ->
-                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Eject,
-                        rightServoCollect = CollectorSystem.RollerPowers.Eject,
-                        directorState = CollectorSystem.DirectorState.Off)
-            else -> autoRollerState
-        }
-        collectorSystem.runRollers(rollerState)
-        val transferSensorState = collectorSystem.getCurrentState(previousRobotState.collectorSystemState)
-
-
 
         //Handoff related inputs
         val isHandoffButtonPressed = (gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start)
@@ -240,13 +177,15 @@ class RobotTwoTeleOp: OpMode() {
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
         val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= 0.2
 
-        //Handoff
-        val inputsConflictWithTransfer = rightTrigger || (depoDpadInput != null)
 
+        //Handoff
+        val transferSensorState = collectorSystem.getCurrentState(previousRobotState.collectorSystemState)
         val areBothPixelsIn = transferSensorState.transferLeftSensorState.hasPixelBeenSeen && transferSensorState.transferRightSensorState.hasPixelBeenSeen
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
 
         val weWantToStartHandoff = isHandoffButtonPressed || theRobotJustCollectedTwoPixels
+
+        val inputsConflictWithTransfer = rightTrigger || (depoDpadInput != null)
 
         telemetry.addLine("\nHANDOFF:")
         val doHandoffSequence = when {
@@ -273,6 +212,71 @@ class RobotTwoTeleOp: OpMode() {
         }
         val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE)
 
+
+        //Collector
+        fun nextPosition(isDirectionPositive: Boolean): CollectorSystem.CollectorPowers {
+            val intakePowerOptions = mapOf(
+                    1 to CollectorSystem.CollectorPowers.Intake,
+                    0 to CollectorSystem.CollectorPowers.Off,
+                    -1 to CollectorSystem.CollectorPowers.Eject
+            )
+            val previousPowerInt: Int = previousRobotState.collectorSystemState.collectorState.power.toInt()
+
+            val valueToChangeBy = if (isDirectionPositive) {
+                1
+            } else {
+                -1
+            }
+            val nonRangedChange = previousPowerInt + valueToChangeBy
+            val newPowerOption =if (nonRangedChange !in -1..1) {
+                0
+            } else {
+                nonRangedChange
+            }
+
+            return intakePowerOptions[newPowerOption] ?: CollectorSystem.CollectorPowers.Off
+        }
+
+        val inputCollectorStateSystem = when {
+            gamepad1.right_bumper && !previousGamepad1State.right_bumper -> {
+                nextPosition(true)
+            }
+            gamepad1.left_bumper && !previousGamepad1State.left_bumper -> {
+                nextPosition(false)
+            }
+            theRobotJustCollectedTwoPixels -> {
+                CollectorSystem.CollectorPowers.Off
+            }
+            else -> {
+                previousRobotState.collectorSystemState.collectorState
+            }
+        }
+
+        val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
+        collectorSystem.spinCollector(actualCollectorState.power)
+
+        //Spit out pixels with stick buttons
+        val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = gamepad1.right_bumper)
+        val rollerState = when {
+            gamepad1.dpad_right ->
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Off,
+                        rightServoCollect = CollectorSystem.RollerPowers.Eject,
+                        directorState = CollectorSystem.DirectorState.Off)
+            gamepad1.dpad_left ->
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Eject,
+                        rightServoCollect = CollectorSystem.RollerPowers.Off,
+                        directorState = CollectorSystem.DirectorState.Off)
+            gamepad1.dpad_up ->
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Intake,
+                        rightServoCollect = CollectorSystem.RollerPowers.Intake,
+                        directorState = CollectorSystem.DirectorState.Off)
+            gamepad1.dpad_down ->
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Eject,
+                        rightServoCollect = CollectorSystem.RollerPowers.Eject,
+                        directorState = CollectorSystem.DirectorState.Off)
+            else -> autoRollerState
+        }
+        collectorSystem.runRollers(rollerState)
 
 
         //Extendo
