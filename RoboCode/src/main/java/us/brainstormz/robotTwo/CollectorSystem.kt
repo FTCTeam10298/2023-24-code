@@ -300,9 +300,9 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
             entry.value.contains(rgbValue)
         }
 
-        telemetry.addLine("\n$side side:")
-        telemetry.addLine("rgbValue: $rgbValue")
-        telemetry.addLine("leftSensorColorInformation: $leftSensorColorInformation")
+//        telemetry.addLine("\n$side side:")
+//        telemetry.addLine("rgbValue: $rgbValue")
+//        telemetry.addLine("leftSensorColorInformation: $leftSensorColorInformation")
 
         return findWhichColor?.key ?: RobotTwoTeleOp.PixelColor.Unknown
 //        return when {

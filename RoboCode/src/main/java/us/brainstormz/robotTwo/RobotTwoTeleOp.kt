@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Gamepad
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.localizer.PositionAndRotation
@@ -247,18 +248,24 @@ class RobotTwoTeleOp: OpMode() {
 
         val weWantToStartHandoff = isHandoffButtonPressed || theRobotJustCollectedTwoPixels
 
+        telemetry.addLine("\nHANDOFF:")
         val doHandoffSequence = when {
             inputsConflictWithTransfer -> {
+                telemetry.addLine("Canceled due to conflicting inputs")
                 false
             }
             weWantToStartHandoff -> {
+                telemetry.addLine("Starting handoff")
                 true
             }
             else -> {
+                telemetry.addLine("Doing the same thing as last time")
                 wereWeDoingHandoffLastLoop
             }
         }
+        telemetry.addLine("Are we doing handoff: $doHandoffSequence")
         wereWeDoingHandoffLastLoop= doHandoffSequence
+        telemetry.addLine()
 
         val previousBothClawState = when (previousRobotState.depoState.rightClawPosition) {
             RightClawPosition.Retracted -> HandoffManager.ClawStateFromHandoff.Retracted
@@ -325,7 +332,6 @@ class RobotTwoTeleOp: OpMode() {
         }
 
         //Lift
-
         val liftPosition: Lift.LiftPositions = if (areLiftManualControlsActive) {
             Lift.LiftPositions.Manual
         } else {
@@ -347,6 +353,7 @@ class RobotTwoTeleOp: OpMode() {
         val armIsFarEnoughIn = arm.getArmAngleDegrees() >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
         val armIsTooFarIn = arm.getArmAngleDegrees() >= Arm.Positions.TooFarIn.angleDegrees
         val liftNeedsToWaitForTheArm = liftTargetIsBelowSafeArm && ((!armIsFarEnoughIn && liftActualPositionIsAboveSafeArm) || armIsTooFarIn)
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML)
         telemetry.addLine("\nliftNeedsToWaitForTheArm: $liftNeedsToWaitForTheArm")
         telemetry.addLine("armIsTooFarIn: $armIsTooFarIn")
 
@@ -585,8 +592,8 @@ class RobotTwoTeleOp: OpMode() {
 
         val colorDetectedInLeftSide = collectorSystem.getColorInSide(hardware.leftTransferSensor, CollectorSystem.Side.Left)
         val colorDetectedInRightSide = collectorSystem.getColorInSide(hardware.rightTransferSensor, CollectorSystem.Side.Right)
-        telemetry.addLine("colorDetectedInLeftSide: ${colorDetectedInLeftSide}")
-        telemetry.addLine("colorDetectedInRightSide: ${colorDetectedInRightSide}")
+//        telemetry.addLine("colorDetectedInLeftSide: ${colorDetectedInLeftSide}")
+//        telemetry.addLine("colorDetectedInRightSide: ${colorDetectedInRightSide}")
 
 
         //Light actuation
