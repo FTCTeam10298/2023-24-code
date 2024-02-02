@@ -397,7 +397,11 @@ class RobotTwoTeleOp: OpMode() {
         val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val wasTheLiftGoindDownBefore = previousRobotState.depoState.liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsIn = armPosition.angleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
-        val shouldTheClawsRetractOnAccountOfTheLiftGoingDown = (isTheLiftGoingDown && !wasTheLiftGoindDownBefore && armIsIn) || hardware.extendoMotorMaster.currentPosition >= CollectorSystem.ExtendoPositions.Min.ticks
+        val isTheExtendoGoingIn = extendoState.ticks <= CollectorSystem.ExtendoPositions.Min.ticks
+        val wasTheCollectorGoingInBefore = previousRobotState.collectorSystemState.extendoPosition.ticks <= CollectorSystem.ExtendoPositions.Min.ticks
+        val shouldTheClawsRetractForLift = isTheLiftGoingDown && !wasTheLiftGoindDownBefore && armIsIn
+        val shouldTheClawsRetractForExtendo = isTheLiftGoingDown && isTheExtendoGoingIn && !wasTheCollectorGoingInBefore
+        val shouldClawsRetract = shouldTheClawsRetractForLift || shouldTheClawsRetractForExtendo
 
         val leftClawPosition: LeftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
             when (previousRobotState.depoState.leftClawPosition) {
@@ -415,7 +419,7 @@ class RobotTwoTeleOp: OpMode() {
                 }
                 HandoffManager.ClawStateFromHandoff.Retracted -> LeftClawPosition.Retracted
             }
-        } else if (shouldTheClawsRetractOnAccountOfTheLiftGoingDown) {
+        } else if (shouldClawsRetract) {
             LeftClawPosition.Retracted
         } else {
             previousRobotState.depoState.leftClawPosition
@@ -438,7 +442,7 @@ class RobotTwoTeleOp: OpMode() {
                 }
                 HandoffManager.ClawStateFromHandoff.Retracted -> RightClawPosition.Retracted
             }
-        } else if (shouldTheClawsRetractOnAccountOfTheLiftGoingDown) {
+        } else if (shouldClawsRetract) {
             RightClawPosition.Retracted
         } else {
             previousRobotState.depoState.rightClawPosition
