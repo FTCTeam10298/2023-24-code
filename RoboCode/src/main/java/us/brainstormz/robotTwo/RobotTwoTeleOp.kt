@@ -105,8 +105,8 @@ class RobotTwoTeleOp: OpMode() {
 //                                                                            }, 100)
 
 
-    data class RumbleInfo(val left: Double, val right: Double, val time: Long)
-    private var previousRumbeInfo = RumbleInfo(left = 1.0, right = 0.0, time= 0L)
+//    data class RumbleInfo(val left: Double, val right: Double, val time: Long)
+//    private var previousRumbeInfo = RumbleInfo(left = 1.0, right = 0.0, time= 0L)
 
 
     private var previousRobotState = initialRobotState
@@ -117,19 +117,19 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("loop time: $loopTime milis")
         telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
 
-        val currentTime = System.currentTimeMillis()
-        val timeSinceRumbleStart = System.currentTimeMillis() - previousRumbeInfo.time
-        val rumbleInfo = if (timeSinceRumbleStart >= 1000) {
-            if (previousRumbeInfo.left > 0.0) {
-                RumbleInfo(left = 0.0, right = 1.0, time= currentTime)
-            } else {
-                RumbleInfo(left = 1.0, right = 0.0, time= currentTime)
-            }
-        } else {
-            previousRumbeInfo
-        }
-
-        gamepad1.rumble(rumbleInfo.left, rumbleInfo.right, 1000)
+//        val currentTime = System.currentTimeMillis()
+//        val timeSinceRumbleStart = System.currentTimeMillis() - previousRumbeInfo.time
+//        val rumbleInfo = if (timeSinceRumbleStart >= 1000) {
+//            if (previousRumbeInfo.left > 0.0) {
+//                RumbleInfo(left = 0.0, right = 1.0, time= currentTime)
+//            } else {
+//                RumbleInfo(left = 1.0, right = 0.0, time= currentTime)
+//            }
+//        } else {
+//            previousRumbeInfo
+//        }
+//
+//        gamepad1.rumble(rumbleInfo.left, rumbleInfo.right, 1000)
 
 
         //Collector
