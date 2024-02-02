@@ -16,11 +16,10 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
         AutoInitPosition(170.0),
         OutButUnderTwelve(50.0),
         Out(60.0),
+        DroppingWithHighPrecision(65.0),
         Manual(0.0),
     }
 
-    //103.5
-    //180
      val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, 7.0-40-104+76.5)
 
     private val outPid = PID(kp= 0.0026, kd = 0.01)

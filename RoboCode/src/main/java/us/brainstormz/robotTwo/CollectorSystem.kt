@@ -46,7 +46,8 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         Intake(1.0),
         Eject(-1.0),
         DropPurple(0.2),
-        ReverseDropPurple(-0.2)
+        ReverseDropPurple(-0.2),
+        EjectDraggedPixelPower(-0.1)
     }
 
     enum class RollerPowers(val power: Double) {
