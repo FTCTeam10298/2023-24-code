@@ -8,6 +8,7 @@ import kotlin.math.cos
 
 class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
     enum class Positions(val angleDegrees:Double) {
+        TooFarIn(265.0),
         ClearLiftMovement(255.0),
         In(248.0),
         GoodEnoughForLiftToGoDown(248.0),
