@@ -131,16 +131,43 @@ class RobotTwoTeleOp: OpMode() {
 
         gamepad1.rumble(rumbleInfo.left, rumbleInfo.right, 1000)
 
+
         //Collector
-        val inputCollectorStateSystem = when {
-            gamepad1.right_bumper -> {
-                CollectorSystem.CollectorPowers.Intake
+        //toggle
+
+        fun nextPosition(isDirectionPositive: Boolean): CollectorSystem.CollectorPowers {
+            val intakePowerOptions = mapOf(
+                    1 to CollectorSystem.CollectorPowers.Intake,
+                    0 to CollectorSystem.CollectorPowers.Off,
+                    -1 to CollectorSystem.CollectorPowers.Eject
+            )
+            val previousPowerInt: Int = previousRobotState.collectorSystemState.collectorState.power.toInt()
+
+
+            val valueToChangeBy = if (isDirectionPositive) {
+                1
+            } else {
+                -1
             }
-            gamepad1.left_bumper -> {
-                CollectorSystem.CollectorPowers.Eject
+            val nonRangedChange = previousPowerInt + valueToChangeBy
+            val newPowerOption =if (nonRangedChange !in -1..1) {
+                0
+            } else {
+                nonRangedChange
+            }
+
+            return intakePowerOptions[newPowerOption] ?: CollectorSystem.CollectorPowers.Off
+        }
+
+        val inputCollectorStateSystem = when {
+            gamepad1.right_bumper && !previousGamepad1State.right_bumper -> {
+                nextPosition(true)
+            }
+            gamepad1.left_bumper && !previousGamepad1State.left_bumper -> {
+                nextPosition(false)
             }
             else -> {
-                CollectorSystem.CollectorPowers.Off
+                previousRobotState.collectorSystemState.collectorState
             }
         }
 
