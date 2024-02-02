@@ -287,7 +287,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         imu.resetYaw()
 
         //Lights
-        lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
+//        lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
     }
 
 

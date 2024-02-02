@@ -521,8 +521,6 @@ class RobotTwoAuto: OpMode() {
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
         wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"))
 
-        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
-
 
         opencv.init(hardwareMap)
         opencv.internalCamera = false
@@ -548,6 +546,7 @@ class RobotTwoAuto: OpMode() {
         wizardResults = runMenuWizard()
         if (wizardWasChanged) {
             runCamera()
+            hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
         }
     }
 
@@ -564,6 +563,8 @@ class RobotTwoAuto: OpMode() {
 
         autoStateList = calcAutoTargetStateList(alliance, startPosition, propPosition)
         autoListIterator = autoStateList.listIterator()
+
+        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
     }
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
