@@ -121,17 +121,19 @@ class RobotTwoTeleOp: OpMode() {
         /** TELE-OP PHASE */
 
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
-        telemetry.addLine("loop time: $loopTime milis")
-        telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
+        telemetry.addLine("Loop time (Current): $loopTime ms")
+        telemetry.addLine("Loop time (Peak): ${loopTimeMeasurer.peakDeltaTime} ms")
 
+        // FIXME:
         //Spit out extra pixels
         //Wait to retract depo during driver 1 until 500milis after claws retract
         //use green color amount in threshold measuring
         //figure out smashing issue
         //add bulk reads
+        //arm goes down too much and gets stuck
 
 
-        //Handoff related inputs
+        // Handoff related inputs ------------------------------------------------------------------
         val isHandoffButtonPressed = (gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start)
 
         val extendoTriggerActivation = 0.1
@@ -176,7 +178,7 @@ class RobotTwoTeleOp: OpMode() {
         val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= 0.2
 
 
-        //Gamepad1 Bumper Mode
+        // Gamepad1 Bumper Mode --------------------------------------------------------------------
         val gamepad1DpadIsActive = depoGamepad1Input != null
         val liftTargetIsDown = previousRobotState.depoState.liftPosition.ticks <= Lift.LiftPositions.Min.ticks
         val bothClawsAreRetracted = hardware.leftClawServo.position == LeftClawPosition.Retracted.position && hardware.rightClawServo.position == RightClawPosition.Retracted.position
@@ -193,7 +195,7 @@ class RobotTwoTeleOp: OpMode() {
         }
 
 
-        //Handoff
+        // Handoff ---------------------------------------------------------------------------------
         val transferSensorState = collectorSystem.getCurrentState(previousRobotState.collectorSystemState)
         val areBothPixelsIn = transferSensorState.transferLeftSensorState.hasPixelBeenSeen && transferSensorState.transferRightSensorState.hasPixelBeenSeen
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
@@ -234,7 +236,7 @@ class RobotTwoTeleOp: OpMode() {
             gamepad1.rumble(1.0, 1.0, 800)
         }
 
-        //Extendo
+        // Extendo ---------------------------------------------------------------------------------
         val extendoState: CollectorSystem.ExtendoPositions = when {
             rightTrigger && leftTrigger -> {
                 hardware.extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -290,7 +292,7 @@ class RobotTwoTeleOp: OpMode() {
             collectorSystem.powerExtendo(power)
         }
 
-        //Lift
+        // Lift ------------------------------------------------------------------------------------
         val liftPosition: Lift.LiftPositions = if (areLiftManualControlsActive) {
             Lift.LiftPositions.Manual
         } else {
@@ -353,11 +355,10 @@ class RobotTwoTeleOp: OpMode() {
         }
         previousIsLiftEligableForReset = isLiftEligableForReset
 
-        telemetry.addLine("lift position: ${lift.getCurrentPositionTicks()}")
-        telemetry.addLine("lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
+        telemetry.addLine("Lift position: ${lift.getCurrentPositionTicks()}")
+        telemetry.addLine("Lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
 
-        //Arm
-
+        // Arm -------------------------------------------------------------------------------------
         val liftIsBelowFreeArmLevel = hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsInish = arm.getArmAngleDegrees() >= Arm.Positions.Inish.angleDegrees
 
@@ -375,7 +376,7 @@ class RobotTwoTeleOp: OpMode() {
                     previousRobotState.depoState.armPos
                 }
                 doHandoffSequence -> {
-                    telemetry.addLine("using the transfer to decide where to move")
+                    telemetry.addLine("Using the transfer to decide where to move")
                     handoffState.armState
                 }
                 liftIsBelowFreeArmLevel  -> {
@@ -398,13 +399,13 @@ class RobotTwoTeleOp: OpMode() {
         }
         if (armPosition == Arm.Positions.Manual) {
             arm.powerArm(armOverrideStickValue)
-            telemetry.addLine("arm power (manual override): $armOverrideStickValue")
+            telemetry.addLine("Arm power (manual override): $armOverrideStickValue")
         } else {
             arm.moveArmTowardPosition(armPosition.angleDegrees)
-            telemetry.addLine("arm target: $armPosition, angle: ${armPosition.angleDegrees}")
+            telemetry.addLine("Arm target: $armPosition, angle: ${armPosition.angleDegrees}")
         }
 
-        //Collector
+        // Collector -------------------------------------------------------------------------------
         fun nextPosition(isDirectionPositive: Boolean): CollectorSystem.CollectorPowers {
             val intakePowerOptions = mapOf(
                     1 to CollectorSystem.CollectorPowers.Intake,
@@ -485,7 +486,7 @@ class RobotTwoTeleOp: OpMode() {
         collectorSystem.runRollers(rollerState)
 
 
-        //Claws
+        // Claws -----------------------------------------------------------------------------------
         val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val wasTheLiftGoindDownBefore = previousRobotState.depoState.liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsIn = armPosition.angleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
@@ -551,12 +552,12 @@ class RobotTwoTeleOp: OpMode() {
         hardware.rightClawServo.position = rightClawPosition.position
 
 
-        // DRONE DRIVE
+        // DRONE DRIVE -----------------------------------------------------------------------------
         val yInput = -gamepad1.left_stick_y.toDouble()
         val xInput = gamepad1.left_stick_x.toDouble()
         val rInput = gamepad1.right_stick_x.toDouble()
 
-        //Strafe without turing for depositing
+        // Strafe without turing for depositing
         val xSlowDowMultiplier = 1.0
         val driver2XInput = if (xInput == 0.0) {
             (gamepad2.left_trigger - gamepad2.right_trigger) * xSlowDowMultiplier
@@ -565,7 +566,7 @@ class RobotTwoTeleOp: OpMode() {
             0.0
         }
         val ySlowDowMultiplier = 2/3
-        val driver2YInput = if (yInput in -0.08..0.08) {
+        val driver2YInput = if (yInput in -0.08..0.08) { // FIXME: This is almost certainly in the joystick deadzone range, making this a no-op
             gamepad2.left_stick_y.toDouble() * ySlowDowMultiplier
         } else {
             0.0
@@ -586,7 +587,7 @@ class RobotTwoTeleOp: OpMode() {
                 (y - x - r),
                 (y + x + r))
 
-        //Launcher
+        // Plane Launcher --------------------------------------------------------------------------
         hardware.launcherServo.position = if ((gamepad2.y && !gamepad2.dpad_left) || gamepad1.y) {
             RobotTwoHardware.LauncherPosition.Released.position
         } else {
@@ -594,7 +595,7 @@ class RobotTwoTeleOp: OpMode() {
         }
 
 
-        //Hang
+        // Hang ------------------------------------------------------------------------------------
         hardware.hangReleaseServo.power = if (gamepad1.x || (gamepad2.left_stick_button && gamepad2.right_stick_button)) {
             RobotTwoHardware.HangPowers.Release.power
         } else {
@@ -602,7 +603,7 @@ class RobotTwoTeleOp: OpMode() {
         }
 
 
-        //Light Control
+        // Light Control ---------------------------------------------------------------------------
         val isAnyColorButtonPressed: Boolean = gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y
 
         val desiredPixelLightPattern: BothPixelsWeWant = if (gamepad2.dpad_left) {
@@ -653,7 +654,6 @@ class RobotTwoTeleOp: OpMode() {
                 previousDesiredPixelLightPattern
             }
         }
-        //arm goes down too much and gets stuck
         previousIsAnyColorButtonPressed = isAnyColorButtonPressed
         telemetry.addLine("desiredPixelLightPattern: $desiredPixelLightPattern")
 
@@ -663,7 +663,7 @@ class RobotTwoTeleOp: OpMode() {
 //        telemetry.addLine("colorDetectedInRightSide: ${colorDetectedInRightSide}")
 
 
-        //Light actuation
+        // Light actuation -------------------------------------------------------------------------
         fun getLightPatternFromPixelColor(pixelWeWant: PixelColor): RevBlinkinLedDriver.BlinkinPattern {
             return when (pixelWeWant) {
                 PixelColor.Unknown -> RevBlinkinLedDriver.BlinkinPattern.BLUE
@@ -710,16 +710,16 @@ class RobotTwoTeleOp: OpMode() {
         hardware.lights.setPattern(colorToDisplay)
 
 
-        telemetry.addLine("arm raw angle: ${arm.encoderReader.getRawPositionDegrees()}")
-        telemetry.addLine("arm actual angle: ${arm.getArmAngleDegrees()}")
-        telemetry.addLine("lift actual position: ${lift.getCurrentPositionTicks()}")
-        telemetry.addLine("extendo actual position: ${hardware.extendoMotorMaster.currentPosition}")
-        telemetry.addLine("left flap angle: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
-        telemetry.addLine("right flap angle: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("Arm raw angle: ${arm.encoderReader.getRawPositionDegrees()}")
+        telemetry.addLine("Arm actual angle: ${arm.getArmAngleDegrees()}")
+        telemetry.addLine("Lift actual position: ${lift.getCurrentPositionTicks()}")
+        telemetry.addLine("Extendo actual position: ${hardware.extendoMotorMaster.currentPosition}")
+        telemetry.addLine("Left flap angle: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("Right flap angle: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
 
         /** not controls */
 
-        //Previous state
+        // Previous robot state --------------------------------------------------------------------
         previousRobotState = RobotState(
                 positionAndRotation = PositionAndRotation(),
                 collectorSystemState = CollectorSystem.CollectorState(
@@ -745,6 +745,8 @@ class RobotTwoTeleOp: OpMode() {
         previousGamepad1State.copy(gamepad1)
         previousGamepad2State.copy(gamepad2)
         wereBothPixelsInPreviously = areBothPixelsIn
+
+        // Update telemetry display at end of loop cycle
         telemetry.update()
     }
 
