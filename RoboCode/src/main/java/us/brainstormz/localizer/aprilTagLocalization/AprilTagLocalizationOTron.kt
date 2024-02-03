@@ -5,7 +5,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import us.brainstormz.localizer.PositionAndRotation
 import kotlin.math.atan
 
-class AprilTagLocalizationOTron {
+class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Double) {
+    //distance of the camera from the bot's center so that we find position relative to bot center
+    // not camera center.
     fun getCameraPositionOnField(aprilTagDetection: AprilTagDetection): RobotPositionOnField {
 
         /** adds relative position to position of tags on field, because both are calculated with
@@ -20,8 +22,8 @@ class AprilTagLocalizationOTron {
 
         val tagRelativeToCamera = aprilTagDetection.ftcPose
         val tagRelativeToCameraOurCoordinateSystem = PositionAndRotation(
-                x= tagRelativeToCamera.x,
-                y= -tagRelativeToCamera.y,
+                x= tagRelativeToCamera.x + cameraXOffset,
+                y= -tagRelativeToCamera.y + cameraYOffset,
                 r= tagRelativeToCamera.bearing
         )
 

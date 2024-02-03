@@ -73,7 +73,7 @@ import us.brainstormz.localizer.RRTwoWheelLocalizer
 class AprilTagger : LinearOpMode() {
 
 
-    var aprilTagLocalization = AprilTagLocalizationOTron()
+    var aprilTagLocalization = AprilTagLocalizationOTron(0.0, 0.0)
 
     //This is 4 cameras at lowest possible res. (maybe just return b/w? IDK how, but sounds good. Also, there's bitcrushing.)
     private val aprilTagThings = listOf(

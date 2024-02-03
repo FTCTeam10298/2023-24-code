@@ -23,7 +23,11 @@ import java.lang.Thread.sleep
 class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
     val hardware = RobotTwoHardware(opmode= this, telemetry= telemetry)
     lateinit var localizer: RRTwoWheelLocalizer
-    var aprilTagLocalization = AprilTagLocalizationOTron()
+    val robotCameraYOffset = RobotTwoHardware.robotLengthInches/2
+    var aprilTagLocalization = AprilTagLocalizationOTron(
+            cameraXOffset=robotCameraYOffset,
+            cameraYOffset=0.00 //it's right on center! Yay!
+    )
 
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
