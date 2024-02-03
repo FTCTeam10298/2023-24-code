@@ -25,7 +25,7 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
 
     private val outPid = PID(kp= 0.0026, kd = 0.01)
     private val outHoldingConstant = 0.08
-    private val inPid = PID(kp= 0.0015, ki = 0.00000036, kd = 0.000055)
+    private val inPid = PID(kp= 0.0015, ki = 0.000005, kd = 0.000055)
     private val inHoldingConstant = 0.035
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180

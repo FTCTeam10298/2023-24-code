@@ -33,8 +33,6 @@ import kotlin.math.PI
 
 class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
 
-
-
     override lateinit var lFDrive: DcMotor
     override lateinit var rFDrive: DcMotor
     override lateinit var lBDrive: DcMotor
@@ -44,7 +42,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         val robotLengthInches = 17.75
         val robotWidthInches = 16.21457
         val tabCutoffCompensationInches = 0.5
-        val redStartingXInches = -(72.0 - ((RobotTwoHardware.robotLengthInches/2) + RobotTwoHardware.tabCutoffCompensationInches))
+        val redStartingXInches = -(72.0 - ((robotLengthInches/2) + tabCutoffCompensationInches))
         val redStartingRDegrees = -90.0
     }
 
