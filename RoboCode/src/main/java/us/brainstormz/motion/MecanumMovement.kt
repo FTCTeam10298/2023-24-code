@@ -28,7 +28,7 @@ class MecanumMovement(override val localizer: Localizer, override val hardware: 
 //    val defaultRotationPID =        PID(1.000,  0.000050, 0.0)
     val defaultYTranslationPID =    PID(0.18,  0.00001, 1.9)
     val defaultXTranslationPID =    PID(0.5,  0.00015, 1.5)
-    val defaultRotationPID =        PID(4.05,  0.0016, 1.5)
+    val defaultRotationPID =        PID(4.8)//,  0.0015, 1.5)
     val defaultPrecisionInches = 5.0
     val defaultPrecisionDegrees = 3.0
 
