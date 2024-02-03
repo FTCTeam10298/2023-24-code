@@ -226,8 +226,8 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         }
     }
 
-    val leftAlphaDetectionThreshold = 600
-    val rightAlphaDetectionThreshold = 400
+    val leftAlphaDetectionThreshold = 300
+    val rightAlphaDetectionThreshold = 200
     fun isPixelIn(colorSensor: ColorSensor, side: Side): Boolean {
         val alpha = colorSensor.alpha()
 

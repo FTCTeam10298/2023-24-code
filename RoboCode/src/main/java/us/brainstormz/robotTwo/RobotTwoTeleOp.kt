@@ -124,14 +124,10 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("loop time: $loopTime milis")
         telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
 
-
-        //~~up dpad top
-        //~~left dpad middle
-        //~~down dpad low
-        //~~switch to claw mode with bumpers when brody is using lift
-        //~~auto retract lift
         //Spit out extra pixels
-
+        //Wait to retract depo during driver 1 until 500milis after claws retract
+        //use green color amount in threshold measuring
+        //figure out smashing issue
 
         //Handoff related inputs
         val isHandoffButtonPressed = (gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start)
