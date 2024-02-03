@@ -92,6 +92,8 @@ class RobotTwoTeleOp: OpMode() {
 
     var wereWeDoingHandoffLastLoop = false
 
+    var previousIsLiftEligableForReset = false
+
     private var previousGamepad1State: Gamepad = Gamepad()
     private var previousGamepad2State: Gamepad = Gamepad()
 
@@ -111,6 +113,12 @@ class RobotTwoTeleOp: OpMode() {
 //    data class RumbleInfo(val left: Double, val right: Double, val time: Long)
 //    private var previousRumbeInfo = RumbleInfo(left = 1.0, right = 0.0, time= 0L)
 
+    enum class Gamepad1BumperMode {
+        Collector,
+        Claws
+    }
+    var previousGamepadOneBumperMode = Gamepad1BumperMode.Collector
+    val twoBeatRumble = Gamepad.RumbleEffect.Builder().addStep(1.0, 1.0, 500).addStep(0.0, 0.0, 100).addStep(1.0, 1.0, 500).build()
 
     private var previousRobotState = initialRobotState
     override fun loop() {
@@ -138,7 +146,7 @@ class RobotTwoTeleOp: OpMode() {
         //~~up dpad top
         //~~left dpad middle
         //~~down dpad low
-        //switch to claw mode with bumpers when brody is using lift
+        //~~switch to claw mode with bumpers when brody is using lift
         //auto retract lift
 
 
@@ -152,7 +160,7 @@ class RobotTwoTeleOp: OpMode() {
         val liftOverrideStickValue = gamepad2.right_stick_y.toDouble()
         val areLiftManualControlsActive = liftOverrideStickValue.absoluteValue > 0.2
 
-        val depoInput: Lift.LiftPositions? = when {
+        val depoGamepad2Input: Lift.LiftPositions? = when {
             gamepad2.dpad_up-> {
                 Lift.LiftPositions.SetLine3
             }
@@ -166,6 +174,9 @@ class RobotTwoTeleOp: OpMode() {
                     Lift.LiftPositions.SetLine2
                 }
             }
+            else -> null
+        }
+        val depoGamepad1Input: Lift.LiftPositions? = when {
             gamepad1.dpad_up-> {
                 Lift.LiftPositions.SetLine3
             }
@@ -178,8 +189,28 @@ class RobotTwoTeleOp: OpMode() {
             else -> null
         }
 
+        val depoInput = depoGamepad2Input ?: depoGamepad1Input
+
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
         val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= 0.2
+
+
+        //Gamepad1 Bumper Mode
+        val gamepad1DpadIsActive = depoGamepad1Input != null
+        val liftTargetIsDown = previousRobotState.depoState.liftPosition.ticks <= Lift.LiftPositions.Min.ticks
+        val bothClawsAreRetracted = hardware.leftClawServo.position == LeftClawPosition.Retracted.position && hardware.rightClawServo.position == RightClawPosition.Retracted.position
+        val gamepadOneBumperMode: Gamepad1BumperMode  = when {
+            gamepad1DpadIsActive -> {
+                Gamepad1BumperMode.Claws
+            }
+            !gamepad1DpadIsActive && (bothClawsAreRetracted || liftTargetIsDown) -> {
+                Gamepad1BumperMode.Collector
+            }
+            else -> {
+                previousGamepadOneBumperMode
+            }
+        }
+        previousGamepadOneBumperMode = gamepadOneBumperMode
 
 
         //Handoff
@@ -216,80 +247,11 @@ class RobotTwoTeleOp: OpMode() {
         }
         val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE)
 
-        //Collector
-        fun nextPosition(isDirectionPositive: Boolean): CollectorSystem.CollectorPowers {
-            val intakePowerOptions = mapOf(
-                    1 to CollectorSystem.CollectorPowers.Intake,
-                    0 to CollectorSystem.CollectorPowers.Off,
-                    -1 to CollectorSystem.CollectorPowers.Eject
-            )
-            val previousPowerInt: Int = previousRobotState.collectorSystemState.collectorState.power.toInt()
-
-            val valueToChangeBy = if (isDirectionPositive) {
-                1
-            } else {
-                -1
-            }
-            val nonRangedChange = previousPowerInt + valueToChangeBy
-            val newPowerOption =if (nonRangedChange !in -1..1) {
-                0
-            } else {
-                nonRangedChange
-            }
-
-            return intakePowerOptions[newPowerOption] ?: CollectorSystem.CollectorPowers.Off
+        val aClawWasPreviouslyRetracted = previousRobotState.depoState.rightClawPosition.position == RightClawPosition.Retracted.position || hardware.leftClawServo.position == LeftClawPosition.Retracted.position
+        val bothClawsAreGripping = hardware.leftClawServo.position == LeftClawPosition.Gripping.position && hardware.rightClawServo.position == RightClawPosition.Gripping.position
+        if (doHandoffSequence && bothClawsAreGripping && aClawWasPreviouslyRetracted) {
+            gamepad2.rumble(1.0, 1.0, 800)
         }
-
-        val inputCollectorStateSystem = when {
-            gamepad1.right_bumper && !previousGamepad1State.right_bumper -> {
-                nextPosition(true)
-            }
-            gamepad1.left_bumper && !previousGamepad1State.left_bumper -> {
-                nextPosition(false)
-            }
-            theRobotJustCollectedTwoPixels -> {
-                CollectorSystem.CollectorPowers.Off
-            }
-            else -> {
-                previousRobotState.collectorSystemState.collectorState
-            }
-        }
-
-        val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
-        collectorSystem.spinCollector(actualCollectorState.power)
-
-        //Spit out pixels with stick buttons
-        val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = actualCollectorState == CollectorSystem.CollectorPowers.Intake)
-        val rollerState = when {
-            gamepad1.right_stick_button || gamepad1.left_stick_button -> {
-                val leftEject = if (gamepad1.left_stick_button) {
-                    CollectorSystem.RollerPowers.Eject
-                } else {
-                    CollectorSystem.RollerPowers.Off
-                }
-                val rightEject = if (gamepad1.right_stick_button) {
-                    CollectorSystem.RollerPowers.Eject
-                } else {
-                    CollectorSystem.RollerPowers.Off
-                }
-                CollectorSystem.RollerState(leftServoCollect = leftEject,
-                        rightServoCollect = rightEject,
-                        directorState = CollectorSystem.DirectorState.Off)
-            }
-            gamepad1.b ->
-                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Intake,
-                        rightServoCollect = CollectorSystem.RollerPowers.Intake,
-                        directorState = CollectorSystem.DirectorState.Off)
-//            gamepad1.dpad_down ->
-//                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Eject,
-//                        rightServoCollect = CollectorSystem.RollerPowers.Eject,
-//                        directorState = CollectorSystem.DirectorState.Off)
-            else -> {
-                autoRollerState
-            }
-        }
-        collectorSystem.runRollers(rollerState)
-
 
         //Extendo
         val extendoState: CollectorSystem.ExtendoPositions = when {
@@ -352,6 +314,9 @@ class RobotTwoTeleOp: OpMode() {
             Lift.LiftPositions.Manual
         } else {
             when {
+                previousGamepadOneBumperMode == Gamepad1BumperMode.Claws && bothClawsAreRetracted -> {
+                    Lift.LiftPositions.Transfer
+                }
                 doHandoffSequence -> {
                     when (handoffState.liftState) {
                         HandoffManager.LiftStateFromHandoff.MoveDown -> Lift.LiftPositions.Transfer
@@ -398,10 +363,14 @@ class RobotTwoTeleOp: OpMode() {
         lift.powerLift(liftPower)
 
         val liftTargetHasntChanged = liftPosition == previousRobotState.depoState.liftPosition
-        if (lift.isLimitSwitchActivated() && liftTargetHasntChanged) {
+        val isLiftEligableForReset = lift.isLimitSwitchActivated() && liftTargetHasntChanged
+        if (isLiftEligableForReset && !previousIsLiftEligableForReset) {
             hardware.liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
             hardware.liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+
+            gamepad1.runRumbleEffect(twoBeatRumble)
         }
+        previousIsLiftEligableForReset = isLiftEligableForReset
 
         telemetry.addLine("lift position: ${lift.getCurrentPositionTicks()}")
         telemetry.addLine("lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
@@ -454,6 +423,87 @@ class RobotTwoTeleOp: OpMode() {
             telemetry.addLine("arm target: $armPosition, angle: ${armPosition.angleDegrees}")
         }
 
+        //Collector
+        fun nextPosition(isDirectionPositive: Boolean): CollectorSystem.CollectorPowers {
+            val intakePowerOptions = mapOf(
+                    1 to CollectorSystem.CollectorPowers.Intake,
+                    0 to CollectorSystem.CollectorPowers.Off,
+                    -1 to CollectorSystem.CollectorPowers.Eject
+            )
+            val previousPowerInt: Int = previousRobotState.collectorSystemState.collectorState.power.toInt()
+
+            val valueToChangeBy = if (isDirectionPositive) {
+                1
+            } else {
+                -1
+            }
+            val nonRangedChange = previousPowerInt + valueToChangeBy
+            val newPowerOption =if (nonRangedChange !in -1..1) {
+                0
+            } else {
+                nonRangedChange
+            }
+
+            return intakePowerOptions[newPowerOption] ?: CollectorSystem.CollectorPowers.Off
+        }
+
+        val inputCollectorStateSystem = if (gamepadOneBumperMode == Gamepad1BumperMode.Collector) {
+            when {
+                gamepad1.right_bumper && !previousGamepad1State.right_bumper -> {
+                    nextPosition(true)
+                }
+
+                gamepad1.left_bumper && !previousGamepad1State.left_bumper -> {
+                    nextPosition(false)
+                }
+
+                theRobotJustCollectedTwoPixels -> {
+                    CollectorSystem.CollectorPowers.Off
+                }
+
+                else -> {
+                    previousRobotState.collectorSystemState.collectorState
+                }
+            }
+        } else {
+            previousRobotState.collectorSystemState.collectorState
+        }
+
+        val actualCollectorState = collectorSystem.getCollectorState(inputCollectorStateSystem)
+        collectorSystem.spinCollector(actualCollectorState.power)
+
+        val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = actualCollectorState == CollectorSystem.CollectorPowers.Intake)
+        val rollerState = when {
+            gamepad1.right_stick_button || gamepad1.left_stick_button -> {
+                val leftEject = if (gamepad1.left_stick_button) {
+                    CollectorSystem.RollerPowers.Eject
+                } else {
+                    CollectorSystem.RollerPowers.Off
+                }
+                val rightEject = if (gamepad1.right_stick_button) {
+                    CollectorSystem.RollerPowers.Eject
+                } else {
+                    CollectorSystem.RollerPowers.Off
+                }
+                CollectorSystem.RollerState(leftServoCollect = leftEject,
+                        rightServoCollect = rightEject,
+                        directorState = CollectorSystem.DirectorState.Off)
+            }
+            gamepad1.b ->
+                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Intake,
+                        rightServoCollect = CollectorSystem.RollerPowers.Intake,
+                        directorState = CollectorSystem.DirectorState.Off)
+//            gamepad1.dpad_down ->
+//                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Eject,
+//                        rightServoCollect = CollectorSystem.RollerPowers.Eject,
+//                        directorState = CollectorSystem.DirectorState.Off)
+            else -> {
+                autoRollerState
+            }
+        }
+        collectorSystem.runRollers(rollerState)
+
+
         //Claws
         val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val wasTheLiftGoindDownBefore = previousRobotState.depoState.liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
@@ -464,7 +514,11 @@ class RobotTwoTeleOp: OpMode() {
         val shouldTheClawsRetractForExtendo = isTheLiftGoingDown && isTheExtendoGoingIn && !wasTheCollectorGoingInBefore
         val shouldClawsRetract = shouldTheClawsRetractForLift || shouldTheClawsRetractForExtendo
 
-        val leftClawPosition: LeftClawPosition = if (gamepad2.left_bumper && !previousGamepad2State.left_bumper) {
+        val areGamepad1ClawControlsActive = gamepadOneBumperMode == Gamepad1BumperMode.Claws
+
+        val gamepad1LeftClawToggle = areGamepad1ClawControlsActive && gamepad1.left_bumper && !previousGamepad1State.left_bumper
+        val gamepad2LeftClawToggle = gamepad2.left_bumper && !previousGamepad2State.left_bumper
+        val leftClawPosition: LeftClawPosition = if (gamepad2LeftClawToggle || gamepad1LeftClawToggle) {
             when (previousRobotState.depoState.leftClawPosition) {
                 LeftClawPosition.Gripping -> LeftClawPosition.Retracted
                 LeftClawPosition.Retracted -> LeftClawPosition.Gripping
@@ -488,7 +542,9 @@ class RobotTwoTeleOp: OpMode() {
         }
         hardware.leftClawServo.position = leftClawPosition.position
 
-        val rightClawPosition: RightClawPosition = if (gamepad2.right_bumper && !previousGamepad2State.right_bumper) {
+        val gamepad1RightClawToggle = areGamepad1ClawControlsActive && gamepad1.right_bumper && !previousGamepad1State.right_bumper
+        val gamepad2RightClawToggle = gamepad2.right_bumper && !previousGamepad2State.right_bumper
+        val rightClawPosition: RightClawPosition = if (gamepad2RightClawToggle || gamepad1RightClawToggle) {
             when (previousRobotState.depoState.rightClawPosition) {
                 RightClawPosition.Gripping -> RightClawPosition.Retracted
                 RightClawPosition.Retracted -> RightClawPosition.Gripping
@@ -519,9 +575,16 @@ class RobotTwoTeleOp: OpMode() {
         val rInput = gamepad1.right_stick_x.toDouble()
 
         //Strafe without turing for depositing
-        val slowDowMultiplier = 1.0
+        val xSlowDowMultiplier = 1.0
         val driver2XInput = if (xInput == 0.0) {
-            -gamepad2.left_stick_x.toDouble() * slowDowMultiplier
+            (gamepad2.left_trigger - gamepad2.right_trigger) * xSlowDowMultiplier
+//            -gamepad2.left_stick_x.toDouble() * xSlowDowMultiplier
+        } else {
+            0.0
+        }
+        val ySlowDowMultiplier = 2/3
+        val driver2YInput = if (yInput in -0.08..0.08) {
+            gamepad2.left_stick_y.toDouble() * ySlowDowMultiplier
         } else {
             0.0
         }
@@ -533,7 +596,7 @@ class RobotTwoTeleOp: OpMode() {
             0.0
         }
 
-        val y = yInput + extendoCompensationPower
+        val y = yInput + extendoCompensationPower + driver2YInput
         val x = xInput + driver2XInput
         val r = -rInput * abs(rInput)
         movement.driveSetPower((y + x - r),
@@ -601,8 +664,14 @@ class RobotTwoTeleOp: OpMode() {
             }
         } else {
             numberOfTimesColorButtonPressed = 0
-            previousDesiredPixelLightPattern
+
+            if (liftPosition == Lift.LiftPositions.Min && previousRobotState.depoState.liftPosition.ticks >= Lift.LiftPositions.Min.ticks && bothClawsAreRetracted) {
+                BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown)
+            } else {
+                previousDesiredPixelLightPattern
+            }
         }
+        //arm goes down too much and gets stuck
         previousIsAnyColorButtonPressed = isAnyColorButtonPressed
         telemetry.addLine("desiredPixelLightPattern: $desiredPixelLightPattern")
 
@@ -650,6 +719,7 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("timeOfSeeing: $timeOfSeeing")
 
         val colorToDisplay = if (areBothPixelsIn && !doneWithThePixelCollectedLights) {
+            gamepad1.rumble(1.0, 1.0, 1200)
             RevBlinkinLedDriver.BlinkinPattern.LARSON_SCANNER_RED
         } else {
             getLightPatternFromPixelColor(currentPixelToBeDisplayed)
