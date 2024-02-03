@@ -492,6 +492,9 @@ class RobotTwoTeleOp: OpMode() {
                 CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Intake,
                         rightServoCollect = CollectorSystem.RollerPowers.Intake,
                         directorState = CollectorSystem.DirectorState.Off)
+            gamepad1.left_bumper ->
+                autoRollerState.copy(directorState = CollectorSystem.DirectorState.Right)
+
 //            gamepad1.dpad_down ->
 //                CollectorSystem.RollerState(leftServoCollect = CollectorSystem.RollerPowers.Eject,
 //                        rightServoCollect = CollectorSystem.RollerPowers.Eject,
@@ -610,8 +613,7 @@ class RobotTwoTeleOp: OpMode() {
             RobotTwoHardware.LauncherPosition.Holding.position
         }
 
-
-        // Hang ------------------------------------------------------------------------------------
+        //Hang
         hardware.hangReleaseServo.power = if (gamepad1.x || (gamepad2.left_stick_button && gamepad2.right_stick_button)) {
             RobotTwoHardware.HangPowers.Release.power
         } else {
