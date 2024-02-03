@@ -72,7 +72,7 @@ class HandoffManager(
         val readyToTransfer = bothExtensionsAreAllTheWayIn && isArmReadyToTransfer && areRollersReadyToTransfer
         telemetry.addLine("readyToTransfer: $readyToTransfer \nisArmReadyToTransfer: $isArmReadyToTransfer \nliftExtensionIsAllTheWayDown: $liftExtensionIsAllTheWayDown \nisCollectorAllTheWayIn: $isCollectorAllTheWayIn")
 
-        val clawsShouldRetract = !isCollectorAllTheWayIn && !liftExtensionIsAllTheWayDown
+        val clawsShouldRetract = !isCollectorAllTheWayIn || !liftExtensionIsAllTheWayDown
         val clawState: ClawStateFromHandoff = when {
             readyToTransfer -> {
                 telemetry.addLine("Gripping, transfer is complete")

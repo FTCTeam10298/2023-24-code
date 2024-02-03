@@ -510,8 +510,9 @@ class RobotTwoTeleOp: OpMode() {
         val armIsIn = armPosition.angleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
         val isTheExtendoGoingIn = extendoState.ticks <= CollectorSystem.ExtendoPositions.Min.ticks
         val wasTheCollectorGoingInBefore = previousRobotState.collectorSystemState.extendoPosition.ticks <= CollectorSystem.ExtendoPositions.Min.ticks
+        val extendoIsIn = collectorSystem.getExtendoPositionTicks() <= CollectorSystem.ExtendoPositions.Min.ticks
         val shouldTheClawsRetractForLift = isTheLiftGoingDown && !wasTheLiftGoindDownBefore && armIsIn
-        val shouldTheClawsRetractForExtendo = isTheLiftGoingDown && isTheExtendoGoingIn && !wasTheCollectorGoingInBefore
+        val shouldTheClawsRetractForExtendo = isTheLiftGoingDown && !extendoIsIn//isTheExtendoGoingIn && !wasTheCollectorGoingInBefore
         val shouldClawsRetract = shouldTheClawsRetractForLift || shouldTheClawsRetractForExtendo
 
         val areGamepad1ClawControlsActive = gamepadOneBumperMode == Gamepad1BumperMode.Claws
