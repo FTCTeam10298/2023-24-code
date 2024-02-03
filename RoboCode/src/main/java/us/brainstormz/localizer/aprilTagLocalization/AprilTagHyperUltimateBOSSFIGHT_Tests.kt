@@ -9,9 +9,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationOTron
 import us.brainstormz.localizer.aprilTagLocalization.Foo
-import us.brainstormz.localizer.aprilTagLocalization.getAprilTagLocation
-import us.brainstormz.localizer.aprilTagLocalization.getCameraPositionOnField
 import us.brainstormz.motion.MecanumMovement
 
 import us.brainstormz.telemetryWizard.TelemetryConsole
@@ -24,6 +23,7 @@ import java.lang.Thread.sleep
 class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
     val hardware = RobotTwoHardware(opmode= this, telemetry= telemetry)
     lateinit var localizer: RRTwoWheelLocalizer
+    var aprilTagLocalization = AprilTagLocalizationOTron()
 
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
@@ -39,6 +39,7 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
         hardware.init(hardwareMap)
         localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         localizer.setPositionAndRotation(PositionAndRotation(0.0, 0.0, 0.0))
+
 
         waitForStart()
 
@@ -118,10 +119,9 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
 
                 val tagBadness = theTag.hamming //not necessary... yaw = distortion, typically
                 //find units of cam relative to tag and tag relative to field
-                val currentPositionOfRobot = getCameraPositionOnField(theTag).posAndRot
+                val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(theTag).posAndRot
                 val orientation = currentPositionOfRobot.r
-
-                val tagPosition = getAprilTagLocation(whatTag)
+                val tagPosition = aprilTagLocalization.getAprilTagLocation(whatTag)
                 val differenceBetweenAprilTagAndOdom = PositionAndRotation(
                         x=roadRunnerPosition.x - currentPositionOfRobot.x,
                         y=roadRunnerPosition.y - currentPositionOfRobot.y,
@@ -143,7 +143,7 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
 
                 telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
-                val muchData = getAprilTagLocation(detection.id)
+                val muchData = aprilTagLocalization.getAprilTagLocation(detection.id)
                 telemetry.addLine("Random Madness!! $muchData")
 
 

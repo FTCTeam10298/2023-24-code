@@ -73,6 +73,8 @@ import us.brainstormz.localizer.RRTwoWheelLocalizer
 class AprilTagger : LinearOpMode() {
 
 
+    var aprilTagLocalization = AprilTagLocalizationOTron()
+
     //This is 4 cameras at lowest possible res. (maybe just return b/w? IDK how, but sounds good. Also, there's bitcrushing.)
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
@@ -158,10 +160,10 @@ class AprilTagger : LinearOpMode() {
 
                 val tagBadness = theTag.hamming //not necessary... yaw = distortion, typically
                 //find units of cam relative to tag and tag relative to field
-                val currentPositionOfRobot = getCameraPositionOnField(theTag)
+                val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(theTag)
                 val orientation = currentPositionOfRobot.posAndRot.r
 
-                val tagPosition = getAprilTagLocation(whatTag)
+                val tagPosition = aprilTagLocalization.getAprilTagLocation(whatTag)
                 val odometryPosition = 0 //Gabe's jank odometry call placeholder
                 telemetry.addLine("Sir, I found AprilTag ID 2.")
                 telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
@@ -179,7 +181,7 @@ class AprilTagger : LinearOpMode() {
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
 
                 telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
-                val muchData = getAprilTagLocation(detection.id)
+                val muchData = aprilTagLocalization.getAprilTagLocation(detection.id)
                 telemetry.addLine("Random Madness!! $muchData")
 
 
