@@ -19,9 +19,9 @@ enum class PropColors {
 class PropDetector(private val telemetry: Telemetry, private val colorToDetect: PropColors) {
 
     private val rects = listOf(
-        Rect(Point(0.0, 60.0), Point(40.0, 100.0)),
-        Rect(Point(150.0, 60.0), Point(180.0, 100.0)),
-        Rect(Point(290.0, 60.0), Point(320.0, 100.0))
+        Rect(Point(0.0, 80.0), Point(40.0, 200.0)),
+        Rect(Point(150.0, 80.0), Point(180.0, 200.0)),
+        Rect(Point(290.0, 80.0), Point(320.0, 200.0))
     )
 
     private val positionsMappedToRects = listOf(

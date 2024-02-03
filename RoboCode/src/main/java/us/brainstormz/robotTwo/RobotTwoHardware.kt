@@ -2,6 +2,7 @@ package us.brainstormz.robotTwo
 
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
+//import com.outoftheboxrobotics.photoncore.hardware.motor.PhotonDcMotor
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.hardware.rev.RevColorSensorV3
@@ -17,9 +18,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
-import com.qualcomm.robotcore.hardware.LED
 import com.qualcomm.robotcore.hardware.Servo
-import com.qualcomm.robotcore.hardware.TouchSensor
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import posePlanner.Point2D
@@ -28,16 +27,26 @@ import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.pid.PID
 import java.lang.Thread.sleep
 import kotlin.math.PI
 
 class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
+
+
+
     override lateinit var lFDrive: DcMotor
     override lateinit var rFDrive: DcMotor
     override lateinit var lBDrive: DcMotor
     override lateinit var rBDrive: DcMotor
+
+    companion object {
+        val robotLengthInches = 17.75
+        val robotWidthInches = 16.21457
+        val tabCutoffCompensationInches = 0.5
+        val redStartingXInches = -(72.0 - ((RobotTwoHardware.robotLengthInches/2) + RobotTwoHardware.tabCutoffCompensationInches))
+        val redStartingRDegrees = -90.0
+    }
 
     override lateinit var imu: IMU
 
@@ -74,18 +83,14 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     }
     enum class LeftClawPosition(val position: Double) {
         Retracted(1.0),
-        Gripping(0.49)
+        Gripping(0.46)
     }
     lateinit var leftClawServo: Servo
     lateinit var rightClawServo: Servo
     lateinit var leftColorSensor: RevColorSensorV3
     lateinit var rightColorSensor: RevColorSensorV3
 
-    enum class ExtendoPositions(val position: Double) {
-        Min(0.0),
-        Max(500.0),
-    }
-    val extendoOperationRange = ExtendoPositions.Min.position..ExtendoPositions.Max.position
+    val extendoOperationRange = CollectorSystem.ExtendoPositions.Min.ticks..CollectorSystem.ExtendoPositions.Max.ticks
     val extendoPositionPID = PID(kp = 1.0)
     lateinit var extendoMotorMaster: DcMotorEx
     lateinit var extendoMotorSlave: DcMotor
@@ -105,14 +110,24 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     //Aka throbber
     lateinit var transferDirectorServo: CRServo
 
+    enum class HangPowers(val power: Double) {
+        Holding(0.0),
+        Release(1.0)
+    }
     lateinit var hangReleaseServo: CRServo
+
+    enum class LauncherPosition(val position: Double) {
+        Holding(1.0),
+        Released(0.55)
+    }
+    lateinit var launcherServo: Servo
 
     lateinit var lights: RevBlinkinLedDriver
 
     data class RobotState(
             val positionAndRotation: PositionAndRotation,
             val depoState: RobotTwoAuto.DepoState,
-            val collectorState: Collector.CollectorState
+            val collectorSystemState: CollectorSystem.CollectorState
     )
 //
 //    data class HardwareHalves (
@@ -168,23 +183,25 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         rBDrive =       ctrlHub.getMotor(2)
         extendoMotorMaster =    exHub.getMotor(0)
         extendoMotorSlave =     exHub.getMotor(1)
-        liftMotorMaster =       exHub.getMotor(2)
+        liftMotorMaster =       exHub.getMotor(2) //Has encoder
         liftMotorSlave =        exHub.getMotor(3)
 
         //Servos
-        collectorServo1 =   exHub.getCRServo(4)//
-        collectorServo2 =   ctrlHub.getCRServo(1)//
+        collectorServo1 =   exHub.getCRServo(4)
+        collectorServo2 =   ctrlHub.getCRServo(1)
 
-        armServo1 = ctrlHub.getCRServo(3)//
-        armServo2 = ctrlHub.getCRServo(4)//
+        armServo1 = ctrlHub.getCRServo(3)
+        armServo2 = ctrlHub.getCRServo(4)
 
-        rightTransferServo = ctrlHub.getCRServo(5)//
-        leftTransferServo = exHub.getCRServo(3)//
-        transferDirectorServo = exHub.getCRServo(2)//
+        rightTransferServo = ctrlHub.getCRServo(5)
+        leftTransferServo = exHub.getCRServo(3)
+        transferDirectorServo = exHub.getCRServo(2)
 
         leftClawServo =     exHub.getServo(0)   // left/right from driver 2 perspective when depositing
-        rightClawServo =    exHub.getServo(1)//
+        rightClawServo =    exHub.getServo(1)
         hangReleaseServo = exHub.getCRServo(5)
+
+        launcherServo = ctrlHub.getServo(0)
 
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)
@@ -198,9 +215,9 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         imu = hwMap["imu"] as IMU
 
-        val parallelOdomMotor = ctrlHub.getMotor(0)
+        val parallelOdomMotor = ctrlHub.getMotor(3)
         parallelEncoder = OverflowEncoder(RawEncoder(parallelOdomMotor))
-        val perpendicularOdomMotor = ctrlHub.getMotor(3)
+        val perpendicularOdomMotor = ctrlHub.getMotor(0)
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
         lights = hwMap["lights"] as RevBlinkinLedDriver
@@ -229,8 +246,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         extendoMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         extendoMotorSlave.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-        extendoMotorMaster.direction = DcMotorSimple.Direction.FORWARD
-        extendoMotorSlave.direction = DcMotorSimple.Direction.REVERSE
+        extendoMotorMaster.direction = DcMotorSimple.Direction.REVERSE
+        extendoMotorSlave.direction = DcMotorSimple.Direction.FORWARD
 
         extendoMotorMaster.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         extendoMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
@@ -248,8 +265,8 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         liftMotorSlave.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-        liftMotorMaster.direction = DcMotorSimple.Direction.REVERSE
-        liftMotorSlave.direction = DcMotorSimple.Direction.FORWARD
+        liftMotorMaster.direction = DcMotorSimple.Direction.FORWARD
+        liftMotorSlave.direction = DcMotorSimple.Direction.REVERSE
 
         liftMotorMaster.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         liftMotorSlave.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
@@ -264,19 +281,21 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         //IMU
         val parameters:IMU.Parameters = IMU.Parameters(RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
-                        RevHubOrientationOnRobot.UsbFacingDirection.DOWN))
+                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                        RevHubOrientationOnRobot.UsbFacingDirection.LEFT))
         imu.initialize(parameters)
         imu.resetYaw()
 
+        //Lights
+//        lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
     }
 
 
     private fun getLiftPos(power: Double): Lift.LiftPositions = Lift.LiftPositions.entries.firstOrNull { it ->
-        power == it.position
+        power == it.ticks.toDouble()
     } ?: Lift.LiftPositions.Min
 
-    fun getActualState(previousActualState: RobotTwoAuto.ActualWorld?, arm: Arm, localizer: Localizer, collector: Collector): RobotTwoAuto.ActualWorld {
+    fun getActualState(previousActualState: RobotTwoAuto.ActualWorld?, arm: Arm, localizer: Localizer, collectorSystem: CollectorSystem): RobotTwoAuto.ActualWorld {
         val depoState = RobotTwoAuto.DepoState(
                 liftPosition = getLiftPos(liftMotorMaster.currentPosition.toDouble()),
 
@@ -293,7 +312,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
         val actualRobot = RobotState(
                 positionAndRotation = localizer.currentPositionAndRotation(),
-                collectorState = collector.getCurrentState(previousActualState?.actualRobot?.collectorState),
+                collectorSystemState = collectorSystem.getCurrentState(previousActualState?.actualRobot?.collectorSystemState),
                 depoState = depoState
         )
 
@@ -395,7 +414,7 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
             telemetry.update()
             servo.power = 1.0
 //            while (!gamepad.b){
-                sleep(1000)
+            sleep(1000)
 //            }
             servo.power = 0.0
             servo.close()

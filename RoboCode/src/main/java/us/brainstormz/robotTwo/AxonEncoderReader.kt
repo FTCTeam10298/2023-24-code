@@ -16,7 +16,7 @@ class AxonEncoderReader(private val axonEncoder: AnalogInput, val angleOffsetDeg
     fun getAngleFrom180Degrees(): Double = getPositionDegrees() % 180
 
     /** Angle from 0-360 */
-    fun getPositionDegrees(): Double = (getRawPositionDegrees() * forwardBackwardMultiplier) + angleOffsetDegrees
+    fun getPositionDegrees(): Double = ((getRawPositionDegrees() * forwardBackwardMultiplier) + angleOffsetDegrees).mod(360.0)
 
     /** Angle from 0-360 */
     fun getRawPositionDegrees(): Double {

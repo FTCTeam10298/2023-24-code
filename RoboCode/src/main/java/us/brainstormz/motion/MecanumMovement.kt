@@ -3,6 +3,7 @@ package us.brainstormz.motion
 //import com.acmerobotics.dashboard.FtcDashboard
 //import com.acmerobotics.dashboard.config.Config
 //import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
+import android.text.BoringLayout
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.Range
@@ -13,6 +14,7 @@ import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
 //rimport us.brainstormz.paddieMatrick.PaddieMatrickHardware
 import us.brainstormz.pid.PID
+import us.brainstormz.robotTwo.Arm
 import us.brainstormz.telemetryWizard.GlobalConsole
 import kotlin.math.*
 
@@ -24,10 +26,11 @@ class MecanumMovement(override val localizer: Localizer, override val hardware: 
 //    val defaultYTranslationPID =    PID(0.078,  0.000008, 0.0)
 //    val defaultXTranslationPID =    PID(0.410,  0.000010, 0.0)
 //    val defaultRotationPID =        PID(1.000,  0.000050, 0.0)
-    val defaultYTranslationPID =    PID(0.078*3.5,  0.000008*16*2, 1.9)
-    val defaultXTranslationPID =    PID(0.410*3,  0.000010*16*2, 1.9)
-    val defaultRotationPID =        PID(1.000*3.5,  0.000050*16*2, 1.9)
-    val defaultPrecisionInches = 0.5
+    val defaultYTranslationPID =    PID(0.18,  0.00001, 1.9)
+    val defaultXTranslationPID =    PID(0.5,  0.00015, 1.5)
+    val defaultRotationPID =        PID(4.05,  0.0016, 1.5)
+    val defaultPrecisionInches = 5.0
+    val defaultPrecisionDegrees = 3.0
 
     var yTranslationPID = defaultYTranslationPID
     var xTranslationPID = defaultXTranslationPID
@@ -121,6 +124,32 @@ class MecanumMovement(override val localizer: Localizer, override val hardware: 
         setSpeedAll(vX= speedX, vY= speedY, vA= speedA, powerRange.start, powerRange.endInclusive)
 
         return false
+    }
+
+    fun isRobotAtPosition(currentPosition: PositionAndRotation, targetPosition: PositionAndRotation, precisionInches: Double = defaultPrecisionInches, precisionDegrees: Double = defaultPrecisionDegrees): Boolean {
+        val angleRad = Math.toRadians(currentPosition.r)
+
+        // Find the error in distance for X
+        val distanceErrorX = targetPosition.x - currentPosition.x
+        // Find there error in distance for Y
+        val distanceErrorY = targetPosition.y - currentPosition.y
+
+        // Find the error in angle
+        var tempAngleError = Math.toRadians(targetPosition.r) - angleRad
+
+        while (tempAngleError > Math.PI)
+            tempAngleError -= Math.PI * 2
+
+        while (tempAngleError < -Math.PI)
+            tempAngleError += Math.PI * 2
+
+        val angleError: Double = tempAngleError
+
+        // Find the error in distance
+        val distanceError = hypot(distanceErrorX, distanceErrorY)
+
+        return  abs(distanceError) <= precisionInches &&
+                abs(angleError) <= Math.toRadians(precisionDegrees)
     }
 
     /** works */

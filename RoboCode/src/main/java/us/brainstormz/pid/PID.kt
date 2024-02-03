@@ -19,6 +19,12 @@ data class PID(val kp: Double = 0.0, val ki: Double = 0.0, val kd: Double = 0.0,
 
     var iRange = -1.0..1.0
 
+    fun reset() {
+        deltaTimeMs = 0
+        lastTimeMs = System.currentTimeMillis()
+        lastError = 0.0
+        i = 0.0
+    }
     private var deltaTimeMs: Long = 1
     private var lastTimeMs: Long = System.currentTimeMillis()
     private var lastError: Double = 0.0
