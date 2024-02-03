@@ -210,7 +210,6 @@ class RobotTwoTeleOp: OpMode() {
                 previousGamepadOneBumperMode
             }
         }
-        previousGamepadOneBumperMode = gamepadOneBumperMode
 
 
         //Handoff
@@ -314,7 +313,7 @@ class RobotTwoTeleOp: OpMode() {
             Lift.LiftPositions.Manual
         } else {
             when {
-                previousGamepadOneBumperMode == Gamepad1BumperMode.Claws && bothClawsAreRetracted -> {
+                previousGamepadOneBumperMode == Gamepad1BumperMode.Claws && gamepadOneBumperMode == Gamepad1BumperMode.Collector -> {
                     Lift.LiftPositions.Transfer
                 }
                 doHandoffSequence -> {
@@ -666,7 +665,7 @@ class RobotTwoTeleOp: OpMode() {
         } else {
             numberOfTimesColorButtonPressed = 0
 
-            if (liftPosition == Lift.LiftPositions.Min && previousRobotState.depoState.liftPosition.ticks >= Lift.LiftPositions.Min.ticks && bothClawsAreRetracted) {
+            if (liftPosition.ticks <= Lift.LiftPositions.Min.ticks && previousRobotState.depoState.liftPosition.ticks >= Lift.LiftPositions.Min.ticks && bothClawsAreRetracted) {
                 BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown)
             } else {
                 previousDesiredPixelLightPattern
@@ -760,6 +759,7 @@ class RobotTwoTeleOp: OpMode() {
 //                                                            leftClawPosition = leftClawPosition,
 //                                                            rightClawPosition = rightClawPosition))
         previousDesiredPixelLightPattern = desiredPixelLightPattern
+        previousGamepadOneBumperMode = gamepadOneBumperMode
         previousGamepad1State.copy(gamepad1)
         previousGamepad2State.copy(gamepad2)
         wereBothPixelsInPreviously = areBothPixelsIn
