@@ -128,6 +128,8 @@ class RobotTwoTeleOp: OpMode() {
         //Wait to retract depo during driver 1 until 500milis after claws retract
         //use green color amount in threshold measuring
         //figure out smashing issue
+        //add bulk reads
+
 
         //Handoff related inputs
         val isHandoffButtonPressed = (gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start)
