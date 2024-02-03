@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo
 
 import com.outoftheboxrobotics.photoncore.Photon
+import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -24,6 +25,7 @@ import kotlin.math.absoluteValue
 class RobotTwoTeleOp: OpMode() {
 
     private val hardware = RobotTwoHardware(telemetry, this)
+    lateinit var allHubs: List<LynxModule>
     val movement = MecanumDriveTrain(hardware)
     private lateinit var arm: Arm
     private lateinit var collectorSystem: CollectorSystem
@@ -78,6 +80,17 @@ class RobotTwoTeleOp: OpMode() {
                 telemetry)
 
         odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
+
+        // Bulk encoder reads ----------------------------------------------------------------------
+        // From ConceptMotorBulkRead.java, see that file for details
+
+        // Important Step 2: Get access to a list of Expansion Hub Modules to enable changing caching methods.
+        allHubs = hardwareMap.getAll(LynxModule::class.java)
+
+        // Important Step 3: Option B. Set all Expansion hubs to use the MANUAL Bulk Caching mode
+        for (module in allHubs) {
+            module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
+        }
     }
 
     private val loopTimeMeasurer = LoopTimeMeasurer()
@@ -124,12 +137,16 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("Loop time (Current): $loopTime ms")
         telemetry.addLine("Loop time (Peak): ${loopTimeMeasurer.peakDeltaTime} ms")
 
+        // Important Step 4: If you are using MANUAL mode, you must clear the BulkCache once per control cycle
+        for (module in allHubs) {
+            module.clearBulkCache()
+        }
+
         // FIXME:
         //Spit out extra pixels
         //Wait to retract depo during driver 1 until 500milis after claws retract
         //use green color amount in threshold measuring
         //figure out smashing issue
-        //add bulk reads
         //arm goes down too much and gets stuck
 
 
@@ -709,7 +726,7 @@ class RobotTwoTeleOp: OpMode() {
 
         hardware.lights.setPattern(colorToDisplay)
 
-
+        // FIXME: Some of these may add to loop latency, consider disabling for comp
         telemetry.addLine("Arm raw angle: ${arm.encoderReader.getRawPositionDegrees()}")
         telemetry.addLine("Arm actual angle: ${arm.getArmAngleDegrees()}")
         telemetry.addLine("Lift actual position: ${lift.getCurrentPositionTicks()}")
