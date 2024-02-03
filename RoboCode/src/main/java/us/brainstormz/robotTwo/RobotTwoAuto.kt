@@ -40,9 +40,9 @@ class RobotTwoAuto: OpMode() {
                                                                     myJankFlagToInjectPurplePlacement = true)
 
     private val placingOnBackboardCenter = PositionAndRotation(x= -36.0, y= -55.0, r= 0.0)
-    private val placingOnBackboardLeft = PositionAndRotation(x= -31.0, y= -55.0, r= 0.0)
+    private val placingOnBackboardLeft = PositionAndRotation(x= -27.0, y= -55.0, r= 0.0)
 
-    //Backboard side
+    /** Backboard side */
     private val backboarkSidePurplePixelPlacementLeftPosition = PositionAndRotation(x= -34.0, y= -36.0, r= 0.0)
     private val backboarkSidePurplePixelPlacementCenterPosition = PositionAndRotation(x= -34.0, y= -36.0, r= 0.0)
     private val backboarkSidePurplePixelPlacementRightPosition = PositionAndRotation(x= -34.0, y= -36.0, r= 0.0)
@@ -182,19 +182,17 @@ class RobotTwoAuto: OpMode() {
 
 
     /** Audience side */
-
     val redDistanceFromCenterlineInches = -((RobotTwoHardware.robotWidthInches/2)+0.5)
-//    private val audienceSideNavigateUnderTrussWaypoint1 = PositionAndRotation(x= redDistanceFromCenterlineInches-10, y= 50.0, r= 0.0)
-    private val audienceSideNavigateUnderTrussWaypoint1 = PositionAndRotation(x= redDistanceFromCenterlineInches, y= 50.0, r= 0.0)
-    private val audienceSideNavigateUnderTrussWaypoint2 = PositionAndRotation(x= redDistanceFromCenterlineInches, y=-30.0, r= 0.0)
+    private val audienceSideNavigateUnderTrussWaypoint1 = PositionAndRotation(x= redDistanceFromCenterlineInches, y=-30.0, r= 0.0)
     private val audienceSideParkPosition = PositionAndRotation(x= -10.0, y= -47.0, r= 0.0)
 
-    private val audienceSideDepositPurpleLeft = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x+ 1.0, r= StartPosition.Audience.redStartPosition.r+15.0)
+    private val audienceSideDepositPurpleLeft = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x+ 1.0, r= StartPosition.Audience.redStartPosition.r+18.0)
     private val audienceSideNavigateBetweenTapeWaypoint1 = StartPosition.Audience.redStartPosition.copy(x= -12.0, y= StartPosition.Audience.redStartPosition.y + 1)//, r= StartPosition.Audience.redStartPosition.r+5)
+    private val audienceSideNavigateBetweenTapeWaypoint2 = StartPosition.Audience.redStartPosition.copy(x= -12.0, y= StartPosition.Audience.redStartPosition.y + 1, r= 0.0)//, r= StartPosition.Audience.redStartPosition.r+5)
     private val audienceSideLeftPurple: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AudiencePurpleMiddlePosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AudiencePurpleCenterPosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
                             positionAndRotation = audienceSideDepositPurpleLeft,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -204,7 +202,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorState(CollectorPowers.EjectDraggedPixelPower, ExtendoPositions.AudiencePurpleMiddlePosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorState(CollectorPowers.EjectDraggedPixelPower, ExtendoPositions.AudiencePurpleCenterPosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
                             positionAndRotation = audienceSideDepositPurpleLeft,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -240,25 +238,26 @@ class RobotTwoAuto: OpMode() {
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         isRobotAtPosition(targetState, actualState)
                     },),
-//            TargetWorld(
-//                    targetRobot = RobotState(
-//                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
-//                            positionAndRotation = audienceSideNavigateAroundTapeWaypoint2,
-//                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
-//                    ),
-//                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-//                        mecanumMovement.isRobotAtPosition(precisionInches = 3.0, precisionDegrees = 3.0, currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState.targetRobot.positionAndRotation)
-//                    },),
+            TargetWorld(
+                    targetRobot = RobotState(
+                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
+                            positionAndRotation = audienceSideNavigateBetweenTapeWaypoint2,
+                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+                        isRobotAtPosition(targetState, actualState) && hasTimeElapsed(500, targetState)
+                    },),
             )
 
     private val audienceSideDepositPurpleCenter = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x+ 6.5)
     private val audienceSideNavigateAroundTapeWaypoint1 = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x+ 15.0, y=50.0)
     private val audienceSideNavigateAroundTapeWaypoint2 = audienceSideNavigateAroundTapeWaypoint1.copy(x= redDistanceFromCenterlineInches-10)
     private val audienceSideNavigateAroundTapeWaypoint3 = PositionAndRotation(x= redDistanceFromCenterlineInches-10, y= 50.0, r= 0.0)
+    private val audienceSideNavigateAroundTapeWaypoint4 = PositionAndRotation(x= redDistanceFromCenterlineInches, y= 50.0, r= 0.0)
     private val audienceSideCenterPurple: List<TargetWorld> = listOf(
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AudiencePurpleMiddlePosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AudiencePurpleCenterPosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
                             positionAndRotation = audienceSideDepositPurpleCenter,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -268,7 +267,7 @@ class RobotTwoAuto: OpMode() {
                     },),
             TargetWorld(
                     targetRobot = RobotState(
-                            collectorSystemState = CollectorState(CollectorPowers.EjectDraggedPixelPower, ExtendoPositions.AudiencePurpleMiddlePosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
+                            collectorSystemState = CollectorState(CollectorPowers.EjectDraggedPixelPower, ExtendoPositions.AudiencePurpleCenterPosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
                             positionAndRotation = audienceSideDepositPurpleCenter,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
@@ -322,6 +321,25 @@ class RobotTwoAuto: OpMode() {
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         isRobotAtPosition(targetState, actualState)
                     },),
+
+            TargetWorld(
+                    targetRobot = RobotState(
+                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
+                            positionAndRotation = audienceSideNavigateAroundTapeWaypoint4,
+                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+                        isRobotAtPosition(targetState, actualState)
+                    },),
+            TargetWorld(
+                    targetRobot = RobotState(
+                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
+                            positionAndRotation = audienceSideNavigateAroundTapeWaypoint4,
+                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
+                    ),
+                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
+                        isRobotAtPosition(targetState, actualState) && hasTimeElapsed(500, targetState)
+                    },),
     )
     private val audienceSideRightPurple: List<TargetWorld> = listOf()
     private val audienceSidePurpleMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
@@ -340,36 +358,19 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-                        isRobotAtPosition(targetState, actualState)
-                    },),
-            TargetWorld(
-                    targetRobot = RobotState(
-                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
-                            positionAndRotation = audienceSideNavigateUnderTrussWaypoint1,
-                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
-                    ),
-                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-                        isRobotAtPosition(targetState, actualState) && hasTimeElapsed(500, targetState)
-                    },),
-            TargetWorld(
-                    targetRobot = RobotState(
-                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
-                            positionAndRotation = audienceSideNavigateUnderTrussWaypoint2,
-                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
-                    ),
-                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         actualState.actualRobot.positionAndRotation.y <= 5.0
                     },),
             TargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
-                            positionAndRotation = audienceSideNavigateUnderTrussWaypoint2,
+                            positionAndRotation = audienceSideNavigateUnderTrussWaypoint1,
                             depoState = DepoState(Arm.Positions.DroppingWithHighPrecision, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
                         isRobotAtPosition(targetState, actualState)
                     },),
             )
+
 
     /** Audience Drop Yellow */
     private val audienceSideDepositLeft = listOf(
@@ -389,7 +390,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.DroppingWithHighPrecision, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-                        hasTimeElapsed(1000, targetState)
+                        hasTimeElapsed(500, targetState)
                     },),
     )
 
@@ -397,7 +398,7 @@ class RobotTwoAuto: OpMode() {
             TargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)),
-                            positionAndRotation = placingOnBackboardLeft,
+                            positionAndRotation = placingOnBackboardCenter,
                             depoState = DepoState(Arm.Positions.DroppingWithHighPrecision, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->

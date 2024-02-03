@@ -37,7 +37,8 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         CloserBackboardPixelPosition(500),
         MidBackboardPixelPosition(1000),
         FarBackboardPixelPosition(1750),
-        AudiencePurpleMiddlePosition(1900),
+        AudiencePurpleCenterPosition(1900),
+        AudiencePurpleLeftPosition(1700),
         Max(2000),
     }
 
