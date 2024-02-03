@@ -18,9 +18,9 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
         BackboardBottomRow(330),
         ClearForArmToMove(450),
         WaitForArmToMove(800),
-        SetLine1(900),
-        SetLine2(1500),
-        SetLine3(2300),
+        SetLine1(800),
+        SetLine2(1400),
+        SetLine3(2100),
         Max(2300)
     }
 
