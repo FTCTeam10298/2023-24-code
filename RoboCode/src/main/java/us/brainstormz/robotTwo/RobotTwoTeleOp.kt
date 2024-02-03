@@ -109,10 +109,6 @@ class RobotTwoTeleOp: OpMode() {
 //        )
 //                                                                            }, 100)
 
-
-//    data class RumbleInfo(val left: Double, val right: Double, val time: Long)
-//    private var previousRumbeInfo = RumbleInfo(left = 1.0, right = 0.0, time= 0L)
-
     enum class Gamepad1BumperMode {
         Collector,
         Claws
@@ -128,26 +124,13 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("loop time: $loopTime milis")
         telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
 
-//        val currentTime = System.currentTimeMillis()
-//        val timeSinceRumbleStart = System.currentTimeMillis() - previousRumbeInfo.time
-//        val rumbleInfo = if (timeSinceRumbleStart >= 1000) {
-//            if (previousRumbeInfo.left > 0.0) {
-//                RumbleInfo(left = 0.0, right = 1.0, time= currentTime)
-//            } else {
-//                RumbleInfo(left = 1.0, right = 0.0, time= currentTime)
-//            }
-//        } else {
-//            previousRumbeInfo
-//        }
-//
-//        gamepad1.rumble(rumbleInfo.left, rumbleInfo.right, 1000)
-
 
         //~~up dpad top
         //~~left dpad middle
         //~~down dpad low
         //~~switch to claw mode with bumpers when brody is using lift
-        //auto retract lift
+        //~~auto retract lift
+        //Spit out extra pixels
 
 
         //Handoff related inputs
@@ -250,6 +233,7 @@ class RobotTwoTeleOp: OpMode() {
         val bothClawsAreGripping = hardware.leftClawServo.position == LeftClawPosition.Gripping.position && hardware.rightClawServo.position == RightClawPosition.Gripping.position
         if (doHandoffSequence && bothClawsAreGripping && aClawWasPreviouslyRetracted) {
             gamepad2.rumble(1.0, 1.0, 800)
+            gamepad1.rumble(1.0, 1.0, 800)
         }
 
         //Extendo
@@ -367,7 +351,7 @@ class RobotTwoTeleOp: OpMode() {
             hardware.liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
             hardware.liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-            gamepad1.runRumbleEffect(twoBeatRumble)
+            gamepad1.rumble(1.0, 1.0, 1200)
         }
         previousIsLiftEligableForReset = isLiftEligableForReset
 
@@ -719,7 +703,7 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("timeOfSeeing: $timeOfSeeing")
 
         val colorToDisplay = if (areBothPixelsIn && !doneWithThePixelCollectedLights) {
-            gamepad1.rumble(1.0, 1.0, 1200)
+            gamepad1.runRumbleEffect(twoBeatRumble)
             RevBlinkinLedDriver.BlinkinPattern.LARSON_SCANNER_RED
         } else {
             getLightPatternFromPixelColor(currentPixelToBeDisplayed)
