@@ -578,12 +578,11 @@ class RobotTwoTeleOp: OpMode() {
         val xSlowDowMultiplier = 1.0
         val driver2XInput = if (xInput == 0.0) {
             (gamepad2.left_trigger - gamepad2.right_trigger) * xSlowDowMultiplier
-//            -gamepad2.left_stick_x.toDouble() * xSlowDowMultiplier
         } else {
             0.0
         }
-        val ySlowDowMultiplier = 2/3
-        val driver2YInput = if (yInput in -0.08..0.08) { // FIXME: This is almost certainly in the joystick deadzone range, making this a no-op
+        val ySlowDowMultiplier: Double = (2.0)/(3.0)
+        val driver2YInput = if (yInput in -0.1..0.1) {
             gamepad2.left_stick_y.toDouble() * ySlowDowMultiplier
         } else {
             0.0
