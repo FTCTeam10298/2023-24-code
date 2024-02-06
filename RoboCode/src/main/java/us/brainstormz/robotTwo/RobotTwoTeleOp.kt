@@ -15,7 +15,7 @@ import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.robotTwo.RobotTwoHardware.LeftClawPosition
 import us.brainstormz.robotTwo.RobotTwoHardware.RightClawPosition
 import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
-import us.brainstormz.utils.LoopTimeMeasurer
+import us.brainstormz.utils.DeltaTimeMeasurer
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -93,7 +93,7 @@ class RobotTwoTeleOp: OpMode() {
         }
     }
 
-    private val loopTimeMeasurer = LoopTimeMeasurer()
+    private val loopTimeMeasurer = DeltaTimeMeasurer()
 
     private var numberOfTimesColorButtonPressed: Int = 0
     private var previousDesiredPixelLightPattern: BothPixelsWeWant = BothPixelsWeWant(leftPixel = PixelColor.Unknown, rightPixel = PixelColor.Unknown)
