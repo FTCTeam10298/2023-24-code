@@ -710,8 +710,8 @@ class RobotTwoTeleOp: OpMode() {
         previousIsAnyColorButtonPressed = isAnyColorButtonPressed
         telemetry.addLine("desiredPixelLightPattern: $desiredPixelLightPattern")
 
-        val colorDetectedInLeftSide = collectorSystem.getColorInSide(hardware.leftTransferSensor, CollectorSystem.Side.Left)
-        val colorDetectedInRightSide = collectorSystem.getColorInSide(hardware.rightTransferSensor, CollectorSystem.Side.Right)
+//        val colorDetectedInLeftSide = collectorSystem.getColorInSide(hardware.leftTransferSensor, CollectorSystem.Side.Left)
+//        val colorDetectedInRightSide = collectorSystem.getColorInSide(hardware.rightTransferSensor, CollectorSystem.Side.Right)
 //        telemetry.addLine("colorDetectedInLeftSide: ${colorDetectedInLeftSide}")
 //        telemetry.addLine("colorDetectedInRightSide: ${colorDetectedInRightSide}")
 
@@ -773,17 +773,18 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("Left flap angle: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
         telemetry.addLine("Right flap angle: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
 
-        telemetry.addLine("handoffTimeMeasurer:   ${handoffTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("extendoTimeMeasurer:   ${extendoTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("liftTimeMeasurer:      ${liftTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("armTimeMeasurer:       ${armTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("collectorTimeMeasurer: ${collectorTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("clawsTimeMeasurer:     ${clawsTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("driveTimeMeasurer:     ${driveTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("planeTimeMeasurer:     ${planeTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("hangTimeMeasurer:      ${hangTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("lightsTimeMeasurer:    ${lightsTimeMeasurer.getLastMeasuredDT()}")
-        telemetry.addLine("telemetryTimeMeasurer: ${telemetryTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("handoffTimeMeasurer:   ${handoffTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("extendoTimeMeasurer:   ${extendoTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("liftTimeMeasurer:      ${liftTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("armTimeMeasurer:       ${armTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("collectorTimeMeasurer: ${collectorTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("clawsTimeMeasurer:     ${clawsTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("driveTimeMeasurer:     ${driveTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("planeTimeMeasurer:     ${planeTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("hangTimeMeasurer:      ${hangTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("lightsTimeMeasurer:    ${lightsTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("telemetryTimeMeasurer: ${telemetryTimeMeasurer.getLastMeasuredDT()}ms")
+        telemetry.addLine("miscTimeMeasurer:      ${miscTimeMeasurer.getLastMeasuredDT()}ms")
 
         // Update telemetry display at end of loop cycle
         telemetry.update()
