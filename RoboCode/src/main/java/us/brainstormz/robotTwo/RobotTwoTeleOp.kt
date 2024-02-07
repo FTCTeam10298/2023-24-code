@@ -2,9 +2,8 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
-import com.qualcomm.hardware.rev.RevColorSensorV3
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
@@ -16,55 +15,46 @@ import us.brainstormz.robotTwo.Claw.ClawTarget
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
-class RobotTwoTeleOp: OpMode() {
+class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemetry: Telemetry) {
 
-    private val hardware = RobotTwoHardware(telemetry, this)
+
     val movement = MecanumDriveTrain(hardware)
 
-    private lateinit var collectorSystem: CollectorSystem
+    private val collectorSystem: CollectorSystem = CollectorSystem(  extendoMotorMaster= hardware.extendoMotorMaster,
+            extendoMotorSlave= hardware.extendoMotorSlave,
+            collectorServo1 = hardware.collectorServo1,
+            collectorServo2 = hardware.collectorServo2,
+            rightTransferServo=hardware. rightTransferServo,
+            leftTransferServo= hardware.leftTransferServo,
+            transferDirectorServo= hardware.transferDirectorServo,
+            leftTransferPixelSensor= hardware.leftTransferSensor,
+            rightTransferPixelSensor= hardware.rightTransferSensor,
+            leftRollerEncoder= hardware.leftRollerEncoder,
+            rightRollerEncoder= hardware.rightRollerEncoder,
+            telemetry= telemetry)
 
-    private lateinit var leftClaw: Claw
-    private lateinit var rightClaw: Claw
-    private lateinit var arm: Arm
-    private lateinit var lift: Lift
-    private lateinit var depoManager: DepoManager
+    private val leftClaw: Claw = Claw()
+    private val rightClaw: Claw = Claw()
+    private val arm: Arm = Arm(  encoder= hardware.armEncoder,
+            armServo1= hardware.armServo1,
+            armServo2= hardware.armServo2, telemetry)
+    private val lift: Lift = Lift(liftMotor1 = hardware.liftMotorMaster,
+            liftMotor2 = hardware.liftMotorSlave,
+            liftLimit = hardware.liftMagnetLimit)
+    private val depoManager: DepoManager = DepoManager(arm= arm, lift= lift)
 
-    private lateinit var handoffManager: HandoffManager
+    private val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, arm, telemetry)
 
-    private lateinit var odometryLocalizer: RRTwoWheelLocalizer
+    private val odometryLocalizer: RRTwoWheelLocalizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
 
 
-    override fun init() {
-        hardware.init(hardwareMap)
-
-        collectorSystem = CollectorSystem(  extendoMotorMaster= hardware.extendoMotorMaster,
-                extendoMotorSlave= hardware.extendoMotorSlave,
-                collectorServo1 = hardware.collectorServo1,
-                collectorServo2 = hardware.collectorServo2,
-                rightTransferServo=hardware. rightTransferServo,
-                leftTransferServo= hardware.leftTransferServo,
-                transferDirectorServo= hardware.transferDirectorServo,
-                leftTransferPixelSensor= hardware.leftTransferSensor,
-                rightTransferPixelSensor= hardware.rightTransferSensor,
-                leftRollerEncoder= hardware.leftRollerEncoder,
-                rightRollerEncoder= hardware.rightRollerEncoder,
-                telemetry= telemetry)
-
-        lift = Lift(liftMotor1 = hardware.liftMotorMaster,
-                liftMotor2 = hardware.liftMotorSlave,
-                liftLimit = hardware.liftMagnetLimit)
-
-        arm = Arm(  encoder= hardware.armEncoder,
-                armServo1= hardware.armServo1,
-                armServo2= hardware.armServo2, telemetry)
-
-        depoManager = DepoManager(arm= arm, lift= lift)
+    fun init() {
 
         for (module in hardware.allHubs) {
             module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
         }
-    }
 
+    }
 
 
     enum class Gamepad1BumperMode {
@@ -724,15 +714,15 @@ class RobotTwoTeleOp: OpMode() {
         val aClawWasPreviouslyRetracted = previousTargetState?.targetRobot?.depoTarget?.rightClawPosition == ClawTarget.Retracted ||  previousTargetState?.targetRobot?.depoTarget?.leftClawPosition == Claw.ClawTarget.Retracted
         val bothClawsAreGripping = hardware.leftClawServo.position == RobotTwoHardware.LeftClawPosition.Gripping.position && hardware.rightClawServo.position == RobotTwoHardware.RightClawPosition.Gripping.position
         if (doHandoffSequence && bothClawsAreGripping && aClawWasPreviouslyRetracted) {
-            gamepad2.rumble(1.0, 1.0, 800)
-            gamepad1.rumble(1.0, 1.0, 800)
+//            gamepad2.rumble(1.0, 1.0, 800)
+//            gamepad1.rumble(1.0, 1.0, 800)
         }
 
         if (isLiftEligableForReset && previousTargetState?.isLiftEligableForReset != true) {
             hardware.liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
             hardware.liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-            gamepad1.rumble(1.0, 1.0, 1200)
+//            gamepad1.rumble(1.0, 1.0, 1200)
         }
 
 ////        val timeOfSeeing = listOf(transferSensorState.transferRightSensorState.timeOfSeeingMilis, transferSensorState.transferLeftSensorState.timeOfSeeingMilis).maxOfOrNull { time -> time } ?: 0
@@ -779,7 +769,7 @@ class RobotTwoTeleOp: OpMode() {
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     private val loopTimeMeasurer = DeltaTimeMeasurer()
-    override fun loop() {
+    fun loop(gamepad1: Gamepad, gamepad2: Gamepad) {
         for (hub in hardware.allHubs) {
             hub.clearBulkCache()
         }
