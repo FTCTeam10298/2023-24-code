@@ -42,7 +42,7 @@ class OldRobotTwoTeleOp: OpMode() {
                     transferLeftSensorState = CollectorSystem.TransferHalfState(false, 0),
                     transferRightSensorState = CollectorSystem.TransferHalfState(false, 0)
             ),
-            depoState = RobotTwoAuto.DepoState(
+            depoState = DepoState(
                     liftPosition = Lift.LiftPositions.Manual,
                     armPos = Arm.Positions.Manual,
                     leftClawPosition = LeftClawPosition.Retracted,
@@ -803,7 +803,7 @@ class OldRobotTwoTeleOp: OpMode() {
                         transferLeftSensorState = transferSensorState.transferLeftSensorState,
                         transferRightSensorState = transferSensorState.transferRightSensorState
                 ),
-                depoState = RobotTwoAuto.DepoState(
+                depoState = DepoState(
                         liftPosition = liftPosition,
                         armPos = armPosition,
                         leftClawPosition = leftClawPosition,

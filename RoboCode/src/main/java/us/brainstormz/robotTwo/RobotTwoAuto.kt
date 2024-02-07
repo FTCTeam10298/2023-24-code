@@ -616,20 +616,6 @@ class RobotTwoAuto: OpMode() {
         }
     }
 
-    data class DepoState(
-            val armPos: Arm.Positions,
-            val liftPosition: Lift.LiftPositions,
-            val leftClawPosition: RobotTwoHardware.LeftClawPosition,
-            val rightClawPosition: RobotTwoHardware.RightClawPosition,
-    )
-
-    data class TargetWorld(
-            val targetRobot: RobotTwoHardware.RobotState,
-            val isTargetReached: (previousTargetState: TargetWorld, actualState: ActualWorld) -> Boolean,
-            val myJankFlagToInjectPurplePlacement: Boolean = false,
-            val timeTargetStartedMilis: Long = 0)
-    class ActualWorld(val actualRobot: RobotState,
-                      val timestampMilis: Long)
 
     enum class StartPosition(val redStartPosition: PositionAndRotation) {
         Backboard(PositionAndRotation(  x = RobotTwoHardware.redStartingXInches,
