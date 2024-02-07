@@ -124,11 +124,6 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
 
     lateinit var lights: RevBlinkinLedDriver
 
-    data class RobotState(
-            val positionAndRotation: PositionAndRotation,
-            val depoState: RobotTwoAuto.DepoState,
-            val collectorSystemState: CollectorSystem.CollectorState
-    )
 //
 //    data class HardwareHalves (
 //        val collectorServo: CRServo,
