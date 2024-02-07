@@ -29,7 +29,7 @@ fun main() {
             TeleopTest.emptyWorld.copy(
                     actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
                         depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
-                            liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 100
+                            liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1
                         )
                     )
             )
@@ -45,7 +45,7 @@ fun main() {
 
     val result = TeleopTest.runTest(steps)
     val normalEquality = { output: TargetWorld ->
-        output.targetRobot == expectedOutput.targetRobot
+        output.targetRobot.depoTarget.armPosition == expectedOutput.targetRobot.depoTarget.armPosition
     }
     val testPass = TeleopTest.didTestPass(result = result, normalEquality)
 

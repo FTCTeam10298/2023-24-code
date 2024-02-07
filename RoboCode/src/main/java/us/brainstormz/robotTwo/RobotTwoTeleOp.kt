@@ -554,7 +554,7 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
         telemetry.addLine("Lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
 
         /**Arm*/
-        val liftIsBelowFreeArmLevel = hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks
+        val liftIsBelowFreeArmLevel = actualWorld.actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsInish = arm.getArmAngleDegrees() >= Arm.Positions.Inish.angleDegrees
 
         val depositorShouldGoAllTheWayIn = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
