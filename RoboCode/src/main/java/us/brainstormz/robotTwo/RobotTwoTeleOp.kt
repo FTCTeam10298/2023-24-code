@@ -524,7 +524,6 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
         val liftNeedsToWaitForTheArm = liftTargetIsBelowSafeArm && ((!armIsFarEnoughIn && liftActualPositionIsAboveSafeArm) || armIsTooFarIn)
         telemetry.addLine("\nliftNeedsToWaitForTheArm: $liftNeedsToWaitForTheArm")
 
-        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML)
         telemetry.addLine("armIsTooFarIn: $armIsTooFarIn")
         val liftPosition: Lift.LiftPositions = if (liftNeedsToWaitForTheArm) {
             Lift.LiftPositions.WaitForArmToMove
