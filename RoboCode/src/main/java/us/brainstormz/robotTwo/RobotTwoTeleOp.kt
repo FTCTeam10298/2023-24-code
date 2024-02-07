@@ -126,7 +126,23 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
             val handoff: HandoffInput,
             val rollers: RollerInput,
             val driveVelocity: PositionAndRotation
-    )
+    ) {
+        override fun toString(): String =
+                "DriverInput(\n" +
+                "   bumperMode=$bumperMode\n" +
+                "   lightInput=$lightInput\n" +
+                "   depo=$depo\n" +
+                "   leftClaw=$leftClaw\n" +
+                "   rightClaw=$rightClaw\n" +
+                "   collector=$collector\n" +
+                "   extendo=$extendo\n" +
+                "   hang=$hang\n" +
+                "   launcher=$launcher\n" +
+                "   handoff=$handoff\n" +
+                "   rollers=$rollers\n" +
+                "   driveVelocity=$driveVelocity\n" +
+                ")"
+    }
     fun getDriverInput(actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld?): DriverInput {
         val gamepad1 = actualWorld.actualGamepad1
         val gamepad2 = actualWorld.actualGamepad2

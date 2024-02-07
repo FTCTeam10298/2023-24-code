@@ -94,7 +94,7 @@ data class PositionAndRotation(var x: Double = 0.0, var y: Double = 0.0, var r: 
     }
 
     override fun toString(): String {
-        return "X: $x\nY: $y\nAngle: $r"
+        return "X: $x Y: $y Angle: $r"
     }
 
     override fun hashCode(): Int = x.hashCode() + y.hashCode() + r.hashCode()
