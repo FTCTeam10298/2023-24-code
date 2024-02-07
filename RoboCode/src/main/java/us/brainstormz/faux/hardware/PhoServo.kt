@@ -1,11 +1,8 @@
-package us.brainstormz.pho.hardware
+package us.brainstormz.faux.hardware
 
 import com.qualcomm.robotcore.hardware.CRServo
-import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoController
-import us.brainstormz.pho.hardware.PhoDcMotorSimple
-import us.brainstormz.pho.hardware.PhoDevice
 
 class PhoServo: Servo, PhoDevice() {
     override val printSignature: String = "Servo"

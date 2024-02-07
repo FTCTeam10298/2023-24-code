@@ -1,8 +1,6 @@
-package us.brainstormz.pho.hardware
+package us.brainstormz.faux.hardware
 
-import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.AnalogInputController
-import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.util.SerialNumber
 
 class PhoAnalogInputController: PhoDevice(), AnalogInputController {

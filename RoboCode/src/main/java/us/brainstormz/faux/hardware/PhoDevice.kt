@@ -1,12 +1,14 @@
-package us.brainstormz.pho.hardware
+package us.brainstormz.faux.hardware
 
 import com.qualcomm.robotcore.hardware.HardwareDevice
 
-abstract class PhoDevice: HardwareDevice {
-    abstract val printSignature: String
+interface FauxActionTracker {
+    val printSignature: String
     fun printInput(message: String) {
         println("$printSignature $message")
     }
+}
+abstract class PhoDevice: FauxActionTracker, HardwareDevice{
 
     final override fun getManufacturer(): HardwareDevice.Manufacturer {
         printInput("Not yet implemented")

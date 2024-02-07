@@ -1,4 +1,4 @@
-package us.brainstormz.pho.hardware
+package us.brainstormz.faux.hardware
 
 import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.I2cAddr
