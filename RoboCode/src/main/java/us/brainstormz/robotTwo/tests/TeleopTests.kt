@@ -24,19 +24,30 @@ fun main() {
     val steps = listOf(
             TeleopTest.emptyWorld,
             TeleopTest.emptyWorld.copy(
-                    actualGamepad1= getChangedGamepad { it.y = true },
+                    actualGamepad2= getChangedGamepad { it.dpad_up = true }
+            ),
+            TeleopTest.emptyWorld.copy(
+                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
+                        depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
+                            liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 100
+                        )
+                    )
             )
     )
     val expectedOutput = TeleopTest.emptyTarget.copy(
             targetRobot = TeleopTest.emptyTarget.targetRobot.copy(
-                    launcherPosition = RobotTwoHardware.LauncherPosition.Released
+                    depoTarget = TeleopTest.emptyTarget.targetRobot.depoTarget.copy(
+                            liftPosition = Lift.LiftPositions.SetLine3,
+                            armPosition = Arm.Positions.Out,
+                    ),
             )
     )
 
     val result = TeleopTest.runTest(steps)
-    val testPass = TeleopTest.didTestPass(result = result) { output ->
-        output.targetRobot.launcherPosition == expectedOutput.targetRobot.launcherPosition
+    val normalEquality = { output: TargetWorld ->
+        output.targetRobot == expectedOutput.targetRobot
     }
+    val testPass = TeleopTest.didTestPass(result = result, normalEquality)
 
     println(result)
     println("Test passed? $testPass")
