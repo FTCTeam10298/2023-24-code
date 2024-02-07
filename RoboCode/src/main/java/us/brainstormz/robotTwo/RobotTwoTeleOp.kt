@@ -35,9 +35,9 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
 
     val leftClaw: Claw = Claw()
     val rightClaw: Claw = Claw()
-    val arm: Arm = Arm(  encoder= hardware.armEncoder,
+    val arm: Arm = Arm(  /*encoder= hardware.armEncoder,
             armServo1= hardware.armServo1,
-            armServo2= hardware.armServo2, telemetry)
+            armServo2= hardware.armServo2, telemetry*/)
     val lift: Lift = Lift(liftMotor1 = hardware.liftMotorMaster,
             liftMotor2 = hardware.liftMotorSlave,
             liftLimit = hardware.liftMagnetLimit)
@@ -452,7 +452,7 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
             Claw.ClawTarget.Gripping -> HandoffManager.ClawStateFromHandoff.Gripping
             else -> HandoffManager.ClawStateFromHandoff.Retracted
         }
-        val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE)
+        val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE, actualRobot)
 
         /**Extendo*/
         val extendoState: CollectorSystem.ExtendoPositions = when {

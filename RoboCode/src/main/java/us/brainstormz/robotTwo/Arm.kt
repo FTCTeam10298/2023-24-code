@@ -3,10 +3,11 @@ package us.brainstormz.robotTwo
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.CRServo
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import kotlin.math.cos
 
-class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry) {
+class Arm/*(private val encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry)*/: Subsystem {
     enum class Positions(val angleDegrees:Double) {
         TooFarIn(265.0),
         ClearLiftMovement(255.0),
@@ -21,7 +22,6 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
         Manual(0.0),
     }
 
-     val encoderReader: AxonEncoderReader = AxonEncoderReader(encoder, -12.0)
 
     private val outPid = PID(kp= 0.0026, kd = 0.01)
     private val outHoldingConstant = 0.08
@@ -30,27 +30,31 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
 
-    fun isArmAtAngle(angleToCheckDegrees: Double, armPositioningToleranceDegrees: Double = 5.0): Boolean {
+    fun isArmAtAngle(angleToCheckDegrees: Double, currentAngleDegrees: Double, armPositioningToleranceDegrees: Double = 5.0): Boolean {
         val minAcceptableAngle = angleToCheckDegrees - armPositioningToleranceDegrees
         val maxAcceptableAngle = angleToCheckDegrees + armPositioningToleranceDegrees
         val acceptableRange = minAcceptableAngle..maxAcceptableAngle
-        return getArmAngleDegrees() in acceptableRange
+        return currentAngleDegrees in acceptableRange
     }
 
-    fun moveArmTowardPosition(targetPosition: Double) {
-        val power = calcPowerToReachTarget(targetPosition)
-        powerArm(power)
-    }
+//    fun moveArmTowardPosition(targetPosition: Double) {
+//        val power = calcPowerToReachTarget(targetPosition)
+//        powerArm(power)
+//    }
 
-    fun powerArm(power: Double) {
-        armServo1.power = power
-        armServo2.power = power
+    override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {
+        hardware.armServo1.power = power
+        hardware.armServo2.power = power
+    }
+    fun getArmAngleDegrees(hardware: RobotTwoHardware): Double {
+        val encoderReader: AxonEncoderReader = AxonEncoderReader(hardware.armEncoder, -12.0)
+        return  encoderReader.getPositionDegrees()
     }
 
     private var previousArmTargetDegrees = 0.0
     private val armAngleMidpointDegrees = 150.0
-    fun calcPowerToReachTarget(targetDegrees: Double): Double {
-        val currentDegrees = getArmAngleDegrees()
+    fun calcPowerToReachTarget(targetDegrees: Double, currentDegrees: Double): Double {
+//        val currentDegrees = getArmAngleDegrees()
         val errorDegrees = (targetDegrees - currentDegrees) % 360
 
         val isArmTargetInOfMidpoint = targetDegrees > armAngleMidpointDegrees
@@ -87,13 +91,13 @@ class Arm(private val encoder: AnalogInput, private val armServo1: CRServo, priv
     }
 
     /** 0 angle is where the flat face of the claws is facing parallel to the ground */
-    fun getArmAngleDegrees(): Double {
-        return encoderReader.getPositionDegrees()
-    }
+//    fun getArmAngleDegrees(): Double {
+//        return encoderReader.getPositionDegrees()
+//    }
 
-    fun getArmState(): Arm.Positions = Arm.Positions.entries.firstOrNull { it ->
-        getArmAngleDegrees() == it.angleDegrees
-    } ?: Arm.Positions.In
+//    fun getArmState(): Arm.Positions = Arm.Positions.entries.firstOrNull { it ->
+//        getArmAngleDegrees() == it.angleDegrees
+//    } ?: Arm.Positions.In
 
 }
 

@@ -142,7 +142,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees) || hasTimeElapsed(timeToElapseMilis = 3000, targetState)
+                        arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 3000, targetState)
                     },),
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -160,7 +160,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.ClearLiftMovement, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees)
+                        arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
                     },),
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -529,7 +529,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.GoodEnoughForLiftToGoDown, Lift.LiftPositions.WaitForArmToMove, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees)
+                        arm.isArmAtAngle(targetState.targetRobot.depoState.armPos.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
                     },),
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -704,9 +704,9 @@ class RobotTwoAuto: OpMode() {
                 liftMotor2 = hardware.liftMotorSlave,
                 liftLimit = hardware.liftMagnetLimit)
 
-        arm = Arm(  encoder= hardware.armEncoder,
+        arm = Arm(/*  encoder= hardware.armEncoder,
                 armServo1= hardware.armServo1,
-                armServo2= hardware.armServo2, telemetry)
+                armServo2= hardware.armServo2, telemetry*/)
 
         depoManager = DepoManager(arm= arm, lift= lift)
 
@@ -783,7 +783,8 @@ class RobotTwoAuto: OpMode() {
                 collectorSystem.moveExtendoToPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks)
                 collectorSystem.spinCollector(targetState.targetRobot.collectorSystemState.collectorState.power)
                 lift.moveLiftToPosition(targetState.targetRobot.depoState.liftPosition.ticks)
-                arm.moveArmTowardPosition(targetState.targetRobot.depoState.armPos.angleDegrees)
+                arm.powerSubsystem(arm.calcPowerToReachTarget(targetState.targetRobot.depoState.armPos.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees), hardware)
+//                arm.moveArmTowardPosition(targetState.targetRobot.depoState.armPos.angleDegrees)
                 hardware.rightClawServo.position = targetState.targetRobot.depoState.rightClawPosition.position
                 hardware.leftClawServo.position = targetState.targetRobot.depoState.leftClawPosition.position
             }

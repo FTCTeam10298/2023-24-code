@@ -33,8 +33,8 @@ class HandoffManager(
             val armState: Arm.Positions)
 
 
-    fun getHandoffState(previousClawState: ClawStateFromHandoff, previousLights: BlinkinPattern): HandoffState {
-        val isArmAtAPositionWhichAllowsTheLiftToMoveDown = arm.getArmAngleDegrees() >= Arm.Positions.ClearLiftMovement.angleDegrees
+    fun getHandoffState(previousClawState: ClawStateFromHandoff, previousLights: BlinkinPattern, actualRobot: ActualRobot): HandoffState {
+        val isArmAtAPositionWhichAllowsTheLiftToMoveDown = actualRobot.depoState.armAngleDegrees >= Arm.Positions.ClearLiftMovement.angleDegrees
 
         val liftState: LiftStateFromHandoff = when (isArmAtAPositionWhichAllowsTheLiftToMoveDown) {
             true -> {
@@ -45,7 +45,7 @@ class HandoffManager(
             }
         }
 
-        val liftIsDownEnoughForExtendoToComeIn = lift.getCurrentPositionTicks() < (Lift.LiftPositions.Min.ticks + 100)
+        val liftIsDownEnoughForExtendoToComeIn = actualRobot.depoState.liftPositionTicks < (Lift.LiftPositions.Min.ticks + 100)
         val collectorState: ExtendoStateFromHandoff = when (liftIsDownEnoughForExtendoToComeIn) {
             true -> {
                 ExtendoStateFromHandoff.MoveIn
@@ -67,7 +67,7 @@ class HandoffManager(
                 Arm.Positions.ClearLiftMovement
             }
         }
-        val isArmReadyToTransfer = arm.getArmAngleDegrees() <= Arm.Positions.In.angleDegrees
+        val isArmReadyToTransfer = actualRobot.depoState.armAngleDegrees <= Arm.Positions.In.angleDegrees
         val areRollersReadyToTransfer = true//collector.arePixelsAlignedInTransfer()
         val readyToTransfer = bothExtensionsAreAllTheWayIn && isArmReadyToTransfer && areRollersReadyToTransfer
         telemetry.addLine("readyToTransfer: $readyToTransfer \nisArmReadyToTransfer: $isArmReadyToTransfer \nliftExtensionIsAllTheWayDown: $liftExtensionIsAllTheWayDown \nisCollectorAllTheWayIn: $isCollectorAllTheWayIn")

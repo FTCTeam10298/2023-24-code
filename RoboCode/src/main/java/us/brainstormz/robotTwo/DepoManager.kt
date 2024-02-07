@@ -9,9 +9,9 @@ class DepoManager(val arm: Arm, val lift: Lift) {//, val leftClaw: Claw, val rig
 //        val rightClawAngleDegrees: Double,
     )
 
-    fun getDepoState(): ActualDepo {
+    fun getDepoState(hardware: RobotTwoHardware): ActualDepo {
         return ActualDepo(
-                armAngleDegrees = arm.getArmAngleDegrees(),
+                armAngleDegrees = arm.getArmAngleDegrees(hardware),
                 liftPositionTicks = lift.getCurrentPositionTicks(),
         )
     }

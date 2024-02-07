@@ -295,7 +295,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         return ActualRobot(
                 positionAndRotation = localizer.currentPositionAndRotation(),
                 collectorSystemState = collectorSystem.getCurrentState(),
-                depoState = depoManager.getDepoState()
+                depoState = depoManager.getDepoState(this)
         )
 //        return ActualWorld(
 //                actualRobot = actualRobot,
@@ -348,9 +348,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         val armPower: Double = if (targetState.targetRobot.depoTarget.armPosition == Arm.Positions.Manual) {
             armOverridePower
         } else {
-            arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.angleDegrees)
+            arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
         }
-        arm.powerArm(armPower)
+        arm.powerSubsystem(armPower, this)
 
         /**Claws*/
         val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.leftClawPosition) {
