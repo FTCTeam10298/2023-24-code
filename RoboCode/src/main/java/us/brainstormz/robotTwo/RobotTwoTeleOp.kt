@@ -20,7 +20,7 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
 
     val movement = MecanumDriveTrain(hardware)
 
-    private val collectorSystem: CollectorSystem = CollectorSystem(  extendoMotorMaster= hardware.extendoMotorMaster,
+    val collectorSystem: CollectorSystem = CollectorSystem(  extendoMotorMaster= hardware.extendoMotorMaster,
             extendoMotorSlave= hardware.extendoMotorSlave,
             collectorServo1 = hardware.collectorServo1,
             collectorServo2 = hardware.collectorServo2,
@@ -33,19 +33,19 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
             rightRollerEncoder= hardware.rightRollerEncoder,
             telemetry= telemetry)
 
-    private val leftClaw: Claw = Claw()
-    private val rightClaw: Claw = Claw()
-    private val arm: Arm = Arm(  encoder= hardware.armEncoder,
+    val leftClaw: Claw = Claw()
+    val rightClaw: Claw = Claw()
+    val arm: Arm = Arm(  encoder= hardware.armEncoder,
             armServo1= hardware.armServo1,
             armServo2= hardware.armServo2, telemetry)
-    private val lift: Lift = Lift(liftMotor1 = hardware.liftMotorMaster,
+    val lift: Lift = Lift(liftMotor1 = hardware.liftMotorMaster,
             liftMotor2 = hardware.liftMotorSlave,
             liftLimit = hardware.liftMagnetLimit)
-    private val depoManager: DepoManager = DepoManager(arm= arm, lift= lift)
+    val depoManager: DepoManager = DepoManager(arm= arm, lift= lift)
 
-    private val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, arm, telemetry)
+    val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, arm, telemetry)
 
-    private val odometryLocalizer: RRTwoWheelLocalizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
+    val odometryLocalizer: RRTwoWheelLocalizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
 
 
     fun init() {
@@ -766,8 +766,8 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
         )
     }
 
-    private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
-    private val loopTimeMeasurer = DeltaTimeMeasurer()
+    val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
+    val loopTimeMeasurer = DeltaTimeMeasurer()
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad) {
         for (hub in hardware.allHubs) {
             hub.clearBulkCache()
