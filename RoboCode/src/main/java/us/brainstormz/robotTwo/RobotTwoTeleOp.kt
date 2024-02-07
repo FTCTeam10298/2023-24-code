@@ -25,7 +25,6 @@ import kotlin.math.absoluteValue
 class RobotTwoTeleOp: OpMode() {
 
     private val hardware = RobotTwoHardware(telemetry, this)
-    lateinit var allHubs: List<LynxModule>
     val movement = MecanumDriveTrain(hardware)
     private lateinit var arm: Arm
     private lateinit var collectorSystem: CollectorSystem
@@ -85,10 +84,10 @@ class RobotTwoTeleOp: OpMode() {
         // From ConceptMotorBulkRead.java, see that file for details
 
         // Important Step 2: Get access to a list of Expansion Hub Modules to enable changing caching methods.
-        allHubs = hardwareMap.getAll(LynxModule::class.java)
+//        allHubs = hardwareMap.getAll(LynxModule::class.java)
 
         // Important Step 3: Option B. Set all Expansion hubs to use the MANUAL Bulk Caching mode
-        for (module in allHubs) {
+        for (module in hardware.allHubs) {
             module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
         }
     }
@@ -138,7 +137,7 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("Loop time (Peak): ${loopTimeMeasurer.peakDeltaTime} ms")
 
         // Important Step 4: If you are using MANUAL mode, you must clear the BulkCache once per control cycle
-        for (module in allHubs) {
+        for (module in hardware.allHubs) {
             module.clearBulkCache()
         }
 
@@ -727,13 +726,12 @@ class RobotTwoTeleOp: OpMode() {
 
         hardware.lights.setPattern(colorToDisplay)
 
-        // FIXME: Some of these may add to loop latency, consider disabling for comp
-        telemetry.addLine("Arm raw angle: ${arm.encoderReader.getRawPositionDegrees()}")
-        telemetry.addLine("Arm actual angle: ${arm.getArmAngleDegrees()}")
-        telemetry.addLine("Lift actual position: ${lift.getCurrentPositionTicks()}")
-        telemetry.addLine("Extendo actual position: ${hardware.extendoMotorMaster.currentPosition}")
-        telemetry.addLine("Left flap angle: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
-        telemetry.addLine("Right flap angle: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
+//        telemetry.addLine("Arm raw angle: ${arm.encoderReader.getRawPositionDegrees()}")
+//        telemetry.addLine("Arm actual angle: ${arm.getArmAngleDegrees()}")
+//        telemetry.addLine("Lift actual position: ${lift.getCurrentPositionTicks()}")
+//        telemetry.addLine("Extendo actual position: ${hardware.extendoMotorMaster.currentPosition}")
+//        telemetry.addLine("Left flap angle: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
+//        telemetry.addLine("Right flap angle: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
 
         /** not controls */
 

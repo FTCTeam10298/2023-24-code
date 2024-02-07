@@ -149,14 +149,15 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
     override lateinit var hwMap: HardwareMap
     lateinit var ctrlHub: SmartLynxModule
     lateinit var exHub: SmartLynxModule
+    lateinit var allHubs: List<LynxModule>
 
     override fun init(ahwMap: HardwareMap) {
 
         hwMap = ahwMap
 
-        val modules = hwMap.getAll(LynxModule::class.java)
-        print("modules.size ${modules.size}")
-        for (lynx in modules) {
+        allHubs = hwMap.getAll(LynxModule::class.java)
+        print("modules.size ${allHubs.size}")
+        for (lynx in allHubs) {
             lynx.bulkCachingMode = LynxModule.BulkCachingMode.AUTO
             if (lynx.isParent && LynxConstants.isEmbeddedSerialNumber(lynx.serialNumber)) {
                 println("ctrlHubFound: $lynx")
