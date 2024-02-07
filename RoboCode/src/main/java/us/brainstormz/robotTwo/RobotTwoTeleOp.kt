@@ -93,6 +93,18 @@ class RobotTwoTeleOp: OpMode() {
     }
 
     private val loopTimeMeasurer = DeltaTimeMeasurer()
+    private val handoffTimeMeasurer = DeltaTimeMeasurer()
+    private val extendoTimeMeasurer = DeltaTimeMeasurer()
+    private val liftTimeMeasurer = DeltaTimeMeasurer()
+    private val armTimeMeasurer = DeltaTimeMeasurer()
+    private val collectorTimeMeasurer = DeltaTimeMeasurer()
+    private val clawsTimeMeasurer = DeltaTimeMeasurer()
+    private val driveTimeMeasurer = DeltaTimeMeasurer()
+    private val planeTimeMeasurer = DeltaTimeMeasurer()
+    private val hangTimeMeasurer = DeltaTimeMeasurer()
+    private val lightsTimeMeasurer = DeltaTimeMeasurer()
+    private val telemetryTimeMeasurer = DeltaTimeMeasurer()
+    private val miscTimeMeasurer = DeltaTimeMeasurer()
 
     private var numberOfTimesColorButtonPressed: Int = 0
     private var previousDesiredPixelLightPattern: BothPixelsWeWant = BothPixelsWeWant(leftPixel = PixelColor.Unknown, rightPixel = PixelColor.Unknown)
@@ -148,8 +160,10 @@ class RobotTwoTeleOp: OpMode() {
         //figure out smashing issue
         //arm goes down too much and gets stuck
 
+        miscTimeMeasurer.endMeasureDT()
 
         // Handoff related inputs ------------------------------------------------------------------
+        handoffTimeMeasurer.beginMeasureDT()
         val isHandoffButtonPressed = (gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start)
 
         val extendoTriggerActivation = 0.1
@@ -252,7 +266,10 @@ class RobotTwoTeleOp: OpMode() {
             gamepad1.rumble(1.0, 1.0, 800)
         }
 
+        handoffTimeMeasurer.endMeasureDT()
+
         // Extendo ---------------------------------------------------------------------------------
+        extendoTimeMeasurer.beginMeasureDT()
         val extendoState: CollectorSystem.ExtendoPositions = when {
             rightTrigger && leftTrigger -> {
                 hardware.extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -308,7 +325,10 @@ class RobotTwoTeleOp: OpMode() {
             collectorSystem.powerExtendo(power)
         }
 
+        extendoTimeMeasurer.endMeasureDT()
+
         // Lift ------------------------------------------------------------------------------------
+        liftTimeMeasurer.beginMeasureDT()
         val liftPosition: Lift.LiftPositions = if (areLiftManualControlsActive) {
             Lift.LiftPositions.Manual
         } else {
@@ -374,7 +394,10 @@ class RobotTwoTeleOp: OpMode() {
         telemetry.addLine("Lift position: ${lift.getCurrentPositionTicks()}")
         telemetry.addLine("Lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
 
+        liftTimeMeasurer.endMeasureDT()
+
         // Arm -------------------------------------------------------------------------------------
+        armTimeMeasurer.beginMeasureDT()
         val liftIsBelowFreeArmLevel = hardware.liftMotorMaster.currentPosition <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsInish = arm.getArmAngleDegrees() >= Arm.Positions.Inish.angleDegrees
 
@@ -421,7 +444,10 @@ class RobotTwoTeleOp: OpMode() {
             telemetry.addLine("Arm target: $armPosition, angle: ${armPosition.angleDegrees}")
         }
 
+        armTimeMeasurer.endMeasureDT()
+
         // Collector -------------------------------------------------------------------------------
+        collectorTimeMeasurer.beginMeasureDT()
         fun nextPosition(isDirectionPositive: Boolean): CollectorSystem.CollectorPowers {
             val intakePowerOptions = mapOf(
                     1 to CollectorSystem.CollectorPowers.Intake,
@@ -504,8 +530,10 @@ class RobotTwoTeleOp: OpMode() {
         }
         collectorSystem.runRollers(rollerState)
 
+        collectorTimeMeasurer.endMeasureDT()
 
         // Claws -----------------------------------------------------------------------------------
+        clawsTimeMeasurer.beginMeasureDT()
         val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val wasTheLiftGoindDownBefore = previousRobotState.depoState.liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsIn = armPosition.angleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
@@ -570,8 +598,10 @@ class RobotTwoTeleOp: OpMode() {
         }
         hardware.rightClawServo.position = rightClawPosition.position
 
+        clawsTimeMeasurer.endMeasureDT()
 
         // DRONE DRIVE -----------------------------------------------------------------------------
+        driveTimeMeasurer.beginMeasureDT()
         val yInput = -gamepad1.left_stick_y.toDouble()
         val xInput = gamepad1.left_stick_x.toDouble()
         val rInput = gamepad1.right_stick_x.toDouble()
@@ -590,7 +620,7 @@ class RobotTwoTeleOp: OpMode() {
             0.0
         }
 
-        val isAtTheEndOfExtendo = hardware.extendoMotorMaster.currentPosition >= CollectorSystem.ExtendoPositions.Max.ticks || hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS) > 6.0
+        val isAtTheEndOfExtendo = hardware.extendoMotorMaster.currentPosition >= CollectorSystem.ExtendoPositions.Max.ticks || hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS) > 6.0 // FIXME: Amp reading may be slow, actual limit switch will be better anyways
         val extendoCompensationPower = if (isAtTheEndOfExtendo && yInput == 0.0) {
             gamepad1.right_trigger.toDouble()
         } else {
@@ -605,22 +635,28 @@ class RobotTwoTeleOp: OpMode() {
                 (y - x - r),
                 (y + x + r))
 
+        driveTimeMeasurer.endMeasureDT()
+
         // Plane Launcher --------------------------------------------------------------------------
+        planeTimeMeasurer.beginMeasureDT()
         hardware.launcherServo.position = if ((gamepad2.y && !gamepad2.dpad_left) || gamepad1.y) {
             RobotTwoHardware.LauncherPosition.Released.position
         } else {
             RobotTwoHardware.LauncherPosition.Holding.position
         }
+        planeTimeMeasurer.endMeasureDT()
 
-        //Hang
+        // Hang ------------------------------------------------------------------------------------
+        hangTimeMeasurer.beginMeasureDT()
         hardware.hangReleaseServo.power = if (gamepad1.x || (gamepad2.left_stick_button && gamepad2.right_stick_button)) {
             RobotTwoHardware.HangPowers.Release.power
         } else {
             RobotTwoHardware.HangPowers.Holding.power
         }
-
+        hangTimeMeasurer.endMeasureDT()
 
         // Light Control ---------------------------------------------------------------------------
+        lightsTimeMeasurer.beginMeasureDT()
         val isAnyColorButtonPressed: Boolean = gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y
 
         val desiredPixelLightPattern: BothPixelsWeWant = if (gamepad2.dpad_left) {
@@ -726,16 +762,37 @@ class RobotTwoTeleOp: OpMode() {
 
         hardware.lights.setPattern(colorToDisplay)
 
-//        telemetry.addLine("Arm raw angle: ${arm.encoderReader.getRawPositionDegrees()}")
-//        telemetry.addLine("Arm actual angle: ${arm.getArmAngleDegrees()}")
-//        telemetry.addLine("Lift actual position: ${lift.getCurrentPositionTicks()}")
-//        telemetry.addLine("Extendo actual position: ${hardware.extendoMotorMaster.currentPosition}")
-//        telemetry.addLine("Left flap angle: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
-//        telemetry.addLine("Right flap angle: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
+        lightsTimeMeasurer.endMeasureDT()
+
+        // FIXME: Some of these may add to loop latency, consider disabling for comp
+        telemetryTimeMeasurer.beginMeasureDT()
+        telemetry.addLine("Arm raw angle: ${arm.encoderReader.getRawPositionDegrees()}")
+        telemetry.addLine("Arm actual angle: ${arm.getArmAngleDegrees()}")
+        telemetry.addLine("Lift actual position: ${lift.getCurrentPositionTicks()}")
+        telemetry.addLine("Extendo actual position: ${hardware.extendoMotorMaster.currentPosition}")
+        telemetry.addLine("Left flap angle: ${collectorSystem.leftEncoderReader.getPositionDegrees()}")
+        telemetry.addLine("Right flap angle: ${collectorSystem.rightEncoderReader.getPositionDegrees()}")
+
+        telemetry.addLine("handoffTimeMeasurer:   ${handoffTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("extendoTimeMeasurer:   ${extendoTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("liftTimeMeasurer:      ${liftTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("armTimeMeasurer:       ${armTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("collectorTimeMeasurer: ${collectorTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("clawsTimeMeasurer:     ${clawsTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("driveTimeMeasurer:     ${driveTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("planeTimeMeasurer:     ${planeTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("hangTimeMeasurer:      ${hangTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("lightsTimeMeasurer:    ${lightsTimeMeasurer.getLastMeasuredDT()}")
+        telemetry.addLine("telemetryTimeMeasurer: ${telemetryTimeMeasurer.getLastMeasuredDT()}")
+
+        // Update telemetry display at end of loop cycle
+        telemetry.update()
+        telemetryTimeMeasurer.endMeasureDT()
 
         /** not controls */
 
         // Previous robot state --------------------------------------------------------------------
+        miscTimeMeasurer.beginMeasureDT()
         previousRobotState = RobotState(
                 positionAndRotation = PositionAndRotation(),
                 collectorSystemState = CollectorSystem.CollectorState(
@@ -761,9 +818,6 @@ class RobotTwoTeleOp: OpMode() {
         previousGamepad1State.copy(gamepad1)
         previousGamepad2State.copy(gamepad2)
         wereBothPixelsInPreviously = areBothPixelsIn
-
-        // Update telemetry display at end of loop cycle
-        telemetry.update()
     }
 
     enum class PixelColor {
