@@ -13,6 +13,10 @@ import us.brainstormz.faux.hardware.FauxColorSensor
 import us.brainstormz.faux.hardware.FauxDigitalChannel
 import us.brainstormz.faux.hardware.FauxImu
 import us.brainstormz.faux.hardware.FauxServo
+import us.brainstormz.localizer.Localizer
+import us.brainstormz.robotTwo.ActualRobot
+import us.brainstormz.robotTwo.CollectorSystem
+import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoHardware
 
 class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHardware(opmode = opmode, telemetry = telemetry) {
@@ -58,5 +62,8 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
 
         lights = FauxRevBlinkinLedDriver()
     }
+
+    lateinit var actualRobot: ActualRobot
+    override fun getActualState(localizer: Localizer, collectorSystem: CollectorSystem, depoManager: DepoManager): ActualRobot = actualRobot
 }
 
