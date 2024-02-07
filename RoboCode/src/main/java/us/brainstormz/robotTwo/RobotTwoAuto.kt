@@ -16,8 +16,8 @@ import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.threeDay.PropColors
 import us.brainstormz.threeDay.PropDetector
 import us.brainstormz.threeDay.PropPosition
-import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.robotTwo.CollectorSystem.*
+import us.brainstormz.utils.DeltaTimeMeasurer
 
 @Autonomous(group = "!")
 class RobotTwoAuto: OpMode() {

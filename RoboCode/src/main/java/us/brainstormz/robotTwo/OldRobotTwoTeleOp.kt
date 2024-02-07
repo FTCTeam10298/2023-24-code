@@ -22,7 +22,7 @@ import kotlin.math.absoluteValue
 
 @Photon
 @TeleOp(group = "!")
-class RobotTwoTeleOp: OpMode() {
+class OldRobotTwoTeleOp: OpMode() {
 
     private val hardware = RobotTwoHardware(telemetry, this)
     val movement = MecanumDriveTrain(hardware)

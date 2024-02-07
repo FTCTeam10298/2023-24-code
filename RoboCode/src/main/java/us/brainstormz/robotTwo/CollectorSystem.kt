@@ -263,12 +263,12 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         }
     }
     data class SensorColorInformation(val purple: RGBRange, val green: RGBRange, val white: RGBRange, val yellow: RGBRange) {
-        fun mappedValues(): Map<RobotTwoTeleOp.PixelColor, RGBRange> {
+        fun mappedValues(): Map<OldRobotTwoTeleOp.PixelColor, RGBRange> {
             return mapOf(
-                    RobotTwoTeleOp.PixelColor.Purple to purple,
-                    RobotTwoTeleOp.PixelColor.Green to green,
-                    RobotTwoTeleOp.PixelColor.White to white,
-                    RobotTwoTeleOp.PixelColor.Yellow to yellow
+                    OldRobotTwoTeleOp.PixelColor.Purple to purple,
+                    OldRobotTwoTeleOp.PixelColor.Green to green,
+                    OldRobotTwoTeleOp.PixelColor.White to white,
+                    OldRobotTwoTeleOp.PixelColor.Yellow to yellow
             )
         }
     }
@@ -293,7 +293,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
     )
     val rightSensorColorInformation = leftSensorColorInformation//SensorColorInformation()
 
-    fun getColorInSide(colorSensor: ColorSensor, side: Side): RobotTwoTeleOp.PixelColor {
+    fun getColorInSide(colorSensor: ColorSensor, side: Side): OldRobotTwoTeleOp.PixelColor {
         val sensorMultiplier: Double = (1.0/8.0)
 
         val rgbValue = RGBValue(colorSensor.red() *sensorMultiplier, colorSensor.green() *sensorMultiplier, colorSensor.blue() *sensorMultiplier)
@@ -305,7 +305,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 //        telemetry.addLine("rgbValue: $rgbValue")
 //        telemetry.addLine("leftSensorColorInformation: $leftSensorColorInformation")
 
-        return findWhichColor?.key ?: RobotTwoTeleOp.PixelColor.Unknown
+        return findWhichColor?.key ?: OldRobotTwoTeleOp.PixelColor.Unknown
 //        return when {
 //            (red + blue) < green -> RobotTwoTeleOp.PixelWeWant.Green
 //            red > 2500 && green > 2500 && blue > 2500 -> RobotTwoTeleOp.PixelWeWant.White
