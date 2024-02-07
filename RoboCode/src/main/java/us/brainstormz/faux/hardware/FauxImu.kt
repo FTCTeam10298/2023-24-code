@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles
 
-class PhoImu: PhoDevice(), IMU {
+class FauxImu: FauxDevice(), IMU {
     override val printSignature: String = "Imu"
 
     override fun initialize(parameters: IMU.Parameters?): Boolean {

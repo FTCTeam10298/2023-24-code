@@ -8,7 +8,7 @@ interface FauxActionTracker {
         println("$printSignature $message")
     }
 }
-abstract class PhoDevice: FauxActionTracker, HardwareDevice{
+abstract class FauxDevice: FauxActionTracker, HardwareDevice{
 
     final override fun getManufacturer(): HardwareDevice.Manufacturer {
         printInput("Not yet implemented")

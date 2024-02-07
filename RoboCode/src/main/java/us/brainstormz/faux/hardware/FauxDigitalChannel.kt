@@ -3,7 +3,7 @@ package us.brainstormz.faux.hardware
 import com.qualcomm.robotcore.hardware.DigitalChannel
 import com.qualcomm.robotcore.hardware.DigitalChannelController
 
-class PhoDigitalChannel: PhoDevice(), DigitalChannel {
+class FauxDigitalChannel: FauxDevice(), DigitalChannel {
     override val printSignature: String = "DigitalChannel"
 
     override fun getMode(): DigitalChannel.Mode {

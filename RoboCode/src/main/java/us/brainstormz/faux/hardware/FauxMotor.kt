@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 
-abstract class PhoDcMotorSimple: DcMotorSimple, PhoDevice() {
+abstract class FauxDcMotorSimple: DcMotorSimple, FauxDevice() {
     abstract override val printSignature: String
 
     final override fun setDirection(direction: DcMotorSimple.Direction?) {
@@ -32,7 +32,7 @@ abstract class PhoDcMotorSimple: DcMotorSimple, PhoDevice() {
     }
 }
 
-class PhoMotor: PhoDcMotorSimple(), DcMotor, DcMotorEx {
+class FauxMotor: FauxDcMotorSimple(), DcMotor, DcMotorEx {
     override val printSignature = "Motor"
 
     override fun getMotorType(): MotorConfigurationType {

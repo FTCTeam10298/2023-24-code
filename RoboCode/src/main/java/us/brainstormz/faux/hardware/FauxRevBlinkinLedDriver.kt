@@ -14,7 +14,7 @@ class FauxRevBlinkinLedDriver: FauxActionTracker, RevBlinkinLedDriver(FauxServoC
     }
 }
 
-class FauxServoControllerEx(): PhoDevice(), ServoControllerEx {
+class FauxServoControllerEx(): FauxDevice(), ServoControllerEx {
     override val printSignature: String
         get() = TODO("Not yet implemented")
 

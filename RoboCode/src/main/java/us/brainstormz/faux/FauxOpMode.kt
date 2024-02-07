@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 
-class PhoOpMode(telemetry: Telemetry): OpMode() {
+class FauxOpMode(telemetry: Telemetry): OpMode() {
     init {
         updateTelemetry(telemetry)
         gamepad1 = Gamepad()

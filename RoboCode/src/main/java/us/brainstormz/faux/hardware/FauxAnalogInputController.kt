@@ -3,7 +3,7 @@ package us.brainstormz.faux.hardware
 import com.qualcomm.robotcore.hardware.AnalogInputController
 import com.qualcomm.robotcore.util.SerialNumber
 
-class PhoAnalogInputController: PhoDevice(), AnalogInputController {
+class FauxAnalogInputController: FauxDevice(), AnalogInputController {
     override val printSignature: String = "Analog Input"
 
     override fun getAnalogInputVoltage(channel: Int): Double {

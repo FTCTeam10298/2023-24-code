@@ -3,7 +3,7 @@ package us.brainstormz.faux.hardware
 import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.I2cAddr
 
-class PhoColorSensor: PhoDevice(), ColorSensor {
+class FauxColorSensor: FauxDevice(), ColorSensor {
     override val printSignature: String = "Color Sensor"
 
     override fun red(): Int {

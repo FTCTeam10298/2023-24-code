@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoController
 
-class PhoServo: Servo, PhoDevice() {
+class FauxServo: Servo, FauxDevice() {
     override val printSignature: String = "Servo"
 
     override fun getController(): ServoController {
@@ -41,7 +41,7 @@ class PhoServo: Servo, PhoDevice() {
 
 }
 
-class PhoCRServo: PhoDcMotorSimple(), CRServo {
+class FauxCRServo: FauxDcMotorSimple(), CRServo {
     override val printSignature = "CRServo"
 
     override fun getController(): ServoController {
