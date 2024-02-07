@@ -747,7 +747,7 @@ class RobotTwoAuto: OpMode() {
 
         mecanumMovement.localizer.setPositionAndRotation(startPositionAndRotation)
 
-        autoStateList = calcAutoTargetStateList(alliance, startPosition, PropPosition.Right)
+        autoStateList = calcAutoTargetStateList(alliance, startPosition, PropPosition.Center)
         autoListIterator = autoStateList.listIterator()
 
         hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
