@@ -1,7 +1,9 @@
 package us.brainstormz.robotTwo.tests
 
-import us.brainstormz.pho.PhoOpMode
-import us.brainstormz.pho.PrintlnTelemetry
+import com.qualcomm.robotcore.hardware.Gamepad
+import us.brainstormz.faux.PhoOpMode
+import us.brainstormz.faux.PrintlnTelemetry
+import us.brainstormz.robotTwo.RobotTwoTeleOp
 
 //    fun main() {
 //        val telemetry = PrintlnTelemetry()
@@ -21,6 +23,7 @@ import us.brainstormz.pho.PrintlnTelemetry
 fun main() {
     val opmode = PhoOpMode(telemetry = PrintlnTelemetry())
     val hardware = PhoRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
-    println("HI ;lkj")
-    hardware.rightClawServo.position = 0.0
+    val teleop = RobotTwoTeleOp(hardware, opmode.telemetry)
+    teleop.init()
+    teleop.loop(Gamepad(), Gamepad())
 }
