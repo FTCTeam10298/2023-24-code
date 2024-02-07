@@ -415,6 +415,7 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
     }
     data class LightTarget(val targetColor: PixelColor, val pattern: BothPixelsWeWant, val timeOfColorChangeMilis: Long)
     fun getTargetWorld(driverInput: DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld?): TargetWorld {
+        val actualRobot = actualWorld.actualRobot
 
         /**Handoff*/
         val transferLeftSensorState = collectorSystem.isPixelIn(actualWorld.actualRobot.collectorSystemState.leftTransferState, CollectorSystem.Side.Left)
@@ -532,11 +533,11 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
             }
         }
 
-        val liftActualPositionIsAboveSafeArm = hardware.liftMotorMaster.currentPosition >= Lift.LiftPositions.ClearForArmToMove.ticks
-        val armIsFarEnoughIn = arm.getArmAngleDegrees() >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
+        val liftActualPositionIsAboveSafeArm = actualRobot.depoState.liftPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
+        val armIsFarEnoughIn = actualRobot.depoState.armAngleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
 
         val liftTargetIsBelowSafeArm = liftRealTarget.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
-        val armIsTooFarIn = arm.getArmAngleDegrees() >= Arm.Positions.TooFarIn.angleDegrees
+        val armIsTooFarIn = actualRobot.depoState.armAngleDegrees >= Arm.Positions.TooFarIn.angleDegrees
         val liftNeedsToWaitForTheArm = liftTargetIsBelowSafeArm && ((!armIsFarEnoughIn && liftActualPositionIsAboveSafeArm) || armIsTooFarIn)
         telemetry.addLine("\nliftNeedsToWaitForTheArm: $liftNeedsToWaitForTheArm")
 
@@ -554,8 +555,8 @@ class RobotTwoTeleOp(private val hardware: RobotTwoHardware, private val telemet
         telemetry.addLine("Lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
 
         /**Arm*/
-        val liftIsBelowFreeArmLevel = actualWorld.actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.ClearForArmToMove.ticks
-        val armIsInish = arm.getArmAngleDegrees() >= Arm.Positions.Inish.angleDegrees
+        val liftIsBelowFreeArmLevel = actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.ClearForArmToMove.ticks
+        val armIsInish = actualRobot.depoState.armAngleDegrees >= Arm.Positions.Inish.angleDegrees
 
         val depositorShouldGoAllTheWayIn = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
 

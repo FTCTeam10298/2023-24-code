@@ -32,13 +32,30 @@ fun main() {
                             liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1
                         )
                     )
-            )
+            ),
+            TeleopTest.emptyWorld.copy(
+                    actualGamepad2= getChangedGamepad { it.dpad_down = true },
+                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
+                            depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
+                                    liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1,
+                                    armAngleDegrees = Arm.Positions.Out.angleDegrees
+                            )
+                    )
+            ),
+            TeleopTest.emptyWorld.copy(
+                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
+                            depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
+                                    liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1,
+                                    armAngleDegrees = Arm.Positions.In.angleDegrees
+                            )
+                    )
+            ),
     )
     val expectedOutput = TeleopTest.emptyTarget.copy(
             targetRobot = TeleopTest.emptyTarget.targetRobot.copy(
                     depoTarget = TeleopTest.emptyTarget.targetRobot.depoTarget.copy(
-                            liftPosition = Lift.LiftPositions.SetLine3,
-                            armPosition = Arm.Positions.Out,
+                            liftPosition = Lift.LiftPositions.Transfer,
+                            armPosition = Arm.Positions.In,
                     ),
             )
     )
