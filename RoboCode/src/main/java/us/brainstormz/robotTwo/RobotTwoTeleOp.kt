@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.hardware.rev.RevColorSensorV3
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -58,6 +59,10 @@ class RobotTwoTeleOp: OpMode() {
                 armServo2= hardware.armServo2, telemetry)
 
         depoManager = DepoManager(arm= arm, lift= lift)
+
+        for (module in hardware.allHubs) {
+            module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
+        }
     }
 
 
