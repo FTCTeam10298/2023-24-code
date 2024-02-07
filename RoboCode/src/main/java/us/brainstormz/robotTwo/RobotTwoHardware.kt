@@ -22,11 +22,13 @@ import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import posePlanner.Point2D
+import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
+import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.pid.PID
 import java.lang.Thread.sleep
 import kotlin.math.PI
@@ -294,31 +296,79 @@ class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMo
         power == it.ticks.toDouble()
     } ?: Lift.LiftPositions.Min
 
-    fun getActualState(previousActualState: RobotTwoAuto.ActualWorld?, arm: Arm, localizer: Localizer, collectorSystem: CollectorSystem): RobotTwoAuto.ActualWorld {
-        val depoState = RobotTwoAuto.DepoState(
-                liftPosition = getLiftPos(liftMotorMaster.currentPosition.toDouble()),
-
-                armPos = arm.getArmState(),
-
-                leftClawPosition = LeftClawPosition.entries.firstOrNull { it ->
-                    leftClawServo.position == it.position
-                } ?: LeftClawPosition.Gripping,
-
-                rightClawPosition = RightClawPosition.entries.firstOrNull { it ->
-                    rightClawServo.position == it.position
-                } ?: RightClawPosition.Gripping,
-        )
-
-        val actualRobot = RobotState(
+    fun getActualState(localizer: Localizer, collectorSystem: CollectorSystem, depoManager: DepoManager): ActualRobot {
+        return ActualRobot(
                 positionAndRotation = localizer.currentPositionAndRotation(),
-                collectorSystemState = collectorSystem.getCurrentState(previousActualState?.actualRobot?.collectorSystemState),
-                depoState = depoState
+                collectorSystemState = collectorSystem.getCurrentState(),
+                depoState = depoManager.getDepoState()
+        )
+//        return ActualWorld(
+//                actualRobot = actualRobot,
+//                System.currentTimeMillis()
+//        )
+    }
+
+    fun actuateRobot(
+            targetState: TargetWorld, actualState: ActualWorld,
+            movement: MecanumDriveTrain,
+            collectorSystem: CollectorSystem,
+            lift: Lift,
+            arm: Arm,
+            extendoOverridePower: Double,
+            liftOverridePower: Double,
+            armOverridePower: Double
+    ) {
+        /**Drive*/
+        movement.setSpeedAll(
+                vY = targetState.targetRobot.positionAndRotation.y,
+                vX = targetState.targetRobot.positionAndRotation.x,
+                vA = targetState.targetRobot.positionAndRotation.r,
+                maxPower = 1.0,
+                minPower = 0.0
         )
 
-        return RobotTwoAuto.ActualWorld(
-                actualRobot = actualRobot,
-                System.currentTimeMillis()
-        )
+        /**Extendo*/
+        val extendoPower: Double = if (targetState.targetRobot.collectorTarget.extendoPositions == CollectorSystem.ExtendoPositions.Manual) {
+            extendoOverridePower
+        } else {
+            collectorSystem.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks)
+        }
+        collectorSystem.powerExtendo(extendoPower)
+
+        /**Collector*/
+        collectorSystem.spinCollector(targetState.targetRobot.collectorTarget.intakeNoodles.power)
+
+        /**Rollers*/
+        collectorSystem.runRollers(targetState.targetRobot.collectorTarget.rollers)
+
+        /**Lift*/
+        val liftPower: Double = if (targetState.targetRobot.depoTarget.liftPosition == Lift.LiftPositions.Manual) {
+            liftOverridePower
+        } else {
+            lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks)
+        }
+        lift.powerLift(liftPower)
+
+        /**Arm*/
+        val armPower: Double = if (targetState.targetRobot.depoTarget.armPosition == Arm.Positions.Manual) {
+            armOverridePower
+        } else {
+            arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.angleDegrees)
+        }
+        arm.powerArm(armPower)
+
+        /**Claws*/
+        val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.leftClawPosition) {
+            Claw.ClawTarget.Gripping -> RobotTwoHardware.LeftClawPosition.Gripping
+            Claw.ClawTarget.Retracted -> RobotTwoHardware.LeftClawPosition.Retracted
+        }
+        leftClawServo.position = leftClawPosition.position
+
+        val rightClawPosition: RobotTwoHardware.RightClawPosition = when (targetState.targetRobot.depoTarget.rightClawPosition) {
+            Claw.ClawTarget.Gripping -> RobotTwoHardware.RightClawPosition.Gripping
+            Claw.ClawTarget.Retracted -> RobotTwoHardware.RightClawPosition.Retracted
+        }
+        rightClawServo.position = rightClawPosition.position
     }
 
     fun wiggleTest(telemetry: Telemetry, gamepad: Gamepad) {
