@@ -5,33 +5,33 @@ import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
+import org.checkerframework.checker.units.qual.A
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.pid.PID
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
-class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
-                      private val extendoMotorSlave: DcMotor,
-                      private val collectorServo1: CRServo,
-                      private val collectorServo2: CRServo,
-                      private val rightTransferServo: CRServo,
-                      private val leftTransferServo: CRServo,
-                      private val transferDirectorServo: CRServo,
-                      private val leftTransferPixelSensor: ColorSensor,
-                      private val rightTransferPixelSensor: ColorSensor,
-                      leftRollerEncoder: AnalogInput,
-                      rightRollerEncoder: AnalogInput,
+class CollectorSystem(
+//                    private val extendoMotorMaster: DcMotorEx,
+//                      private val extendoMotorSlave: DcMotor,
+//                      private val collectorServo1: CRServo,
+//                      private val collectorServo2: CRServo,
+//                      private val rightTransferServo: CRServo,
+//                      private val leftTransferServo: CRServo,
+//                      private val transferDirectorServo: CRServo,
+//                      private val leftTransferPixelSensor: ColorSensor,
+//                      private val rightTransferPixelSensor: ColorSensor,
+//                      leftRollerEncoder: AnalogInput,
+//                      rightRollerEncoder: AnalogInput,
                       private val telemetry: Telemetry) {
 
     val maxSafeCurrentAmps = 5.5
-    init {
-        extendoMotorMaster.setCurrentAlert(maxSafeCurrentAmps, CurrentUnit.AMPS)
-    }
 
     enum class ExtendoPositions(val ticks: Int) {
         AllTheWayInTarget(-10),
         Min(0),
+        ResetEncoder(0),
         Manual(0),
         ClearTransfer(230),
         CloserBackboardPixelPosition(500),
@@ -86,25 +86,22 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 //    )
 
 
-    val leftEncoderReader = AxonEncoderReader(leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
-    val rightEncoderReader = AxonEncoderReader(rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
-
     private val leftFlapTransferReadyAngleDegrees = 20.0
     private val rightFlapTransferReadyAngleDegrees = 305.0
     private val leftFlapKp = 0.3
     private val rightFlapKp = 0.4
 
     private val acceptablePositionErrorTicks = 50
-    fun isExtendoAtPosition(targetPositionTicks: Int): Boolean {
-        val currentPositionTicks = extendoMotorMaster.currentPosition
+    fun isExtendoAtPosition(targetPositionTicks: Int, currentPositionTicks: Int): Boolean {
         val positionErrorTicks = targetPositionTicks - currentPositionTicks
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
     }
 
-    fun isExtendoAllTheWayIn(): Boolean {
-        return extendoMotorMaster.currentPosition <= 10
+    fun isExtendoAllTheWayIn(actualRobot: ActualRobot): Boolean {
+        return actualRobot.collectorSystemState.extendoCurrentAmps <= 10
     }
-    fun getExtendoPositionTicks(): Int = extendoMotorMaster.currentPosition
+
+    fun getExtendoPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
 //    fun arePixelsAlignedInTransfer(): Boolean {
 //        val isLeftFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(leftEncoderReader), leftFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
 //        val isRightFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(rightEncoderReader), rightFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
@@ -117,8 +114,14 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 //        }
 //    }
 
-    fun getFlapAngleDegrees(encoderReader: AxonEncoderReader): Double =
-            (encoderReader.getPositionDegrees() * 2).mod(360.0)
+    fun getFlapAngleDegrees(side: Side, hardware: RobotTwoHardware): Double {
+        val encoderReader = when (side) {
+            Side.Left -> AxonEncoderReader(hardware.leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
+            Side.Right -> AxonEncoderReader(hardware.rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
+        }
+
+        return (encoderReader.getPositionDegrees() * 2).mod(360.0)
+    }
 
     fun isFlapAtAngle(currentAngleDegrees: Double, angleToCheckDegrees: Double, flapAngleToleranceDegrees: Double = 5.0): Boolean {
         val maxAcceptedAngle = (angleToCheckDegrees + flapAngleToleranceDegrees).mod(360.0)
@@ -127,14 +130,8 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         return currentAngleDegrees in angleTolerance
     }
 
-    fun getPowerToMoveFlapToAngle(flap: Side, targetAngleDegrees: Double): Double {
-        val encoder = when (flap) {
-            Side.Left -> leftEncoderReader
-            Side.Right -> rightEncoderReader
-        }
-
-        val currentAngle = getFlapAngleDegrees(encoder)
-        val angleErrorDegrees = (currentAngle - targetAngleDegrees).mod(360.0)
+    fun getPowerToMoveFlapToAngle(flap: Side, targetAngleDegrees: Double, currentAngleDegrees: Double): Double {
+        val angleErrorDegrees = (currentAngleDegrees - targetAngleDegrees).mod(360.0)
 
         val proportionalConstant = when (flap) {
             Side.Left -> leftFlapKp
@@ -154,17 +151,17 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         }
     }
 
-    fun spinCollector(power: Double) {
-        collectorServo1.power = power
-        collectorServo2.power = power
+    fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {
+        hardware.collectorServo1.power = power
+        hardware.collectorServo2.power = power
     }
 
     var previousLeftTransferState = TransferHalfState(false, 0)
     var previousRightTransferState = TransferHalfState(false, 0)
     val extraTransferRollingTimeMilis = 0
-    fun getAutoPixelSortState(isCollecting: Boolean): RollerState {
+    fun getAutoPixelSortState(isCollecting: Boolean, actualRobot: ActualRobot): RollerState {
         //Detection:
-        val isLeftSeeingPixel = isPixelIn(getSensorReading(leftTransferPixelSensor), Side.Left)
+        val isLeftSeeingPixel = isPixelIn(actualRobot.collectorSystemState.leftTransferState, Side.Left)
         val timeOfSeeingLeftPixelMilis = when {
             !previousLeftTransferState.hasPixelBeenSeen && isLeftSeeingPixel-> System.currentTimeMillis()
             !isLeftSeeingPixel -> 0
@@ -172,7 +169,7 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
         }
         val leftTransferState = TransferHalfState(isLeftSeeingPixel, timeOfSeeingLeftPixelMilis)
 
-        val isRightSeeingPixel = isPixelIn(getSensorReading(rightTransferPixelSensor), Side.Right)
+        val isRightSeeingPixel = isPixelIn(actualRobot.collectorSystemState.rightTransferState, Side.Right)
         val timeOfSeeingRightPixelMilis = when {
             !previousRightTransferState.hasPixelBeenSeen && isRightSeeingPixel-> System.currentTimeMillis()
             !isRightSeeingPixel -> 0
@@ -208,19 +205,23 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
                                 directorState= directorState)
     }
 
-    fun runRollers(transferState: RollerState) {
-        leftTransferServo.power = getRollerPowerBasedOnState(Side.Left, transferState.leftServoCollect)
-        rightTransferServo.power = getRollerPowerBasedOnState(Side.Right, transferState.rightServoCollect)
-        transferDirectorServo.power = transferState.directorState.power
+    fun runRollers(transferState: RollerState, hardware: RobotTwoHardware, actualRobot: ActualRobot) {
+        hardware.leftTransferServo.power = getRollerPowerBasedOnState(Side.Left, transferState.leftServoCollect, actualRobot)
+        hardware.rightTransferServo.power = getRollerPowerBasedOnState(Side.Right, transferState.rightServoCollect, actualRobot)
+        hardware.transferDirectorServo.power = transferState.directorState.power
     }
 
-    fun getRollerPowerBasedOnState(side: Side, rollerState: RollerPowers): Double {
+    fun getRollerPowerBasedOnState(side: Side, rollerState: RollerPowers, actualRobot: ActualRobot): Double {
         val flapTransferReadyAngleDegrees = when (side) {
             Side.Left -> leftFlapTransferReadyAngleDegrees
             Side.Right -> rightFlapTransferReadyAngleDegrees
         }
+        val actualFlapAngle = when (side) {
+            Side.Left -> actualRobot.collectorSystemState.leftRollerAngleDegrees
+            Side.Right -> actualRobot.collectorSystemState.rightRollerAngleDegrees
+        }
         return if (rollerState == RollerPowers.Off) {
-            getPowerToMoveFlapToAngle(side, flapTransferReadyAngleDegrees)
+            getPowerToMoveFlapToAngle(side, flapTransferReadyAngleDegrees, actualFlapAngle)
 //            0.0
         } else {
             rollerState.power
@@ -326,57 +327,43 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 //        return alpha > alphaDetectionThreshold
     }
 
-    fun powerExtendo(power: Double) {
-        val allowedPower = if (extendoMotorMaster.isOverCurrent) {
+    fun powerExtendo(power: Double, hardware: RobotTwoHardware) {
+
+        val allowedPower = if (hardware.extendoMotorMaster.isOverCurrent) {
             0.0
         } else {
             power
         }
 
-        extendoMotorMaster.power = allowedPower
-        extendoMotorSlave.power = allowedPower
-    }
-
-    private fun powerExtendoEncoderStops(power: Double) {
-        val currentPosition = extendoMotorMaster.currentPosition.toDouble()
-        val allowedPower = power
-//        if (currentPosition > RobotTwoHardware.ExtendoPositions.Max.position) {
-//            power.coerceAtMost(0.0)
-//        } else if (currentPosition < RobotTwoHardware.ExtendoPositions.Min.position) {
-//            power.coerceAtLeast(0.0)
-//        } else {
-//            power
-//        }
-
-        extendoMotorMaster.power = allowedPower
-        extendoMotorSlave.power = allowedPower
+        hardware.extendoMotorMaster.power = allowedPower
+        hardware.extendoMotorSlave.power = allowedPower
     }
 
     private val pid = PID(kp = 0.005)
-    fun calcPowerToMoveExtendo(targetPositionTicks: Int): Double {
-        val currentPosition = extendoMotorMaster.currentPosition.toDouble()
-        val positionError = targetPositionTicks - currentPosition
+    fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
+        val currentPosition = actualRobot.collectorSystemState.extendoPositionTicks
+        val positionError = targetPositionTicks - currentPosition.toDouble()
         val power = pid.calcPID(positionError)
         return power
     }
-    fun moveExtendoToPosition(targetPositionTicks: Int) {
-        powerExtendo(calcPowerToMoveExtendo(targetPositionTicks))
-    }
+//    fun moveExtendoToPosition(targetPositionTicks: Int) {
+//        powerExtendo(calcPowerToMoveExtendo(targetPositionTicks))
+//    }
 
-    fun getTransferHalfState(half: Side, previousState: TransferHalfState): TransferHalfState {
-        val sensor = when (half) {
-            Side.Left -> leftTransferPixelSensor
-            Side.Right -> rightTransferPixelSensor
-        }
-        val isSeeingPixel = isPixelIn(getSensorReading(sensor), half)
-
-        val timeOfSeeingPixelMilis = when {
-            !previousState.hasPixelBeenSeen && isSeeingPixel-> System.currentTimeMillis()
-//            !isSeeingPixel -> 0
-            else -> previousState.timeOfSeeingMilis
-        }
-        return TransferHalfState(isSeeingPixel, timeOfSeeingPixelMilis)
-    }
+//    fun getTransferHalfState(half: Side, previousState: TransferHalfState): TransferHalfState {
+//        val sensor = when (half) {
+//            Side.Left -> leftTransferPixelSensor
+//            Side.Right -> rightTransferPixelSensor
+//        }
+//        val isSeeingPixel = isPixelIn(getSensorReading(sensor), half)
+//
+//        val timeOfSeeingPixelMilis = when {
+//            !previousState.hasPixelBeenSeen && isSeeingPixel-> System.currentTimeMillis()
+////            !isSeeingPixel -> 0
+//            else -> previousState.timeOfSeeingMilis
+//        }
+//        return TransferHalfState(isSeeingPixel, timeOfSeeingPixelMilis)
+//    }
 
 //    private val defaultPreviousState = TransferHalfState(false, 0)
     data class SensorReading(val red: Int, val green: Int, val blue: Int, val alpha: Int)
@@ -392,18 +379,20 @@ class CollectorSystem(private val extendoMotorMaster: DcMotorEx,
 
     data class ActualCollector(
             val extendoPositionTicks: Int,
+            val extendoCurrentAmps: Double,
             val leftRollerAngleDegrees: Double,
             val rightRollerAngleDegrees: Double,
             val leftTransferState: CollectorSystem.SensorReading,
             val rightTransferState: CollectorSystem.SensorReading,
     )
-    fun getCurrentState(): ActualCollector {
+    fun getCurrentState(hardware: RobotTwoHardware): ActualCollector {
         return ActualCollector(
-                extendoPositionTicks= getExtendoPositionTicks(),
-                leftRollerAngleDegrees= getFlapAngleDegrees(leftEncoderReader),
-                rightRollerAngleDegrees= getFlapAngleDegrees(rightEncoderReader),
-                leftTransferState= getSensorReading(leftTransferPixelSensor),
-                rightTransferState= getSensorReading(leftTransferPixelSensor),
+                extendoPositionTicks= getExtendoPositionTicks(hardware),
+                extendoCurrentAmps = hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS),
+                leftRollerAngleDegrees= getFlapAngleDegrees(Side.Left, hardware),
+                rightRollerAngleDegrees= getFlapAngleDegrees(Side.Right, hardware),
+                leftTransferState= getSensorReading(hardware.leftTransferSensor),
+                rightTransferState= getSensorReading(hardware.rightTransferSensor),
         )
 //        val collectorPowerState: CollectorPowers = getCollectorPowerState(collectorServo1.power)
 //        val extendoPosition = ExtendoPositions.Min

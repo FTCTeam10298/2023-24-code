@@ -294,7 +294,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     open fun getActualState(localizer: Localizer, collectorSystem: CollectorSystem, depoManager: DepoManager): ActualRobot {
         return ActualRobot(
                 positionAndRotation = localizer.currentPositionAndRotation(),
-                collectorSystemState = collectorSystem.getCurrentState(),
+                collectorSystemState = collectorSystem.getCurrentState(this),
                 depoState = depoManager.getDepoState(this)
         )
 //        return ActualWorld(
@@ -325,24 +325,32 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         /**Extendo*/
         val extendoPower: Double = if (targetState.targetRobot.collectorTarget.extendoPositions == CollectorSystem.ExtendoPositions.Manual) {
             extendoOverridePower
+        } else if (targetState.targetRobot.collectorTarget.extendoPositions == CollectorSystem.ExtendoPositions.ResetEncoder) {
+            extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+            extendoMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+            0.0
         } else {
-            collectorSystem.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks)
+            collectorSystem.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
         }
-        collectorSystem.powerExtendo(extendoPower)
+        collectorSystem.powerExtendo(extendoPower, this)
 
         /**Collector*/
-        collectorSystem.spinCollector(targetState.targetRobot.collectorTarget.intakeNoodles.power)
+        collectorSystem.powerSubsystem(targetState.targetRobot.collectorTarget.intakeNoodles.power, this)
 
         /**Rollers*/
-        collectorSystem.runRollers(targetState.targetRobot.collectorTarget.rollers)
+        collectorSystem.runRollers(targetState.targetRobot.collectorTarget.rollers, this, actualRobot = actualState.actualRobot)
 
         /**Lift*/
         val liftPower: Double = if (targetState.targetRobot.depoTarget.liftPosition == Lift.LiftPositions.Manual) {
             liftOverridePower
+        } else if (targetState.targetRobot.depoTarget.liftPosition == Lift.LiftPositions.ResetEncoder) {
+            liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+            liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+            0.0
         } else {
-            lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks)
+            lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot)
         }
-        lift.powerLift(liftPower)
+        lift.powerSubsystem(liftPower, this)
 
         /**Arm*/
         val armPower: Double = if (targetState.targetRobot.depoTarget.armPosition == Arm.Positions.Manual) {

@@ -4,14 +4,16 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DigitalChannel
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
+import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import kotlin.math.absoluteValue
 
-class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, private val liftLimit: DigitalChannel) {
+class Lift: Subsystem {//(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, private val liftLimit: DigitalChannel) {
 
 
     enum class LiftPositions(val ticks: Int) {
         Manual(0),
+        ResetEncoder(0),
         Nothing(0),
         Min(0),
         Transfer(0),
@@ -24,42 +26,43 @@ class Lift(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, p
         Max(2300)
     }
 
-    fun powerLift(power: Double) {
+    override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {
 
-        val allowedPower = if (isLiftDrawingTooMuchCurrent()) {
+        val allowedPower = if (isLiftDrawingTooMuchCurrent(hardware)) {
             0.0
         } else {
             power
         }
 
-        liftMotor1.power = allowedPower
-        liftMotor2.power = allowedPower
+        hardware.liftMotorMaster.power = allowedPower
+        hardware.liftMotorSlave.power = allowedPower
     }
 
-    fun isLimitSwitchActivated(): Boolean = !liftLimit.state
+
+    fun isLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.liftMagnetLimit.state
 
     private val liftBottomLimitAmps = 8.0
 
-    fun isLiftDrawingTooMuchCurrent() = liftMotor1.getCurrent(CurrentUnit.AMPS) > liftBottomLimitAmps
+    fun isLiftDrawingTooMuchCurrent(hardware: RobotTwoHardware) = hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS) > liftBottomLimitAmps
 
-    fun getCurrentPositionTicks(): Int {
-        return  liftMotor1.currentPosition
+    fun getCurrentPositionTicks(hardware: RobotTwoHardware): Int {
+        return  hardware.liftMotorMaster.currentPosition
     }
 
     private val pid = PID(kp = 0.004)
-    fun moveLiftToPosition(targetPositionTicks: Int) {
-        powerLift(calculatePowerToMoveToPosition(targetPositionTicks))
-    }
-    fun calculatePowerToMoveToPosition(targetPositionTicks: Int): Double {
-        val currentPosition = liftMotor1.currentPosition.toDouble()
-        val positionError = targetPositionTicks - currentPosition
+//    fun moveLiftToPosition(targetPositionTicks: Int, hardware: RobotTwoHardware) {
+//        powerSubsystem(calculatePowerToMoveToPosition(targetPositionTicks, ), hardware)
+//    }
+    fun calculatePowerToMoveToPosition(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
+        val currentPosition = actualRobot.collectorSystemState.extendoPositionTicks
+        val positionError = targetPositionTicks - currentPosition.toDouble()
         val power = pid.calcPID(positionError)
         return power
     }
 
     private val acceptablePositionErrorTicks = 100
-    fun isLiftAtPosition(targetPositionTicks: Int): Boolean {
-        val currentPositionTicks = liftMotor1.currentPosition
+    fun isLiftAtPosition(targetPositionTicks: Int, actualRobot: ActualRobot): Boolean {
+        val currentPositionTicks = actualRobot.collectorSystemState.extendoPositionTicks
         val positionErrorTicks = targetPositionTicks - currentPositionTicks
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
     }

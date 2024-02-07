@@ -14,12 +14,12 @@ class TeleOpMode: OpMode() {
     override fun init() {
         hardware.init(hardwareMap)
 
-        teleop = RobotTwoTeleOp(hardware, telemetry)
-        teleop.init()
+        teleop = RobotTwoTeleOp(telemetry)
+        teleop.init(hardware)
     }
 
     override fun loop() {
-        teleop.loop(gamepad1= gamepad1, gamepad2= gamepad2)
+        teleop.loop(gamepad1= gamepad1, gamepad2= gamepad2, hardware= hardware)
     }
 
 }

@@ -55,8 +55,8 @@ class HandoffManager(
             }
         }
 
-        val isCollectorAllTheWayIn = collectorSystem.isExtendoAllTheWayIn()
-        val liftExtensionIsAllTheWayDown = lift.isLimitSwitchActivated()
+        val isCollectorAllTheWayIn = collectorSystem.isExtendoAllTheWayIn(actualRobot)
+        val liftExtensionIsAllTheWayDown = actualRobot.depoState.isLiftLimitActivated
         val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
 
         val armState: Arm.Positions = when (bothExtensionsAreAllTheWayIn) {

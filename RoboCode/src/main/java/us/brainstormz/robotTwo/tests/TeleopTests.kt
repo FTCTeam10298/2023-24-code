@@ -75,14 +75,16 @@ object TeleopTest {
     fun runTest(testSteps: List<ActualWorld>): List<Pair<ActualWorld, TargetWorld>> {
         val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
         val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
-        val teleop = RobotTwoTeleOp(hardware, opmode.telemetry)
+        val teleop = RobotTwoTeleOp(opmode.telemetry)
+
+        teleop.init(hardware)
 
         val results:List<Pair<ActualWorld, TargetWorld>> = testSteps.mapIndexed() {index, actualWorld ->
-            //Set Init Inputs
+            //Set Inputs
             hardware.actualRobot = actualWorld.actualRobot
 
             //Run Once
-            teleop.loop(gamepad1 = actualWorld.actualGamepad1, gamepad2 = actualWorld.actualGamepad2)
+            teleop.loop(gamepad1 = actualWorld.actualGamepad1, gamepad2 = actualWorld.actualGamepad2, hardware)
 
             //Get result
             val result = teleop.functionalReactiveAutoRunner.previousTargetState!!
@@ -103,10 +105,12 @@ object TeleopTest {
                     positionAndRotation = PositionAndRotation(),
                     depoState = DepoManager.ActualDepo(
                             armAngleDegrees = 0.0,
-                            liftPositionTicks = 0
+                            liftPositionTicks = 0,
+                            isLiftLimitActivated = false
                     ),
                     collectorSystemState = CollectorSystem.ActualCollector(
                             extendoPositionTicks = 0,
+                            extendoCurrentAmps = 0.0,
                             leftRollerAngleDegrees = 0.0,
                             rightRollerAngleDegrees = 0.0,
                             leftTransferState = emptySensorReading,
