@@ -33,7 +33,7 @@ import us.brainstormz.pid.PID
 import java.lang.Thread.sleep
 import kotlin.math.PI
 
-class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
+open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
 
     override lateinit var lFDrive: DcMotor
     override lateinit var rFDrive: DcMotor
