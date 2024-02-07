@@ -1,8 +1,10 @@
 package us.brainstormz.operationFramework
 
 class FunctionalReactiveAutoRunner<TargetState, ActualState> {
-    private var previousTargetState: TargetState? = null
-    private var previousActualState: ActualState? = null
+    var previousTargetState: TargetState? = null
+        private set
+    var previousActualState: ActualState? = null
+        private set
     fun loop(   actualStateGetter: (previousActualState: ActualState?)->ActualState,
                 targetStateFetcher:  (previousTargetState: TargetState?, actualState: ActualState, previousActualState: ActualState?)->TargetState,
                 stateFulfiller: (targetState: TargetState, actualState: ActualState)->Unit ) {
