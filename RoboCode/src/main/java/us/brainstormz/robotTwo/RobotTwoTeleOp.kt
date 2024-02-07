@@ -2,16 +2,18 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
-import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.utils.DeltaTimeMeasurer
-import us.brainstormz.robotTwo.Claw.ClawTarget
+import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
+import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.Claw
+import us.brainstormz.robotTwo.subsystems.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.Lift
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 

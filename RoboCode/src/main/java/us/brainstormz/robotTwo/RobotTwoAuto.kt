@@ -16,7 +16,10 @@ import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.threeDay.PropColors
 import us.brainstormz.threeDay.PropDetector
 import us.brainstormz.threeDay.PropPosition
-import us.brainstormz.robotTwo.CollectorSystem.*
+import us.brainstormz.robotTwo.subsystems.CollectorSystem.*
+import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.utils.DeltaTimeMeasurer
 
 @Autonomous(group = "!")

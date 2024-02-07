@@ -1,14 +1,13 @@
-package us.brainstormz.robotTwo
+package us.brainstormz.robotTwo.subsystems
 
-import com.qualcomm.robotcore.hardware.AnalogInput
-import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.ColorSensor
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorEx
-import org.checkerframework.checker.units.qual.A
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.pid.PID
+import us.brainstormz.robotTwo.ActualRobot
+import us.brainstormz.robotTwo.AxonEncoderReader
+import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.RobotTwoTeleOp
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -382,8 +381,8 @@ class CollectorSystem(
             val extendoCurrentAmps: Double,
             val leftRollerAngleDegrees: Double,
             val rightRollerAngleDegrees: Double,
-            val leftTransferState: CollectorSystem.SensorReading,
-            val rightTransferState: CollectorSystem.SensorReading,
+            val leftTransferState: SensorReading,
+            val rightTransferState: SensorReading,
     )
     fun getCurrentState(hardware: RobotTwoHardware): ActualCollector {
         return ActualCollector(

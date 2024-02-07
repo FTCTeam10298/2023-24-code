@@ -1,11 +1,10 @@
-package us.brainstormz.robotTwo
+package us.brainstormz.robotTwo.subsystems
 
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.hardware.DigitalChannel
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
+import us.brainstormz.robotTwo.ActualRobot
+import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.absoluteValue
 
 class Lift: Subsystem {//(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, private val liftLimit: DigitalChannel) {

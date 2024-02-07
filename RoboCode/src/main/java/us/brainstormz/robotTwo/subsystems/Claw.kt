@@ -1,4 +1,4 @@
-package us.brainstormz.robotTwo
+package us.brainstormz.robotTwo.subsystems
 
 class Claw {
     enum class ClawTarget {

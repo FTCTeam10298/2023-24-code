@@ -15,7 +15,7 @@ import us.brainstormz.faux.hardware.FauxImu
 import us.brainstormz.faux.hardware.FauxServo
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.robotTwo.ActualRobot
-import us.brainstormz.robotTwo.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.CollectorSystem
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoHardware
 

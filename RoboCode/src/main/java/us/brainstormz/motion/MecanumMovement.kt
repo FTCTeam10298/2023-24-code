@@ -3,10 +3,7 @@ package us.brainstormz.motion
 //import com.acmerobotics.dashboard.FtcDashboard
 //import com.acmerobotics.dashboard.config.Config
 //import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
-import android.text.BoringLayout
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.hardwareClasses.MecanumHardware
@@ -14,8 +11,6 @@ import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
 //rimport us.brainstormz.paddieMatrick.PaddieMatrickHardware
 import us.brainstormz.pid.PID
-import us.brainstormz.robotTwo.Arm
-import us.brainstormz.telemetryWizard.GlobalConsole
 import kotlin.math.*
 
 class MecanumMovement(override val localizer: Localizer, override val hardware: MecanumHardware, private val telemetry: Telemetry): Movement, MecanumDriveTrain(hardware) {

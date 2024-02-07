@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo
 
-import android.text.BoringLayout
+import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.Lift
 
 class DepoManager(val arm: Arm, val lift: Lift) {//, val leftClaw: Claw, val rightClaw: Claw) {
 

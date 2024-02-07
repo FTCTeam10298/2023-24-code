@@ -1,19 +1,18 @@
 package us.brainstormz.robotTwo.tests
 
-import android.text.BoringLayout
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
-import us.brainstormz.robotTwo.Arm
-import us.brainstormz.robotTwo.Claw
-import us.brainstormz.robotTwo.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.Claw
+import us.brainstormz.robotTwo.subsystems.CollectorSystem
 import us.brainstormz.robotTwo.CollectorTarget
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.DepoTarget
-import us.brainstormz.robotTwo.Lift
+import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetRobot

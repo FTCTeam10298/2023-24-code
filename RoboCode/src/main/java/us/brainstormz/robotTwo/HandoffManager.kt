@@ -2,6 +2,9 @@ package us.brainstormz.robotTwo
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.Lift
 
 class HandoffManager(
         private val collectorSystem: CollectorSystem,

@@ -1,10 +1,9 @@
-package us.brainstormz.robotTwo
+package us.brainstormz.robotTwo.subsystems
 
-import com.qualcomm.robotcore.hardware.AnalogInput
-import com.qualcomm.robotcore.hardware.CRServo
-import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
+import us.brainstormz.robotTwo.AxonEncoderReader
+import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.cos
 
 class Arm/*(private val encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry)*/: Subsystem {
