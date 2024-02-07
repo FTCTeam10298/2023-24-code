@@ -16,7 +16,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware.RobotState
 import us.brainstormz.threeDay.PropColors
 import us.brainstormz.threeDay.PropDetector
 import us.brainstormz.threeDay.PropPosition
-import us.brainstormz.utils.LoopTimeMeasurer
+import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.robotTwo.CollectorSystem.*
 
 @Autonomous(group = "!")
@@ -754,7 +754,7 @@ class RobotTwoAuto: OpMode() {
     }
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
-    private val loopTimeMeasurer = LoopTimeMeasurer()
+    private val loopTimeMeasurer = DeltaTimeMeasurer()
     override fun loop() {
 
         functionalReactiveAutoRunner.loop(
