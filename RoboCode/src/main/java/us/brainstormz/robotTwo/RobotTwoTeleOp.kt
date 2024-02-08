@@ -147,7 +147,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val previousGamepad1 = previousActualWorld.actualGamepad1
         val previousGamepad2 = previousActualWorld.actualGamepad2
         val previousRobot = previousActualWorld.actualRobot
-        val previousRobotTarget = previousTargetState?.targetRobot
+        val previousRobotTarget = previousTargetState.targetRobot
 
         /**Depo*/
         val depoGamepad2Input: DepoInput? = when {
@@ -158,7 +158,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 DepoInput.Down
             }
             gamepad2.dpad_right && !previousGamepad2.dpad_right -> {
-                if (previousRobotTarget?.depoTarget?.liftPosition != Lift.LiftPositions.SetLine1) {
+                if (previousRobotTarget.depoTarget.liftPosition != Lift.LiftPositions.SetLine1) {
                     DepoInput.SetLine1
                 } else {
                     DepoInput.SetLine2
@@ -192,7 +192,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Bumper Mode*/
         val gamepad1DpadIsActive = depoGamepad1Input != DepoInput.NoInput
         val liftTargetIsDown = previousRobot.depoState.liftPositionTicks <= Lift.LiftPositions.Min.ticks
-        val bothClawsAreRetracted = previousTargetState?.targetRobot?.depoTarget?.leftClawPosition == ClawTarget.Retracted && previousTargetState?.targetRobot?.depoTarget?.rightClawPosition == ClawTarget.Retracted
+        val bothClawsAreRetracted = previousTargetState.targetRobot.depoTarget.leftClawPosition == ClawTarget.Retracted && previousTargetState.targetRobot.depoTarget.rightClawPosition == ClawTarget.Retracted
         val gamepadOneBumperMode: Gamepad1BumperMode = when {
             gamepad1DpadIsActive -> {
                 Gamepad1BumperMode.Claws
@@ -201,7 +201,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 Gamepad1BumperMode.Collector
             }
             else -> {
-                previousTargetState?.driverInput?.bumperMode ?: Gamepad1BumperMode.Collector
+                previousTargetState.driverInput.bumperMode
             }
         }
 
@@ -211,10 +211,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val gamepad1LeftClawToggle = areGamepad1ClawControlsActive && gamepad1.left_bumper && !previousGamepad1.left_bumper
         val gamepad2LeftClawToggle = gamepad2.left_bumper && !previousGamepad2.left_bumper
         val leftClaw: ClawInput = if (gamepad2LeftClawToggle || gamepad1LeftClawToggle) {
-            when (previousTargetState?.targetRobot?.depoTarget?.leftClawPosition) {
+            when (previousTargetState.targetRobot.depoTarget.leftClawPosition) {
                 Claw.ClawTarget.Gripping -> ClawInput.Drop
                 Claw.ClawTarget.Retracted -> ClawInput.Hold
-                null -> ClawInput.Hold
             }
         } else {
             ClawInput.NoInput
@@ -223,10 +222,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val gamepad1RightClawToggle = areGamepad1ClawControlsActive && gamepad1.right_bumper && !previousGamepad1.right_bumper
         val gamepad2RightClawToggle = gamepad2.right_bumper && !previousGamepad2.right_bumper
         val rightClaw: ClawInput = if (gamepad2RightClawToggle || gamepad1RightClawToggle) {
-            when (previousTargetState?.targetRobot?.depoTarget?.rightClawPosition) {
+            when (previousTargetState.targetRobot.depoTarget.rightClawPosition) {
                 Claw.ClawTarget.Gripping -> ClawInput.Drop
                 Claw.ClawTarget.Retracted -> ClawInput.Hold
-                null -> ClawInput.Hold
             }
         } else {
             ClawInput.NoInput
@@ -239,7 +237,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     0 to CollectorInput.Off,
                     -1 to CollectorInput.Eject
             )
-            val previousPowerInt: Int = previousRobotTarget?.collectorTarget?.intakeNoodles?.power?.toInt() ?: 0
+            val previousPowerInt: Int = previousRobotTarget.collectorTarget.intakeNoodles.power.toInt()
 
             val valueToChangeBy = if (isDirectionPositive) {
                 1
@@ -440,15 +438,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
             else -> {
                 telemetry.addLine("Doing the same thing as last time")
-                previousTargetState?.doingHandoff ?: false
+                previousTargetState.doingHandoff
             }
         }
         telemetry.addLine("Are we doing handoff: $doHandoffSequence")
 
-        val previousBothClawState = when (previousTargetState?.targetRobot?.depoTarget?.leftClawPosition) {
+        val previousBothClawState = when (previousTargetState.targetRobot.depoTarget.leftClawPosition) {
             ClawTarget.Retracted -> HandoffManager.ClawStateFromHandoff.Retracted
             ClawTarget.Gripping -> HandoffManager.ClawStateFromHandoff.Gripping
-            else -> HandoffManager.ClawStateFromHandoff.Retracted
         }
         val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE, actualRobot)
 
@@ -480,7 +477,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 Extendo.ExtendoPositions.Min
             }
             else -> {
-                previousTargetState?.targetRobot?.collectorTarget?.extendoPositions ?: Extendo.ExtendoPositions.Manual
+                previousTargetState.targetRobot.collectorTarget.extendoPositions
             }
         }
 
@@ -489,7 +486,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             CollectorInput.Intake -> Intake.CollectorPowers.Intake
             CollectorInput.Eject ->  Intake.CollectorPowers.Eject
             CollectorInput.Off ->  Intake.CollectorPowers.Off
-            CollectorInput.NoInput -> previousTargetState?.targetRobot?.collectorTarget?.intakeNoodles ?: Intake.CollectorPowers.Off
+            CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
         },
         isPixelInLeft = transfer.isPixelIn(actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left),
         isPixelInRight= transfer.isPixelIn(actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right))
@@ -732,10 +729,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         /**Lights*/
         val bothUnknownPattern = BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown)
-        val previousPattern = previousTargetState?.targetRobot?.lights?.pattern ?: bothUnknownPattern
+        val previousPattern = previousTargetState.targetRobot.lights.pattern
         val desiredPixelLightPattern: BothPixelsWeWant = when (driverInput.lightInput) {
             LightInput.NoColor -> {
-                if (previousTargetState?.driverInput?.lightInput == LightInput.NoInput) {
+                if (previousTargetState.driverInput.lightInput == LightInput.NoInput) {
                     bothUnknownPattern
                 } else {
                     previousPattern
@@ -752,8 +749,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     LightInput.Green -> PixelColor.Green
                     else -> PixelColor.Unknown
                 }
-                val thisIsTheFirstLoopAfterShift = previousTargetState?.driverInput?.lightInput == LightInput.NoInput
-                val thisIsTheFirstLoopAfterShiftThatAnyColorWasSelected = previousTargetState?.driverInput?.lightInput == LightInput.NoColor && previousPattern == bothUnknownPattern
+                val thisIsTheFirstLoopAfterShift = previousTargetState.driverInput.lightInput == LightInput.NoInput
+                val thisIsTheFirstLoopAfterShiftThatAnyColorWasSelected = previousTargetState.driverInput.lightInput == LightInput.NoColor && previousPattern == bothUnknownPattern
 
                 if (thisIsTheFirstLoopAfterShift || thisIsTheFirstLoopAfterShiftThatAnyColorWasSelected) {
                     previousPattern.copy(leftPixel = color)
