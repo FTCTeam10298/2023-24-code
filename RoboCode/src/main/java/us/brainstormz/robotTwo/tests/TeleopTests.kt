@@ -148,20 +148,6 @@ object TeleopTest {
             ),
             timestampMilis = 0,
     )
-    val noInput = RobotTwoTeleOp.DriverInput(
-            driveVelocity = PositionAndRotation(),
-            depo = RobotTwoTeleOp.DepoInput.NoInput,
-            leftClaw = RobotTwoTeleOp.ClawInput.NoInput,
-            rightClaw = RobotTwoTeleOp.ClawInput.NoInput,
-            collector = RobotTwoTeleOp.CollectorInput.NoInput,
-            rollers = RobotTwoTeleOp.RollerInput.NoInput,
-            extendo = RobotTwoTeleOp.ExtendoInput.NoInput,
-            handoff = RobotTwoTeleOp.HandoffInput.NoInput,
-            hang = RobotTwoTeleOp.HangInput.NoInput,
-            launcher = RobotTwoTeleOp.LauncherInput.NoInput,
-            bumperMode = RobotTwoTeleOp.Gamepad1BumperMode.Collector,
-            lightInput = RobotTwoTeleOp.LightInput.NoInput
-    )
     val emptyTarget = TargetWorld(
             targetRobot = TargetRobot(
                     positionAndRotation = PositionAndRotation(),

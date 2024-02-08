@@ -20,4 +20,11 @@ class DepoManager(val arm: Arm, val lift: Lift) {//, val leftClaw: Claw, val rig
                 isLiftLimitActivated = lift.isLimitSwitchActivated(hardware)
         )
     }
+
+    val initDepoTarget = DepoTarget(
+            liftPosition = Lift.LiftPositions.Nothing,
+            armPosition = Arm.Positions.Manual,
+            leftClawPosition = Claw.ClawTarget.Gripping,
+            rightClawPosition = Claw.ClawTarget.Gripping,
+    )
 }

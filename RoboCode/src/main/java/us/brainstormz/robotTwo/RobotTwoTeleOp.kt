@@ -780,6 +780,50 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
     }
 
+
+    val noInput = RobotTwoTeleOp.DriverInput(
+            driveVelocity = PositionAndRotation(),
+            depo = RobotTwoTeleOp.DepoInput.NoInput,
+            leftClaw = RobotTwoTeleOp.ClawInput.NoInput,
+            rightClaw = RobotTwoTeleOp.ClawInput.NoInput,
+            collector = RobotTwoTeleOp.CollectorInput.NoInput,
+            rollers = RobotTwoTeleOp.RollerInput.NoInput,
+            extendo = RobotTwoTeleOp.ExtendoInput.NoInput,
+            handoff = RobotTwoTeleOp.HandoffInput.NoInput,
+            hang = RobotTwoTeleOp.HangInput.NoInput,
+            launcher = RobotTwoTeleOp.LauncherInput.NoInput,
+            bumperMode = RobotTwoTeleOp.Gamepad1BumperMode.Collector,
+            lightInput = RobotTwoTeleOp.LightInput.NoInput
+    )
+
+    val initialPreviousTargetState = TargetWorld(
+            targetRobot = TargetRobot(
+                    positionAndRotation = PositionAndRotation(),
+                    depoTarget = depoManager.initDepoTarget,
+                    collectorTarget = CollectorTarget(
+                            intakeNoodles = Intake.CollectorPowers.Off,
+                            rollers = Transfer.RollerState(
+                                    leftServoCollect = Transfer.RollerPowers.Off,
+                                    rightServoCollect = Transfer.RollerPowers.Off,
+                                    directorState = Transfer.DirectorState.Off
+                            ),
+                            extendoPositions = Extendo.ExtendoPositions.Manual,
+                    ),
+                    hangPowers = RobotTwoHardware.HangPowers.Holding,
+                    launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
+                    lights = LightTarget(
+                            targetColor = PixelColor.Unknown,
+                            pattern = BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown),
+                            timeOfColorChangeMilis = 0L
+                    ),
+            ),
+            isLiftEligableForReset = false,
+            doingHandoff = false,
+            driverInput = noInput,
+            isTargetReached = {_, _ -> false}
+    )
+
+
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware, ) {
@@ -807,8 +851,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 },
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
                     val previousActualWorld = previousActualState ?: actualState
+                    val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
                     val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualWorld)
-                    getTargetWorld(driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualWorld)
+                    getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualWorld)
                 },
                 stateFulfiller = { targetState, actualState ->
                     telemetry.addLine("actualState: $actualState")
