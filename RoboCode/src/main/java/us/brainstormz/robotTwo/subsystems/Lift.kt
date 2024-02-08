@@ -43,7 +43,6 @@ class Lift(private val telemetry: Telemetry): Subsystem {
     fun isLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.liftMagnetLimit.state
 
     private val liftBottomLimitAmps = 8.0
-
     fun isLiftDrawingTooMuchCurrent(hardware: RobotTwoHardware) = hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS) > liftBottomLimitAmps
 
     fun getCurrentPositionTicks(hardware: RobotTwoHardware): Int {
@@ -55,7 +54,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
 //        powerSubsystem(calculatePowerToMoveToPosition(targetPositionTicks, ), hardware)
 //    }
     fun calculatePowerToMoveToPosition(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
-        val currentPosition = actualRobot.collectorSystemState.extendoPositionTicks
+        val currentPosition = actualRobot.depoState.liftPositionTicks
         val positionError = targetPositionTicks - currentPosition.toDouble()
         val power = pid.calcPID(positionError)
         return power
@@ -63,7 +62,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
 
     private val acceptablePositionErrorTicks = 100
     fun isLiftAtPosition(targetPositionTicks: Int, actualRobot: ActualRobot): Boolean {
-        val currentPositionTicks = actualRobot.collectorSystemState.extendoPositionTicks
+        val currentPositionTicks = actualRobot.depoState.liftPositionTicks
         val positionErrorTicks = targetPositionTicks - currentPositionTicks
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
     }

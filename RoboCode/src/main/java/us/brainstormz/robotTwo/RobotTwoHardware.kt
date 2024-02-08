@@ -181,7 +181,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         rFDrive =       ctrlHub.getMotor(3)
         lBDrive =       ctrlHub.getMotor(1)
         rBDrive =       ctrlHub.getMotor(2)
-        extendoMotorMaster =    exHub.getMotor(0)
+        extendoMotorMaster =    exHub.getMotor(0) //Has encoder
         extendoMotorSlave =     exHub.getMotor(1)
         liftMotorMaster =       exHub.getMotor(2) //Has encoder
         liftMotorSlave =        exHub.getMotor(3)
