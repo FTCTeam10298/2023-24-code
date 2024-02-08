@@ -8,6 +8,7 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.utils.DataClassHelper
 
 fun indentAll(unIndented: String): String {
     return unIndented.replace("\n", "\n    ")
@@ -16,10 +17,13 @@ fun indentAll(unIndented: String): String {
 data class DepoTarget(
         val armPosition: Arm.Positions,
         val liftPosition: Lift.LiftPositions,
+
         val leftClawPosition: Claw.ClawTarget,
         val rightClawPosition: Claw.ClawTarget,
         val targetType: DepoManager.DepoTargetType
-)
+) {
+    override fun toString(): String = DataClassHelper.dataClassToString(this)
+}
 data class CollectorTarget(
         val extendoPositions: Extendo.ExtendoPositions,
         val intakeNoodles: Intake.CollectorPowers,
@@ -33,15 +37,7 @@ data class TargetRobot(
         val launcherPosition: RobotTwoHardware.LauncherPosition,
         val lights: RobotTwoTeleOp.LightTarget
 ) {
-    override fun toString(): String =
-        "TargetRobot(\n" +
-        "   $positionAndRotation\n" +
-        "   $depoTarget\n" +
-        "   $collectorTarget\n" +
-        "   $hangPowers\n" +
-        "   $launcherPosition\n" +
-        "   $lights\n" +
-        ")"
+    override fun toString(): String = DataClassHelper.dataClassToString(this)
 }
 data class TargetWorld(
         val targetRobot: TargetRobot,
@@ -51,15 +47,7 @@ data class TargetWorld(
         val isTargetReached: (previousTargetState: TargetWorld, actualState: ActualWorld) -> Boolean,
         val timeTargetStartedMilis: Long = 0
 ) {
-    override fun toString(): String =
-        "TargetWorld(\n" +
-        "   ${indentAll(targetRobot.toString())}\n" +
-        "   ${indentAll(driverInput.toString())}\n" +
-        "   timeTargetStartedMilis=$timeTargetStartedMilis\n" +
-        "   isLiftEligableForReset=$isLiftEligableForReset\n" +
-        "   doingHandoff=$doingHandoff\n" +
-        "   isTargetReached=$isTargetReached\n" +
-        ")"
+    override fun toString(): String = DataClassHelper.dataClassToString(this)
 
     override fun equals(other: Any?): Boolean {
         return if (other is TargetWorld) {
