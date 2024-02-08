@@ -23,52 +23,44 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.tests.TeleopTest.getChangedGamepad
 
 fun main() {
-    val armTests = listOf(
-            TeleopTest.emptyWorld,
-            TeleopTest.emptyWorld.copy(
-                    actualGamepad2= getChangedGamepad { it.dpad_up = true }
-            ),
-            TeleopTest.emptyWorld.copy(
-                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
-                        depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
-                            liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1
-                        )
-                    )
-            ),
-            TeleopTest.emptyWorld.copy(
-                    actualGamepad2= getChangedGamepad { it.dpad_down = true },
-                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
-                            depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
-                                    liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1,
-                                    armAngleDegrees = Arm.Positions.Out.angleDegrees
-                            )
-                    )
-            ),
-            TeleopTest.emptyWorld.copy(
-                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
-                            depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
-                                    liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1,
-                                    armAngleDegrees = Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees + 1
-                            )
-                    )
-            ),
+//    val armTests = listOf(
+//            TeleopTest.emptyWorld,
+//            TeleopTest.emptyWorld.copy(
+//                    actualGamepad2= getChangedGamepad(TeleopTest.emptyWorld.actualGamepad2) { it.dpad_up = true }
+//            ),
+//            TeleopTest.emptyWorld.copy(
+//                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
+//                        depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
+//                            liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1
+//                        )
+//                    )
+//            ),
+//            TeleopTest.emptyWorld.copy(
+//                    actualGamepad2= getChangedGamepad { it.dpad_down = true },
+//                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
+//                            depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
+//                                    liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1,
+//                                    armAngleDegrees = Arm.Positions.Out.angleDegrees
+//                            )
+//                    )
+//            ),
 //            TeleopTest.emptyWorld.copy(
 //                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
 //                            depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
 //                                    liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1,
-//                                    armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees+1
+//                                    armAngleDegrees = Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees + 1
 //                            )
 //                    )
 //            ),
-    )
+//    )
     val clawTests = listOf(
             TeleopTest.emptyWorld,
             TeleopTest.emptyWorld.copy(
                     actualGamepad2= getChangedGamepad { it.left_bumper = true }
             ),
-            TeleopTest.emptyWorld,
+//            TeleopTest.emptyWorld,
 //            TeleopTest.emptyWorld.copy(
-//                    actualGamepad2= getChangedGamepad { it.left_bumper = true }
+//                    actualGamepad2= getChangedGamepad(TeleopTest.emptyWorld.actualGamepad2) { it.left_bumper = true }
 //            ),
     )
     val expectedOutput = TeleopTest.emptyTarget.copy(

@@ -21,7 +21,6 @@ import kotlin.math.absoluteValue
 
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
     //Not working:
-    //Claws
     //Rollers in
     //Arm to position
     //Lift manual
@@ -144,9 +143,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val gamepad1 = actualWorld.actualGamepad1
         val gamepad2 = actualWorld.actualGamepad2
         val robot = actualWorld.actualRobot
-        val previousGamepad1 = previousActualWorld.actualGamepad1 ?: gamepad1
-        val previousGamepad2 = previousActualWorld.actualGamepad2 ?: gamepad2
-        val previousRobot = previousActualWorld.actualRobot ?: actualWorld.actualRobot
+        val previousGamepad1 = previousActualWorld.actualGamepad1
+        val previousGamepad2 = previousActualWorld.actualGamepad2
+        val previousRobot = previousActualWorld.actualRobot
         val previousRobotTarget = previousTargetState?.targetRobot
 
         /**Depo*/
@@ -790,10 +789,18 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = { previousActualState ->
+
+                    telemetry.addLine("previousActualState ${previousActualState?.actualGamepad2}")
+                    telemetry.addLine("gamepad2 $gamepad2")
+
+                    val currentGamepad1 = Gamepad()
+                    currentGamepad1.copy(gamepad1)
+                    val currentGamepad2 = Gamepad()
+                    currentGamepad2.copy(gamepad2)
                     ActualWorld(
                             actualRobot = hardware.getActualState(localizer = odometryLocalizer, depoManager = depoManager, collectorSystem = collectorSystem),
-                            actualGamepad1 = gamepad1,
-                            actualGamepad2 = gamepad2,
+                            actualGamepad1 = currentGamepad1,
+                            actualGamepad2 = currentGamepad2,
                             timestampMilis = System.currentTimeMillis()
                     )
                 },
