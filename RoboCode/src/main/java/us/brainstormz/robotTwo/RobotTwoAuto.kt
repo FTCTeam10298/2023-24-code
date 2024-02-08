@@ -18,6 +18,7 @@ import us.brainstormz.threeDay.PropDetector
 import us.brainstormz.threeDay.PropPosition
 import us.brainstormz.robotTwo.CollectorSystem.*
 import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
 import us.brainstormz.robotTwo.subsystems.Intake.CollectorPowers
@@ -707,7 +708,7 @@ class RobotTwoAuto: OpMode() {
         collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
         lift = Lift(telemetry)
         arm = Arm()
-        depoManager = DepoManager(arm= arm, lift= lift)
+        depoManager = DepoManager(arm= arm, lift= lift, leftClaw = Claw(Transfer.Side.Left), rightClaw = Claw(Transfer.Side.Right))
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
         wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"))

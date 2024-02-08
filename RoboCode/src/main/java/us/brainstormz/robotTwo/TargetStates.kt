@@ -18,6 +18,7 @@ data class DepoTarget(
         val liftPosition: Lift.LiftPositions,
         val leftClawPosition: Claw.ClawTarget,
         val rightClawPosition: Claw.ClawTarget,
+        val targetType: DepoManager.DepoTargetType
 )
 data class CollectorTarget(
         val extendoPositions: Extendo.ExtendoPositions,

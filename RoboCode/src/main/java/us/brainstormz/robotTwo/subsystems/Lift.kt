@@ -6,6 +6,7 @@ import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.RobotTwoTeleOp
 import kotlin.math.absoluteValue
 
 class Lift(private val telemetry: Telemetry): Subsystem {
@@ -23,6 +24,17 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         SetLine2(1400),
         SetLine3(2100),
         Max(2300)
+    }
+
+    fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput): LiftPositions {
+        return when(depoInput) {
+            RobotTwoTeleOp.DepoInput.SetLine1 -> LiftPositions.SetLine1
+            RobotTwoTeleOp.DepoInput.SetLine2 -> LiftPositions.SetLine2
+            RobotTwoTeleOp.DepoInput.SetLine3 -> LiftPositions.SetLine3
+            RobotTwoTeleOp.DepoInput.Down -> LiftPositions.Transfer
+            RobotTwoTeleOp.DepoInput.Manual -> LiftPositions.Manual
+            RobotTwoTeleOp.DepoInput.NoInput -> LiftPositions.Nothing
+        }
     }
 
     override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {

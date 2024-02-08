@@ -8,6 +8,7 @@ import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
+import us.brainstormz.robotTwo.DepoManager.*
 import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Arm
@@ -16,6 +17,7 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.robotTwo.subsystems.WristPositions
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -30,11 +32,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val extendo = Extendo()
     val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
 
-    val leftClaw: Claw = Claw()
-    val rightClaw: Claw = Claw()
+    val leftClaw: Claw = Claw(Transfer.Side.Left)
+    val rightClaw: Claw = Claw(Transfer.Side.Right)
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)
-    val depoManager: DepoManager = DepoManager(arm= arm, lift= lift)
+    val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, leftClaw= leftClaw, rightClaw= rightClaw)
 
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, extendo, arm, telemetry)
 
@@ -138,7 +140,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 "   driveVelocity=$driveVelocity\n" +
                 ")"
     }
-    fun getDriverInput(actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld?): DriverInput {
+    fun getDriverInput(actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): DriverInput {
         val gamepad1 = actualWorld.actualGamepad1
         val gamepad2 = actualWorld.actualGamepad2
         val robot = actualWorld.actualRobot
@@ -410,7 +412,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
     }
     data class LightTarget(val targetColor: PixelColor, val pattern: BothPixelsWeWant, val timeOfColorChangeMilis: Long)
-    fun getTargetWorld(driverInput: DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld?): TargetWorld {
+    fun getTargetWorld(driverInput: DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): TargetWorld {
         val actualRobot = actualWorld.actualRobot
 
         /**Handoff*/
@@ -444,8 +446,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("Are we doing handoff: $doHandoffSequence")
 
         val previousBothClawState = when (previousTargetState?.targetRobot?.depoTarget?.leftClawPosition) {
-            Claw.ClawTarget.Retracted -> HandoffManager.ClawStateFromHandoff.Retracted
-            Claw.ClawTarget.Gripping -> HandoffManager.ClawStateFromHandoff.Gripping
+            ClawTarget.Retracted -> HandoffManager.ClawStateFromHandoff.Retracted
+            ClawTarget.Gripping -> HandoffManager.ClawStateFromHandoff.Gripping
             else -> HandoffManager.ClawStateFromHandoff.Retracted
         }
         val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE, actualRobot)
@@ -502,146 +504,216 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             RollerInput.NoInput -> autoRollerState
         }
 
-        /**Lift*/
-        val liftRealTarget: Lift.LiftPositions = when {
-                previousTargetState?.driverInput?.bumperMode == Gamepad1BumperMode.Claws && driverInput.bumperMode == Gamepad1BumperMode.Collector -> {
-                    Lift.LiftPositions.Transfer
-                }
-                doHandoffSequence -> {
-                    when (handoffState.liftState) {
-                        HandoffManager.LiftStateFromHandoff.MoveDown -> Lift.LiftPositions.Transfer
-                        HandoffManager.LiftStateFromHandoff.None -> Lift.LiftPositions.Nothing
-                    }
-                }
-                else -> {
-                    when (driverInput.depo) {
-                        DepoInput.SetLine1 -> Lift.LiftPositions.SetLine1
-                        DepoInput.SetLine2 -> Lift.LiftPositions.SetLine2
-                        DepoInput.SetLine3 -> Lift.LiftPositions.SetLine3
-                        DepoInput.Down -> Lift.LiftPositions.Transfer
-                        DepoInput.Manual -> Lift.LiftPositions.Manual
-                        DepoInput.NoInput -> previousTargetState?.targetRobot?.depoTarget?.liftPosition ?: Lift.LiftPositions.Manual
-                    }
-                }
-            }
+        /**Depo*/
+        //What do to:
+        //When going in/out keep the claws retracted/griping so that pixels can't get dropped
+        //When it isn't transferring then keep claws retracted
+        //When it is in a transferable position, then start griping the claws
 
-        val liftActualPositionIsAboveSafeArm = actualRobot.depoState.liftPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
-        val armIsFarEnoughIn = actualRobot.depoState.armAngleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
+        //When out, then let the drivers control the claws
+        //When in and in a transferable position or transferring let the drivers control the claws
 
-        val liftTargetIsBelowSafeArm = liftRealTarget.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
-        val armIsTooFarIn = actualRobot.depoState.armAngleDegrees >= Arm.Positions.TooFarIn.angleDegrees
-        val liftNeedsToWaitForTheArm = liftTargetIsBelowSafeArm && ((!armIsFarEnoughIn && liftActualPositionIsAboveSafeArm) || armIsTooFarIn)
-        telemetry.addLine("\nliftNeedsToWaitForTheArm: $liftNeedsToWaitForTheArm")
+        val driverInputWrist = WristPositions(
+                left= Claw.clawInputToClawTarget(driverInput.leftClaw) ?: previousTargetState.targetRobot.depoTarget.leftClawPosition,
+                right= Claw.clawInputToClawTarget(driverInput.rightClaw) ?: previousTargetState.targetRobot.depoTarget.rightClawPosition)
 
-        val liftTargetHasntChanged = liftRealTarget == previousTargetState?.targetRobot?.depoTarget?.liftPosition
-        val isLiftEligableForReset = actualRobot.depoState.isLiftLimitActivated && liftTargetHasntChanged
 
-        telemetry.addLine("armIsTooFarIn: $armIsTooFarIn")
-        val liftPosition: Lift.LiftPositions = if (driverInput.depo == DepoInput.Manual) {
-            Lift.LiftPositions.Manual
-        } else if(isLiftEligableForReset) {
-            Lift.LiftPositions.ResetEncoder
-        } else if (liftNeedsToWaitForTheArm) {
-            Lift.LiftPositions.WaitForArmToMove
+        val driverInputIsManual = driverInput.depo == DepoInput.Manual
+        val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
+
+        val depoTarget: DepoTarget = if (driverInputIsManual || depoShouldStayManualFromLastLoop) {
+            val liftPosition: Lift.LiftPositions = Lift.LiftPositions.Manual
+            val armPosition = Arm.Positions.Manual
+            DepoTarget(
+                    liftPosition = liftPosition,
+                    armPosition = armPosition,
+                    leftClawPosition = driverInputWrist.left,
+                    rightClawPosition = driverInputWrist.left,
+                    targetType = DepoTargetType.Manual
+            )
         } else {
-            liftRealTarget
-        }
+            val coordinatedTarget = depoManager.coordinateDepo(driverInput.depo, previousTargetState.targetRobot.depoTarget, actualRobot.depoState)
 
 
-        telemetry.addLine("Lift position: ${actualRobot.depoState.liftPositionTicks}")
-        telemetry.addLine("Lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
-
-        /**Arm*/
-        val liftIsBelowFreeArmLevel = actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.ClearForArmToMove.ticks
-        val armIsInish = actualRobot.depoState.armAngleDegrees >= Arm.Positions.Inish.angleDegrees
-
-        val depositorShouldGoAllTheWayIn = driverInput.depo == DepoInput.Down
-        val depoPositionsWhereArmShouldBeOut = listOf(DepoInput.SetLine1, DepoInput.SetLine2, DepoInput.SetLine3)
-
-        val isArmManualOverrideActive = driverInput.depo == DepoInput.Manual
-        val armWasManualControlLastTime = previousTargetState?.driverInput?.depo == DepoInput.Manual
-        val armPosition: Arm.Positions = if (isArmManualOverrideActive || armWasManualControlLastTime && liftTargetHasntChanged) {
-            Arm.Positions.Manual
-        } else {
-            when  {
-                liftPosition == Lift.LiftPositions.Manual || liftPosition == Lift.LiftPositions.Nothing-> {
-                    previousTargetState?.targetRobot?.depoTarget?.armPosition ?: Arm.Positions.Manual
-                }
-                doHandoffSequence -> {
-                    telemetry.addLine("Using the transfer to decide where to move")
-                    handoffState.armState
-                }
-                liftIsBelowFreeArmLevel  -> {
-                    if (armIsInish) {
-                        Arm.Positions.ClearLiftMovement
-                    } else {
-                        Arm.Positions.AutoInitPosition
-                    }
-                }
-                depositorShouldGoAllTheWayIn && !liftIsBelowFreeArmLevel-> {
-                    Arm.Positions.ClearLiftMovement
-                }
-                driverInput.depo in depoPositionsWhereArmShouldBeOut -> {
-                    println("ARM arm out")
-                    Arm.Positions.Out
-                }
-                else -> {
-                    println("ARM arm same position")
-                    previousTargetState?.targetRobot?.depoTarget?.armPosition ?: Arm.Positions.Manual
-                }
-            }
-        }
-
-        /**Claws*/
-        val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
-        val wasTheLiftGoindDownBefore = previousActualWorld.actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.ClearForArmToMove.ticks
-        val armIsIn = armPosition.angleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
-        val isTheExtendoGoingIn = extendoState.ticks <= Extendo.ExtendoPositions.Min.ticks
-        val wasTheCollectorGoingInBefore = previousActualWorld.actualRobot.depoState.liftPositionTicks <= Extendo.ExtendoPositions.Min.ticks
-        val extendoIsIn = actualRobot.collectorSystemState.extendoPositionTicks <= Extendo.ExtendoPositions.Min.ticks
-        val shouldTheClawsRetractForLift = isTheLiftGoingDown && !wasTheLiftGoindDownBefore && armIsIn
-        val shouldTheClawsRetractForExtendo = isTheLiftGoingDown && !extendoIsIn//isTheExtendoGoingIn && !wasTheCollectorGoingInBefore
-        val shouldClawsRetract = shouldTheClawsRetractForLift || shouldTheClawsRetractForExtendo
-
-        val handoffClawTarget: ClawTarget = when (handoffState.clawPosition) {
-                HandoffManager.ClawStateFromHandoff.Gripping -> {
-                    ClawTarget.Gripping
-//                    if (transferSensorState.transferLeftSensorState.hasPixelBeenSeen) {
-//                        LeftClawPosition.Gripping
-//                    } else {
-//                        LeftClawPosition.Retracted
-//                    }
-                }
-                HandoffManager.ClawStateFromHandoff.Retracted -> ClawTarget.Retracted
-            }
-
-        val leftClawPosition: ClawTarget = when (driverInput.leftClaw) {
-                ClawInput.Drop -> ClawTarget.Retracted
-                ClawInput.Hold -> ClawTarget.Gripping
-                ClawInput.NoInput -> {
-                    if (doHandoffSequence) {
-                        handoffClawTarget
-                    } else if (shouldClawsRetract) {
-                        ClawTarget.Retracted
-                    } else {
-                        previousTargetState?.targetRobot?.depoTarget?.leftClawPosition ?: ClawTarget.Gripping
-                    }
-                }
-            }
-
-        val rightClawPosition: ClawTarget = when (driverInput.rightClaw) {
-            ClawInput.Drop -> ClawTarget.Retracted
-            ClawInput.Hold -> ClawTarget.Gripping
-            ClawInput.NoInput -> {
-                if (doHandoffSequence) {
-                    handoffClawTarget
-                } else if (shouldClawsRetract) {
-                    ClawTarget.Retracted
+            val armAndLiftAreAtTarget: Boolean = depoManager.checkIfArmAndLiftAreAtTarget(coordinatedTarget, actualRobot.depoState)
+            val armAndLiftArentMovingAround: Boolean = armAndLiftAreAtTarget
+            val wristPosition: WristPositions = if (armAndLiftArentMovingAround) {
+                val depoIsDepositing: Boolean = coordinatedTarget.targetType == DepoTargetType.GoingOut
+                if (depoIsDepositing) {
+                    //Driver control
+                    driverInputWrist
                 } else {
-                    previousTargetState?.targetRobot?.depoTarget?.rightClawPosition ?: ClawTarget.Gripping
+                    val handoffIsReady = handoffState.clawPosition == HandoffManager.ClawStateFromHandoff.Gripping;
+                    if (handoffIsReady) {
+                        val firstLoopOfHandoff = weWantToStartHandoff
+                        if (firstLoopOfHandoff) {
+                            //start griping the claws
+                            WristPositions(ClawTarget.Gripping)
+                        } else {
+                            //then manual after
+                            driverInputWrist
+                        }
+                    } else {
+                        //When it isn't handing off then keep claws retracted
+                        WristPositions(ClawTarget.Retracted)
+                    }
                 }
+            } else {
+                //When going in/out keep the claws retracted/griping so that pixels can't get dropped
+                WristPositions(left= coordinatedTarget.leftClawPosition, right= coordinatedTarget.rightClawPosition)
             }
+
+            coordinatedTarget.copy(
+                    leftClawPosition = wristPosition.left,
+                    rightClawPosition = wristPosition.right,
+            )
         }
+
+//        val depoTarget.copy(liftPosition = if (depoManager.checkIfArmAndLiftAreAtTarget(coordinatedTarget, actualRobot.depoState) && wristIsAtPosition(target)) {
+//
+//        })
+
+
+//        /**Lift*/
+//        val liftRealTarget: Lift.LiftPositions = when {
+//                previousTargetState?.driverInput?.bumperMode == Gamepad1BumperMode.Claws && driverInput.bumperMode == Gamepad1BumperMode.Collector -> {
+//                    Lift.LiftPositions.Transfer
+//                }
+//                doHandoffSequence -> {
+//                    when (handoffState.liftState) {
+//                        HandoffManager.LiftStateFromHandoff.MoveDown -> Lift.LiftPositions.Transfer
+//                        HandoffManager.LiftStateFromHandoff.None -> Lift.LiftPositions.Nothing
+//                    }
+//                }
+//                else -> {
+//                    when (driverInput.depo) {
+//                        DepoInput.SetLine1 -> Lift.LiftPositions.SetLine1
+//                        DepoInput.SetLine2 -> Lift.LiftPositions.SetLine2
+//                        DepoInput.SetLine3 -> Lift.LiftPositions.SetLine3
+//                        DepoInput.Down -> Lift.LiftPositions.Transfer
+//                        DepoInput.Manual -> Lift.LiftPositions.Manual
+//                        DepoInput.NoInput -> previousTargetState?.targetRobot?.depoTarget?.liftPosition ?: Lift.LiftPositions.Manual
+//                    }
+//                }
+//            }
+//
+//        val liftActualPositionIsAboveSafeArm = actualRobot.depoState.liftPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
+//        val armIsFarEnoughIn = actualRobot.depoState.armAngleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
+//
+//        val liftTargetIsBelowSafeArm = liftRealTarget.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
+//        val armIsTooFarIn = actualRobot.depoState.armAngleDegrees >= Arm.Positions.TooFarIn.angleDegrees
+//        val liftNeedsToWaitForTheArm = liftTargetIsBelowSafeArm && ((!armIsFarEnoughIn && liftActualPositionIsAboveSafeArm) || armIsTooFarIn)
+//        telemetry.addLine("\nliftNeedsToWaitForTheArm: $liftNeedsToWaitForTheArm")
+//
+//        val liftTargetHasntChanged = liftRealTarget == previousTargetState?.targetRobot?.depoTarget?.liftPosition
+//        val isLiftEligableForReset = actualRobot.depoState.isLiftLimitActivated && liftTargetHasntChanged
+//
+//        telemetry.addLine("armIsTooFarIn: $armIsTooFarIn")
+//        val liftPosition: Lift.LiftPositions = if (driverInput.depo == DepoInput.Manual) {
+//            Lift.LiftPositions.Manual
+//        } else if(isLiftEligableForReset) {
+//            Lift.LiftPositions.ResetEncoder
+//        } else if (liftNeedsToWaitForTheArm) {
+//            Lift.LiftPositions.WaitForArmToMove
+//        } else {
+//            liftRealTarget
+//        }
+//
+//
+//        telemetry.addLine("Lift position: ${actualRobot.depoState.liftPositionTicks}")
+//        telemetry.addLine("Lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
+//
+//        /**Arm*/
+//        val liftIsBelowFreeArmLevel = actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.ClearForArmToMove.ticks
+//        val armIsInish = actualRobot.depoState.armAngleDegrees >= Arm.Positions.Inish.angleDegrees
+//
+//        val depositorShouldGoAllTheWayIn = driverInput.depo == DepoInput.Down
+//        val depoPositionsWhereArmShouldBeOut = listOf(DepoInput.SetLine1, DepoInput.SetLine2, DepoInput.SetLine3)
+//
+//        val isArmManualOverrideActive = driverInput.depo == DepoInput.Manual
+//        val armWasManualControlLastTime = previousTargetState?.driverInput?.depo == DepoInput.Manual
+//        val armPosition: Arm.Positions = if (isArmManualOverrideActive || armWasManualControlLastTime && liftTargetHasntChanged) {
+//            Arm.Positions.Manual
+//        } else {
+//            when  {
+//                liftPosition == Lift.LiftPositions.Manual || liftPosition == Lift.LiftPositions.Nothing-> {
+//                    previousTargetState?.targetRobot?.depoTarget?.armPosition ?: Arm.Positions.Manual
+//                }
+//                doHandoffSequence -> {
+//                    telemetry.addLine("Using the transfer to decide where to move")
+//                    handoffState.armState
+//                }
+//                liftIsBelowFreeArmLevel  -> {
+//                    if (armIsInish) {
+//                        Arm.Positions.ClearLiftMovement
+//                    } else {
+//                        Arm.Positions.AutoInitPosition
+//                    }
+//                }
+//                depositorShouldGoAllTheWayIn && !liftIsBelowFreeArmLevel-> {
+//                    Arm.Positions.ClearLiftMovement
+//                }
+//                driverInput.depo in depoPositionsWhereArmShouldBeOut -> {
+//                    println("ARM arm out")
+//                    Arm.Positions.Out
+//                }
+//                else -> {
+//                    println("ARM arm same position")
+//                    previousTargetState?.targetRobot?.depoTarget?.armPosition ?: Arm.Positions.Manual
+//                }
+//            }
+//        }
+//
+//        /**Claws*/
+//        val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
+//        val wasTheLiftGoindDownBefore = previousActualWorld.actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.ClearForArmToMove.ticks
+//        val armIsIn = armPosition.angleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
+//        val isTheExtendoGoingIn = extendoState.ticks <= Extendo.ExtendoPositions.Min.ticks
+//        val wasTheCollectorGoingInBefore = previousActualWorld.actualRobot.depoState.liftPositionTicks <= Extendo.ExtendoPositions.Min.ticks
+//        val extendoIsIn = actualRobot.collectorSystemState.extendoPositionTicks <= Extendo.ExtendoPositions.Min.ticks
+//        val shouldTheClawsRetractForLift = isTheLiftGoingDown && !wasTheLiftGoindDownBefore && armIsIn
+//        val shouldTheClawsRetractForExtendo = isTheLiftGoingDown && !extendoIsIn//isTheExtendoGoingIn && !wasTheCollectorGoingInBefore
+//        val shouldClawsRetract = shouldTheClawsRetractForLift || shouldTheClawsRetractForExtendo
+//
+//        val handoffClawTarget: ClawTarget = when (handoffState.clawPosition) {
+//                HandoffManager.ClawStateFromHandoff.Gripping -> {
+//                    ClawTarget.Gripping
+////                    if (transferSensorState.transferLeftSensorState.hasPixelBeenSeen) {
+////                        LeftClawPosition.Gripping
+////                    } else {
+////                        LeftClawPosition.Retracted
+////                    }
+//                }
+//                HandoffManager.ClawStateFromHandoff.Retracted -> ClawTarget.Retracted
+//            }
+//
+//        val leftClawPosition: ClawTarget = when (driverInput.leftClaw) {
+//                ClawInput.Drop -> ClawTarget.Retracted
+//                ClawInput.Hold -> ClawTarget.Gripping
+//                ClawInput.NoInput -> {
+//                    if (doHandoffSequence) {
+//                        handoffClawTarget
+//                    } else if (shouldClawsRetract) {
+//                        ClawTarget.Retracted
+//                    } else {
+//                        previousTargetState?.targetRobot?.depoTarget?.leftClawPosition ?: ClawTarget.Gripping
+//                    }
+//                }
+//            }
+//
+//        val rightClawPosition: ClawTarget = when (driverInput.rightClaw) {
+//            ClawInput.Drop -> ClawTarget.Retracted
+//            ClawInput.Hold -> ClawTarget.Gripping
+//            ClawInput.NoInput -> {
+//                if (doHandoffSequence) {
+//                    handoffClawTarget
+//                } else if (shouldClawsRetract) {
+//                    ClawTarget.Retracted
+//                } else {
+//                    previousTargetState?.targetRobot?.depoTarget?.rightClawPosition ?: ClawTarget.Gripping
+//                }
+//            }
+//        }
 
         /**Drive*/
         val driveTarget = driverInput.driveVelocity
@@ -700,13 +772,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("desiredPixelLightPattern: $desiredPixelLightPattern")
 
         val timeToDisplayColorMilis = 1000
-        val timeWhenCurrentColorStartedBeingDisplayedMilis = previousTargetState?.targetRobot?.lights?.timeOfColorChangeMilis ?: actualWorld.timestampMilis
+        val timeWhenCurrentColorStartedBeingDisplayedMilis = previousTargetState.targetRobot.lights.timeOfColorChangeMilis
         val timeSinceCurrentColorWasDisplayedMilis = actualWorld.timestampMilis - timeWhenCurrentColorStartedBeingDisplayedMilis
         val isTimeToChangeColor = timeSinceCurrentColorWasDisplayedMilis >= timeToDisplayColorMilis
 
         val isCurrentColorObsolete = desiredPixelLightPattern != previousPattern
 
-        val previousPixelToBeDisplayed = previousTargetState?.targetRobot?.lights?.targetColor ?: PixelColor.Unknown
+        val previousPixelToBeDisplayed = previousTargetState.targetRobot.lights.targetColor
         val currentPixelToBeDisplayed: PixelColor = when {
             isTimeToChangeColor || isCurrentColorObsolete -> {
                 desiredPixelLightPattern.toList().firstOrNull { color ->
@@ -725,12 +797,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
 
         /**Rumble*/
-        val aClawWasPreviouslyRetracted = previousTargetState?.targetRobot?.depoTarget?.rightClawPosition == ClawTarget.Retracted ||  previousTargetState?.targetRobot?.depoTarget?.leftClawPosition == Claw.ClawTarget.Retracted
-        val bothClawsAreGripping = rightClawPosition == ClawTarget.Retracted && leftClawPosition == ClawTarget.Retracted
-        if (doHandoffSequence && bothClawsAreGripping && aClawWasPreviouslyRetracted) {
-//            gamepad2.rumble(1.0, 1.0, 800)
-//            gamepad1.rumble(1.0, 1.0, 800)
-        }
+//        val aClawWasPreviouslyRetracted = previousTargetState?.targetRobot?.depoTarget?.rightClawPosition == ClawTarget.Retracted ||  previousTargetState?.targetRobot?.depoTarget?.leftClawPosition == Claw.ClawTarget.Retracted
+//        val bothClawsAreGripping = rightClawPosition == ClawTarget.Retracted && leftClawPosition == ClawTarget.Retracted
+//        if (doHandoffSequence && bothClawsAreGripping && aClawWasPreviouslyRetracted) {
+////            gamepad2.rumble(1.0, 1.0, 800)
+////            gamepad1.rumble(1.0, 1.0, 800)
+//        }
 
 //        if (isLiftEligableForReset && previousTargetState?.isLiftEligableForReset != true) {
 //            hardware.liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -758,12 +830,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         return TargetWorld(
                 targetRobot = TargetRobot(
                         positionAndRotation = driveTarget,
-                        depoTarget = DepoTarget(
-                                liftPosition = liftPosition,
-                                armPosition = armPosition,
-                                leftClawPosition = leftClawPosition,
-                                rightClawPosition = rightClawPosition,
-                        ),
+                        depoTarget = depoTarget,
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = intakeNoodleTarget,
                                 rollers = rollerTargetState,
@@ -773,7 +840,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         launcherPosition = launcherTarget,
                         lights = lights,
                 ),
-                isLiftEligableForReset = isLiftEligableForReset,
+                isLiftEligableForReset = false,
                 doingHandoff = doHandoffSequence,
                 driverInput = driverInput,
                 isTargetReached = {_, _ -> false}
