@@ -18,7 +18,7 @@ class FauxServo: Servo, FauxDevice() {
     }
 
     override fun setDirection(direction: Servo.Direction?) {
-        printInput("Not yet implemented")
+        printInput("setDirection $direction")
     }
 
     override fun getDirection(): Servo.Direction {
@@ -27,7 +27,7 @@ class FauxServo: Servo, FauxDevice() {
     }
 
     override fun setPosition(position: Double) {
-        printInput("Not yet implemented")
+        printInput("setPosition $position")
     }
 
     override fun getPosition(): Double {
