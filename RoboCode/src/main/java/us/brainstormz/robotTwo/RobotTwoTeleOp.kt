@@ -28,9 +28,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     val leftClaw: Claw = Claw()
     val rightClaw: Claw = Claw()
-    val arm: Arm = Arm(  /*encoder= hardware.armEncoder,
-            armServo1= hardware.armServo1,
-            armServo2= hardware.armServo2, telemetry*/)
+    val arm: Arm = Arm()
     val lift: Lift = Lift()
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift)
 
@@ -551,9 +549,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val liftIsBelowFreeArmLevel = actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsInish = actualRobot.depoState.armAngleDegrees >= Arm.Positions.Inish.angleDegrees
 
-        val depositorShouldGoAllTheWayIn = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
-
-        val liftPositionsWhereArmShouldBeOut = listOf(Lift.LiftPositions.SetLine1, Lift.LiftPositions.SetLine2, Lift.LiftPositions.SetLine3)
+        val depositorShouldGoAllTheWayIn = driverInput.depo == DepoInput.Down
+        val depoPositionsWhereArmShouldBeOut = listOf(DepoInput.SetLine1, DepoInput.SetLine2, DepoInput.SetLine3)
 
         val isArmManualOverrideActive = driverInput.depo == DepoInput.Manual
         val armWasManualControlLastTime = previousTargetState?.driverInput?.depo == DepoInput.Manual
@@ -578,10 +575,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 depositorShouldGoAllTheWayIn && !liftIsBelowFreeArmLevel-> {
                     Arm.Positions.ClearLiftMovement
                 }
-                liftPosition in liftPositionsWhereArmShouldBeOut -> {
+                driverInput.depo in depoPositionsWhereArmShouldBeOut -> {
+                    println("ARM arm out")
                     Arm.Positions.Out
                 }
                 else -> {
+                    println("ARM arm same position")
                     previousTargetState?.targetRobot?.depoTarget?.armPosition ?: Arm.Positions.Manual
                 }
             }

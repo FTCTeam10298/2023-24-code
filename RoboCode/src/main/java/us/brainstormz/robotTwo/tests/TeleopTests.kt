@@ -48,23 +48,32 @@ fun main() {
                     actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
                             depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
                                     liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1,
-                                    armAngleDegrees = Arm.Positions.In.angleDegrees
+                                    armAngleDegrees = Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees + 1
                             )
                     )
             ),
+//            TeleopTest.emptyWorld.copy(
+//                    actualRobot = TeleopTest.emptyWorld.actualRobot.copy(
+//                            depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
+//                                    liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 1,
+//                                    armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees+1
+//                            )
+//                    )
+//            ),
     )
     val expectedOutput = TeleopTest.emptyTarget.copy(
             targetRobot = TeleopTest.emptyTarget.targetRobot.copy(
                     depoTarget = TeleopTest.emptyTarget.targetRobot.depoTarget.copy(
                             liftPosition = Lift.LiftPositions.Transfer,
-                            armPosition = Arm.Positions.In,
+                            armPosition = Arm.Positions.ClearLiftMovement,
                     ),
             )
     )
 
     val result = TeleopTest.runTest(steps)
     val normalEquality = { output: TargetWorld ->
-        output.targetRobot.depoTarget.armPosition == expectedOutput.targetRobot.depoTarget.armPosition
+        output.targetRobot.depoTarget.armPosition == expectedOutput.targetRobot.depoTarget.armPosition &&
+                output.targetRobot.depoTarget.liftPosition == expectedOutput.targetRobot.depoTarget.liftPosition
     }
     val testPass = TeleopTest.didTestPass(result = result, normalEquality)
 
