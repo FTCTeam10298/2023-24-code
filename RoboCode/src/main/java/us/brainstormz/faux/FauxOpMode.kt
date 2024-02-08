@@ -6,7 +6,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 
 class FauxOpMode(telemetry: Telemetry): OpMode() {
     init {
-        updateTelemetry(telemetry)
+        this.telemetry = telemetry
         gamepad1 = Gamepad()
         gamepad2 = Gamepad()
 //        hardwareMap = HardwareMap()
