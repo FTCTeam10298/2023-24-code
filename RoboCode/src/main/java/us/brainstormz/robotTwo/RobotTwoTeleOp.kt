@@ -20,6 +20,14 @@ import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
+    //Not working:
+    //Hang
+    //Launcher
+    //Claws
+    //Rollers in
+    //Arm to position
+    //Lift manual
+    //Transfer
 
     val intake = Intake()
     val transfer = Transfer()
