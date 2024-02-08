@@ -21,7 +21,6 @@ import kotlin.math.absoluteValue
 
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
     //Not working:
-    //Rollers in
     //Arm to position
     //Lift manual
     //Handoff
@@ -293,10 +292,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Rollers*/
         val rollers = when {
             gamepad1.b -> {
-                RollerInput.BothOut
+                RollerInput.BothIn
             }
             gamepad1.right_stick_button && gamepad1.left_stick_button -> {
-                RollerInput.BothIn
+                RollerInput.BothOut
             }
             gamepad1.right_stick_button -> {
                 RollerInput.RightOut
