@@ -23,7 +23,7 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.tests.TeleopTest.getChangedGamepad
 
 fun main() {
-    val steps = listOf(
+    val armTests = listOf(
             TeleopTest.emptyWorld,
             TeleopTest.emptyWorld.copy(
                     actualGamepad2= getChangedGamepad { it.dpad_up = true }
@@ -61,19 +61,27 @@ fun main() {
 //                    )
 //            ),
     )
+    val clawTests = listOf(
+            TeleopTest.emptyWorld,
+            TeleopTest.emptyWorld.copy(
+                    actualGamepad2= getChangedGamepad { it.left_bumper = true }
+            ),
+            TeleopTest.emptyWorld,
+//            TeleopTest.emptyWorld.copy(
+//                    actualGamepad2= getChangedGamepad { it.left_bumper = true }
+//            ),
+    )
     val expectedOutput = TeleopTest.emptyTarget.copy(
             targetRobot = TeleopTest.emptyTarget.targetRobot.copy(
                     depoTarget = TeleopTest.emptyTarget.targetRobot.depoTarget.copy(
-                            liftPosition = Lift.LiftPositions.Transfer,
-                            armPosition = Arm.Positions.ClearLiftMovement,
+                            leftClawPosition = Claw.ClawTarget.Retracted
                     ),
             )
     )
 
-    val result = TeleopTest.runTest(steps)
+    val result = TeleopTest.runTest(clawTests)
     val normalEquality = { output: TargetWorld ->
-        output.targetRobot.depoTarget.armPosition == expectedOutput.targetRobot.depoTarget.armPosition &&
-                output.targetRobot.depoTarget.liftPosition == expectedOutput.targetRobot.depoTarget.liftPosition
+        output.targetRobot.depoTarget.leftClawPosition == expectedOutput.targetRobot.depoTarget.leftClawPosition
     }
     val testPass = TeleopTest.didTestPass(result = result, normalEquality)
 
