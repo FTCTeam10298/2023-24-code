@@ -705,7 +705,7 @@ class RobotTwoAuto: OpMode() {
         mecanumMovement = MecanumMovement(odometryLocalizer, hardware, telemetry)
 
         collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
-        lift = Lift()
+        lift = Lift(telemetry)
         arm = Arm()
         depoManager = DepoManager(arm= arm, lift= lift)
 

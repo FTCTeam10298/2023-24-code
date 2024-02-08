@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
@@ -7,7 +8,7 @@ import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.absoluteValue
 
-class Lift: Subsystem {//(private val liftMotor1: DcMotorEx, private val liftMotor2: DcMotor, private val liftLimit: DigitalChannel) {
+class Lift(private val telemetry: Telemetry): Subsystem {
 
 
     enum class LiftPositions(val ticks: Int) {
@@ -26,12 +27,13 @@ class Lift: Subsystem {//(private val liftMotor1: DcMotorEx, private val liftMot
     }
 
     override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {
-
         val allowedPower = if (isLiftDrawingTooMuchCurrent(hardware)) {
             0.0
         } else {
             power
         }
+
+        telemetry.addLine("Powering Lift, $allowedPower")
 
         hardware.liftMotorMaster.power = allowedPower
         hardware.liftMotorSlave.power = allowedPower

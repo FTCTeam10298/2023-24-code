@@ -29,7 +29,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val leftClaw: Claw = Claw()
     val rightClaw: Claw = Claw()
     val arm: Arm = Arm()
-    val lift: Lift = Lift()
+    val lift: Lift = Lift(telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift)
 
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, extendo, arm, telemetry)
