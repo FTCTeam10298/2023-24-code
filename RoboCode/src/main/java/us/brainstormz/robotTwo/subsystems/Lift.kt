@@ -10,7 +10,6 @@ import kotlin.math.absoluteValue
 
 class Lift(private val telemetry: Telemetry): Subsystem {
 
-
     enum class LiftPositions(val ticks: Int) {
         Manual(0),
         ResetEncoder(0),
@@ -55,8 +54,8 @@ class Lift(private val telemetry: Telemetry): Subsystem {
 //    }
     fun calculatePowerToMoveToPosition(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
         val currentPosition = actualRobot.depoState.liftPositionTicks
-        val positionError = targetPositionTicks - currentPosition.toDouble()
-        val power = pid.calcPID(positionError)
+        val positionError = targetPositionTicks - currentPosition
+        val power = pid.calcPID(positionError.toDouble())
         return power
     }
 

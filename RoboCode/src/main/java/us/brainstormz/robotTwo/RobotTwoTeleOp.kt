@@ -503,10 +503,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Lift*/
-        val liftRealTarget: Lift.LiftPositions = if (driverInput.depo == DepoInput.Manual) {
-            Lift.LiftPositions.Manual
-        } else {
-            when {
+        val liftRealTarget: Lift.LiftPositions = when {
                 previousTargetState?.driverInput?.bumperMode == Gamepad1BumperMode.Claws && driverInput.bumperMode == Gamepad1BumperMode.Collector -> {
                     Lift.LiftPositions.Transfer
                 }
@@ -527,7 +524,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     }
                 }
             }
-        }
 
         val liftActualPositionIsAboveSafeArm = actualRobot.depoState.liftPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsFarEnoughIn = actualRobot.depoState.armAngleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
@@ -538,7 +534,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("\nliftNeedsToWaitForTheArm: $liftNeedsToWaitForTheArm")
 
         telemetry.addLine("armIsTooFarIn: $armIsTooFarIn")
-        val liftPosition: Lift.LiftPositions = if (liftNeedsToWaitForTheArm) {
+        val liftPosition: Lift.LiftPositions =  if (driverInput.depo == DepoInput.Manual) {
+            Lift.LiftPositions.Manual
+        } else if (liftNeedsToWaitForTheArm) {
             Lift.LiftPositions.WaitForArmToMove
         } else {
             liftRealTarget
@@ -782,6 +780,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware, ) {
+
         for (hub in hardware.allHubs) {
             hub.clearBulkCache()
         }

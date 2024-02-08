@@ -53,27 +53,45 @@ fun main() {
 //                    )
 //            ),
 //    )
-    val clawTests = listOf(
-            TeleopTest.emptyWorld,
-            TeleopTest.emptyWorld.copy(
-                    actualGamepad2= getChangedGamepad { it.left_bumper = true }
-            ),
+//    val clawTests = listOf(
 //            TeleopTest.emptyWorld,
 //            TeleopTest.emptyWorld.copy(
-//                    actualGamepad2= getChangedGamepad(TeleopTest.emptyWorld.actualGamepad2) { it.left_bumper = true }
+//                    actualGamepad2= getChangedGamepad { it.left_bumper = true }
 //            ),
+////            TeleopTest.emptyWorld,
+////            TeleopTest.emptyWorld.copy(
+////                    actualGamepad2= getChangedGamepad(TeleopTest.emptyWorld.actualGamepad2) { it.left_bumper = true }
+////            ),
+//    )
+    val actualRobotThatWantsToWaitForTheArmBeforeMovingLiftDown =
+            TeleopTest.emptyWorld.actualRobot.copy(
+                    depoState = TeleopTest.emptyWorld.actualRobot.depoState.copy(
+                            liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks + 100,
+                            armAngleDegrees = Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees - 10
+                    )
+            )
+    val liftManualTest = listOf(
+            TeleopTest.emptyWorld,
+            TeleopTest.emptyWorld.copy(
+                    actualGamepad2= getChangedGamepad { it.right_stick_y = -1.0f },
+                    actualRobot = actualRobotThatWantsToWaitForTheArmBeforeMovingLiftDown
+            ),
+            TeleopTest.emptyWorld.copy(
+                    actualGamepad2= getChangedGamepad { it.right_stick_y = -1.0f },
+                    actualRobot = actualRobotThatWantsToWaitForTheArmBeforeMovingLiftDown
+            )
     )
     val expectedOutput = TeleopTest.emptyTarget.copy(
             targetRobot = TeleopTest.emptyTarget.targetRobot.copy(
                     depoTarget = TeleopTest.emptyTarget.targetRobot.depoTarget.copy(
-                            leftClawPosition = Claw.ClawTarget.Retracted
+                            liftPosition = Lift.LiftPositions.Manual
                     ),
             )
     )
 
-    val result = TeleopTest.runTest(clawTests)
+    val result = TeleopTest.runTest(liftManualTest)
     val normalEquality = { output: TargetWorld ->
-        output.targetRobot.depoTarget.leftClawPosition == expectedOutput.targetRobot.depoTarget.leftClawPosition
+        output.targetRobot.depoTarget.liftPosition == expectedOutput.targetRobot.depoTarget.liftPosition
     }
     val testPass = TeleopTest.didTestPass(result = result, normalEquality)
 

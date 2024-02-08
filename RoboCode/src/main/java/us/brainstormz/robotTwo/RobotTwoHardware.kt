@@ -347,14 +347,19 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         transfer.powerSubsystem(targetState.targetRobot.collectorTarget.rollers, this, actualRobot = actualState.actualRobot)
 
         /**Lift*/
-        val liftPower: Double = if (targetState.targetRobot.depoTarget.liftPosition == Lift.LiftPositions.Manual) {
-            liftOverridePower
-        } else if (targetState.targetRobot.depoTarget.liftPosition == Lift.LiftPositions.ResetEncoder) {
-            liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-            liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-            0.0
-        } else {
-            lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot)
+        val liftPower: Double = when (targetState.targetRobot.depoTarget.liftPosition) {
+            Lift.LiftPositions.Manual -> {
+                telemetry.addLine("Running lift in manual mode at power $liftOverridePower")
+                -liftOverridePower
+            }
+            Lift.LiftPositions.ResetEncoder -> {
+                liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+                liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+                0.0
+            }
+            else -> {
+                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot)
+            }
         }
         lift.powerSubsystem(liftPower, this)
 
@@ -384,6 +389,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         /**Launcher*/
         launcherServo.position = targetState.targetRobot.launcherPosition.position
+
+        /**Lights*/
+        lights.setPattern(targetState.targetRobot.lights.targetColor.blinkinPattern)
     }
 
     fun wiggleTest(telemetry: Telemetry, gamepad: Gamepad) {
