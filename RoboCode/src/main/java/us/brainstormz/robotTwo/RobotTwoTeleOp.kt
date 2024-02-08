@@ -533,17 +533,20 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val liftNeedsToWaitForTheArm = liftTargetIsBelowSafeArm && ((!armIsFarEnoughIn && liftActualPositionIsAboveSafeArm) || armIsTooFarIn)
         telemetry.addLine("\nliftNeedsToWaitForTheArm: $liftNeedsToWaitForTheArm")
 
+        val liftTargetHasntChanged = liftRealTarget == previousTargetState?.targetRobot?.depoTarget?.liftPosition
+        val isLiftEligableForReset = actualRobot.depoState.isLiftLimitActivated && liftTargetHasntChanged
+
         telemetry.addLine("armIsTooFarIn: $armIsTooFarIn")
-        val liftPosition: Lift.LiftPositions =  if (driverInput.depo == DepoInput.Manual) {
+        val liftPosition: Lift.LiftPositions = if (driverInput.depo == DepoInput.Manual) {
             Lift.LiftPositions.Manual
+        } else if(isLiftEligableForReset) {
+            Lift.LiftPositions.ResetEncoder
         } else if (liftNeedsToWaitForTheArm) {
             Lift.LiftPositions.WaitForArmToMove
         } else {
             liftRealTarget
         }
 
-        val liftTargetHasntChanged = liftPosition == previousTargetState?.targetRobot?.depoTarget?.liftPosition
-        val isLiftEligableForReset = actualRobot.depoState.isLiftLimitActivated && liftTargetHasntChanged
 
         telemetry.addLine("Lift position: ${actualRobot.depoState.liftPositionTicks}")
         telemetry.addLine("Lift target: ${liftPosition}, ticks: ${liftPosition.ticks}")
