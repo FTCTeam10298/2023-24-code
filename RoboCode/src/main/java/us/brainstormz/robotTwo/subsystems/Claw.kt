@@ -12,17 +12,6 @@ class Claw(private val side: Transfer.Side): Subsystem {
         Retracted
     }
 
-
-    companion object {
-        fun clawInputToClawTarget(clawInput: RobotTwoTeleOp.ClawInput): ClawTarget? {
-            return when (clawInput) {
-                RobotTwoTeleOp.ClawInput.Drop -> ClawTarget.Retracted
-                RobotTwoTeleOp.ClawInput.Hold -> ClawTarget.Gripping
-                RobotTwoTeleOp.ClawInput.NoInput -> null
-            }
-        }
-    }
-
     override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {
         val servo = when (side) {
             Transfer.Side.Left -> hardware.leftClawServo

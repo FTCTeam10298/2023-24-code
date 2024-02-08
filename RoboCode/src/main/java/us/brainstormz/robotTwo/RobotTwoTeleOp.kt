@@ -69,7 +69,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     enum class ClawInput {
         Drop,
         Hold,
-        NoInput
+        NoInput;
+        fun toClawTarget(): ClawTarget? {
+            return when (this) {
+                Drop -> ClawTarget.Retracted
+                Hold -> ClawTarget.Gripping
+                ClawInput.NoInput -> null
+            }
+        }
     }
     enum class CollectorInput {
         Intake,
@@ -511,8 +518,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         //When in and in a transferable position or transferring let the drivers control the claws
 
         val driverInputWrist = WristPositions(
-                left= Claw.clawInputToClawTarget(driverInput.leftClaw) ?: previousTargetState.targetRobot.depoTarget.leftClawPosition,
-                right= Claw.clawInputToClawTarget(driverInput.rightClaw) ?: previousTargetState.targetRobot.depoTarget.rightClawPosition)
+                left= driverInput.leftClaw.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.leftClawPosition,
+                right= driverInput.rightClaw.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.rightClawPosition)
 
 
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
