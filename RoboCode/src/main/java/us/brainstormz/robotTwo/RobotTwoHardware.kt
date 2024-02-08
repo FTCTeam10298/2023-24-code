@@ -378,6 +378,12 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             Claw.ClawTarget.Retracted -> RobotTwoHardware.RightClawPosition.Retracted
         }
         rightClawServo.position = rightClawPosition.position
+
+        /**Hang*/
+        hangReleaseServo.power = targetState.targetRobot.hangPowers.power
+
+        /**Launcher*/
+        launcherServo.position = targetState.targetRobot.launcherPosition.position
     }
 
     fun wiggleTest(telemetry: Telemetry, gamepad: Gamepad) {

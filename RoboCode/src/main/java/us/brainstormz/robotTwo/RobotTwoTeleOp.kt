@@ -21,8 +21,6 @@ import kotlin.math.absoluteValue
 
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
     //Not working:
-    //Hang
-    //Launcher
     //Claws
     //Rollers in
     //Arm to position
@@ -146,9 +144,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val gamepad1 = actualWorld.actualGamepad1
         val gamepad2 = actualWorld.actualGamepad2
         val robot = actualWorld.actualRobot
-        val previousGamepad1 = previousActualWorld?.actualGamepad1 ?: gamepad1
-        val previousGamepad2 = previousActualWorld?.actualGamepad2 ?: gamepad2
-        val previousRobot = previousActualWorld?.actualRobot ?: actualWorld.actualRobot
+        val previousGamepad1 = previousActualWorld.actualGamepad1 ?: gamepad1
+        val previousGamepad2 = previousActualWorld.actualGamepad2 ?: gamepad2
+        val previousRobot = previousActualWorld.actualRobot ?: actualWorld.actualRobot
         val previousRobotTarget = previousTargetState?.targetRobot
 
         /**Depo*/
