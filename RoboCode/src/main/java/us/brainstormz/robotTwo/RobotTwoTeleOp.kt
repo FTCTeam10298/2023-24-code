@@ -27,7 +27,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     //Rollers in
     //Arm to position
     //Lift manual
-    //Transfer
+    //Handoff
 
     val intake = Intake()
     val transfer = Transfer()
@@ -383,6 +383,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         } else {
             LightInput.NoInput
         }
+
 
         return DriverInput(
                 driveVelocity = driveVelocity,
@@ -804,6 +805,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     getTargetWorld(driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualWorld)
                 },
                 stateFulfiller = { targetState, actualState ->
+                    telemetry.addLine("actualState: $actualState")
+                    telemetry.addLine("targetState: $targetState")
                     hardware.actuateRobot(
                             targetState,
                             actualState,
