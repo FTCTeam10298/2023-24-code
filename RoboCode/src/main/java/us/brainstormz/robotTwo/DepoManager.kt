@@ -3,12 +3,14 @@ package us.brainstormz.robotTwo
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.WristPositions
 
 class DepoManager(
         private val arm: Arm,
         private val lift: Lift,
         private val leftClaw: Claw,
         private val rightClaw: Claw) {
+
     private val claws: List<Claw> = listOf(leftClaw, rightClaw)
 
     data class ActualDepo(
@@ -37,49 +39,29 @@ class DepoManager(
         }
     }
 
-    fun coordinateDepo(depoInput: RobotTwoTeleOp.DepoInput, previousTargetDepo: DepoTarget, actualDepo: ActualDepo): DepoTarget {
-        val depoTargetType = getDepoTargetTypeFromDepoInput(depoInput) ?: return initDepoTarget
+    fun getFinalDepoTarget(depoInput: RobotTwoTeleOp.DepoInput): DepoTarget? {
+        val depoTargetType = getDepoTargetTypeFromDepoInput(depoInput) ?: return null
 
-        val clawTarget: Claw.ClawTarget = when (depoTargetType) {
-            DepoTargetType.GoingOut -> Claw.ClawTarget.Gripping
-            DepoTargetType.GoingHome -> Claw.ClawTarget.Retracted
-            else -> return initDepoTarget
-        }
-        val bothClawsAreAtTarget = claws.fold(true) {acc, claw ->
-            acc && claw.isClawAtPosition(clawTarget, previousTargetDepo)
-        }
+        val clawTarget: Claw.ClawTarget =
+                when (depoTargetType) {
+                    DepoTargetType.GoingOut -> Claw.ClawTarget.Gripping
+                    DepoTargetType.GoingHome -> Claw.ClawTarget.Retracted
+                    else -> return null
+                }
 
-        val armTarget: Arm.Positions = if (bothClawsAreAtTarget) {
-            when (depoTargetType) {
-                DepoTargetType.GoingOut -> Arm.Positions.Out
-                DepoTargetType.GoingHome -> Arm.Positions.ClearLiftMovement
-                else -> return initDepoTarget
-            }
-        } else {
-            previousTargetDepo.armPosition
-        }
-        val armIsAtTarget = arm.isArmAtAngle(armTarget.angleDegrees, actualDepo.armAngleDegrees)
+        val armTarget: Arm.Positions =
+                when (depoTargetType) {
+                    DepoTargetType.GoingOut -> Arm.Positions.Out
+                    DepoTargetType.GoingHome -> Arm.Positions.In
+                    else -> return null
+                }
 
-
-        val liftTarget: Lift.LiftPositions = if (bothClawsAreAtTarget) {
-            if (armIsAtTarget) {
+        val liftTarget: Lift.LiftPositions =
                 when (depoTargetType) {
                     DepoTargetType.GoingOut -> lift.getGetLiftTargetFromDepoTarget(depoInput)
                     DepoTargetType.GoingHome -> Lift.LiftPositions.Transfer
-                    else -> return initDepoTarget
+                    else -> return null
                 }
-            } else {
-                //Waiting for arm
-                when (depoTargetType) {
-                    DepoTargetType.GoingOut -> previousTargetDepo.liftPosition
-                    DepoTargetType.GoingHome -> Lift.LiftPositions.ClearForArmToMove
-                    else -> return initDepoTarget
-                }
-            }
-        } else {
-            previousTargetDepo.liftPosition
-        }
-
 
         return DepoTarget(
                 liftPosition = liftTarget,
@@ -87,6 +69,106 @@ class DepoManager(
                 leftClawPosition = clawTarget,
                 rightClawPosition = clawTarget,
                 targetType = depoTargetType
+        )
+    }
+
+    fun coordinateArmLiftAndClaws(finalDepoTarget: DepoTarget, previousTargetDepo: DepoTarget, actualDepo: ActualDepo): DepoTarget {
+
+        val bothClawsAreAtTarget = claws.fold(true) {acc, claw ->
+            acc && claw.isClawAtPosition(finalDepoTarget.leftClawPosition, previousTargetDepo)
+        }
+
+        val liftIsAtFinalRestingPlace = lift.isLiftAtPosition(finalDepoTarget.liftPosition.ticks, actualDepo.liftPositionTicks)
+        val armTarget: Arm.Positions = if (bothClawsAreAtTarget) {
+            when (liftIsAtFinalRestingPlace) {
+                true -> {
+                    finalDepoTarget.armPosition
+                }
+                false -> {
+                    val liftIsAtOrAboveClear = actualDepo.liftPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
+                    val depoTargetIsOut = finalDepoTarget.targetType == DepoTargetType.GoingOut
+                    if (depoTargetIsOut && liftIsAtOrAboveClear) {
+                        finalDepoTarget.armPosition
+                    } else {
+                        Arm.Positions.ClearLiftMovement
+                    }
+                }
+            }
+        } else {
+            previousTargetDepo.armPosition
+        }
+
+        val armIsAtTarget = arm.isArmAtAngle(armTarget.angleDegrees, actualDepo.armAngleDegrees)
+
+        val liftTarget: Lift.LiftPositions = if (bothClawsAreAtTarget) {
+            if (armIsAtTarget) {
+                finalDepoTarget.liftPosition
+            } else {
+                //Waiting for arm
+                when (finalDepoTarget.targetType) {
+                    DepoTargetType.GoingOut -> {
+//                        if () {
+//                            finalDepoTarget.liftPosition
+//                        } else {
+//                            Lift.LiftPositions.ClearForArmToMove
+//                        }
+                        finalDepoTarget.liftPosition
+                    }
+                    DepoTargetType.GoingHome -> Lift.LiftPositions.ClearForArmToMove
+                    else -> previousTargetDepo.liftPosition
+                }
+            }
+        } else {
+            previousTargetDepo.liftPosition
+        }
+
+        return DepoTarget(
+                liftPosition = liftTarget,
+                armPosition = armTarget,
+                leftClawPosition = finalDepoTarget.leftClawPosition,
+                rightClawPosition = finalDepoTarget.rightClawPosition,
+                targetType = finalDepoTarget.targetType
+        )
+    }
+
+    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualDepo: ActualDepo, handoffIsReady: Boolean): DepoTarget {
+
+        val depoInput = target.depo
+        val wristInput = WristPositions(left= target.leftClaw.toClawTarget()?:previousDepoTarget.leftClawPosition, right= target.rightClaw.toClawTarget()?:previousDepoTarget.rightClawPosition)
+
+        val finalDepoTarget = getFinalDepoTarget(depoInput) ?: previousDepoTarget
+
+        val movingArmAndLiftTarget = coordinateArmLiftAndClaws(finalDepoTarget, previousDepoTarget, actualDepo)
+
+        val armAndLiftAreAtFinalRestingPlace: Boolean = checkIfArmAndLiftAreAtTarget(finalDepoTarget, actualDepo)
+        val wristPosition: WristPositions = if (armAndLiftAreAtFinalRestingPlace) {
+            val depoIsDepositing: Boolean = movingArmAndLiftTarget.targetType == DepoTargetType.GoingOut
+            if (depoIsDepositing) {
+                //Driver control
+                wristInput
+            } else {
+                if (handoffIsReady) {
+                    val firstLoopOfHandoff = target.handoff == RobotTwoTeleOp.HandoffInput.StartHandoff
+                    if (firstLoopOfHandoff) {
+                        //start griping the claws
+                        WristPositions(Claw.ClawTarget.Gripping)
+                    } else {
+                        //then manual after
+                        wristInput
+                    }
+                } else {
+                    //When it isn't handing off then keep claws retracted
+                    WristPositions(Claw.ClawTarget.Retracted)
+                }
+            }
+        } else {
+            //When going in/out keep the claws retracted/griping so that pixels can't get dropped
+            WristPositions(left= movingArmAndLiftTarget.leftClawPosition, right= movingArmAndLiftTarget.rightClawPosition)
+        }
+
+        return movingArmAndLiftTarget.copy(
+                leftClawPosition = wristPosition.left,
+                rightClawPosition = wristPosition.right,
         )
     }
 
@@ -104,11 +186,4 @@ class DepoManager(
         )
     }
 
-    val initDepoTarget = DepoTarget(
-            liftPosition = Lift.LiftPositions.Nothing,
-            armPosition = Arm.Positions.Manual,
-            leftClawPosition = Claw.ClawTarget.Gripping,
-            rightClawPosition = Claw.ClawTarget.Gripping,
-            targetType = DepoTargetType.GoingHome
-    )
 }

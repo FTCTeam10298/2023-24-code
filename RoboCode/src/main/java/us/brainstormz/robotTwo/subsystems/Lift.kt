@@ -27,7 +27,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
     }
 
     fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput): LiftPositions {
-        return when(depoInput) {
+        return when (depoInput) {
             RobotTwoTeleOp.DepoInput.SetLine1 -> LiftPositions.SetLine1
             RobotTwoTeleOp.DepoInput.SetLine2 -> LiftPositions.SetLine2
             RobotTwoTeleOp.DepoInput.SetLine3 -> LiftPositions.SetLine3
@@ -72,10 +72,16 @@ class Lift(private val telemetry: Telemetry): Subsystem {
     }
 
     private val acceptablePositionErrorTicks = 100
-    fun isLiftAtPosition(targetPositionTicks: Int, actualRobot: ActualRobot): Boolean {
-        val currentPositionTicks = actualRobot.depoState.liftPositionTicks
+    fun isLiftAtPosition(targetPositionTicks: Int, actualLiftPositionTicks: Int): Boolean {
+        val currentPositionTicks = actualLiftPositionTicks
         val positionErrorTicks = targetPositionTicks - currentPositionTicks
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
+    }
+
+    fun isLiftAbovePosition(targetPositionTicks: Int, actualLiftPositionTicks: Int): Boolean {
+        val currentPositionTicks = actualLiftPositionTicks
+        val positionErrorTicks = targetPositionTicks - currentPositionTicks
+        return positionErrorTicks > 0
     }
 
 }

@@ -536,47 +536,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     targetType = DepoTargetType.Manual
             )
         } else {
-            val coordinatedTarget = depoManager.coordinateDepo(driverInput.depo, previousTargetState.targetRobot.depoTarget, actualRobot.depoState)
-
-
-            val armAndLiftAreAtTarget: Boolean = depoManager.checkIfArmAndLiftAreAtTarget(coordinatedTarget, actualRobot.depoState)
-            val armAndLiftArentMovingAround: Boolean = armAndLiftAreAtTarget
-            val wristPosition: WristPositions = if (armAndLiftArentMovingAround) {
-                val depoIsDepositing: Boolean = coordinatedTarget.targetType == DepoTargetType.GoingOut
-                if (depoIsDepositing) {
-                    //Driver control
-                    driverInputWrist
-                } else {
-                    val handoffIsReady = handoffState.clawPosition == HandoffManager.ClawStateFromHandoff.Gripping;
-                    if (handoffIsReady) {
-                        val firstLoopOfHandoff = weWantToStartHandoff
-                        if (firstLoopOfHandoff) {
-                            //start griping the claws
-                            WristPositions(ClawTarget.Gripping)
-                        } else {
-                            //then manual after
-                            driverInputWrist
-                        }
-                    } else {
-                        //When it isn't handing off then keep claws retracted
-                        WristPositions(ClawTarget.Retracted)
-                    }
-                }
-            } else {
-                //When going in/out keep the claws retracted/griping so that pixels can't get dropped
-                WristPositions(left= coordinatedTarget.leftClawPosition, right= coordinatedTarget.rightClawPosition)
-            }
-
-            coordinatedTarget.copy(
-                    leftClawPosition = wristPosition.left,
-                    rightClawPosition = wristPosition.right,
-            )
+            depoManager.fullyManageDepo(
+                    target= driverInput,
+                    previousDepoTarget= previousTargetState.targetRobot.depoTarget,
+                    actualDepo= actualRobot.depoState,
+                    handoffIsReady= handoffState.clawPosition == HandoffManager.ClawStateFromHandoff.Gripping)
         }
-
-//        val depoTarget.copy(liftPosition = if (depoManager.checkIfArmAndLiftAreAtTarget(coordinatedTarget, actualRobot.depoState) && wristIsAtPosition(target)) {
-//
-//        })
-
 
 //        /**Lift*/
 //        val liftRealTarget: Lift.LiftPositions = when {
@@ -852,47 +817,57 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     }
 
 
-    val noInput = RobotTwoTeleOp.DriverInput(
-            driveVelocity = PositionAndRotation(),
-            depo = RobotTwoTeleOp.DepoInput.NoInput,
-            leftClaw = RobotTwoTeleOp.ClawInput.NoInput,
-            rightClaw = RobotTwoTeleOp.ClawInput.NoInput,
-            collector = RobotTwoTeleOp.CollectorInput.NoInput,
-            rollers = RobotTwoTeleOp.RollerInput.NoInput,
-            extendo = RobotTwoTeleOp.ExtendoInput.NoInput,
-            handoff = RobotTwoTeleOp.HandoffInput.NoInput,
-            hang = RobotTwoTeleOp.HangInput.NoInput,
-            launcher = RobotTwoTeleOp.LauncherInput.NoInput,
-            bumperMode = RobotTwoTeleOp.Gamepad1BumperMode.Collector,
-            lightInput = RobotTwoTeleOp.LightInput.NoInput
-    )
+    companion object {
+        val noInput = DriverInput(
+                driveVelocity = PositionAndRotation(),
+                depo = DepoInput.NoInput,
+                leftClaw = ClawInput.NoInput,
+                rightClaw = ClawInput.NoInput,
+                collector = CollectorInput.NoInput,
+                rollers = RollerInput.NoInput,
+                extendo = ExtendoInput.NoInput,
+                handoff = HandoffInput.NoInput,
+                hang = HangInput.NoInput,
+                launcher = LauncherInput.NoInput,
+                bumperMode = Gamepad1BumperMode.Collector,
+                lightInput = LightInput.NoInput
+        )
 
-    val initialPreviousTargetState = TargetWorld(
-            targetRobot = TargetRobot(
-                    positionAndRotation = PositionAndRotation(),
-                    depoTarget = depoManager.initDepoTarget,
-                    collectorTarget = CollectorTarget(
-                            intakeNoodles = Intake.CollectorPowers.Off,
-                            rollers = Transfer.RollerState(
-                                    leftServoCollect = Transfer.RollerPowers.Off,
-                                    rightServoCollect = Transfer.RollerPowers.Off,
-                                    directorState = Transfer.DirectorState.Off
-                            ),
-                            extendoPositions = Extendo.ExtendoPositions.Manual,
-                    ),
-                    hangPowers = RobotTwoHardware.HangPowers.Holding,
-                    launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
-                    lights = LightTarget(
-                            targetColor = PixelColor.Unknown,
-                            pattern = BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown),
-                            timeOfColorChangeMilis = 0L
-                    ),
-            ),
-            isLiftEligableForReset = false,
-            doingHandoff = false,
-            driverInput = noInput,
-            isTargetReached = {_, _ -> false}
-    )
+        val initDepoTarget = DepoTarget(
+                liftPosition = Lift.LiftPositions.Nothing,
+                armPosition = Arm.Positions.Manual,
+                leftClawPosition = Claw.ClawTarget.Gripping,
+                rightClawPosition = Claw.ClawTarget.Gripping,
+                targetType = DepoTargetType.GoingHome
+        )
+
+        val initialPreviousTargetState = TargetWorld(
+                targetRobot = TargetRobot(
+                        positionAndRotation = PositionAndRotation(),
+                        depoTarget = initDepoTarget,
+                        collectorTarget = CollectorTarget(
+                                intakeNoodles = Intake.CollectorPowers.Off,
+                                rollers = Transfer.RollerState(
+                                        leftServoCollect = Transfer.RollerPowers.Off,
+                                        rightServoCollect = Transfer.RollerPowers.Off,
+                                        directorState = Transfer.DirectorState.Off
+                                ),
+                                extendoPositions = Extendo.ExtendoPositions.Manual,
+                        ),
+                        hangPowers = RobotTwoHardware.HangPowers.Holding,
+                        launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
+                        lights = LightTarget(
+                                targetColor = PixelColor.Unknown,
+                                pattern = BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown),
+                                timeOfColorChangeMilis = 0L
+                        ),
+                ),
+                isLiftEligableForReset = false,
+                doingHandoff = false,
+                driverInput = noInput,
+                isTargetReached = { _, _ -> false }
+        )
+    }
 
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()

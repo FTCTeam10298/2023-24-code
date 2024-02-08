@@ -146,7 +146,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot)
+                        lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks)
                     },),
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -182,7 +182,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.ClearLiftMovement, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot)
+                        lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks)
                     },),
             AutoTargetWorld(
                     targetRobot = RobotState(
