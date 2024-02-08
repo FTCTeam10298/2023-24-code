@@ -14,19 +14,19 @@ abstract class FauxDcMotorSimple: DcMotorSimple, FauxDevice() {
     abstract override val printSignature: String
 
     final override fun setDirection(direction: DcMotorSimple.Direction?) {
-        printInput("Not yet implemented")
+        printInput("setDirection $direction")
     }
 
-    final  override fun getDirection(): DcMotorSimple.Direction {
+    final override fun getDirection(): DcMotorSimple.Direction {
         printInput("Not yet implemented")
         return DcMotorSimple.Direction.FORWARD
     }
 
-    final  override fun setPower(power: Double) {
-        printInput("Not yet implemented")
+    final override fun setPower(power: Double) {
+        printInput("setPower $power")
     }
 
-    final  override fun getPower(): Double {
+    final override fun getPower(): Double {
         printInput("Not yet implemented")
         return 0.0
     }
@@ -55,7 +55,7 @@ class FauxMotor: FauxDcMotorSimple(), DcMotor, DcMotorEx {
     }
 
     override fun setZeroPowerBehavior(zeroPowerBehavior: DcMotor.ZeroPowerBehavior?) {
-        printInput("Not yet implemented")
+        printInput("setZeroPowerBehavior $zeroPowerBehavior")
     }
 
     override fun getZeroPowerBehavior(): DcMotor.ZeroPowerBehavior {
@@ -64,11 +64,11 @@ class FauxMotor: FauxDcMotorSimple(), DcMotor, DcMotorEx {
     }
 
     override fun setPowerFloat() {
-        printInput("Not yet implemented")
+        printInput("setPowerFloat")
     }
 
     override fun getPowerFloat(): Boolean {
-        printInput("Not yet implemented")
+        printInput("getPowerFloat")
         return false
     }
 
@@ -87,12 +87,12 @@ class FauxMotor: FauxDcMotorSimple(), DcMotor, DcMotorEx {
     }
 
     override fun getCurrentPosition(): Int {
-        printInput("Not yet implemented")
+        printInput("getCurrentPosition")
         return 0
     }
 
     override fun setMode(mode: DcMotor.RunMode?) {
-        printInput("Not yet implemented")
+        printInput("setMode $mode")
     }
 
     override fun getMode(): DcMotor.RunMode {
@@ -167,7 +167,7 @@ class FauxMotor: FauxDcMotorSimple(), DcMotor, DcMotorEx {
     }
 
     override fun getCurrent(unit: CurrentUnit?): Double {
-        printInput("Not yet implemented")
+        printInput("getCurrent")
         return 0.0
     }
 
@@ -181,7 +181,7 @@ class FauxMotor: FauxDcMotorSimple(), DcMotor, DcMotorEx {
     }
 
     override fun isOverCurrent(): Boolean {
-        printInput("Not yet implemented")
+        printInput("isOverCurrent")
         return false
     }
 }
