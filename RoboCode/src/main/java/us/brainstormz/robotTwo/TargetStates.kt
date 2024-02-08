@@ -4,8 +4,10 @@ import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
-import us.brainstormz.robotTwo.subsystems.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.Extendo
+import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Transfer
 
 fun indentAll(unIndented: String): String {
     return unIndented.replace("\n", "\n    ")
@@ -18,9 +20,9 @@ data class DepoTarget(
         val rightClawPosition: Claw.ClawTarget,
 )
 data class CollectorTarget(
-        val extendoPositions: CollectorSystem.ExtendoPositions,
-        val intakeNoodles: CollectorSystem.CollectorPowers,
-        val rollers: CollectorSystem.RollerState
+        val extendoPositions: Extendo.ExtendoPositions,
+        val intakeNoodles: Intake.CollectorPowers,
+        val rollers: Transfer.RollerState
 )
 data class TargetRobot(
         val positionAndRotation: PositionAndRotation,

@@ -3,12 +3,13 @@ package us.brainstormz.robotTwo
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.subsystems.Arm
-import us.brainstormz.robotTwo.subsystems.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Lift
 
 class HandoffManager(
         private val collectorSystem: CollectorSystem,
         private val lift: Lift,
+        private val extendo: Extendo,
         private val arm: Arm,
         private val telemetry: Telemetry) {
 
@@ -58,7 +59,7 @@ class HandoffManager(
             }
         }
 
-        val isCollectorAllTheWayIn = collectorSystem.isExtendoAllTheWayIn(actualRobot)
+        val isCollectorAllTheWayIn = extendo.isExtendoAllTheWayIn(actualRobot)
         val liftExtensionIsAllTheWayDown = actualRobot.depoState.isLiftLimitActivated
         val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
 

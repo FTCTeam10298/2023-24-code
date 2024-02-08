@@ -12,26 +12,19 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
-import us.brainstormz.robotTwo.subsystems.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.Extendo
+import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Transfer
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
-    val collectorSystem: CollectorSystem = CollectorSystem(
-//            extendoMotorMaster= hardware.extendoMotorMaster,
-//            extendoMotorSlave= hardware.extendoMotorSlave,
-//            collectorServo1 = hardware.collectorServo1,
-//            collectorServo2 = hardware.collectorServo2,
-//            rightTransferServo=hardware. rightTransferServo,
-//            leftTransferServo= hardware.leftTransferServo,
-//            transferDirectorServo= hardware.transferDirectorServo,
-//            leftTransferPixelSensor= hardware.leftTransferSensor,
-//            rightTransferPixelSensor= hardware.rightTransferSensor,
-//            leftRollerEncoder= hardware.leftRollerEncoder,
-//            rightRollerEncoder= hardware.rightRollerEncoder,
-            telemetry= telemetry)
+    val intake = Intake()
+    val transfer = Transfer()
+    val extendo = Extendo()
+    val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
 
     val leftClaw: Claw = Claw()
     val rightClaw: Claw = Claw()
@@ -41,7 +34,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val lift: Lift = Lift()
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift)
 
-    val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, arm, telemetry)
+    val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, extendo, arm, telemetry)
 
 
     lateinit var movement: MecanumDriveTrain
@@ -344,7 +337,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             0.0
         }
 
-        val isAtTheEndOfExtendo = actualWorld.actualRobot.collectorSystemState.extendoPositionTicks >= CollectorSystem.ExtendoPositions.Max.ticks || actualWorld.actualRobot.collectorSystemState.extendoCurrentAmps > 6.0
+        val isAtTheEndOfExtendo = actualWorld.actualRobot.collectorSystemState.extendoPositionTicks >= Extendo.ExtendoPositions.Max.ticks || actualWorld.actualRobot.collectorSystemState.extendoCurrentAmps > 6.0
         val extendoCompensationPower = if (isAtTheEndOfExtendo && yInput == 0.0) {
             gamepad1.right_trigger.toDouble()
         } else {
@@ -418,11 +411,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val actualRobot = actualWorld.actualRobot
 
         /**Handoff*/
-        val transferLeftSensorState = collectorSystem.isPixelIn(actualWorld.actualRobot.collectorSystemState.leftTransferState, CollectorSystem.Side.Left)
-        val transferRightSensorState = collectorSystem.isPixelIn(actualWorld.actualRobot.collectorSystemState.rightTransferState, CollectorSystem.Side.Right)
+        val transferLeftSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
+        val transferRightSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
         val areBothPixelsIn = transferLeftSensorState && transferRightSensorState
-        val previousTransferLeftSensorState = collectorSystem.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.leftTransferState, CollectorSystem.Side.Left)
-        val previousTransferRightSensorState = collectorSystem.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.rightTransferState, CollectorSystem.Side.Right)
+        val previousTransferLeftSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
+        val previousTransferRightSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
         val wereBothPixelsInPreviously = previousTransferLeftSensorState && previousTransferRightSensorState
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
 
@@ -455,52 +448,54 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE, actualRobot)
 
         /**Extendo*/
-        val extendoState: CollectorSystem.ExtendoPositions = when {
+        val extendoState: Extendo.ExtendoPositions = when {
             driverInput.extendo == ExtendoInput.ResetEncoder -> {
-                CollectorSystem.ExtendoPositions.ResetEncoder
+                Extendo.ExtendoPositions.ResetEncoder
             }
             driverInput.extendo == ExtendoInput.Extend -> {
-                CollectorSystem.ExtendoPositions.Manual
+                Extendo.ExtendoPositions.Manual
             }
             driverInput.extendo == ExtendoInput.Retract -> {
-                CollectorSystem.ExtendoPositions.Manual
+                Extendo.ExtendoPositions.Manual
             }
             theRobotJustCollectedTwoPixels -> {
-                CollectorSystem.ExtendoPositions.Min
+                Extendo.ExtendoPositions.Min
             }
             doHandoffSequence -> {
                 when (handoffState.collectorState) {
                     HandoffManager.ExtendoStateFromHandoff.MoveIn -> {
-                        CollectorSystem.ExtendoPositions.AllTheWayInTarget
+                        Extendo.ExtendoPositions.AllTheWayInTarget
                     }
                     HandoffManager.ExtendoStateFromHandoff.MoveOutOfTheWay -> {
-                        CollectorSystem.ExtendoPositions.ClearTransfer
+                        Extendo.ExtendoPositions.ClearTransfer
                     }
                 }
             }
             areBothPixelsIn && !wereBothPixelsInPreviously -> {
-                CollectorSystem.ExtendoPositions.Min
+                Extendo.ExtendoPositions.Min
             }
             else -> {
-                previousTargetState?.targetRobot?.collectorTarget?.extendoPositions ?: CollectorSystem.ExtendoPositions.Manual
+                previousTargetState?.targetRobot?.collectorTarget?.extendoPositions ?: Extendo.ExtendoPositions.Manual
             }
         }
 
         /**Intake Noodles*/
-        val intakeNoodleTarget = collectorSystem.getCollectorState(when (driverInput.collector) {
-            CollectorInput.Intake -> CollectorSystem.CollectorPowers.Intake
-            CollectorInput.Eject ->  CollectorSystem.CollectorPowers.Eject
-            CollectorInput.Off ->  CollectorSystem.CollectorPowers.Off
-            CollectorInput.NoInput -> previousTargetState?.targetRobot?.collectorTarget?.intakeNoodles ?: CollectorSystem.CollectorPowers.Off
-        })
+        val intakeNoodleTarget = intake.getCollectorState(when (driverInput.collector) {
+            CollectorInput.Intake -> Intake.CollectorPowers.Intake
+            CollectorInput.Eject ->  Intake.CollectorPowers.Eject
+            CollectorInput.Off ->  Intake.CollectorPowers.Off
+            CollectorInput.NoInput -> previousTargetState?.targetRobot?.collectorTarget?.intakeNoodles ?: Intake.CollectorPowers.Off
+        },
+        isPixelInLeft = transfer.isPixelIn(actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left),
+        isPixelInRight= transfer.isPixelIn(actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right))
 
         /**Rollers */
-        val autoRollerState = collectorSystem.getAutoPixelSortState(isCollecting = intakeNoodleTarget == CollectorSystem.CollectorPowers.Intake, actualRobot)
+        val autoRollerState = transfer.getAutoPixelSortState(isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake, actualRobot)
         val rollerTargetState = when (driverInput.rollers) {
-            RollerInput.BothIn -> autoRollerState.copy(leftServoCollect = CollectorSystem.RollerPowers.Intake, rightServoCollect = CollectorSystem.RollerPowers.Intake)
-            RollerInput.BothOut -> autoRollerState.copy(leftServoCollect = CollectorSystem.RollerPowers.Eject, rightServoCollect = CollectorSystem.RollerPowers.Eject)
-            RollerInput.LeftOut -> autoRollerState.copy(leftServoCollect = CollectorSystem.RollerPowers.Eject)
-            RollerInput.RightOut -> autoRollerState.copy(rightServoCollect = CollectorSystem.RollerPowers.Eject)
+            RollerInput.BothIn -> autoRollerState.copy(leftServoCollect = Transfer.RollerPowers.Intake, rightServoCollect = Transfer.RollerPowers.Intake)
+            RollerInput.BothOut -> autoRollerState.copy(leftServoCollect = Transfer.RollerPowers.Eject, rightServoCollect = Transfer.RollerPowers.Eject)
+            RollerInput.LeftOut -> autoRollerState.copy(leftServoCollect = Transfer.RollerPowers.Eject)
+            RollerInput.RightOut -> autoRollerState.copy(rightServoCollect = Transfer.RollerPowers.Eject)
             RollerInput.NoInput -> autoRollerState
         }
 
@@ -596,9 +591,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val isTheLiftGoingDown = liftPosition.ticks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val wasTheLiftGoindDownBefore = previousActualWorld.actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.ClearForArmToMove.ticks
         val armIsIn = armPosition.angleDegrees >= Arm.Positions.GoodEnoughForLiftToGoDown.angleDegrees
-        val isTheExtendoGoingIn = extendoState.ticks <= CollectorSystem.ExtendoPositions.Min.ticks
-        val wasTheCollectorGoingInBefore = previousActualWorld.actualRobot.depoState.liftPositionTicks <= CollectorSystem.ExtendoPositions.Min.ticks
-        val extendoIsIn = actualRobot.collectorSystemState.extendoPositionTicks <= CollectorSystem.ExtendoPositions.Min.ticks
+        val isTheExtendoGoingIn = extendoState.ticks <= Extendo.ExtendoPositions.Min.ticks
+        val wasTheCollectorGoingInBefore = previousActualWorld.actualRobot.depoState.liftPositionTicks <= Extendo.ExtendoPositions.Min.ticks
+        val extendoIsIn = actualRobot.collectorSystemState.extendoPositionTicks <= Extendo.ExtendoPositions.Min.ticks
         val shouldTheClawsRetractForLift = isTheLiftGoingDown && !wasTheLiftGoindDownBefore && armIsIn
         val shouldTheClawsRetractForExtendo = isTheLiftGoingDown && !extendoIsIn//isTheExtendoGoingIn && !wasTheCollectorGoingInBefore
         val shouldClawsRetract = shouldTheClawsRetractForLift || shouldTheClawsRetractForExtendo
@@ -808,7 +803,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             movement= movement,
                             arm= arm,
                             lift= lift,
-                            collectorSystem= collectorSystem,
+                            extendo= extendo,
+                            intake= intake,
+                            transfer= transfer,
                             extendoOverridePower = (gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()),
                             liftOverridePower = gamepad2.right_stick_y.toDouble(),
                             armOverridePower = gamepad2.right_stick_x.toDouble()

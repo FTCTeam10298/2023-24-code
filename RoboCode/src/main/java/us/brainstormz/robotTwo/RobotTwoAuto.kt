@@ -16,11 +16,20 @@ import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.threeDay.PropColors
 import us.brainstormz.threeDay.PropDetector
 import us.brainstormz.threeDay.PropPosition
-import us.brainstormz.robotTwo.subsystems.CollectorSystem.*
+import us.brainstormz.robotTwo.CollectorSystem.*
 import us.brainstormz.robotTwo.subsystems.Arm
-import us.brainstormz.robotTwo.subsystems.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.Extendo
+import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
+import us.brainstormz.robotTwo.subsystems.Intake.CollectorPowers
+import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.robotTwo.subsystems.Transfer.RollerState
+import us.brainstormz.robotTwo.subsystems.Transfer.DirectorState
+import us.brainstormz.robotTwo.subsystems.Transfer.RollerPowers
+import us.brainstormz.robotTwo.subsystems.Transfer.TransferHalfState
 import us.brainstormz.utils.DeltaTimeMeasurer
+
 
 @Autonomous(group = "!")
 class RobotTwoAuto: OpMode() {
@@ -34,7 +43,7 @@ class RobotTwoAuto: OpMode() {
     data class RobotState(
             val positionAndRotation: PositionAndRotation,
             val depoState: DepoState,
-            val collectorSystemState: CollectorSystem.CollectorState
+            val collectorSystemState: CollectorState
     )
     data class DepoState(
             val armPos: Arm.Positions,
@@ -53,7 +62,7 @@ class RobotTwoAuto: OpMode() {
         return mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetWorld.targetRobot.positionAndRotation)
     }
 
-    private val targetWorldToBeReplacedWithInjection = AutoTargetWorld( targetRobot = RobotState(collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)), positionAndRotation = PositionAndRotation(), depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)),
+    private val targetWorldToBeReplacedWithInjection = AutoTargetWorld( targetRobot = RobotState(collectorSystemState = CollectorState(Intake.CollectorPowers.Off, Extendo.ExtendoPositions.Min, Transfer.RollerState(Transfer.RollerPowers.Off, Transfer.RollerPowers.Off, Transfer.DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)), positionAndRotation = PositionAndRotation(), depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)),
                                                                     isTargetReached = {targetState: AutoTargetWorld?, actualState: ActualWorld ->
                                                                         println("This had better not run")
                                                                         false
@@ -88,7 +97,7 @@ class RobotTwoAuto: OpMode() {
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
                         val isRobotAtPosition = isRobotAtPosition(targetState, actualState)
-                        val isCollectorAtPosition = collectorSystem.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isCollectorAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
                         isRobotAtPosition&& isCollectorAtPosition
                     },),
             AutoTargetWorld(
@@ -117,7 +126,7 @@ class RobotTwoAuto: OpMode() {
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
                         val isRobotAtPosition = isRobotAtPosition(targetState, actualState)
-                        val isCollectorRetracted = collectorSystem.isExtendoAtPosition(ExtendoPositions.Min.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isCollectorRetracted = extendo.isExtendoAtPosition(ExtendoPositions.Min.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
                         isRobotAtPosition && isCollectorRetracted
                     },),
             AutoTargetWorld(
@@ -219,7 +228,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoAtPosition = collectorSystem.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
                         isExtendoAtPosition && isRobotAtPosition(targetState, actualState)
                     },),
             AutoTargetWorld(
@@ -284,7 +293,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoAtPosition = collectorSystem.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
                         isExtendoAtPosition && isRobotAtPosition(targetState, actualState)
                     },),
             AutoTargetWorld(
@@ -373,7 +382,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Min, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoAtPosition = collectorSystem.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
                         isExtendoAtPosition && isRobotAtPosition(targetState, actualState)
                     },),
             AutoTargetWorld(
@@ -674,6 +683,11 @@ class RobotTwoAuto: OpMode() {
     private val hardware = RobotTwoHardware(telemetry, this)
 
     private lateinit var mecanumMovement: MecanumMovement
+
+    private val intake = Intake()
+    private val transfer = Transfer()
+    private val extendo = Extendo()
+
     private lateinit var collectorSystem: CollectorSystem
     private lateinit var arm: Arm
     private lateinit var lift: Lift
@@ -690,7 +704,7 @@ class RobotTwoAuto: OpMode() {
         val odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         mecanumMovement = MecanumMovement(odometryLocalizer, hardware, telemetry)
 
-        collectorSystem = CollectorSystem(telemetry= telemetry)
+        collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
         lift = Lift()
         arm = Arm()
         depoManager = DepoManager(arm= arm, lift= lift)
@@ -765,11 +779,10 @@ class RobotTwoAuto: OpMode() {
                 telemetry.addLine("current position: ${mecanumMovement.localizer.currentPositionAndRotation()}")
 
                 mecanumMovement.moveTowardTarget(targetState.targetRobot.positionAndRotation)
-                collectorSystem.powerExtendo(collectorSystem.calcPowerToMoveExtendo(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot), hardware)
-                collectorSystem.powerSubsystem(targetState.targetRobot.collectorSystemState.collectorState.power, hardware)
+                extendo.powerSubsystem(extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot), hardware)
+                intake.powerSubsystem(targetState.targetRobot.collectorSystemState.collectorState.power, hardware)
                 lift.powerSubsystem(lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot), hardware)
                 arm.powerSubsystem(arm.calcPowerToReachTarget(targetState.targetRobot.depoState.armPos.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees), hardware)
-//                arm.moveArmTowardPosition(targetState.targetRobot.depoState.armPos.angleDegrees)
                 hardware.rightClawServo.position = targetState.targetRobot.depoState.rightClawPosition.position
                 hardware.leftClawServo.position = targetState.targetRobot.depoState.leftClawPosition.position
             }

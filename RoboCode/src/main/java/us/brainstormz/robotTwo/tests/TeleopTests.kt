@@ -8,7 +8,7 @@ import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
-import us.brainstormz.robotTwo.subsystems.CollectorSystem
+import us.brainstormz.robotTwo.CollectorSystem
 import us.brainstormz.robotTwo.CollectorTarget
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.DepoTarget
@@ -17,6 +17,9 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetRobot
 import us.brainstormz.robotTwo.TargetWorld
+import us.brainstormz.robotTwo.subsystems.Extendo
+import us.brainstormz.robotTwo.subsystems.Intake
+import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.tests.TeleopTest.getChangedGamepad
 
 fun main() {
@@ -96,7 +99,7 @@ object TeleopTest {
         return passCondition(result.last().second)
     }
 
-    val emptySensorReading = CollectorSystem.SensorReading(0, 0, 0 ,0)
+    val emptySensorReading = Transfer.SensorReading(0, 0, 0 ,0)
     val emptyWorld = ActualWorld(
             actualGamepad1= Gamepad(),
             actualGamepad2 = Gamepad(),
@@ -142,9 +145,9 @@ object TeleopTest {
                             rightClawPosition = Claw.ClawTarget.Gripping,
                     ),
                     collectorTarget = CollectorTarget(
-                            intakeNoodles = CollectorSystem.CollectorPowers.Off,
-                            rollers = CollectorSystem.RollerState(CollectorSystem.RollerPowers.Off, CollectorSystem.RollerPowers.Off, CollectorSystem.DirectorState.Off),
-                            extendoPositions = CollectorSystem.ExtendoPositions.Manual,
+                            intakeNoodles = Intake.CollectorPowers.Off,
+                            rollers = Transfer.RollerState(Transfer.RollerPowers.Off, Transfer.RollerPowers.Off, Transfer.DirectorState.Off),
+                            extendoPositions = Extendo.ExtendoPositions.Manual,
                     ),
                     hangPowers = RobotTwoHardware.HangPowers.Holding,
                     launcherPosition = RobotTwoHardware.LauncherPosition.Holding,

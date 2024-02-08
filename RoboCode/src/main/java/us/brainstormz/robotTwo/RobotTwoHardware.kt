@@ -30,8 +30,10 @@ import us.brainstormz.localizer.Localizer
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
-import us.brainstormz.robotTwo.subsystems.CollectorSystem
+import us.brainstormz.robotTwo.subsystems.Extendo
+import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Transfer
 import java.lang.Thread.sleep
 import kotlin.math.PI
 
@@ -92,7 +94,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var leftColorSensor: RevColorSensorV3
     lateinit var rightColorSensor: RevColorSensorV3
 
-    val extendoOperationRange = CollectorSystem.ExtendoPositions.Min.ticks..CollectorSystem.ExtendoPositions.Max.ticks
+    val extendoOperationRange = Extendo.ExtendoPositions.Min.ticks..Extendo.ExtendoPositions.Max.ticks
     val extendoPositionPID = PID(kp = 1.0)
     lateinit var extendoMotorMaster: DcMotorEx
     lateinit var extendoMotorSlave: DcMotor
@@ -308,7 +310,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     fun actuateRobot(
             targetState: TargetWorld, actualState: ActualWorld,
             movement: MecanumDriveTrain,
-            collectorSystem: CollectorSystem,
+            extendo: Extendo,
+            intake: Intake,
+            transfer: Transfer,
             lift: Lift,
             arm: Arm,
             extendoOverridePower: Double,
@@ -325,22 +329,22 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         )
 
         /**Extendo*/
-        val extendoPower: Double = if (targetState.targetRobot.collectorTarget.extendoPositions == CollectorSystem.ExtendoPositions.Manual) {
+        val extendoPower: Double = if (targetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Manual) {
             extendoOverridePower
-        } else if (targetState.targetRobot.collectorTarget.extendoPositions == CollectorSystem.ExtendoPositions.ResetEncoder) {
+        } else if (targetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.ResetEncoder) {
             extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
             extendoMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
             0.0
         } else {
-            collectorSystem.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
+            extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
         }
-        collectorSystem.powerExtendo(extendoPower, this)
+        extendo.powerSubsystem(extendoPower, this)
 
         /**Collector*/
-        collectorSystem.powerSubsystem(targetState.targetRobot.collectorTarget.intakeNoodles.power, this)
+        intake.powerSubsystem(targetState.targetRobot.collectorTarget.intakeNoodles.power, this)
 
         /**Rollers*/
-        collectorSystem.runRollers(targetState.targetRobot.collectorTarget.rollers, this, actualRobot = actualState.actualRobot)
+        transfer.powerSubsystem(targetState.targetRobot.collectorTarget.rollers, this, actualRobot = actualState.actualRobot)
 
         /**Lift*/
         val liftPower: Double = if (targetState.targetRobot.depoTarget.liftPosition == Lift.LiftPositions.Manual) {
