@@ -44,6 +44,7 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
 
         rightClawServo = FauxServo()
         leftClawServo = FauxServo()
+        launcherServo = FauxServo()
 
 
         armEncoder = AnalogInput(FauxAnalogInputController(), 0)
