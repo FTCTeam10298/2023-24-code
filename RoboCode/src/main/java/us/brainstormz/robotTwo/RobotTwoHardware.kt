@@ -360,7 +360,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                 0.0
             }
             else -> {
-                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot)
+                telemetry.addLine("\n\n\nliftPositionTicks: " + actualState.actualRobot.depoState.liftPositionTicks)
+                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks)
             }
         }
         lift.powerSubsystem(liftPower, this)
