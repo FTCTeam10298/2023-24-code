@@ -47,7 +47,7 @@ class DepoTest {
                                 actualDepo = DepoManager.ActualDepo(
                                         armAngleDegrees = Arm.Positions.In.angleDegrees,
                                         liftPositionTicks = Lift.LiftPositions.Down.ticks,
-                                        wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
+                                        wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Retracted)),
                                         isLiftLimitActivated = false
                                 ),
                                 handoffIsReady = false
@@ -75,7 +75,7 @@ class DepoTest {
                                         armAngleDegrees = Arm.Positions.In.angleDegrees,
                                         liftPositionTicks = Lift.LiftPositions.Down.ticks,
                                         isLiftLimitActivated = false,
-                                        wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
+                                        wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping)),
                                 ),
                                 handoffIsReady = false
                         ),
@@ -102,7 +102,7 @@ class DepoTest {
                                         armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees,
                                         liftPositionTicks = inputLiftPosition.ticks,
                                         isLiftLimitActivated = false,
-                                        wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
+                                        wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping)),
                                 ),
                                 handoffIsReady = false
                         ),
@@ -129,7 +129,7 @@ class DepoTest {
                                         armAngleDegrees = Arm.Positions.Out.angleDegrees,
                                         liftPositionTicks = inputLiftPosition.ticks,
                                         isLiftLimitActivated = false,
-                                        wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
+                                        wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping)),
                                 ),
                                 handoffIsReady = false
                         ),
@@ -160,7 +160,7 @@ class DepoTest {
                                     armAngleDegrees = Arm.Positions.Out.angleDegrees,
                                     liftPositionTicks = Lift.LiftPositions.SetLine3.ticks,
                                     isLiftLimitActivated = false,
-                                    wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping)),
                             ),
                             handoffIsReady = false
                     ),
@@ -187,7 +187,7 @@ class DepoTest {
                                     armAngleDegrees = Arm.Positions.Out.angleDegrees,
                                     liftPositionTicks = Lift.LiftPositions.SetLine3.ticks,
                                     isLiftLimitActivated = false,
-                                    wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Retracted)),
                             ),
                             handoffIsReady = false
                     ),
@@ -214,7 +214,7 @@ class DepoTest {
                                     armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees - 10,
                                     liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks,
                                     isLiftLimitActivated = false,
-                                    wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Retracted)),
                             ),
                             handoffIsReady = false
                     ),
@@ -241,7 +241,7 @@ class DepoTest {
                                     armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees,
                                     liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks,
                                     isLiftLimitActivated = false,
-                                    wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Retracted)),
                             ),
                             handoffIsReady = false
                     ),
