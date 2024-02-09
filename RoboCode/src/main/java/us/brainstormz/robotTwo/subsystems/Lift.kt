@@ -59,7 +59,8 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         return  hardware.liftMotorMaster.currentPosition
     }
 
-    private val pid = PID(kp = 0.004)
+//    private val pid = PID(kp = 0.004)
+    private val pid = PID(kp = 0.0015)
     fun calculatePowerToMoveToPosition(targetPositionTicks: Int, currentPosition: Int): Double {
         val positionError = targetPositionTicks - currentPosition
         val power = pid.calcPID(positionError.toDouble())
