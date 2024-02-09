@@ -17,8 +17,8 @@ class Transfer {
     }
 
     enum class DirectorState(val power: Double) {
-        Left(-1.0),
-        Right(1.0),
+        Left(1.0),
+        Right(-1.0),
         Off(0.0)
     }
 
