@@ -537,8 +537,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     targetType = DepoTargetType.Manual
             )
         } else {
+            val spoofDriverInputForDepo = if (driverInput.depo == DepoInput.NoInput) {
+                previousTargetState.driverInput
+            } else {
+                driverInput
+            }
             depoManager.fullyManageDepo(
-                    target= driverInput,
+                    target= spoofDriverInputForDepo,
                     previousDepoTarget= previousTargetState.targetRobot.depoTarget,
                     actualDepo= actualRobot.depoState,
                     handoffIsReady= handoffState.clawPosition == HandoffManager.ClawStateFromHandoff.Gripping)
@@ -694,8 +699,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
 
         val initDepoTarget = DepoTarget(
-                liftPosition = Lift.LiftPositions.Nothing,
-                armPosition = Arm.Positions.Manual,
+                liftPosition = Lift.LiftPositions.Down,
+                armPosition = Arm.Positions.In,
                 wristPosition = WristTargets(ClawTarget.Gripping),
                 targetType = DepoTargetType.GoingHome
         )

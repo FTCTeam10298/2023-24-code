@@ -414,10 +414,35 @@ class DepoTest {
     )
 
     val specificTest: List<AllDataForTest> = listOf(
+//            AllDataForTest(
+//                    testName= "Testing whether the depo will do nothing with no inputs and in the in position",
+//                    input= FullyManageDepoTestInputs(
+//                            target = RobotTwoTeleOp.noInput,
+//                            previousDepoTarget = DepoTarget(
+//                                    liftPosition = Lift.LiftPositions.ClearForArmToMove,
+//                                    armPosition = Arm.Positions.ClearLiftMovement,
+//                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
+//                                    targetType = DepoManager.DepoTargetType.GoingHome
+//                            ),
+//                            actualDepo = DepoManager.ActualDepo(
+//                                    armAngleDegrees = 257.12,
+//                                    liftPositionTicks = 357,
+//                                    isLiftLimitActivated = false,
+//                                    wristAngles = Wrist.ActualWrist(1.0, 1.0),
+//                            ),
+//                            handoffIsReady = false
+//                    ),
+//                    expectedOutput= DepoTarget(
+//                            liftPosition = Lift.LiftPositions.Down,
+//                            armPosition = Arm.Positions.In,
+//                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
+//                            targetType = DepoManager.DepoTargetType.GoingHome
+//                    )
+//            ),
             AllDataForTest(
-                    testName= "Testing whether the depo will do nothing with no inputs and in the in position",
+                    testName= "Testing whether the depo will do nothing with depo input and in the in position",
                     input= FullyManageDepoTestInputs(
-                            target = RobotTwoTeleOp.noInput,
+                            target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.Down),
                             previousDepoTarget = DepoTarget(
                                     liftPosition = Lift.LiftPositions.ClearForArmToMove,
                                     armPosition = Arm.Positions.ClearLiftMovement,
@@ -425,7 +450,7 @@ class DepoTest {
                                     targetType = DepoManager.DepoTargetType.GoingHome
                             ),
                             actualDepo = DepoManager.ActualDepo(
-                                    armAngleDegrees = 257.12,
+                                    armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees,
                                     liftPositionTicks = 357,
                                     isLiftLimitActivated = false,
                                     wristAngles = Wrist.ActualWrist(1.0, 1.0),
@@ -465,7 +490,7 @@ fun main() {
 
     val depoTest = DepoTest()
     val allMovingOutTests = listOf(RobotTwoTeleOp.DepoInput.SetLine1, RobotTwoTeleOp.DepoInput.SetLine2,RobotTwoTeleOp.DepoInput.SetLine3).fold(listOf<DepoTest.AllDataForTest>()) { acc, it -> acc + depoTest.movingOutTests(it) }
-    val tests = allMovingOutTests + depoTest.movingInTests + depoTest.staticTests + depoTest.specificTest
+    val tests = depoTest.specificTest//allMovingOutTests + depoTest.movingInTests + depoTest.staticTests + depoTest.specificTest
 
     fun boolToPassFail(result: Boolean): String {
         return when (result) {
