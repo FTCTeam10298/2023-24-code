@@ -10,10 +10,6 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DataClassHelper
 
-fun indentAll(unIndented: String): String {
-    return unIndented.replace("\n", "\n    ")
-}
-
 data class DepoTarget(
         val armPosition: Arm.Positions,
         val liftPosition: Lift.LiftPositions,
@@ -28,7 +24,9 @@ data class CollectorTarget(
         val extendoPositions: Extendo.ExtendoPositions,
         val intakeNoodles: Intake.CollectorPowers,
         val rollers: Transfer.RollerState
-)
+) {
+    override fun toString(): String = DataClassHelper.dataClassToString(this)
+}
 data class TargetRobot(
         val positionAndRotation: PositionAndRotation,
         val depoTarget: DepoTarget,
@@ -63,13 +61,17 @@ data class ActualRobot(
         val positionAndRotation: PositionAndRotation,
         val depoState: DepoManager.ActualDepo,
         val collectorSystemState: CollectorSystem.ActualCollector,
-)
+) {
+    override fun toString(): String = DataClassHelper.dataClassToString(this)
+}
 data class ActualWorld(
         val actualRobot: ActualRobot,
         val actualGamepad1: Gamepad,
         val actualGamepad2: Gamepad,
         val timestampMilis: Long
-)
+) {
+    override fun toString(): String = DataClassHelper.dataClassToString(this)
+}
 
 
 
