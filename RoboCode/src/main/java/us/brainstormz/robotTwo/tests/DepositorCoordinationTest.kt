@@ -7,7 +7,6 @@ import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 
 class DepoTest {
@@ -159,6 +158,87 @@ class DepoTest {
                             actualDepo = DepoManager.ActualDepo(
                                     armAngleDegrees = Arm.Positions.Out.angleDegrees,
                                     liftPositionTicks = Lift.LiftPositions.SetLine3.ticks,
+                                    isLiftLimitActivated = false,
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping)),
+                            ),
+                            handoffIsReady = false
+                    ),
+                    expectedOutput= DepoTarget(
+                            liftPosition = Lift.LiftPositions.SetLine3,
+                            armPosition = Arm.Positions.Out,
+                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
+                            targetType = DepoManager.DepoTargetType.GoingHome
+                    )
+            ),
+            AllDataForTest(
+                    testName= "Testing whether the depo will wait to move until the claws have retracted",
+                    input= FullyManageDepoTestInputs(
+                            target = RobotTwoTeleOp.noInput.copy(
+                                    depo= RobotTwoTeleOp.DepoInput.Down
+                            ),
+                            previousDepoTarget = DepoTarget(
+                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    armPosition = Arm.Positions.Out,
+                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
+                                    targetType = DepoManager.DepoTargetType.GoingHome
+                            ),
+                            actualDepo = DepoManager.ActualDepo(
+                                    armAngleDegrees = Arm.Positions.Out.angleDegrees,
+                                    liftPositionTicks = Lift.LiftPositions.SetLine3.ticks,
+                                    isLiftLimitActivated = false,
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping)),
+                            ),
+                            handoffIsReady = false
+                    ),
+                    expectedOutput= DepoTarget(
+                            liftPosition = Lift.LiftPositions.SetLine3,
+                            armPosition = Arm.Positions.Out,
+                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
+                            targetType = DepoManager.DepoTargetType.GoingHome
+                    )
+            ),
+            AllDataForTest(
+                    testName= "Testing whether the depo will wait to retract the claws until the arm is at the right place",
+                    input= FullyManageDepoTestInputs(
+                            target = RobotTwoTeleOp.noInput.copy(
+                                    depo= RobotTwoTeleOp.DepoInput.Down
+                            ),
+                            previousDepoTarget = DepoTarget(
+                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    armPosition = Arm.Positions.Out,
+                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                                    targetType = DepoManager.DepoTargetType.GoingOut
+                            ),
+                            actualDepo = DepoManager.ActualDepo(
+                                    liftPositionTicks = Lift.LiftPositions.SetLine3.ticks,
+                                    armAngleDegrees = Arm.Positions.In.angleDegrees,
+                                    isLiftLimitActivated = false,
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping)),
+                            ),
+                            handoffIsReady = false
+                    ),
+                    expectedOutput= DepoTarget(
+                            liftPosition = Lift.LiftPositions.SetLine3,
+                            armPosition = Arm.Positions.Out,
+                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                            targetType = DepoManager.DepoTargetType.GoingHome
+                    )
+            ),
+            AllDataForTest(
+                    testName= "Testing whether the depo will retract the claws, after it has moved out for the purpose of retracting them",
+                    input= FullyManageDepoTestInputs(
+                            target = RobotTwoTeleOp.noInput.copy(
+                                    depo= RobotTwoTeleOp.DepoInput.Down
+                            ),
+                            previousDepoTarget = DepoTarget(
+                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    armPosition = Arm.Positions.Out,
+                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                                    targetType = DepoManager.DepoTargetType.GoingHome
+                            ),
+                            actualDepo = DepoManager.ActualDepo(
+                                    liftPositionTicks = Lift.LiftPositions.SetLine3.ticks,
+                                    armAngleDegrees = Arm.Positions.Out.angleDegrees,
                                     isLiftLimitActivated = false,
                                     wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping)),
                             ),

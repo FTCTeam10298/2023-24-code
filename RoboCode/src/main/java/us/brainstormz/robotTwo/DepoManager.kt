@@ -42,6 +42,8 @@ class DepoManager(
     }
 
     fun getFinalDepoTarget(depoInput: RobotTwoTeleOp.DepoInput): DepoTarget? {
+        //close applicable claws otherwise keep the same claw pos
+        //If the depo is going out, then if handoff is yes then close applicable claws otherwise keep the same claw pos
         val depoTargetType = getDepoTargetTypeFromDepoInput(depoInput) ?: return null
 
         val clawTarget: Claw.ClawTarget =
@@ -74,13 +76,29 @@ class DepoManager(
     }
 
     fun coordinateArmLiftAndClaws(finalDepoTarget: DepoTarget, previousTargetDepo: DepoTarget, actualDepo: ActualDepo): DepoTarget {
+        //If the depo is going out, then if handoff is yes then close applicable claws otherwise keep the same claw pos
 
-        val bothClawsAreAtTarget = wrist.clawsAsMap.toList().fold(true) {acc, it ->
-            val (side, claw) = it
-            acc && claw.isClawAtPosition(finalDepoTarget.wristPosition.left, previousTargetDepo.wristPosition.getClawTargetBySide(side))
+        val eitherClawIsGripping = !wrist.wristIsAtPosition(WristTargets(both= Claw.ClawTarget.Retracted), actualDepo.wristAngles)
+
+        val wristTarget = when (finalDepoTarget.targetType) {
+            DepoTargetType.GoingOut -> {
+                finalDepoTarget.wristPosition
+            }
+            DepoTargetType.GoingHome -> {
+                //If depo is going in then go out and either claw is gripping, drop then come in.
+                val armIsOut = actualDepo.armAngleDegrees <= Arm.Positions.Out.angleDegrees
+                if (armIsOut && eitherClawIsGripping) {
+                    WristTargets(Claw.ClawTarget.Retracted)
+                } else {
+                    previousTargetDepo.wristPosition
+                }
+            }
+            else -> return previousTargetDepo
         }
 
+        val bothClawsAreAtTarget = wrist.wristIsAtPosition(finalDepoTarget.wristPosition, actualDepo.wristAngles)
         val liftIsAtFinalRestingPlace = lift.isLiftAtPosition(finalDepoTarget.liftPosition.ticks, actualDepo.liftPositionTicks)
+
         val armTarget: Arm.Positions = if (bothClawsAreAtTarget) {
             when (liftIsAtFinalRestingPlace) {
                 true -> {
@@ -97,8 +115,24 @@ class DepoManager(
                 }
             }
         } else {
-            previousTargetDepo.armPosition
+            when (finalDepoTarget.targetType) {
+                DepoTargetType.GoingHome -> {
+                    if (eitherClawIsGripping) {
+                        //If depo is going in and either claw is gripping then go out, drop then come in.
+                        Arm.Positions.Out
+                    } else {
+                        Arm.Positions.ClearLiftMovement
+                    }
+                }
+                DepoTargetType.GoingOut -> {
+                    previousTargetDepo.armPosition
+                }
+                else -> {
+                    previousTargetDepo.armPosition
+                }
+            }
         }
+
 
         val armIsAtTarget = arm.isArmAtAngle(armTarget.angleDegrees, actualDepo.armAngleDegrees) // change to a more variable past point check
 
@@ -122,7 +156,7 @@ class DepoManager(
         return DepoTarget(
                 liftPosition = liftTarget,
                 armPosition = armTarget,
-                wristPosition = finalDepoTarget.wristPosition,
+                wristPosition = wristTarget,
                 targetType = finalDepoTarget.targetType
         )
     }
@@ -144,7 +178,7 @@ class DepoManager(
                 wristInput
             } else {
                 if (handoffIsReady) {
-                    val firstLoopOfHandoff = target.handoff == RobotTwoTeleOp.HandoffInput.StartHandoff
+                    val firstLoopOfHandoff = target.handoff == RobotTwoTeleOp.HandoffInput.StartHandoff//Make this code actually work
                     if (firstLoopOfHandoff) {
                         //start griping the claws
                         WristTargets(Claw.ClawTarget.Gripping)
