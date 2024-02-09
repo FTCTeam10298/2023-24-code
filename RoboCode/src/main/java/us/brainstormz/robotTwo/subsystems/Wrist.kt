@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo.subsystems
 
 import us.brainstormz.robotTwo.RobotTwoHardware
+import kotlin.math.absoluteValue
 
 class Wrist(val left: Claw, val right: Claw) {
     val clawsAsMap = mapOf(Transfer.Side.Left to left, Transfer.Side.Right to right)
@@ -17,25 +18,40 @@ class Wrist(val left: Claw, val right: Claw) {
         }
     }
 
-    data class ActualWrist(val leftClawAngleDegrees: Double, val rightClawAngleDegrees: Double)
+    data class ActualWrist(val leftClawServoPosition: Double, val rightClawServoPosition: Double)
     fun getWristActualState(hardware: RobotTwoHardware): ActualWrist {
-        return ActualWrist(leftClawAngleDegrees = left.getClawPosition(hardware.leftClawServo), rightClawAngleDegrees = right.getClawPosition(hardware.rightClawServo))
+        return ActualWrist(leftClawServoPosition = left.getClawServoPosition(hardware.leftClawServo), rightClawServoPosition = right.getClawServoPosition(hardware.rightClawServo))
     }
 
     fun powerSubsystem(target: WristTargets, hardware: RobotTwoHardware) {
-        val targetToLeftClawMap = mapOf<Claw.ClawTarget, RobotTwoHardware.LeftClawPosition>(
-                Claw.ClawTarget.Gripping to RobotTwoHardware.LeftClawPosition.Gripping,
-                Claw.ClawTarget.Retracted to RobotTwoHardware.LeftClawPosition.Retracted
-        )
-        val targetToRightClawMap = mapOf<Claw.ClawTarget, RobotTwoHardware.RightClawPosition>(
-                Claw.ClawTarget.Gripping to RobotTwoHardware.RightClawPosition.Gripping,
-                Claw.ClawTarget.Retracted to RobotTwoHardware.RightClawPosition.Retracted
-        )
         left.powerSubsystem(targetToLeftClawMap[target.left]!!.position, hardware.leftClawServo)
         right.powerSubsystem(targetToRightClawMap[target.right]!!.position, hardware.rightClawServo)
     }
 
-    fun wristIsAtPosition(target: WristTargets, actual: WristTargets): Boolean {
-        return target == actual
+    fun wristIsAtPosition(target: WristTargets, actual: ActualWrist): Boolean {
+        val actualConvertedToClosestWristTarget = convertActualToClosestWristTarget(actual)
+        return target == actualConvertedToClosestWristTarget
     }
+
+
+    /** Shameful sensor-less fake code */
+    private val targetToLeftClawMap = mapOf<Claw.ClawTarget, RobotTwoHardware.LeftClawPosition>(
+            Claw.ClawTarget.Gripping to RobotTwoHardware.LeftClawPosition.Gripping,
+            Claw.ClawTarget.Retracted to RobotTwoHardware.LeftClawPosition.Retracted
+    )
+    private val targetToRightClawMap = mapOf<Claw.ClawTarget, RobotTwoHardware.RightClawPosition>(
+            Claw.ClawTarget.Gripping to RobotTwoHardware.RightClawPosition.Gripping,
+            Claw.ClawTarget.Retracted to RobotTwoHardware.RightClawPosition.Retracted
+    )
+    private fun convertActualToClosestWristTarget(actual: ActualWrist): WristTargets {
+        return WristTargets(targetToLeftClawMap.minBy { (actual.leftClawServoPosition - it.value.position).absoluteValue}.key,
+                            targetToRightClawMap.minBy {(actual.rightClawServoPosition - it.value.position).absoluteValue}.key)
+    }
+    fun getActualWristFromWristTargets(target: WristTargets): ActualWrist {
+        return ActualWrist( targetToLeftClawMap[target.left]!!.position,
+                            targetToRightClawMap[target.left]!!.position)
+    }
+
+
+
 }
