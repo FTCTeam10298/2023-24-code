@@ -98,7 +98,7 @@ class DepoManager(
             previousTargetDepo.armPosition
         }
 
-        val armIsAtTarget = arm.isArmAtAngle(armTarget.angleDegrees, actualDepo.armAngleDegrees)
+        val armIsAtTarget = arm.isArmAtAngle(armTarget.angleDegrees, actualDepo.armAngleDegrees) // change to a more variable past point check
 
         val liftTarget: Lift.LiftPositions = if (bothClawsAreAtTarget) {
             if (armIsAtTarget) {
@@ -107,11 +107,6 @@ class DepoManager(
                 //Waiting for arm
                 when (finalDepoTarget.targetType) {
                     DepoTargetType.GoingOut -> {
-//                        if () {
-//                            finalDepoTarget.liftPosition
-//                        } else {
-//                            Lift.LiftPositions.ClearForArmToMove
-//                        }
                         finalDepoTarget.liftPosition
                     }
                     DepoTargetType.GoingHome -> Lift.LiftPositions.ClearForArmToMove
