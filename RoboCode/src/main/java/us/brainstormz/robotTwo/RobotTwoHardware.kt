@@ -372,13 +372,13 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         arm.powerSubsystem(armPower, this)
 
         /**Claws*/
-        val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.leftClawPosition) {
+        val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.left) {
             Claw.ClawTarget.Gripping -> RobotTwoHardware.LeftClawPosition.Gripping
             Claw.ClawTarget.Retracted -> RobotTwoHardware.LeftClawPosition.Retracted
         }
         leftClawServo.position = leftClawPosition.position
 
-        val rightClawPosition: RobotTwoHardware.RightClawPosition = when (targetState.targetRobot.depoTarget.rightClawPosition) {
+        val rightClawPosition: RobotTwoHardware.RightClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.right) {
             Claw.ClawTarget.Gripping -> RobotTwoHardware.RightClawPosition.Gripping
             Claw.ClawTarget.Retracted -> RobotTwoHardware.RightClawPosition.Retracted
         }

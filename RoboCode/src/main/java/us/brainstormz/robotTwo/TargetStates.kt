@@ -3,11 +3,11 @@ package us.brainstormz.robotTwo
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.subsystems.Arm
-import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DataClassHelper
 
 fun indentAll(unIndented: String): String {
@@ -17,9 +17,9 @@ fun indentAll(unIndented: String): String {
 data class DepoTarget(
         val armPosition: Arm.Positions,
         val liftPosition: Lift.LiftPositions,
-
-        val leftClawPosition: Claw.ClawTarget,
-        val rightClawPosition: Claw.ClawTarget,
+        val wristPosition: Wrist.WristPositions,
+//        val leftClawPosition: Claw.ClawTarget,
+//        val rightClawPosition: Claw.ClawTarget,
         val targetType: DepoManager.DepoTargetType
 ) {
     override fun toString(): String = DataClassHelper.dataClassToString(this)

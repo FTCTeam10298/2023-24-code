@@ -6,7 +6,7 @@ import us.brainstormz.robotTwo.DepoTarget
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 
-class Claw(private val side: Transfer.Side): Subsystem {
+class Claw(val side: Transfer.Side): Subsystem {
     enum class ClawTarget {
         Gripping,
         Retracted
@@ -20,12 +20,8 @@ class Claw(private val side: Transfer.Side): Subsystem {
         servo.position = power
     }
 
-    fun isClawAtPosition(currentTarget: ClawTarget, previousTarget: DepoTarget): Boolean {
-        val previousClawTarget = when (side) {
-            Transfer.Side.Left -> previousTarget.leftClawPosition
-            Transfer.Side.Right -> previousTarget.rightClawPosition
-        }
-        return currentTarget == previousClawTarget
+    fun isClawAtPosition(currentTarget: ClawTarget, previousTarget: ClawTarget): Boolean {
+        return currentTarget == previousTarget
     }
 
 }

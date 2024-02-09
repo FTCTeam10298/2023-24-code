@@ -15,7 +15,7 @@ class DepoTest {
     val lift = Lift(telemetry)
     val arm = Arm()
     val wrist = Wrist(left= Claw(Transfer.Side.Left), right = Claw(Transfer.Side.Right))
-    val depoManager = DepoManager(lift= lift, arm= arm, leftClaw= wrist.left, rightClaw= wrist.right)
+    val depoManager = DepoManager(lift= lift, arm= arm, wrist= wrist)
 
     data class FullyManageDepoTestInputs(val target: RobotTwoTeleOp.DriverInput, val previousDepoTarget: DepoTarget, val actualDepo: DepoManager.ActualDepo, val handoffIsReady: Boolean)
 
@@ -41,8 +41,7 @@ class DepoTest {
                                 previousDepoTarget = DepoTarget(
                                         liftPosition = Lift.LiftPositions.Down,
                                         armPosition = Arm.Positions.In,
-                                        leftClawPosition = Claw.ClawTarget.Retracted,
-                                        rightClawPosition = Claw.ClawTarget.Retracted,
+                                        wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Retracted),
                                         targetType = DepoManager.DepoTargetType.GoingHome
                                 ),
                                 actualDepo = DepoManager.ActualDepo(
@@ -55,8 +54,7 @@ class DepoTest {
                         expectedOutput= DepoTarget(
                                 liftPosition = Lift.LiftPositions.Down,
                                 armPosition = Arm.Positions.In,
-                                leftClawPosition = Claw.ClawTarget.Gripping,
-                                rightClawPosition = Claw.ClawTarget.Gripping,
+                                wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Gripping),
                                 targetType = DepoManager.DepoTargetType.GoingOut
                         )
                 ),
@@ -69,8 +67,7 @@ class DepoTest {
                                 previousDepoTarget = DepoTarget(
                                         liftPosition = Lift.LiftPositions.Down,
                                         armPosition = Arm.Positions.In,
-                                        leftClawPosition = Claw.ClawTarget.Gripping,
-                                        rightClawPosition = Claw.ClawTarget.Gripping,
+                                        wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Gripping),
                                         targetType = DepoManager.DepoTargetType.GoingOut
                                 ),
                                 actualDepo = DepoManager.ActualDepo(
@@ -83,8 +80,7 @@ class DepoTest {
                         expectedOutput= DepoTarget(
                                 liftPosition = inputLiftPosition,
                                 armPosition = Arm.Positions.ClearLiftMovement,
-                                leftClawPosition = Claw.ClawTarget.Gripping,
-                                rightClawPosition = Claw.ClawTarget.Gripping,
+                                wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Gripping),
                                 targetType = DepoManager.DepoTargetType.GoingOut
                         )
                 ),
@@ -97,8 +93,7 @@ class DepoTest {
                                 previousDepoTarget = DepoTarget(
                                         liftPosition = inputLiftPosition,
                                         armPosition = Arm.Positions.ClearLiftMovement,
-                                        leftClawPosition = Claw.ClawTarget.Gripping,
-                                        rightClawPosition = Claw.ClawTarget.Gripping,
+                                        wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Gripping),
                                         targetType = DepoManager.DepoTargetType.GoingOut
                                 ),
                                 actualDepo = DepoManager.ActualDepo(
@@ -111,8 +106,7 @@ class DepoTest {
                         expectedOutput= DepoTarget(
                                 liftPosition = inputLiftPosition,
                                 armPosition = Arm.Positions.Out,
-                                leftClawPosition = Claw.ClawTarget.Gripping,
-                                rightClawPosition = Claw.ClawTarget.Gripping,
+                                wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Gripping),
                                 targetType = DepoManager.DepoTargetType.GoingOut
                         )
                 ),
@@ -125,8 +119,7 @@ class DepoTest {
                                 previousDepoTarget = DepoTarget(
                                         liftPosition = inputLiftPosition,
                                         armPosition = Arm.Positions.Out,
-                                        leftClawPosition = Claw.ClawTarget.Gripping,
-                                        rightClawPosition = Claw.ClawTarget.Gripping,
+                                        wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Gripping),
                                         targetType = DepoManager.DepoTargetType.GoingOut
                                 ),
                                 actualDepo = DepoManager.ActualDepo(
@@ -139,8 +132,7 @@ class DepoTest {
                         expectedOutput= DepoTarget(
                                 liftPosition = inputLiftPosition,
                                 armPosition = Arm.Positions.Out,
-                                leftClawPosition = Claw.ClawTarget.Gripping,
-                                rightClawPosition = Claw.ClawTarget.Gripping,
+                                wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Gripping),
                                 targetType = DepoManager.DepoTargetType.GoingOut
                         )
                 ),
@@ -157,8 +149,7 @@ class DepoTest {
                             previousDepoTarget = DepoTarget(
                                     liftPosition = Lift.LiftPositions.SetLine3,
                                     armPosition = Arm.Positions.Out,
-                                    leftClawPosition = Claw.ClawTarget.Gripping,
-                                    rightClawPosition = Claw.ClawTarget.Gripping,
+                                    wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Gripping),
                                     targetType = DepoManager.DepoTargetType.GoingOut
                             ),
                             actualDepo = DepoManager.ActualDepo(
@@ -171,8 +162,7 @@ class DepoTest {
                     expectedOutput= DepoTarget(
                             liftPosition = Lift.LiftPositions.SetLine3,
                             armPosition = Arm.Positions.Out,
-                            leftClawPosition = Claw.ClawTarget.Retracted,
-                            rightClawPosition = Claw.ClawTarget.Retracted,
+                            wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
                     )
             ),
@@ -185,8 +175,7 @@ class DepoTest {
                             previousDepoTarget = DepoTarget(
                                     liftPosition = Lift.LiftPositions.SetLine3,
                                     armPosition = Arm.Positions.Out,
-                                    leftClawPosition = Claw.ClawTarget.Retracted,
-                                    rightClawPosition = Claw.ClawTarget.Retracted,
+                                    wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
                             ),
                             actualDepo = DepoManager.ActualDepo(
@@ -199,8 +188,7 @@ class DepoTest {
                     expectedOutput= DepoTarget(
                             liftPosition = Lift.LiftPositions.ClearForArmToMove,
                             armPosition = Arm.Positions.ClearLiftMovement,
-                            leftClawPosition = Claw.ClawTarget.Retracted,
-                            rightClawPosition = Claw.ClawTarget.Retracted,
+                            wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
                     )
             ),
@@ -213,8 +201,7 @@ class DepoTest {
                             previousDepoTarget = DepoTarget(
                                     liftPosition = Lift.LiftPositions.ClearForArmToMove,
                                     armPosition = Arm.Positions.ClearLiftMovement,
-                                    leftClawPosition = Claw.ClawTarget.Retracted,
-                                    rightClawPosition = Claw.ClawTarget.Retracted,
+                                    wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
                             ),
                             actualDepo = DepoManager.ActualDepo(
@@ -227,8 +214,7 @@ class DepoTest {
                     expectedOutput= DepoTarget(
                             liftPosition = Lift.LiftPositions.ClearForArmToMove,
                             armPosition = Arm.Positions.ClearLiftMovement,
-                            leftClawPosition = Claw.ClawTarget.Retracted,
-                            rightClawPosition = Claw.ClawTarget.Retracted,
+                            wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
                     )
             ),
@@ -241,8 +227,7 @@ class DepoTest {
                             previousDepoTarget = DepoTarget(
                                     liftPosition = Lift.LiftPositions.ClearForArmToMove,
                                     armPosition = Arm.Positions.ClearLiftMovement,
-                                    leftClawPosition = Claw.ClawTarget.Retracted,
-                                    rightClawPosition = Claw.ClawTarget.Retracted,
+                                    wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
                             ),
                             actualDepo = DepoManager.ActualDepo(
@@ -255,8 +240,7 @@ class DepoTest {
                     expectedOutput= DepoTarget(
                             liftPosition = Lift.LiftPositions.Down,
                             armPosition = Arm.Positions.ClearLiftMovement,
-                            leftClawPosition = Claw.ClawTarget.Retracted,
-                            rightClawPosition = Claw.ClawTarget.Retracted,
+                            wristPosition = Wrist.WristPositions(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
                     )
             ),

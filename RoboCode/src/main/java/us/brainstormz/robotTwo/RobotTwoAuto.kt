@@ -29,6 +29,7 @@ import us.brainstormz.robotTwo.subsystems.Transfer.RollerState
 import us.brainstormz.robotTwo.subsystems.Transfer.DirectorState
 import us.brainstormz.robotTwo.subsystems.Transfer.RollerPowers
 import us.brainstormz.robotTwo.subsystems.Transfer.TransferHalfState
+import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
 
 
@@ -692,6 +693,7 @@ class RobotTwoAuto: OpMode() {
     private lateinit var collectorSystem: CollectorSystem
     private lateinit var arm: Arm
     private lateinit var lift: Lift
+    private lateinit var wrist: Wrist
     private lateinit var depoManager: DepoManager
 
     private var startPosition: StartPosition = StartPosition.Backboard
@@ -708,7 +710,8 @@ class RobotTwoAuto: OpMode() {
         collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
         lift = Lift(telemetry)
         arm = Arm()
-        depoManager = DepoManager(arm= arm, lift= lift, leftClaw = Claw(Transfer.Side.Left), rightClaw = Claw(Transfer.Side.Right))
+        wrist = Wrist(left = Claw(Transfer.Side.Left), right = Claw(Transfer.Side.Right))
+        depoManager = DepoManager(arm= arm, lift= lift, wrist= wrist)
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
         wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"))

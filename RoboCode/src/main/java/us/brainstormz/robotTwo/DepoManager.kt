@@ -3,15 +3,19 @@ package us.brainstormz.robotTwo
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.WristPositions
+import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.robotTwo.subsystems.Wrist
+import us.brainstormz.robotTwo.subsystems.Wrist.WristPositions
 
 class DepoManager(
         private val arm: Arm,
         private val lift: Lift,
-        private val leftClaw: Claw,
-        private val rightClaw: Claw) {
+        private val wrist: Wrist
+//        private val leftClaw: Claw,
+//        private val rightClaw: Claw
+) {
 
-    private val claws: List<Claw> = listOf(leftClaw, rightClaw)
+//    private val claws: List<Claw> = listOf(leftClaw, rightClaw)
 
     data class ActualDepo(
             val armAngleDegrees: Double,
@@ -66,16 +70,15 @@ class DepoManager(
         return DepoTarget(
                 liftPosition = liftTarget,
                 armPosition = armTarget,
-                leftClawPosition = clawTarget,
-                rightClawPosition = clawTarget,
+                wristPosition = WristPositions(both= clawTarget),
                 targetType = depoTargetType
         )
     }
 
     fun coordinateArmLiftAndClaws(finalDepoTarget: DepoTarget, previousTargetDepo: DepoTarget, actualDepo: ActualDepo): DepoTarget {
 
-        val bothClawsAreAtTarget = claws.fold(true) {acc, claw ->
-            acc && claw.isClawAtPosition(finalDepoTarget.leftClawPosition, previousTargetDepo)
+        val bothClawsAreAtTarget = wrist.listOfClaws.fold(true) {acc, claw ->
+            acc && claw.isClawAtPosition(finalDepoTarget.wristPosition.left, previousTargetDepo.wristPosition.getClawTargetBySide(claw.side))
         }
 
         val liftIsAtFinalRestingPlace = lift.isLiftAtPosition(finalDepoTarget.liftPosition.ticks, actualDepo.liftPositionTicks)
@@ -120,8 +123,7 @@ class DepoManager(
         return DepoTarget(
                 liftPosition = liftTarget,
                 armPosition = armTarget,
-                leftClawPosition = finalDepoTarget.leftClawPosition,
-                rightClawPosition = finalDepoTarget.rightClawPosition,
+                wristPosition = finalDepoTarget.wristPosition,
                 targetType = finalDepoTarget.targetType
         )
     }
@@ -129,7 +131,7 @@ class DepoManager(
     fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualDepo: ActualDepo, handoffIsReady: Boolean): DepoTarget {
 
         val depoInput = target.depo
-        val wristInput = WristPositions(left= target.leftClaw.toClawTarget()?:previousDepoTarget.leftClawPosition, right= target.rightClaw.toClawTarget()?:previousDepoTarget.rightClawPosition)
+        val wristInput = WristPositions(left= target.leftClaw.toClawTarget()?:previousDepoTarget.wristPosition.left, right= target.rightClaw.toClawTarget()?:previousDepoTarget.wristPosition.right)
 
         val finalDepoTarget = getFinalDepoTarget(depoInput) ?: previousDepoTarget
 
@@ -158,13 +160,10 @@ class DepoManager(
             }
         } else {
             //When going in/out keep the claws retracted/griping so that pixels can't get dropped
-            WristPositions(left= movingArmAndLiftTarget.leftClawPosition, right= movingArmAndLiftTarget.rightClawPosition)
+            movingArmAndLiftTarget.wristPosition
         }
 
-        return movingArmAndLiftTarget.copy(
-                leftClawPosition = wristPosition.left,
-                rightClawPosition = wristPosition.right,
-        )
+        return movingArmAndLiftTarget.copy(wristPosition = wristPosition)
     }
 
     fun checkIfArmAndLiftAreAtTarget(target: DepoTarget, actualDepo: ActualDepo): Boolean {
