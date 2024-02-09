@@ -39,7 +39,7 @@ class DepoTest {
                                         depo= input
                                 ),
                                 previousDepoTarget = DepoTarget(
-                                        liftPosition = Lift.LiftPositions.Transfer,
+                                        liftPosition = Lift.LiftPositions.Down,
                                         armPosition = Arm.Positions.In,
                                         leftClawPosition = Claw.ClawTarget.Retracted,
                                         rightClawPosition = Claw.ClawTarget.Retracted,
@@ -47,13 +47,13 @@ class DepoTest {
                                 ),
                                 actualDepo = DepoManager.ActualDepo(
                                         armAngleDegrees = Arm.Positions.In.angleDegrees,
-                                        liftPositionTicks = Lift.LiftPositions.Transfer.ticks,
+                                        liftPositionTicks = Lift.LiftPositions.Down.ticks,
                                         isLiftLimitActivated = false
                                 ),
                                 handoffIsReady = false
                         ),
                         expectedOutput= DepoTarget(
-                                liftPosition = Lift.LiftPositions.Transfer,
+                                liftPosition = Lift.LiftPositions.Down,
                                 armPosition = Arm.Positions.In,
                                 leftClawPosition = Claw.ClawTarget.Gripping,
                                 rightClawPosition = Claw.ClawTarget.Gripping,
@@ -67,7 +67,7 @@ class DepoTest {
                                         depo= RobotTwoTeleOp.DepoInput.SetLine1
                                 ),
                                 previousDepoTarget = DepoTarget(
-                                        liftPosition = Lift.LiftPositions.Transfer,
+                                        liftPosition = Lift.LiftPositions.Down,
                                         armPosition = Arm.Positions.In,
                                         leftClawPosition = Claw.ClawTarget.Gripping,
                                         rightClawPosition = Claw.ClawTarget.Gripping,
@@ -75,7 +75,7 @@ class DepoTest {
                                 ),
                                 actualDepo = DepoManager.ActualDepo(
                                         armAngleDegrees = Arm.Positions.In.angleDegrees,
-                                        liftPositionTicks = Lift.LiftPositions.Transfer.ticks,
+                                        liftPositionTicks = Lift.LiftPositions.Down.ticks,
                                         isLiftLimitActivated = false
                                 ),
                                 handoffIsReady = false

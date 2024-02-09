@@ -15,8 +15,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         Manual(0),
         ResetEncoder(0),
         Nothing(0),
-        Min(0),
-        Transfer(0),
+        Down(0),
         BackboardBottomRow(330),
         ClearForArmToMove(450),
         WaitForArmToMove(800),
@@ -31,7 +30,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
             RobotTwoTeleOp.DepoInput.SetLine1 -> LiftPositions.SetLine1
             RobotTwoTeleOp.DepoInput.SetLine2 -> LiftPositions.SetLine2
             RobotTwoTeleOp.DepoInput.SetLine3 -> LiftPositions.SetLine3
-            RobotTwoTeleOp.DepoInput.Down -> LiftPositions.Transfer
+            RobotTwoTeleOp.DepoInput.Down -> LiftPositions.Down
             RobotTwoTeleOp.DepoInput.Manual -> LiftPositions.Manual
             RobotTwoTeleOp.DepoInput.NoInput -> LiftPositions.Nothing
         }

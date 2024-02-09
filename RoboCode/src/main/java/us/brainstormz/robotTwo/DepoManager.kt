@@ -59,7 +59,7 @@ class DepoManager(
         val liftTarget: Lift.LiftPositions =
                 when (depoTargetType) {
                     DepoTargetType.GoingOut -> lift.getGetLiftTargetFromDepoTarget(depoInput)
-                    DepoTargetType.GoingHome -> Lift.LiftPositions.Transfer
+                    DepoTargetType.GoingHome -> Lift.LiftPositions.Down
                     else -> return null
                 }
 

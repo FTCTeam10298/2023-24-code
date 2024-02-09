@@ -198,7 +198,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         /**Bumper Mode*/
         val gamepad1DpadIsActive = depoGamepad1Input != DepoInput.NoInput
-        val liftTargetIsDown = previousRobot.depoState.liftPositionTicks <= Lift.LiftPositions.Min.ticks
+        val liftTargetIsDown = previousRobot.depoState.liftPositionTicks <= Lift.LiftPositions.Down.ticks
         val bothClawsAreRetracted = previousTargetState.targetRobot.depoTarget.leftClawPosition == ClawTarget.Retracted && previousTargetState.targetRobot.depoTarget.rightClawPosition == ClawTarget.Retracted
         val gamepadOneBumperMode: Gamepad1BumperMode = when {
             gamepad1DpadIsActive -> {

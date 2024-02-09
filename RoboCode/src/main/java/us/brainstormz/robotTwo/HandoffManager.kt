@@ -49,7 +49,7 @@ class HandoffManager(
             }
         }
 
-        val liftIsDownEnoughForExtendoToComeIn = actualRobot.depoState.liftPositionTicks < (Lift.LiftPositions.Min.ticks + 100)
+        val liftIsDownEnoughForExtendoToComeIn = actualRobot.depoState.liftPositionTicks < (Lift.LiftPositions.Down.ticks + 100)
         val collectorState: ExtendoStateFromHandoff = when (liftIsDownEnoughForExtendoToComeIn) {
             true -> {
                 ExtendoStateFromHandoff.MoveIn
