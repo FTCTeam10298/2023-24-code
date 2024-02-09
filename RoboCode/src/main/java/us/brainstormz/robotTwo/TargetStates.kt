@@ -17,7 +17,7 @@ fun indentAll(unIndented: String): String {
 data class DepoTarget(
         val armPosition: Arm.Positions,
         val liftPosition: Lift.LiftPositions,
-        val wristPosition: Wrist.WristPositions,
+        val wristPosition: Wrist.WristTargets,
 //        val leftClawPosition: Claw.ClawTarget,
 //        val rightClawPosition: Claw.ClawTarget,
         val targetType: DepoManager.DepoTargetType

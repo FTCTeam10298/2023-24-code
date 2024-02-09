@@ -20,6 +20,7 @@ import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.tests.TeleopTest.getChangedGamepad
 
 //fun main() {
@@ -134,7 +135,8 @@ object TeleopTest {
                     depoState = DepoManager.ActualDepo(
                             armAngleDegrees = 0.0,
                             liftPositionTicks = 0,
-                            isLiftLimitActivated = false
+                            isLiftLimitActivated = false,
+                            wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
                     ),
                     collectorSystemState = CollectorSystem.ActualCollector(
                             extendoPositionTicks = 0,

@@ -3,9 +3,8 @@ package us.brainstormz.robotTwo
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
-import us.brainstormz.robotTwo.subsystems.Wrist.WristPositions
+import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 
 class DepoManager(
         private val arm: Arm,
@@ -20,9 +19,8 @@ class DepoManager(
     data class ActualDepo(
             val armAngleDegrees: Double,
             val liftPositionTicks: Int,
-            val isLiftLimitActivated: Boolean
-//        val leftClawAngleDegrees: Double,
-//        val rightClawAngleDegrees: Double,
+            val isLiftLimitActivated: Boolean,
+            val wristAngles: Wrist.ActualWrist
     )
 
 
@@ -70,15 +68,16 @@ class DepoManager(
         return DepoTarget(
                 liftPosition = liftTarget,
                 armPosition = armTarget,
-                wristPosition = WristPositions(both= clawTarget),
+                wristPosition = WristTargets(both= clawTarget),
                 targetType = depoTargetType
         )
     }
 
     fun coordinateArmLiftAndClaws(finalDepoTarget: DepoTarget, previousTargetDepo: DepoTarget, actualDepo: ActualDepo): DepoTarget {
 
-        val bothClawsAreAtTarget = wrist.listOfClaws.fold(true) {acc, claw ->
-            acc && claw.isClawAtPosition(finalDepoTarget.wristPosition.left, previousTargetDepo.wristPosition.getClawTargetBySide(claw.side))
+        val bothClawsAreAtTarget = wrist.clawsAsMap.toList().fold(true) {acc, it ->
+            val (side, claw) = it
+            acc && claw.isClawAtPosition(finalDepoTarget.wristPosition.left, previousTargetDepo.wristPosition.getClawTargetBySide(side))
         }
 
         val liftIsAtFinalRestingPlace = lift.isLiftAtPosition(finalDepoTarget.liftPosition.ticks, actualDepo.liftPositionTicks)
@@ -131,14 +130,14 @@ class DepoManager(
     fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualDepo: ActualDepo, handoffIsReady: Boolean): DepoTarget {
 
         val depoInput = target.depo
-        val wristInput = WristPositions(left= target.leftClaw.toClawTarget()?:previousDepoTarget.wristPosition.left, right= target.rightClaw.toClawTarget()?:previousDepoTarget.wristPosition.right)
+        val wristInput = WristTargets(left= target.leftClaw.toClawTarget()?:previousDepoTarget.wristPosition.left, right= target.rightClaw.toClawTarget()?:previousDepoTarget.wristPosition.right)
 
         val finalDepoTarget = getFinalDepoTarget(depoInput) ?: previousDepoTarget
 
         val movingArmAndLiftTarget = coordinateArmLiftAndClaws(finalDepoTarget, previousDepoTarget, actualDepo)
 
         val armAndLiftAreAtFinalRestingPlace: Boolean = checkIfArmAndLiftAreAtTarget(finalDepoTarget, actualDepo)
-        val wristPosition: WristPositions = if (armAndLiftAreAtFinalRestingPlace) {
+        val wristPosition: WristTargets = if (armAndLiftAreAtFinalRestingPlace) {
             val depoIsDepositing: Boolean = movingArmAndLiftTarget.targetType == DepoTargetType.GoingOut
             if (depoIsDepositing) {
                 //Driver control
@@ -148,14 +147,14 @@ class DepoManager(
                     val firstLoopOfHandoff = target.handoff == RobotTwoTeleOp.HandoffInput.StartHandoff
                     if (firstLoopOfHandoff) {
                         //start griping the claws
-                        WristPositions(Claw.ClawTarget.Gripping)
+                        WristTargets(Claw.ClawTarget.Gripping)
                     } else {
                         //then manual after
                         wristInput
                     }
                 } else {
                     //When it isn't handing off then keep claws retracted
-                    WristPositions(Claw.ClawTarget.Retracted)
+                    WristTargets(Claw.ClawTarget.Retracted)
                 }
             }
         } else {
@@ -176,7 +175,8 @@ class DepoManager(
         return ActualDepo(
                 armAngleDegrees = arm.getArmAngleDegrees(hardware),
                 liftPositionTicks = lift.getCurrentPositionTicks(hardware),
-                isLiftLimitActivated = lift.isLimitSwitchActivated(hardware)
+                isLiftLimitActivated = lift.isLimitSwitchActivated(hardware),
+                wristAngles = wrist.getWristActualState(hardware)
         )
     }
 

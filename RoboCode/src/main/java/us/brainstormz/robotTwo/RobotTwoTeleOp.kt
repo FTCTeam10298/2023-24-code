@@ -18,7 +18,7 @@ import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
-import us.brainstormz.robotTwo.subsystems.Wrist.WristPositions
+import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -33,8 +33,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val extendo = Extendo()
     val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
 
-    val leftClaw: Claw = Claw(Transfer.Side.Left)
-    val rightClaw: Claw = Claw(Transfer.Side.Right)
+    val leftClaw: Claw = Claw()
+    val rightClaw: Claw = Claw()
     val wrist = Wrist(leftClaw, rightClaw)
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)
@@ -201,7 +201,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Bumper Mode*/
         val gamepad1DpadIsActive = depoGamepad1Input != DepoInput.NoInput
         val liftTargetIsDown = previousRobot.depoState.liftPositionTicks <= Lift.LiftPositions.Down.ticks
-        val bothClawsAreRetracted = previousTargetState.targetRobot.depoTarget.wristPosition == WristPositions(both= ClawTarget.Retracted)
+        val bothClawsAreRetracted = previousTargetState.targetRobot.depoTarget.wristPosition == WristTargets(both= ClawTarget.Retracted)
         val gamepadOneBumperMode: Gamepad1BumperMode = when {
             gamepad1DpadIsActive -> {
                 Gamepad1BumperMode.Claws
@@ -519,7 +519,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         //When out, then let the drivers control the claws
         //When in and in a transferable position or transferring let the drivers control the claws
 
-        val driverInputWrist = WristPositions(
+        val driverInputWrist = WristTargets(
                 left= driverInput.leftClaw.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.rightClaw.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
 
@@ -837,7 +837,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val initDepoTarget = DepoTarget(
                 liftPosition = Lift.LiftPositions.Nothing,
                 armPosition = Arm.Positions.Manual,
-                wristPosition = WristPositions(ClawTarget.Gripping),
+                wristPosition = WristTargets(ClawTarget.Gripping),
                 targetType = DepoTargetType.GoingHome
         )
 
@@ -908,6 +908,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             targetState,
                             actualState,
                             movement= movement,
+                            wrist= wrist,
                             arm= arm,
                             lift= lift,
                             extendo= extendo,

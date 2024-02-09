@@ -34,6 +34,7 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.robotTwo.subsystems.Wrist
 import java.lang.Thread.sleep
 import kotlin.math.PI
 
@@ -315,6 +316,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             transfer: Transfer,
             lift: Lift,
             arm: Arm,
+            wrist: Wrist,
             extendoOverridePower: Double,
             liftOverridePower: Double,
             armOverridePower: Double
@@ -372,17 +374,18 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         arm.powerSubsystem(armPower, this)
 
         /**Claws*/
-        val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.left) {
-            Claw.ClawTarget.Gripping -> RobotTwoHardware.LeftClawPosition.Gripping
-            Claw.ClawTarget.Retracted -> RobotTwoHardware.LeftClawPosition.Retracted
-        }
-        leftClawServo.position = leftClawPosition.position
-
-        val rightClawPosition: RobotTwoHardware.RightClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.right) {
-            Claw.ClawTarget.Gripping -> RobotTwoHardware.RightClawPosition.Gripping
-            Claw.ClawTarget.Retracted -> RobotTwoHardware.RightClawPosition.Retracted
-        }
-        rightClawServo.position = rightClawPosition.position
+        wrist.powerSubsystem(targetState.targetRobot.depoTarget.wristPosition, this)
+//        val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.left) {
+//            Claw.ClawTarget.Gripping -> RobotTwoHardware.LeftClawPosition.Gripping
+//            Claw.ClawTarget.Retracted -> RobotTwoHardware.LeftClawPosition.Retracted
+//        }
+//        leftClawServo.position = leftClawPosition.position
+//
+//        val rightClawPosition: RobotTwoHardware.RightClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.right) {
+//            Claw.ClawTarget.Gripping -> RobotTwoHardware.RightClawPosition.Gripping
+//            Claw.ClawTarget.Retracted -> RobotTwoHardware.RightClawPosition.Retracted
+//        }
+//        rightClawServo.position = rightClawPosition.position
 
         /**Hang*/
         hangReleaseServo.power = targetState.targetRobot.hangPowers.power
