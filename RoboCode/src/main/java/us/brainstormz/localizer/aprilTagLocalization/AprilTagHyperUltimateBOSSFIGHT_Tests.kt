@@ -94,12 +94,26 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
 
     /** Gabe edit me */
     private fun chooseBestAprilTag(allAprilTags: List<AprilTagDetection>): AprilTagDetection? {
-        return allAprilTags.minByOrNull {
+         val sortedByYaw = allAprilTags.sortedBy {
             val yawAbs = it.ftcPose.yaw.absoluteValue
             telemetry.addLine("yawAbs: $yawAbs, tag ID: ${it.id}")
             yawAbs
-
         }
+        val topTwoYaw = listOf(sortedByYaw[0], sortedByYaw[1])
+        val differenceInYawBetweenTopChoices = (topTwoYaw[1].ftcPose.yaw - topTwoYaw[0].ftcPose.yaw).absoluteValue
+        val areTheYawValuesSuperClose:Boolean = differenceInYawBetweenTopChoices < 2 //too large... 0.5 worked better
+        if (areTheYawValuesSuperClose) {
+            val closestToCenter: AprilTagDetection = topTwoYaw.minBy {
+                val bearing = it.ftcPose.bearing.absoluteValue
+                telemetry.addLine("bearing: $bearing, tag ID: ${it.id}")
+                bearing
+            }
+            return closestToCenter
+        }
+        else {
+            return sortedByYaw[0]
+        }
+
     }
 
     var isThisTheFirstTimeAnyAprilTagHasBeenSeen = true
@@ -137,8 +151,8 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
 
         // Step through the list of detections and display info for each one.
 
-        val detection: AprilTagDetection = tagWithLeastYawDistortion ?: currentDetections.first();
         if (currentDetections.isNotEmpty()) {
+            val detection: AprilTagDetection = tagWithLeastYawDistortion ?: currentDetections.first();
 //                if (detection == tagWithLeastYawDistortion) {
 //                else {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection?.id, detection.metadata.name))
