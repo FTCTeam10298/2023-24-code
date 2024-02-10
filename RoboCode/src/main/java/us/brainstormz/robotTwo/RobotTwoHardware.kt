@@ -84,11 +84,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
     enum class RightClawPosition(val position: Double) {
         Retracted(1.0),
-        Gripping(0.57)
+        Gripping(0.35)
     }
     enum class LeftClawPosition(val position: Double) {
         Retracted(1.0),
-        Gripping(0.42)
+        Gripping(0.35)
     }
     lateinit var leftClawServo: Servo
     lateinit var rightClawServo: Servo
