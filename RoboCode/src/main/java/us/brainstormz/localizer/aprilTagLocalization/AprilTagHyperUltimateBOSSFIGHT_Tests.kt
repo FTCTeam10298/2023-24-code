@@ -61,21 +61,21 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
 //            } else if (gamepad1.dpad_up) {
 //            }
 
-        telemetry.addData("DS preview on/off", "3 dots, Camera Stream")
-        telemetry.addData(">", "Touch Play to start OpMode")
+//        telemetry.addData("DS preview on/off", "3 dots, Camera Stream")
+//        telemetry.addData(">", "Touch Play to start OpMode")
 //        sleep(2000)
         while(opModeIsActive()) {
             val perpPos = hardware.perpendicularEncoder.getPositionAndVelocity().position
             val parPos = hardware.parallelEncoder.getPositionAndVelocity().position
             val imuYawDegrees = hardware.imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES)
-            telemetry.addLine("perpPos: $perpPos")
-            telemetry.addLine("parPos: $parPos")
-            telemetry.addLine("imuYawDegrees: $imuYawDegrees")
+//            telemetry.addLine("perpPos: $perpPos")
+//            telemetry.addLine("parPos: $parPos")
+//            telemetry.addLine("imuYawDegrees: $imuYawDegrees")
 
             localizer.recalculatePositionAndRotation()
             val currentPosition = localizer.currentPositionAndRotation()
             telemetry.addLine("current position: $currentPosition")
-            telemetry.addLine("Road runner internal current position: ${localizer.pose}")
+//            telemetry.addLine("Road runner internal current position: ${localizer.pose}")
 
 
 
@@ -122,6 +122,8 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
         for (detection in currentDetections) {
             if (currentDetections.isNotEmpty()) {
 
+                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
+
                 val theTag = detection
                 val whatTag = theTag.id
 
@@ -141,24 +143,23 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
                         y=roadRunnerPosition.y - currentPositionOfRobot.y,
                         r=roadRunnerPosition.r - currentPositionOfRobot.r
                 )
-                telemetry.addLine("Sir, I found AprilTag ID 2.")
-                telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
-                telemetry.addLine("BUT the tag position is: $tagPosition")
-                telemetry.addLine("Error Correction Bits Added (hamming): $tagBadness")
-                telemetry.addLine("\n\nDiscrepancy between us and odom is: $differenceBetweenAprilTagAndOdom\n\n")
+//                telemetry.addLine("Sir, I found AprilTag ID 2.")
+                telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentPositionOfRobot")
+//                telemetry.addLine("BUT the tag position is: $tagPosition")
+//                telemetry.addLine("Error Correction Bits Added (hamming): $tagBadness")
+                telemetry.addLine("\n\nDiscrepancy between tag ${detection.id} and odom is: $differenceBetweenAprilTagAndOdom\n\n")
 //                telemetry.addLine("Orientation Found: $orientation")
 
 
 
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
                 //
-                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z))
-
-                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
-
-                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+//                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z))
+//
+//                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
+//
+//                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
                 val muchData = aprilTagLocalization.getAprilTagLocation(detection.id)
-                telemetry.addLine("Random Madness!! $muchData")
+//                telemetry.addLine("Random Madness!! $muchData")
 
 
 //            } else {
@@ -169,9 +170,9 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
 
         }
         // Add "key" information to telemetry
-        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.")
-        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)")
-        telemetry.addLine("RBE = Range, Bearing & Elevation")
+//        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.")
+//        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)")
+//        telemetry.addLine("RBE = Range, Bearing & Elevation")
     } //...
 
 
