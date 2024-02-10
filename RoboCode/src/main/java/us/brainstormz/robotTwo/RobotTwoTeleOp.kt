@@ -33,8 +33,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val extendo = Extendo()
     val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
 
-    val leftClaw: Claw = Claw()
-    val rightClaw: Claw = Claw()
+    val leftClaw: Claw = Claw(telemetry)
+    val rightClaw: Claw = Claw(telemetry)
     val wrist = Wrist(leftClaw, rightClaw, telemetry= telemetry)
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)

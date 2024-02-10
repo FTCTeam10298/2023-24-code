@@ -14,7 +14,7 @@ class DepoTest {
     val telemetry = PrintlnTelemetry()
     val lift = Lift(telemetry)
     val arm = Arm()
-    val wrist = Wrist(left= Claw(), right = Claw(), telemetry= telemetry)
+    val wrist = Wrist(left= Claw(telemetry), right = Claw(telemetry), telemetry= telemetry)
     val depoManager = DepoManager(lift= lift, arm= arm, wrist= wrist, telemetry= telemetry)
 
     data class FullyManageDepoTestInputs(val target: RobotTwoTeleOp.DriverInput, val previousDepoTarget: DepoTarget, val actualDepo: DepoManager.ActualDepo, val handoffIsReady: Boolean)

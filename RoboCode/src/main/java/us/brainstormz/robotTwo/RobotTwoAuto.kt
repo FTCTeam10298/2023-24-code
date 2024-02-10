@@ -710,7 +710,7 @@ class RobotTwoAuto: OpMode() {
         collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
         lift = Lift(telemetry)
         arm = Arm()
-        wrist = Wrist(left = Claw(), right = Claw(), telemetry= telemetry)
+        wrist = Wrist(left = Claw(telemetry), right = Claw(telemetry), telemetry= telemetry)
         depoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
