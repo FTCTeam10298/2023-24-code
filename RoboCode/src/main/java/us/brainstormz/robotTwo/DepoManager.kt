@@ -181,7 +181,7 @@ class DepoManager(
         telemetry.addLine("\nDepo manager: ")
 
         val depoInput = target.depo
-        val wristInput = WristTargets(left= target.leftClaw.toClawTarget()?:previousDepoTarget.wristPosition.left, right= target.rightClaw.toClawTarget()?:previousDepoTarget.wristPosition.right)
+        val wristInput = WristTargets(left= target.leftClaw.toClawTarget() ?: previousDepoTarget.wristPosition.left, right= target.rightClaw.toClawTarget()?:previousDepoTarget.wristPosition.right)
 
         val finalDepoTarget = getFinalDepoTarget(depoInput) ?: previousDepoTarget
 

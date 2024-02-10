@@ -549,7 +549,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     target= spoofDriverInputForDepo,
                     previousDepoTarget= previousTargetState.targetRobot.depoTarget,
                     actualDepo= actualRobot.depoState,
-                    handoffIsReady= handoffState.clawPosition == HandoffManager.ClawStateFromHandoff.Gripping)
+                    handoffIsReady= handoffManager.checkIfHandoffIsReady(actualRobot, previousTargetState.targetRobot))
         }
 
         /**Drive*/

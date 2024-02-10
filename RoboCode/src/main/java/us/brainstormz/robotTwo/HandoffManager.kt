@@ -36,6 +36,18 @@ class HandoffManager(
             val lights: BlinkinPattern,
             val armState: Arm.Positions)
 
+    fun checkIfHandoffIsReady(actualRobot: ActualRobot, previousTargetRobot: TargetRobot): Boolean {
+        val isCollectorAllTheWayIn = extendo.isExtendoAllTheWayIn(actualRobot)
+        val liftExtensionIsAllTheWayDown = actualRobot.depoState.isLiftLimitActivated
+        val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
+
+        val isArmReadyToTransfer = actualRobot.depoState.armAngleDegrees <= Arm.Positions.In.angleDegrees
+
+        val areRollersReadyToTransfer = true//collector.arePixelsAlignedInTransfer()
+
+        val readyToHandoff = bothExtensionsAreAllTheWayIn && isArmReadyToTransfer && areRollersReadyToTransfer
+        return readyToHandoff
+    }
 
     fun getHandoffState(previousClawState: ClawStateFromHandoff, previousLights: BlinkinPattern, actualRobot: ActualRobot): HandoffState {
         val isArmAtAPositionWhichAllowsTheLiftToMoveDown = actualRobot.depoState.armAngleDegrees >= Arm.Positions.ClearLiftMovement.angleDegrees
