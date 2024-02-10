@@ -38,7 +38,7 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
 
         val robotRelativeToFieldRotation = tagRelativeToCameraOurCoordinateSystem.r
 
-        //TODO: TRIGONOMETRYYYY
+        //TODO: TRIGONOMETRYYYY IDK if this is complete :&
         //We're trying to find the angle between the AprilTag Y Axis and the bot. Draw this out:
         //There are two relevant angles: bearing, angle between us and the AprilTag, and
         //the angle between that bearing. If we find all of these, we can finish the triangle with
