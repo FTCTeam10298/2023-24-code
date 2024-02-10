@@ -35,10 +35,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     val leftClaw: Claw = Claw()
     val rightClaw: Claw = Claw()
-    val wrist = Wrist(leftClaw, rightClaw)
+    val wrist = Wrist(leftClaw, rightClaw, telemetry= telemetry)
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)
-    val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist)
+    val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
 
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, extendo, arm, telemetry)
 
@@ -76,11 +76,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             return when (this) {
                 Drop -> ClawTarget.Retracted
                 Hold -> ClawTarget.Gripping
-                ClawInput.NoInput -> null
+                NoInput -> null
             }
         }
     }
-    enum class CollectorInput {
+    enum class CollectorInput {//Need to change this to be accurate
         Intake,
         Eject,
         Off,
@@ -537,11 +537,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     targetType = DepoTargetType.Manual
             )
         } else {
-            val spoofDriverInputForDepo = if (driverInput.depo == DepoInput.NoInput) {
-                previousTargetState.driverInput
+            val spoofDriverInputForDepo = driverInput.copy(depo = if (driverInput.depo == DepoInput.NoInput) {
+                telemetry.addLine("spoofing driver input because it's noinput")
+                previousTargetState.driverInput.depo
             } else {
-                driverInput
-            }
+                telemetry.addLine("Driver input is ${driverInput.depo}")
+                driverInput.depo
+            })
+            telemetry.addLine("spoofDriverInputForDepo: $spoofDriverInputForDepo")
             depoManager.fullyManageDepo(
                     target= spoofDriverInputForDepo,
                     previousDepoTarget= previousTargetState.targetRobot.depoTarget,
@@ -736,7 +739,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
-    fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware, ) {
+    fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) {
 
         for (hub in hardware.allHubs) {
             hub.clearBulkCache()
@@ -760,10 +763,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     )
                 },
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
-                    val previousActualWorld = previousActualState ?: actualState
+                    val previousActualState = previousActualState ?: actualState
                     val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
-                    val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualWorld)
-                    getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualWorld)
+                    val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
+                    getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                 },
                 stateFulfiller = { targetState, actualState ->
                     telemetry.addLine("actualState: $actualState")

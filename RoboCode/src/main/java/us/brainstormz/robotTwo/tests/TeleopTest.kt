@@ -3,13 +3,19 @@ package us.brainstormz.robotTwo.tests
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
+import us.brainstormz.localizer.PhoHardware
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorSystem
 import us.brainstormz.robotTwo.DepoManager
+import us.brainstormz.robotTwo.DepoTarget
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetWorld
+import us.brainstormz.robotTwo.TeleOpMode
+import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.Claw
+import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 
@@ -90,8 +96,54 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 //    println("Test passed? $testPass")
 //}
 
+fun main() {
+    val teleopTester = TeleopTest()
+//    val test = listOf(
+//            teleopTester.emptyWorld.copy(actualRobot = teleopTester.emptyWorld.actualRobot.copy(depoState =
+//            DepoManager.ActualDepo(
+//                    armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees,
+//                    liftPositionTicks = 357,
+//                    isLiftLimitActivated = false,
+//                    wristAngles = Wrist.ActualWrist(1.0, 1.0),
+//            ),
+//            )),
+//            teleopTester.emptyWorld.copy(actualRobot = teleopTester.emptyWorld.actualRobot.copy(depoState =
+//            DepoManager.ActualDepo(
+//                    armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees,
+//                    liftPositionTicks = 357,
+//                    isLiftLimitActivated = false,
+//                    wristAngles = Wrist.ActualWrist(1.0, 1.0),
+//            ),
+//            )),
+//    )
+//    val expectedOutput = RobotTwoTeleOp.initialPreviousTargetState.copy(targetRobot = RobotTwoTeleOp.initialPreviousTargetState.targetRobot.copy(depoTarget =
+//    DepoTarget(
+//                            liftPosition = Lift.LiftPositions.Down,
+//                            armPosition = Arm.Positions.In,
+//                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
+//                            targetType = DepoManager.DepoTargetType.GoingHome)))
+    val gamepad = teleopTester.getChangedGamepad { it.dpad_down = true}
+    println("gamepad: $gamepad")
+    val test = listOf(
+            teleopTester.emptyWorld.copy(actualGamepad2 = gamepad),
+            teleopTester.emptyWorld.copy(actualGamepad2 = Gamepad()),
+            teleopTester.emptyWorld.copy(actualGamepad2 = Gamepad()),
+    )
+//    val expectedOutput = RobotTwoTeleOp.initialPreviousTargetState.copy(driverInput = RobotTwoTeleOp.initialPreviousTargetState.driverInput.)
 
-object TeleopTest {
+    val output = teleopTester.runTest(test)
+//    val testPassed: Boolean = expectedOutput == output.last().second
+//    println("\n\n\ntest result: $testPassed")
+//    println("\nexpectedOutput: \n$expectedOutput")
+    println("\noutput: \n$output")
+}
+
+class TeleopTest {
+
+//    data class FullyManageDepoTestInputs(val target: RobotTwoTeleOp.DriverInput, val previousDepoTarget: DepoTarget, val actualDepo: DepoManager.ActualDepo, val handoffIsReady: Boolean)
+//
+//    data class AllDataForTest(val testName: String, val input: FullyManageDepoTestInputs, val expectedOutput: DepoTarget)
+
     fun runTest(testSteps: List<ActualWorld>): List<Pair<ActualWorld, TargetWorld>> {
         val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
         val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)

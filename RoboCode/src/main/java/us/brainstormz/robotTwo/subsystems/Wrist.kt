@@ -1,9 +1,10 @@
 package us.brainstormz.robotTwo.subsystems
 
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.absoluteValue
 
-class Wrist(val left: Claw, val right: Claw) {
+class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
     val clawsAsMap = mapOf(Transfer.Side.Left to left, Transfer.Side.Right to right)
 
     data class WristTargets(val left: Claw.ClawTarget, val right: Claw.ClawTarget) {
@@ -30,7 +31,12 @@ class Wrist(val left: Claw, val right: Claw) {
 
     fun wristIsAtPosition(target: WristTargets, actual: ActualWrist): Boolean {
         val actualConvertedToClosestWristTarget = convertActualToClosestWristTarget(actual)
-        return target == actualConvertedToClosestWristTarget
+        telemetry.addLine("actual: $actual")
+        telemetry.addLine("actualConvertedToClosestWristTarget: $actualConvertedToClosestWristTarget")
+        telemetry.addLine("target: $target")
+        val wristIsAtPosition = target == actualConvertedToClosestWristTarget
+        telemetry.addLine("wristIsAtPosition: $wristIsAtPosition")
+        return wristIsAtPosition
     }
 
 

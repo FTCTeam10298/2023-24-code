@@ -1,5 +1,7 @@
 package us.brainstormz.robotTwo
 
+import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.localizer.PhoHardware
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
@@ -9,9 +11,8 @@ import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 class DepoManager(
         private val arm: Arm,
         private val lift: Lift,
-        private val wrist: Wrist
-//        private val leftClaw: Claw,
-//        private val rightClaw: Claw
+        private val wrist: Wrist,
+        private val telemetry: Telemetry,
 ) {
 
 //    private val claws: List<Claw> = listOf(leftClaw, rightClaw)
@@ -87,10 +88,10 @@ class DepoManager(
             DepoTargetType.GoingHome -> {
                 //If depo is going in then go out and either claw is gripping, drop then come in.
                 val armIsOut = actualDepo.armAngleDegrees <= Arm.Positions.Out.angleDegrees
-                if (armIsOut && eitherClawIsGripping) {
-                    WristTargets(Claw.ClawTarget.Retracted)
-                } else {
+                if (!armIsOut && eitherClawIsGripping) {
                     previousTargetDepo.wristPosition
+                } else {
+                    WristTargets(Claw.ClawTarget.Retracted)
                 }
             }
             else -> return previousTargetDepo
@@ -110,6 +111,7 @@ class DepoManager(
                     if (depoTargetIsOut && liftIsAtOrAboveClear) {
                         finalDepoTarget.armPosition
                     } else {
+                        telemetry.addLine("arm is clearing lift because depo is either going in and aren't there or are going out and aren't past the wiring box")
                         Arm.Positions.ClearLiftMovement
                     }
                 }
@@ -121,6 +123,7 @@ class DepoManager(
                         //If depo is going in and either claw is gripping then go out, drop then come in.
                         Arm.Positions.Out
                     } else {
+                        telemetry.addLine("arm is clearing lift because the claws are gripping and we need to go out and close them before going back in")
                         Arm.Positions.ClearLiftMovement
                     }
                 }
@@ -134,7 +137,12 @@ class DepoManager(
         }
 
 
-        val armIsAtTarget = arm.isArmAtAngle(armTarget.angleDegrees, actualDepo.armAngleDegrees) // change to a more variable past point check
+        val armIsAtTarget = when (armTarget) {
+            Arm.Positions.ClearLiftMovement -> actualDepo.armAngleDegrees < Arm.Positions.TooFarIn.angleDegrees && actualDepo.armAngleDegrees >= Arm.Positions.ClearLiftMovement.angleDegrees
+            Arm.Positions.In -> actualDepo.armAngleDegrees <= (Arm.Positions.In.angleDegrees + 2)
+            else -> arm.isArmAtAngle(armTarget.angleDegrees, actualDepo.armAngleDegrees)
+        }
+        telemetry.addLine("armIsAtTarget: $armIsAtTarget")
 
         val liftTarget: Lift.LiftPositions = if (bothClawsAreAtTarget) {
             if (armIsAtTarget) {
@@ -145,11 +153,18 @@ class DepoManager(
                     DepoTargetType.GoingOut -> {
                         finalDepoTarget.liftPosition
                     }
-                    DepoTargetType.GoingHome -> Lift.LiftPositions.ClearForArmToMove
-                    else -> previousTargetDepo.liftPosition
+                    DepoTargetType.GoingHome -> {
+                        telemetry.addLine("lift is waiting for the arm")
+                        Lift.LiftPositions.ClearForArmToMove
+                    }
+                    else -> {
+                        telemetry.addLine("lift is confused af (asinine and futile)")
+                        previousTargetDepo.liftPosition
+                    }
                 }
             }
         } else {
+            telemetry.addLine("lift is waiting for the claws")
             previousTargetDepo.liftPosition
         }
 
@@ -162,6 +177,7 @@ class DepoManager(
     }
 
     fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualDepo: ActualDepo, handoffIsReady: Boolean): DepoTarget {
+        telemetry.addLine("\nDepo manager: ")
 
         val depoInput = target.depo
         val wristInput = WristTargets(left= target.leftClaw.toClawTarget()?:previousDepoTarget.wristPosition.left, right= target.rightClaw.toClawTarget()?:previousDepoTarget.wristPosition.right)

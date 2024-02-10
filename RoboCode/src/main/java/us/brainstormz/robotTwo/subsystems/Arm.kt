@@ -8,8 +8,8 @@ import kotlin.math.cos
 
 class Arm/*(private val encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry)*/: Subsystem {
     enum class Positions(val angleDegrees:Double) {
-        TooFarIn(265.0),
-        ClearLiftMovement(255.0),
+        TooFarIn(246.0),
+        ClearLiftMovement(245.0),
         In(248.0),
         GoodEnoughForLiftToGoDown(248.0),
         TransferringTarget(230.0),
@@ -46,7 +46,9 @@ class Arm/*(private val encoder: AnalogInput, private val armServo1: CRServo, pr
         hardware.armServo2.power = power
     }
     fun getArmAngleDegrees(hardware: RobotTwoHardware): Double {
-        val encoderReader: AxonEncoderReader = AxonEncoderReader(hardware.armEncoder, -12.0)
+        //20
+        //180
+        val encoderReader: AxonEncoderReader = AxonEncoderReader(hardware.armEncoder, 148.0)
         return  encoderReader.getPositionDegrees()
     }
 

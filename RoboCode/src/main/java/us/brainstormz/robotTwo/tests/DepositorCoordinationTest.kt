@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.tests
 
+import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PhoHardware
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.DepoTarget
@@ -10,11 +11,11 @@ import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Wrist
 
 class DepoTest {
-    val telemetry = PhoHardware.PhoTelemetry()
+    val telemetry = PrintlnTelemetry()
     val lift = Lift(telemetry)
     val arm = Arm()
-    val wrist = Wrist(left= Claw(), right = Claw())
-    val depoManager = DepoManager(lift= lift, arm= arm, wrist= wrist)
+    val wrist = Wrist(left= Claw(), right = Claw(), telemetry= telemetry)
+    val depoManager = DepoManager(lift= lift, arm= arm, wrist= wrist, telemetry= telemetry)
 
     data class FullyManageDepoTestInputs(val target: RobotTwoTeleOp.DriverInput, val previousDepoTarget: DepoTarget, val actualDepo: DepoManager.ActualDepo, val handoffIsReady: Boolean)
 
@@ -451,7 +452,7 @@ class DepoTest {
                             ),
                             actualDepo = DepoManager.ActualDepo(
                                     armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees,
-                                    liftPositionTicks = 357,
+                                    liftPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks,
                                     isLiftLimitActivated = false,
                                     wristAngles = Wrist.ActualWrist(1.0, 1.0),
                             ),
@@ -459,7 +460,7 @@ class DepoTest {
                     ),
                     expectedOutput= DepoTarget(
                             liftPosition = Lift.LiftPositions.Down,
-                            armPosition = Arm.Positions.In,
+                            armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
                     )
