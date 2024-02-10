@@ -396,8 +396,8 @@ class DepoTest {
                                     targetType = DepoManager.DepoTargetType.GoingHome
                             ),
                             actualDepo = DepoManager.ActualDepo(
-                                    armAngleDegrees = Arm.Positions.In.angleDegrees + 5.0+1,
-                                    liftPositionTicks = Lift.LiftPositions.Down.ticks + 100+ 1,
+                                    armAngleDegrees = Arm.Positions.In.angleDegrees + 5.0 + 1,
+                                    liftPositionTicks = Lift.LiftPositions.Down.ticks + 100 + 1,
                                     isLiftLimitActivated = false,
                                     wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Retracted)),
                             ),
@@ -406,6 +406,31 @@ class DepoTest {
                     expectedOutput= DepoTarget(
                             liftPosition = Lift.LiftPositions.ClearForArmToMove,
                             armPosition = Arm.Positions.ClearLiftMovement,
+                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
+                            targetType = DepoManager.DepoTargetType.GoingHome
+                    )
+            ),
+            AllDataForTest(
+                    testName= "Testing whether the depo will close the claws before going down",
+                    input= FullyManageDepoTestInputs(
+                            target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.Down),
+                            previousDepoTarget = DepoTarget(
+                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    armPosition = Arm.Positions.Out,
+                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                                    targetType = DepoManager.DepoTargetType.GoingOut
+                            ),
+                            actualDepo = DepoManager.ActualDepo(
+                                    liftPositionTicks = Lift.LiftPositions.SetLine3.ticks+110,
+                                    armAngleDegrees = Arm.Positions.Out.angleDegrees-5,
+                                    isLiftLimitActivated = false,
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping)),
+                            ),
+                            handoffIsReady = false
+                    ),
+                    expectedOutput= DepoTarget(
+                            liftPosition = Lift.LiftPositions.SetLine3,
+                            armPosition = Arm.Positions.Out,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
                     )

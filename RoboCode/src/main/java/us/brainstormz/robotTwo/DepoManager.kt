@@ -157,8 +157,14 @@ class DepoManager(
                         finalDepoTarget.liftPosition
                     }
                     DepoTargetType.GoingHome -> {
-                        telemetry.addLine("lift is waiting for the arm")
-                        Lift.LiftPositions.ClearForArmToMove
+                        val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
+                        val liftIsAlreadyDecentlyFarDown = actualDepo.liftPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks-100
+                        if (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox) {
+                            finalDepoTarget.liftPosition
+                        } else {
+                            telemetry.addLine("lift is waiting for the arm")
+                            Lift.LiftPositions.ClearForArmToMove
+                        }
                     }
                     else -> {
                         telemetry.addLine("lift is confused af (asinine and futile)")
