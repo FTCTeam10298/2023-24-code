@@ -87,8 +87,9 @@ class DepoManager(
             }
             DepoTargetType.GoingHome -> {
                 //If depo is going in then go out and either claw is gripping, drop then come in.
-                val armIsOut = actualDepo.armAngleDegrees <= Arm.Positions.Out.angleDegrees
-                if (!armIsOut && eitherClawIsGripping) {
+                val armIsOkToDrop = actualDepo.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees + 2
+                if (!armIsOkToDrop && eitherClawIsGripping) {
+                    telemetry.addLine("arm Is not Out && either Claw Is Gripping")
                     previousTargetDepo.wristPosition
                 } else {
                     WristTargets(Claw.ClawTarget.Retracted)

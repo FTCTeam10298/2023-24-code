@@ -15,6 +15,7 @@ class Arm/*(private val encoder: AnalogInput, private val armServo1: CRServo, pr
         TransferringTarget(230.0),
         Inish(230.0),
         AutoInitPosition(170.0),
+        OkToDropPixels(90.0),
         OutButUnderTwelve(50.0),
         Out(60.0),
         DroppingWithHighPrecision(65.0),
