@@ -185,7 +185,6 @@ class DepoManager(
     }
 
     fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualDepo: ActualDepo, handoffIsReady: Boolean): DepoTarget {
-//        val previousDepoTarget = previousTargetWorld.targetRobot.depoTarget
         telemetry.addLine("\nDepo manager: ")
 
         val depoInput = target.depo
@@ -209,15 +208,17 @@ class DepoManager(
                             wristInput
                         }
                     } else {
-                        wristInput
-//                        //When it isn't handing off then keep claws retracted
-//                        WristTargets(Claw.ClawTarget.Retracted)
+//                        wristInput
+
+                        //When it isn't handing off then keep claws retracted
+                        telemetry.addLine("When it isn't handing off then keep claws retracted")
+                        WristTargets(Claw.ClawTarget.Retracted)
                     }
                 }
                 DepoTargetType.GoingOut -> {
                     wristInput
                 }
-                else -> TODO()
+                else -> previousDepoTarget.wristPosition
             }
         } else {
             //When going in/out keep the claws retracted/griping so that pixels can't get dropped
