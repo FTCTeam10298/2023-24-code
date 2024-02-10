@@ -527,6 +527,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
 
+        val spoofDriverInputForDepo = driverInput.copy(depo = if (driverInput.depo == DepoInput.NoInput) {
+            telemetry.addLine("spoofing driver input because it's noinput")
+            previousTargetState.driverInput.depo
+        } else {
+            telemetry.addLine("Driver input is ${driverInput.depo}")
+            driverInput.depo
+        })
+
         val depoTarget: DepoTarget = if (driverInputIsManual || depoShouldStayManualFromLastLoop) {
             val liftPosition: Lift.LiftPositions = Lift.LiftPositions.Manual
             val armPosition = Arm.Positions.Manual
@@ -537,13 +545,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     targetType = DepoTargetType.Manual
             )
         } else {
-            val spoofDriverInputForDepo = driverInput.copy(depo = if (driverInput.depo == DepoInput.NoInput) {
-                telemetry.addLine("spoofing driver input because it's noinput")
-                previousTargetState.driverInput.depo
-            } else {
-                telemetry.addLine("Driver input is ${driverInput.depo}")
-                driverInput.depo
-            })
             telemetry.addLine("spoofDriverInputForDepo: $spoofDriverInputForDepo")
             depoManager.fullyManageDepo(
                     target= spoofDriverInputForDepo,
@@ -679,7 +680,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 ),
                 isLiftEligableForReset = false,
                 doingHandoff = doHandoffSequence,
-                driverInput = driverInput,
+                driverInput = spoofDriverInputForDepo,
                 isTargetReached = {_, _ -> false}
         )
     }
@@ -739,6 +740,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
+    var isFirstTimeInLoop = true
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) {
 
         for (hub in hardware.allHubs) {
@@ -793,5 +795,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("loop time: $loopTime milis")
 
         telemetry.update()
+        isFirstTimeInLoop = false
     }
 }
