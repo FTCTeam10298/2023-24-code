@@ -450,13 +450,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 previousTargetState.doingHandoff
             }
         }
+        val handoffIsReadyCheck = handoffManager.checkIfHandoffIsReady(actualRobot, previousTargetState.targetRobot)
         telemetry.addLine("Are we doing handoff: $doHandoffSequence")
-
-        val previousBothClawState = when (previousTargetState.targetRobot.depoTarget.wristPosition.left) {
-            ClawTarget.Retracted -> HandoffManager.ClawStateFromHandoff.Retracted
-            ClawTarget.Gripping -> HandoffManager.ClawStateFromHandoff.Gripping
-        }
-        val handoffState = handoffManager.getHandoffState(previousBothClawState, RevBlinkinLedDriver.BlinkinPattern.BLUE, actualRobot)
 
         /**Extendo*/
         val extendoState: Extendo.ExtendoPositions = when {
@@ -469,22 +464,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             driverInput.extendo == ExtendoInput.Retract -> {
                 Extendo.ExtendoPositions.Manual
             }
-//            theRobotJustCollectedTwoPixels -> {
-//                Extendo.ExtendoPositions.Min
-//            }
-//            doHandoffSequence -> {
-//                when (handoffState.collectorState) {
-//                    HandoffManager.ExtendoStateFromHandoff.MoveIn -> {
-//                        Extendo.ExtendoPositions.AllTheWayInTarget
-//                    }
-//                    HandoffManager.ExtendoStateFromHandoff.MoveOutOfTheWay -> {
-//                        Extendo.ExtendoPositions.ClearTransfer
-//                    }
-//                }
-//            }
-//            areBothPixelsIn && !wereBothPixelsInPreviously -> {
-//                Extendo.ExtendoPositions.Min
-//            }
+            doHandoffSequence -> {
+                if (handoffIsReadyCheck) {
+                    Extendo.ExtendoPositions.AllTheWayInTarget
+                } else {
+                    Extendo.ExtendoPositions.ClearTransfer
+                }
+            }
             else -> {
                 previousTargetState.targetRobot.collectorTarget.extendoPositions
             }
@@ -523,7 +509,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 left= driverInput.leftClaw.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.rightClaw.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
 
-
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
 
@@ -550,7 +535,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     target= spoofDriverInputForDepo,
                     previousDepoTarget= previousTargetState.targetRobot.depoTarget,
                     actualDepo= actualRobot.depoState,
-                    handoffIsReady= handoffManager.checkIfHandoffIsReady(actualRobot, previousTargetState.targetRobot) && doHandoffSequence)
+                    handoffIsReady= handoffIsReadyCheck && doHandoffSequence)
         }
 
         /**Drive*/
