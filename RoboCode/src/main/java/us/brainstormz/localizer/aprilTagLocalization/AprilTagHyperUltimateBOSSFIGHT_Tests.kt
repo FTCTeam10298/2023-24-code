@@ -88,6 +88,7 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
         }
     }
 
+    var isThisTheFirstTimeAnyAprilTagHasBeenSeen = true
     private fun telemetryAprilTag(roadRunnerPosition: PositionAndRotation) {
 
         val currentDetections: List<AprilTagDetection> = aprilTagThings.flatMap{it.detections()}
@@ -124,6 +125,12 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
                 val tagBadness = theTag.hamming //not necessary... yaw = distortion, typically
                 //find units of cam relative to tag and tag relative to field
                 val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(theTag).posAndRot
+                if (isThisTheFirstTimeAnyAprilTagHasBeenSeen) {
+                    isThisTheFirstTimeAnyAprilTagHasBeenSeen = false
+
+                    localizer.setPositionAndRotation(currentPositionOfRobot)
+                }
+
                 val orientation = currentPositionOfRobot.r
                 val tagPosition = aprilTagLocalization.getAprilTagLocation(whatTag)
                 val differenceBetweenAprilTagAndOdom = PositionAndRotation(
