@@ -16,6 +16,7 @@ import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import java.lang.Thread.sleep
+import kotlin.math.absoluteValue
 
 
 //gabe this class is your example
@@ -92,8 +93,13 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
     }
 
     /** Gabe edit me */
-    private fun chooseBestAprilTag(allAprilTags: List<AprilTagDetection>): AprilTagDetection {
-        return allAprilTags.minBy { it.ftcPose.yaw }
+    private fun chooseBestAprilTag(allAprilTags: List<AprilTagDetection>): AprilTagDetection? {
+        return allAprilTags.minByOrNull {
+            val yawAbs = it.ftcPose.yaw.absoluteValue
+            telemetry.addLine("yawAbs: $yawAbs, tag ID: ${it.id}")
+            yawAbs
+
+        }
     }
 
     var isThisTheFirstTimeAnyAprilTagHasBeenSeen = true
@@ -127,40 +133,43 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
 
         //Find tag that is least rotated from being straight on (least off axis)
         val tagWithLeastYawDistortion = chooseBestAprilTag(currentDetections)
-        telemetry.addLine(String.format("\n==== (ID %d) %s", tagWithLeastYawDistortion.id, "TAG WITH LEAST YAW!"))
+        telemetry.addLine(String.format("\n==== (ID %d) %s", tagWithLeastYawDistortion?.id, "TAG WITH LEAST YAW!"))
 
         // Step through the list of detections and display info for each one.
-        for (detection in currentDetections) {
-            if (currentDetections.isNotEmpty()) {
+
+        val detection: AprilTagDetection = tagWithLeastYawDistortion ?: currentDetections.first();
+        if (currentDetections.isNotEmpty()) {
 //                if (detection == tagWithLeastYawDistortion) {
 //                else {
-                    telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
+                telemetry.addLine(String.format("\n==== (ID %d) %s", detection?.id, detection.metadata.name))
 //                    }}
 
-                val theTag = detection
-                val whatTag = theTag.id
+            val theTag: AprilTagDetection = detection
+            val whatTag = theTag?.id
 
-                val tagBadness = theTag.hamming //not necessary... yaw = distortion, typically
-                //find units of cam relative to tag and tag relative to field
-                val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(theTag).posAndRot
-                if (isThisTheFirstTimeAnyAprilTagHasBeenSeen) {
-                    isThisTheFirstTimeAnyAprilTagHasBeenSeen = false
+            val tagBadness = theTag?.hamming //not necessary... yaw = distortion, typically
+            //find units of cam relative to tag and tag relative to field\
 
-                    localizer.setPositionAndRotation(currentPositionOfRobot)
-                }
+            //elvis operator
+            val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(theTag ?: currentDetections.first()).posAndRot
+            if (isThisTheFirstTimeAnyAprilTagHasBeenSeen) {
+                isThisTheFirstTimeAnyAprilTagHasBeenSeen = false
 
-                val orientation = currentPositionOfRobot.r
-                val tagPosition = aprilTagLocalization.getAprilTagLocation(whatTag)
-                val differenceBetweenAprilTagAndOdom = PositionAndRotation(
-                        x=roadRunnerPosition.x - currentPositionOfRobot.x,
-                        y=roadRunnerPosition.y - currentPositionOfRobot.y,
-                        r=roadRunnerPosition.r - currentPositionOfRobot.r
-                )
+                localizer.setPositionAndRotation(currentPositionOfRobot)
+            }
+
+            val orientation = currentPositionOfRobot.r
+            val tagPosition = aprilTagLocalization.getAprilTagLocation(whatTag ?: 0)
+            val differenceBetweenAprilTagAndOdom = PositionAndRotation(
+                    x=roadRunnerPosition.x - currentPositionOfRobot.x,
+                    y=roadRunnerPosition.y - currentPositionOfRobot.y,
+                    r=roadRunnerPosition.r - currentPositionOfRobot.r
+            )
 //                telemetry.addLine("Sir, I found AprilTag ID 2.")
-                telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentPositionOfRobot")
+            telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentPositionOfRobot")
 //                telemetry.addLine("BUT the tag position is: $tagPosition")
 //                telemetry.addLine("Error Correction Bits Added (hamming): $tagBadness")
-                telemetry.addLine("\n\nDiscrepancy between tag ${detection.id} and odom is: $differenceBetweenAprilTagAndOdom\n\n")
+            telemetry.addLine("\n\nDiscrepancy between tag ${detection.id} and odom is: $differenceBetweenAprilTagAndOdom\n\n")
 //                telemetry.addLine("Orientation Found: $orientation")
 
 
@@ -181,7 +190,7 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
 //            }
             } // ...
 
-        }
+
         // Add "key" information to telemetry
 //        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.")
 //        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)")
