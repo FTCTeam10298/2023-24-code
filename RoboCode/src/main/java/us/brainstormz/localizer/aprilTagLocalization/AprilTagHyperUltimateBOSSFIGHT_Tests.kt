@@ -91,10 +91,17 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
         }
     }
 
+    /** Gabe edit me */
+    private fun chooseBestAprilTag(allAprilTags: List<AprilTagDetection>): AprilTagDetection {
+        return allAprilTags.minBy { it.ftcPose.yaw }
+    }
+
     var isThisTheFirstTimeAnyAprilTagHasBeenSeen = true
     private fun telemetryAprilTag(roadRunnerPosition: PositionAndRotation) {
 
-        val currentDetections: List<AprilTagDetection> = aprilTagThings.flatMap{it.detections()}
+        var currentDetections: List<AprilTagDetection> = aprilTagThings.flatMap{it.detections()}
+
+
         telemetry.addData("# AprilTags Detected", currentDetections.size)
 
         //Step through the list of detections and find the tag with the least x value,
@@ -118,11 +125,17 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
 //        val relevantAprilTagId = bestAprilTag.id
 //        telemetry.addLine("Apriltag With Least Distortion: $relevantAprilTagId!")
 
+        //Find tag that is least rotated from being straight on (least off axis)
+        val tagWithLeastYawDistortion = chooseBestAprilTag(currentDetections)
+        telemetry.addLine(String.format("\n==== (ID %d) %s", tagWithLeastYawDistortion.id, "TAG WITH LEAST YAW!"))
+
         // Step through the list of detections and display info for each one.
         for (detection in currentDetections) {
             if (currentDetections.isNotEmpty()) {
-
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
+//                if (detection == tagWithLeastYawDistortion) {
+//                else {
+                    telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
+//                    }}
 
                 val theTag = detection
                 val whatTag = theTag.id
