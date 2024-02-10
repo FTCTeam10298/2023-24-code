@@ -1,8 +1,9 @@
 package us.brainstormz.robotTwo.subsystems
 
 import com.qualcomm.robotcore.hardware.Servo
+import org.firstinspires.ftc.robotcore.external.Telemetry
 
-class Claw {
+class Claw(private val telemetry: Telemetry) {
     enum class ClawTarget {
         Gripping,
         Retracted
@@ -13,6 +14,7 @@ class Claw {
     }
 
     fun powerSubsystem(power: Double, servo: Servo) {
+        telemetry.addLine("claw power: $power, servo: $servo")
         servo.position = power
     }
 

@@ -39,7 +39,6 @@ class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
         return wristIsAtPosition
     }
 
-
     /** Shameful sensor-less fake code */
     private val targetToLeftClawMap = mapOf<Claw.ClawTarget, RobotTwoHardware.LeftClawPosition>(
             Claw.ClawTarget.Gripping to RobotTwoHardware.LeftClawPosition.Gripping,
@@ -50,12 +49,12 @@ class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
             Claw.ClawTarget.Retracted to RobotTwoHardware.RightClawPosition.Retracted
     )
     private fun convertActualToClosestWristTarget(actual: ActualWrist): WristTargets {
-        return WristTargets(targetToLeftClawMap.minBy { (actual.leftClawServoPosition - it.value.position).absoluteValue}.key,
-                            targetToRightClawMap.minBy {(actual.rightClawServoPosition - it.value.position).absoluteValue}.key)
+        return WristTargets(targetToLeftClawMap.minBy { (actual.leftClawServoPosition - it.value.position).absoluteValue }.key,
+                            targetToRightClawMap.minBy{ (actual.rightClawServoPosition - it.value.position).absoluteValue }.key)
     }
     fun getActualWristFromWristTargets(target: WristTargets): ActualWrist {
         return ActualWrist( targetToLeftClawMap[target.left]!!.position,
-                            targetToRightClawMap[target.left]!!.position)
+                            targetToRightClawMap[target.right]!!.position)
     }
 
 
