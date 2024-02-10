@@ -6,7 +6,7 @@ import us.brainstormz.robotTwo.AxonEncoderReader
 import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.cos
 
-class Arm/*(private val encoder: AnalogInput, private val armServo1: CRServo, private val armServo2: CRServo, private val telemetry: Telemetry)*/: Subsystem {
+class Arm: Subsystem {
     enum class Positions(val angleDegrees:Double) {
         TooFarIn(253.0),
         In(238.0),

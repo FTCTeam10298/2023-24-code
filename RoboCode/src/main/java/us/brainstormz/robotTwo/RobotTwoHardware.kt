@@ -277,8 +277,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         armServo2.direction = DcMotorSimple.Direction.FORWARD
 
         //Claw
-        leftClawServo.direction = Servo.Direction.FORWARD
-        rightClawServo.direction = Servo.Direction.FORWARD
+        leftClawServo.direction = Servo.Direction.REVERSE
+        rightClawServo.direction = Servo.Direction.REVERSE
 
         //IMU
         val parameters:IMU.Parameters = IMU.Parameters(RevHubOrientationOnRobot(
