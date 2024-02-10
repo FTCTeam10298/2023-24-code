@@ -185,6 +185,7 @@ class DepoManager(
     }
 
     fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualDepo: ActualDepo, handoffIsReady: Boolean): DepoTarget {
+//        val previousDepoTarget = previousTargetWorld.targetRobot.depoTarget
         telemetry.addLine("\nDepo manager: ")
 
         val depoInput = target.depo
@@ -223,7 +224,15 @@ class DepoManager(
             movingArmAndLiftTarget.wristPosition
         }
 
-        return movingArmAndLiftTarget.copy(wristPosition = wristPosition)
+        val targetHasNotChanged = movingArmAndLiftTarget == previousDepoTarget
+        val inputIsDownOrNone = depoInput == RobotTwoTeleOp.DepoInput.NoInput || depoInput == RobotTwoTeleOp.DepoInput.Down
+        val withApplicableLiftReset = if (actualDepo.isLiftLimitActivated && armAndLiftAreAtFinalRestingPlace && inputIsDownOrNone && targetHasNotChanged) {
+            movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.ResetEncoder)
+        } else {
+            movingArmAndLiftTarget
+        }
+
+        return withApplicableLiftReset.copy(wristPosition = wristPosition)
     }
 
     fun checkIfArmAndLiftAreAtTarget(target: DepoTarget, actualDepo: ActualDepo): Boolean {
