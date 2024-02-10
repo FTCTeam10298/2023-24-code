@@ -12,7 +12,15 @@ class Claw {
         return servo.position
     }
 
-    fun powerSubsystem(power: Double, servo: Servo) {
+    fun powerSubsystem(target: ClawTarget, servo: Servo) {
+        val power = when (target) {
+            ClawTarget.Gripping -> 0.3
+            ClawTarget.Retracted -> {
+                val kp = 0.5/90
+                val deltaAngleDegrees = 1
+                deltaAngleDegrees * kp
+            }
+        }
         servo.position = power
     }
 
