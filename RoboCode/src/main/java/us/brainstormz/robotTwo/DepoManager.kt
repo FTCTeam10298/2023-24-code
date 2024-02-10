@@ -141,7 +141,8 @@ class DepoManager(
 
         val armIsAtTarget = when (armTarget) {
             Arm.Positions.ClearLiftMovement -> actualDepo.armAngleDegrees < Arm.Positions.TooFarIn.angleDegrees && actualDepo.armAngleDegrees >= Arm.Positions.ClearLiftMovement.angleDegrees
-            Arm.Positions.In -> actualDepo.armAngleDegrees <= (Arm.Positions.In.angleDegrees + 2)
+            Arm.Positions.In -> actualDepo.armAngleDegrees >= (Arm.Positions.In.angleDegrees + 2)
+            Arm.Positions.Out -> actualDepo.armAngleDegrees <= (Arm.Positions.Out.angleDegrees + 2)
             else -> arm.isArmAtAngle(armTarget.angleDegrees, actualDepo.armAngleDegrees)
         }
         telemetry.addLine("armIsAtTarget: $armIsAtTarget")
