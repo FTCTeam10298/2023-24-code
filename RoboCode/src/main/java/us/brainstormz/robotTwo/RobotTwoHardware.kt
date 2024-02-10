@@ -377,7 +377,18 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         arm.powerSubsystem(armPower, this)
 
         /**Claws*/
-        //wrist.powerSubsystem(targetState.targetRobot.depoTarget.wristPosition, this)
+        wrist.powerSubsystem(targetState.targetRobot.depoTarget.wristPosition, this)
+//        val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.left) {
+//            Claw.ClawTarget.Gripping -> RobotTwoHardware.LeftClawPosition.Gripping
+//            Claw.ClawTarget.Retracted -> RobotTwoHardware.LeftClawPosition.Retracted
+//        }
+//        leftClawServo.position = leftClawPosition.position
+//
+//        val rightClawPosition: RobotTwoHardware.RightClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.right) {
+//            Claw.ClawTarget.Gripping -> RobotTwoHardware.RightClawPosition.Gripping
+//            Claw.ClawTarget.Retracted -> RobotTwoHardware.RightClawPosition.Retracted
+//        }
+//        rightClawServo.position = rightClawPosition.position
 
         /**Hang*/
         hangReleaseServo.power = targetState.targetRobot.hangPowers.power

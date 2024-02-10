@@ -25,8 +25,8 @@ class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
     }
 
     fun powerSubsystem(target: WristTargets, hardware: RobotTwoHardware) {
-        left.powerSubsystem(target.left/*targetToLeftClawMap[target.left]!!.position*/, hardware.leftClawServo)
-        right.powerSubsystem(target.right/*targetToRightClawMap[target.right]!!.position*/, hardware.rightClawServo)
+        left.powerSubsystem(targetToLeftClawMap[target.left]!!.position, hardware.leftClawServo)
+        right.powerSubsystem(targetToRightClawMap[target.right]!!.position, hardware.rightClawServo)
     }
 
     fun wristIsAtPosition(target: WristTargets, actual: ActualWrist): Boolean {
