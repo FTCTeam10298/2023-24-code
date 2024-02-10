@@ -119,7 +119,8 @@ class DepoManager(
         } else {
             when (finalDepoTarget.targetType) {
                 DepoTargetType.GoingHome -> {
-                    if (eitherClawIsGripping) {
+                    val liftIsAboveClear = actualDepo.liftPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
+                    if (eitherClawIsGripping && liftIsAboveClear) {
                         //If depo is going in and either claw is gripping then go out, drop then come in.
                         Arm.Positions.Out
                     } else {
