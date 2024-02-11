@@ -96,7 +96,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     enum class ExtendoInput {
         Extend,
         Retract,
-        ResetEncoder,
         NoInput,
     }
     enum class HangInput {
@@ -285,7 +284,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
         val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
         val extendo = when {
-            rightTrigger && leftTrigger -> ExtendoInput.ResetEncoder
             rightTrigger -> ExtendoInput.Extend
             leftTrigger -> ExtendoInput.Retract
             else -> ExtendoInput.NoInput
@@ -479,9 +477,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Extendo*/
         telemetry.addLine("extendoLimitIsActivated: ${actualRobot.collectorSystemState.extendoLimitIsActivated}")
         val extendoState: Extendo.ExtendoPositions = when (driverInput.extendo) {
-            ExtendoInput.ResetEncoder -> {
-                Extendo.ExtendoPositions.ResetEncoder
-            }
             ExtendoInput.Extend -> {
                 Extendo.ExtendoPositions.Manual
             }
@@ -489,8 +484,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 Extendo.ExtendoPositions.Manual
             }
             ExtendoInput.NoInput -> {
-                val extendoIsGoingIn = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Min
-                if (extendoIsGoingIn && actualRobot.collectorSystemState.extendoLimitIsActivated) {
+                val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Min
+                val extendoIsManual = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Manual
+                if ((extendoIsAlreadyGoingIn || extendoIsManual) && actualRobot.collectorSystemState.extendoLimitIsActivated) {
                     Extendo.ExtendoPositions.ResetEncoder
                 } else if (doHandoffSequence) {
 //                    if (handoffIsReadyCheck) {
