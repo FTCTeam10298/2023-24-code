@@ -59,7 +59,7 @@ class Extendo: Subsystem {
         hardware.extendoMotorSlave.power = allowedPower
     }
 
-    private val pid = PID(kp = 0.005)
+    private val pid = PID(kp = 0.002)
     fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
         val currentPosition = actualRobot.collectorSystemState.extendoPositionTicks
         val positionError = targetPositionTicks - currentPosition.toDouble()
