@@ -35,7 +35,7 @@ class Extendo: Subsystem {
     }
 
     fun isExtendoAllTheWayIn(actualRobot: ActualRobot): Boolean {
-        return actualRobot.collectorSystemState.extendoCurrentAmps <= 10
+        return actualRobot.collectorSystemState.extendoLimitIsActivated
     }
 
     fun getExtendoPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
