@@ -38,8 +38,8 @@ class Transfer {
 
     private val leftFlapTransferReadyAngleDegrees = 20.0
     private val rightFlapTransferReadyAngleDegrees = 305.0
-    private val leftFlapKp = 0.28
-    private val rightFlapKp = 0.35
+    private val leftFlapKp = 0.22
+    private val rightFlapKp = 0.31
 
 
     fun getFlapAngleDegrees(side: Side, hardware: RobotTwoHardware): Double {
