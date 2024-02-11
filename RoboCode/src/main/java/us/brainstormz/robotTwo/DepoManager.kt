@@ -238,11 +238,18 @@ class DepoManager(
 
         val targetHasNotChanged = movingArmAndLiftTarget == previousDepoTarget
         val inputIsDownOrNone = depoInput == RobotTwoTeleOp.DepoInput.NoInput || depoInput == RobotTwoTeleOp.DepoInput.Down
-        val withApplicableLiftReset = if (actualDepo.isLiftLimitActivated && armAndLiftAreAtFinalRestingPlace && inputIsDownOrNone && targetHasNotChanged) {
-            movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.ResetEncoder)
-        } else {
-            movingArmAndLiftTarget
-        }
+        val previousLiftTargetWasReset = previousDepoTarget.liftPosition == Lift.LiftPositions.ResetEncoder
+//        val
+        val withApplicableLiftReset =
+                if (actualDepo.isLiftLimitActivated && armAndLiftAreAtFinalRestingPlace && inputIsDownOrNone && targetHasNotChanged && !previousLiftTargetWasReset) {
+                    movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.ResetEncoder)
+                } else {
+                    if (!actualDepo.isLiftLimitActivated && actualDepo.liftPositionTicks <= 10  && !previousLiftTargetWasReset) {
+                        movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.PastDown)
+                    } else {
+                        movingArmAndLiftTarget
+                    }
+                }
 
         return withApplicableLiftReset.copy(wristPosition = wristPosition)
     }

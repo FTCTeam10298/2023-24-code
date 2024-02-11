@@ -363,6 +363,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                 liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
                 0.0
             }
+            Lift.LiftPositions.PastDown -> {
+                -0.35
+            }
             else -> {
                 telemetry.addLine("\n\n\nliftPositionTicks: " + actualState.actualRobot.depoState.liftPositionTicks)
                 lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks)

@@ -15,6 +15,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         Manual(0),
         ResetEncoder(0),
         Nothing(0),
+        PastDown(0),
         Down(0),
         BackboardBottomRow(330),
         ClearForArmToMove(450),
