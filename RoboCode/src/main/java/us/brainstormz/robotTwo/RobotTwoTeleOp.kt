@@ -426,9 +426,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val transferLeftSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
         val transferRightSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
         val areBothPixelsIn = transferLeftSensorState && transferRightSensorState
+
         val previousTransferLeftSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
         val previousTransferRightSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
         val wereBothPixelsInPreviously = previousTransferLeftSensorState && previousTransferRightSensorState
+
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
 
         val weWantToStartHandoff = driverInput.handoff == HandoffInput.StartHandoff || theRobotJustCollectedTwoPixels
@@ -453,38 +455,16 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val handoffIsReadyCheck = handoffManager.checkIfHandoffIsReady(actualRobot, previousTargetState.targetRobot)
         telemetry.addLine("Are we doing handoff: $doHandoffSequence")
 
-        /**Extendo*/
-        val extendoState: Extendo.ExtendoPositions = when {
-            driverInput.extendo == ExtendoInput.ResetEncoder -> {
-                Extendo.ExtendoPositions.ResetEncoder
-            }
-            driverInput.extendo == ExtendoInput.Extend -> {
-                Extendo.ExtendoPositions.Manual
-            }
-            driverInput.extendo == ExtendoInput.Retract -> {
-                Extendo.ExtendoPositions.Manual
-            }
-            doHandoffSequence -> {
-                if (handoffIsReadyCheck) {
-                    Extendo.ExtendoPositions.AllTheWayInTarget
-                } else {
-                    Extendo.ExtendoPositions.ClearTransfer
-                }
-            }
-            else -> {
-                previousTargetState.targetRobot.collectorTarget.extendoPositions
-            }
-        }
-
         /**Intake Noodles*/
-        val intakeNoodleTarget = intake.getCollectorState(when (driverInput.collector) {
-            CollectorInput.Intake -> Intake.CollectorPowers.Intake
-            CollectorInput.Eject ->  Intake.CollectorPowers.Eject
-            CollectorInput.Off ->  Intake.CollectorPowers.Off
-            CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
-        },
-        isPixelInLeft = transfer.isPixelIn(actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left),
-        isPixelInRight= transfer.isPixelIn(actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right))
+        val intakeNoodleTarget = intake.getCollectorState(
+                driverInput =   when (driverInput.collector) {
+                                    CollectorInput.Intake -> Intake.CollectorPowers.Intake
+                                    CollectorInput.Eject ->  Intake.CollectorPowers.Eject
+                                    CollectorInput.Off ->  Intake.CollectorPowers.Off
+                                    CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
+                                },
+                isPixelInLeft = transferLeftSensorState,
+                isPixelInRight= transferRightSensorState)
 
         /**Rollers */
         val autoRollerState = transfer.getAutoPixelSortState(isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake, actualRobot)
@@ -494,6 +474,36 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             RollerInput.LeftOut -> autoRollerState.copy(leftServoCollect = Transfer.RollerPowers.Eject)
             RollerInput.RightOut -> autoRollerState.copy(rightServoCollect = Transfer.RollerPowers.Eject)
             RollerInput.NoInput -> autoRollerState
+        }
+
+        /**Extendo*/
+        telemetry.addLine("extendoLimitIsActivated: ${actualRobot.collectorSystemState.extendoLimitIsActivated}")
+        val extendoState: Extendo.ExtendoPositions = when (driverInput.extendo) {
+            ExtendoInput.ResetEncoder -> {
+                Extendo.ExtendoPositions.ResetEncoder
+            }
+            ExtendoInput.Extend -> {
+                Extendo.ExtendoPositions.Manual
+            }
+            ExtendoInput.Retract -> {
+                Extendo.ExtendoPositions.Manual
+            }
+            ExtendoInput.NoInput -> {
+                val extendoIsGoingIn = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Min
+                if (extendoIsGoingIn && actualRobot.collectorSystemState.extendoLimitIsActivated) {
+                    Extendo.ExtendoPositions.ResetEncoder
+                } else if (doHandoffSequence) {
+//                    if (handoffIsReadyCheck) {
+//                        Extendo.ExtendoPositions.AllTheWayInTarget
+//                    } else {
+//                        Extendo.ExtendoPositions.ClearTransfer
+//                    }
+                    Extendo.ExtendoPositions.AllTheWayInTarget
+                } else {
+
+                    previousTargetState.targetRobot.collectorTarget.extendoPositions
+                }
+            }
         }
 
         /**Depo*/
