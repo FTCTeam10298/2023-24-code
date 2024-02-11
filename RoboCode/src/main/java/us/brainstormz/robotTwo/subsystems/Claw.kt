@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.AxonEncoderReader
 import us.brainstormz.utils.MathHelps
+import kotlin.math.absoluteValue
 import kotlin.math.sign
 
 
@@ -51,7 +52,13 @@ class Claw(private val telemetry: Telemetry) {
         servo.power = power
     }
 
-    fun isClawAtPosition(currentTarget: ClawTarget, previousTarget: ClawTarget): Boolean {
-        return currentTarget == previousTarget
+    fun isClawAtAngle(target: ClawTarget, actualDegrees: Double): Boolean {
+        val actualInSigned180 = MathHelps.angleInSigned180(actualDegrees)
+        val wristIsAtPosition = when(target){
+            ClawTarget.Gripping -> actualInSigned180 >= target.angleDegrees
+            ClawTarget.Retracted -> actualInSigned180 <= target.angleDegrees
+        }
+
+        return wristIsAtPosition
     }
 }
