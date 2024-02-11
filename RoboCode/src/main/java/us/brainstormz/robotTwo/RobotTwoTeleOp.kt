@@ -68,7 +68,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Manual,
         NoInput
     }
-    data class WristInput(val left: ClawInput, val right: ClawInput)
+    data class WristInput(val left: ClawInput, val right: ClawInput) {
+        val bothClaws = mapOf(Transfer.Side.Left to left, Transfer.Side.Right to right)
+    }
     enum class ClawInput {
         Drop,
         Hold,
@@ -499,14 +501,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             } }
 
         /**Depo*/
-        //What do to:
-        //When going in/out keep the claws retracted/griping so that pixels can't get dropped
-        //When it isn't transferring then keep claws retracted
-        //When it is in a transferable position, then start griping the claws
-
-        //When out, then let the drivers control the claws
-        //When in and in a transferable position or transferring let the drivers control the claws
-
         val driverInputWrist = WristTargets(
                 left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
@@ -526,7 +520,15 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             driverInput.depo
         }).copy(wrist=
                 if (handoffIsReadyCheck && doHandoffSequence) {
-                    WristInput(ClawInput.Hold, ClawInput.Hold)
+                    fun boolToClawInput(bool: Boolean): ClawInput {
+                        return when (bool) {
+                            true -> ClawInput.Hold
+                            false -> ClawInput.Drop
+                        }
+                    }
+                    WristInput(
+                            left= boolToClawInput(transferLeftSensorState),
+                            right= boolToClawInput(transferRightSensorState))
                 } else {
                     driverInput.wrist
                 }
