@@ -213,6 +213,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         liftMagnetLimit = ctrlHub.getDigitalController(6) as DigitalChannel
 
+        extendoMagnetLimit = ctrlHub.getDigitalController(0) as DigitalChannel
+
         imu = hwMap["imu"] as IMU
 
         val parallelOdomMotor = ctrlHub.getMotor(3)

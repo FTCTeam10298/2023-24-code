@@ -30,6 +30,10 @@ class Extendo: Subsystem {
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
     }
 
+    fun getExtendoLimitIsActivated(hardware: RobotTwoHardware): Boolean {
+        return !hardware.extendoMagnetLimit.state
+    }
+
     fun isExtendoAllTheWayIn(actualRobot: ActualRobot): Boolean {
         return actualRobot.collectorSystemState.extendoCurrentAmps <= 10
     }
