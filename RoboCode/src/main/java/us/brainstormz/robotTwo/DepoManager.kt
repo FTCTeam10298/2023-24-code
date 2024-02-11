@@ -188,11 +188,11 @@ class DepoManager(
         )
     }
 
-    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualDepo: ActualDepo, handoffIsReady: Boolean): DepoTarget {
+    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualDepo: ActualDepo): DepoTarget {
         telemetry.addLine("\nDepo manager: ")
 
         val depoInput = target.depo
-        val wristInput = WristTargets(left= target.leftClaw.toClawTarget() ?: previousDepoTarget.wristPosition.left, right= target.rightClaw.toClawTarget()?:previousDepoTarget.wristPosition.right)
+        val wristInput = WristTargets(left= target.wrist.left.toClawTarget() ?: previousDepoTarget.wristPosition.left, right= target.wrist.right.toClawTarget()?:previousDepoTarget.wristPosition.right)
 
         val finalDepoTarget = getFinalDepoTarget(depoInput) ?: previousDepoTarget
 
@@ -203,22 +203,23 @@ class DepoManager(
                 when (movingArmAndLiftTarget.targetType) {
                     DepoTargetType.GoingHome -> {
                         if (armAndLiftAreAtFinalRestingPlace) {
-                            if (handoffIsReady) {
-                                val firstLoopOfHandoff = target.handoff == RobotTwoTeleOp.HandoffInput.StartHandoff//Make this code actually work
-                                if (firstLoopOfHandoff) {
-                                    //start griping the claws
-                                    WristTargets(Claw.ClawTarget.Gripping)
-                                } else {
-                                    //then manual after
-                                    wristInput
-                                }
-                            } else {
-//                        wristInput
-
-                                //When it isn't handing off then keep claws retracted
-                                telemetry.addLine("When it isn't handing off then keep claws retracted")
-                                WristTargets(Claw.ClawTarget.Retracted)
-                            }
+//                            if (handoffIsReady) {
+//                                val firstLoopOfHandoff = target.handoff == RobotTwoTeleOp.HandoffInput.StartHandoff//Make this code actually work
+//                                if (firstLoopOfHandoff) {
+//                                    //start griping the claws
+//                                    WristTargets(Claw.ClawTarget.Gripping)
+//                                } else {
+//                                    //then manual after
+//                                    wristInput
+//                                }
+//                            } else {
+////                        wristInput
+//
+//                                //When it isn't handing off then keep claws retracted
+//                                telemetry.addLine("When it isn't handing off then keep claws retracted")
+//                                WristTargets(Claw.ClawTarget.Retracted)
+//                            }
+                            wristInput
                         } else {
                             //When going in/out keep the claws retracted/griping so that pixels can't get dropped
                             movingArmAndLiftTarget.wristPosition

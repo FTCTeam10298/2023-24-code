@@ -68,6 +68,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Manual,
         NoInput
     }
+    data class WristInput(val left: ClawInput, val right: ClawInput)
     enum class ClawInput {
         Drop,
         Hold,
@@ -122,8 +123,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val bumperMode: Gamepad1BumperMode,
             val lightInput: LightInput,
             val depo: DepoInput,
-            val leftClaw: ClawInput,
-            val rightClaw: ClawInput,
+            val wrist: WristInput,
             val collector: CollectorInput,
             val extendo: ExtendoInput,
             val hang: HangInput,
@@ -137,8 +137,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 "   bumperMode=$bumperMode\n" +
                 "   lightInput=$lightInput\n" +
                 "   depo=$depo\n" +
-                "   leftClaw=$leftClaw\n" +
-                "   rightClaw=$rightClaw\n" +
+                "   wrist=$wrist\n" +
                 "   collector=$collector\n" +
                 "   extendo=$extendo\n" +
                 "   hang=$hang\n" +
@@ -391,8 +390,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         return DriverInput(
                 driveVelocity = driveVelocity,
                 depo = depoInput,
-                leftClaw = leftClaw,
-                rightClaw = rightClaw,
+                wrist = WristInput(leftClaw, rightClaw),
                 collector = inputCollectorStateSystem,
                 rollers = rollers,
                 extendo = extendo,
@@ -475,7 +473,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Extendo*/
-        telemetry.addLine("extendoLimitIsActivated: ${actualRobot.collectorSystemState.extendoLimitIsActivated}")
         val extendoState: Extendo.ExtendoPositions = when (driverInput.extendo) {
             ExtendoInput.Extend -> {
                 Extendo.ExtendoPositions.Manual
@@ -499,8 +496,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
                     previousTargetState.targetRobot.collectorTarget.extendoPositions
                 }
-            }
-        }
+            } }
 
         /**Depo*/
         //What do to:
@@ -512,19 +508,29 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         //When in and in a transferable position or transferring let the drivers control the claws
 
         val driverInputWrist = WristTargets(
-                left= driverInput.leftClaw.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
-                right= driverInput.rightClaw.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
+                left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
+                right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
 
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
 
         val spoofDriverInputForDepo = driverInput.copy(depo = if (driverInput.depo == DepoInput.NoInput) {
             telemetry.addLine("spoofing driver input because it's noinput")
-            previousTargetState.driverInput.depo
+            if (weWantToStartHandoff) {
+                DepoInput.Down
+            } else {
+                previousTargetState.driverInput.depo
+            }
         } else {
             telemetry.addLine("Driver input is ${driverInput.depo}")
             driverInput.depo
-        })
+        }).copy(wrist=
+                if (handoffIsReadyCheck && doHandoffSequence) {
+                    WristInput(ClawInput.Hold, ClawInput.Hold)
+                } else {
+                    driverInput.wrist
+                }
+        )
 
         val depoTarget: DepoTarget = if (driverInputIsManual || depoShouldStayManualFromLastLoop) {
             val liftPosition: Lift.LiftPositions = Lift.LiftPositions.Manual
@@ -540,8 +546,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             depoManager.fullyManageDepo(
                     target= spoofDriverInputForDepo,
                     previousDepoTarget= previousTargetState.targetRobot.depoTarget,
-                    actualDepo= actualRobot.depoState,
-                    handoffIsReady= handoffIsReadyCheck && doHandoffSequence)
+                    actualDepo= actualRobot.depoState)
         }
 
         /**Drive*/
@@ -681,8 +686,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val noInput = DriverInput(
                 driveVelocity = PositionAndRotation(),
                 depo = DepoInput.NoInput,
-                leftClaw = ClawInput.NoInput,
-                rightClaw = ClawInput.NoInput,
+                wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
                 collector = CollectorInput.NoInput,
                 rollers = RollerInput.NoInput,
                 extendo = ExtendoInput.NoInput,
