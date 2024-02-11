@@ -31,7 +31,7 @@ class Claw(private val telemetry: Telemetry) {
     }
 
     private val holdingPower = 0.08
-    private val kp: Double = 1/(450.0)
+    private val kp: Double = 1/(400.0)
 //    private val clawMaxAngle = ClawTarget.Gripping.angleDegrees + 1
     fun powerSubsystem(target: ClawTarget, actualAngleDegrees: Double, servo: CRServo) {
         val deltaAngleDegrees = target.angleDegrees - MathHelps.angleInSigned180(actualAngleDegrees)
@@ -55,8 +55,8 @@ class Claw(private val telemetry: Telemetry) {
     fun isClawAtAngle(target: ClawTarget, actualDegrees: Double): Boolean {
         val actualInSigned180 = MathHelps.angleInSigned180(actualDegrees)
         val wristIsAtPosition = when(target){
-            ClawTarget.Gripping -> actualInSigned180 >= target.angleDegrees
-            ClawTarget.Retracted -> actualInSigned180 <= target.angleDegrees
+            ClawTarget.Gripping -> actualInSigned180 >= target.angleDegrees - 12
+            ClawTarget.Retracted -> actualInSigned180 <= target.angleDegrees + 20
         }
 
         return wristIsAtPosition

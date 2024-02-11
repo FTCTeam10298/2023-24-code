@@ -36,7 +36,7 @@ class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
     }
 
     fun powerSubsystem(target: WristTargets, actual: ActualWrist, hardware: RobotTwoHardware) {
-        left.powerSubsystem(target.right, actual.leftClawAngleDegrees, hardware.leftClawServo)
+        left.powerSubsystem(target.left, actual.leftClawAngleDegrees, hardware.leftClawServo)
         right.powerSubsystem(target.right, actual.rightClawAngleDegrees, hardware.rightClawServo)
     }
 

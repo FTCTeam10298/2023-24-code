@@ -215,8 +215,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         leftClawEncoder = exHub.getAnalogInput(2)
         rightClawEncoder = exHub.getAnalogInput(3)
-        leftClawEncoderReader =     AxonEncoderReader(leftClawEncoder, angleOffsetDegrees = -75.0,  AxonEncoderReader.Direction.Reverse)//260.0)
-        rightClawEncoderReader =    AxonEncoderReader(rightClawEncoder, angleOffsetDegrees = -70.0, AxonEncoderReader.Direction.Reverse)
+        leftClawEncoderReader =     AxonEncoderReader(leftClawEncoder, angleOffsetDegrees = -80.0,  AxonEncoderReader.Direction.Reverse)//260.0)
+        rightClawEncoderReader =    AxonEncoderReader(rightClawEncoder, angleOffsetDegrees = -80.0, AxonEncoderReader.Direction.Reverse)
 
         liftMagnetLimit = ctrlHub.getDigitalController(6) as DigitalChannel
 

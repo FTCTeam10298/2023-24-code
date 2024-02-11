@@ -221,8 +221,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val gamepad2LeftClawToggle = gamepad2.left_bumper && !previousGamepad2.left_bumper
         val leftClaw: ClawInput = if (gamepad2LeftClawToggle || gamepad1LeftClawToggle) {
             when (previousTargetState.targetRobot.depoTarget.wristPosition.left) {
-                Claw.ClawTarget.Gripping -> ClawInput.Drop
-                Claw.ClawTarget.Retracted -> ClawInput.Hold
+                ClawTarget.Gripping -> ClawInput.Drop
+                ClawTarget.Retracted -> ClawInput.Hold
             }
         } else {
             ClawInput.NoInput
