@@ -181,8 +181,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         rFDrive =       ctrlHub.getMotor(3)
         lBDrive =       ctrlHub.getMotor(1)
         rBDrive =       ctrlHub.getMotor(2)
-        extendoMotorMaster =    exHub.getMotor(0) //Has encoder
-        extendoMotorSlave =     exHub.getMotor(1)
+        extendoMotorMaster =    exHub.getMotor(1) //Has encoder
+        extendoMotorSlave =     exHub.getMotor(0)
         liftMotorMaster =       exHub.getMotor(2) //Has encoder
         liftMotorSlave =        exHub.getMotor(3)
 
@@ -296,6 +296,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     } ?: Lift.LiftPositions.Down
 
     open fun getActualState(localizer: Localizer, collectorSystem: CollectorSystem, depoManager: DepoManager): ActualRobot {
+        telemetry.addLine("getting state")
+        telemetry.addLine("extendo current position: ${extendoMotorMaster.currentPosition}")
+//        telemetry.addLine("what extendo says is the current position: ${collectorSystem.extendo.getExtendoPositionTicks(hardware)}")
         return ActualRobot(
                 positionAndRotation = localizer.currentPositionAndRotation(),
                 collectorSystemState = collectorSystem.getCurrentState(this),
