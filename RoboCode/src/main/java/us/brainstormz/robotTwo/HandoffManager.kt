@@ -37,7 +37,7 @@ class HandoffManager(
             val armState: Arm.Positions)
 
     fun checkIfHandoffIsReady(actualRobot: ActualRobot, previousTargetRobot: TargetRobot): Boolean {
-        val isCollectorAllTheWayIn = extendo.isExtendoAllTheWayIn(actualRobot)
+        val isCollectorAllTheWayIn = actualRobot.collectorSystemState.extendoLimitIsActivated
         val liftExtensionIsAllTheWayDown = actualRobot.depoState.isLiftLimitActivated
         val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
 
