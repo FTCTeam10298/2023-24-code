@@ -38,8 +38,8 @@ class Transfer {
 
     private val leftFlapTransferReadyAngleDegrees = 20.0
     private val rightFlapTransferReadyAngleDegrees = 305.0
-    private val leftFlapKp = 0.3
-    private val rightFlapKp = 0.4
+    private val leftFlapKp = 0.28
+    private val rightFlapKp = 0.35
 
 
     fun getFlapAngleDegrees(side: Side, hardware: RobotTwoHardware): Double {
@@ -143,8 +143,8 @@ class Transfer {
         }
     }
 
-    val leftAlphaDetectionThreshold = 300
-    val rightAlphaDetectionThreshold = 200
+    val leftAlphaDetectionThreshold = 600
+    val rightAlphaDetectionThreshold = 600
     fun isPixelIn(reading: SensorReading, side: Side): Boolean {
         val alpha = reading.alpha
 
