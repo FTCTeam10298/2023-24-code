@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo.subsystems
 import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.AxonEncoderReader
 import us.brainstormz.utils.MathHelps
 import kotlin.math.absoluteValue
@@ -50,6 +51,13 @@ class Claw(private val telemetry: Telemetry) {
 
         telemetry.addLine("claw power: $power")
         servo.power = power
+    }
+
+    fun getAngularVelocityDegreesPerMili(actualDegrees: Double, actualTimeMilis: Long, previousActualDegrees: Double, previousActualTimeMilis: Long): Double {
+        val deltaTimeMilis = actualTimeMilis - previousActualTimeMilis
+        val deltaAngleDegrees = actualDegrees - previousActualDegrees
+        val angularVelocityDegrees = deltaAngleDegrees/deltaTimeMilis
+        return angularVelocityDegrees
     }
 
     fun isClawAtAngle(target: ClawTarget, actualDegrees: Double): Boolean {
