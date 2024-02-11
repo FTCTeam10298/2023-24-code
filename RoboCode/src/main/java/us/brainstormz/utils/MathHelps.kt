@@ -64,6 +64,17 @@ object MathHelps {
             else -> 0
         }
     }
+
+
+    fun angleInSigned180(angleDegrees: Double): Double {
+        val x = (angleDegrees + 180).mod(360.0)
+        val y = if (x < 0)
+            x + 360
+        else
+            x
+        return y - 180
+    }
+
     fun calcVector(x: Double, y: Double, magnitude: Double, radians: Double): Point2D {
         val newX = (magnitude * cos(radians)) + x
         val newY = (magnitude * sin(radians)) + y

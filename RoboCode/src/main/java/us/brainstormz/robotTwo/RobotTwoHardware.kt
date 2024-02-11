@@ -89,10 +89,12 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         Retracted(1.0),
         Gripping(0.34)
     }
-    lateinit var leftClawServo: Servo
-    lateinit var rightClawServo: Servo
-    lateinit var leftColorSensor: RevColorSensorV3
-    lateinit var rightColorSensor: RevColorSensorV3
+    lateinit var leftClawServo: CRServo
+    lateinit var rightClawServo: CRServo
+    lateinit var leftClawEncoder: AnalogInput
+    lateinit var rightClawEncoder: AnalogInput
+    lateinit var leftClawEncoderReader: AxonEncoderReader
+    lateinit var rightClawEncoderReader: AxonEncoderReader
 
     val extendoOperationRange = Extendo.ExtendoPositions.Min.ticks..Extendo.ExtendoPositions.Max.ticks
     val extendoPositionPID = PID(kp = 1.0)
@@ -197,8 +199,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         leftTransferServo = exHub.getCRServo(3)
         transferDirectorServo = exHub.getCRServo(2)
 
-        leftClawServo =     exHub.getServo(0)   // left/right from driver 2 perspective when depositing
-        rightClawServo =    exHub.getServo(1)
+        leftClawServo =     exHub.getCRServo(0)   // left/right from driver 2 perspective when depositing
+        rightClawServo =    exHub.getCRServo(1)
         hangReleaseServo = exHub.getCRServo(5)
 
         launcherServo = ctrlHub.getServo(0)
@@ -210,6 +212,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         rightTransferSensor = hwMap["leftSensor"] as ColorSensor
         leftRollerEncoder = exHub.getAnalogInput(1)
         rightRollerEncoder = ctrlHub.getAnalogInput(0)
+
+        leftClawEncoder = exHub.getAnalogInput(2)
+        rightClawEncoder = exHub.getAnalogInput(3)
+        leftClawEncoderReader =     AxonEncoderReader(leftClawEncoder, angleOffsetDegrees = -75.0,  AxonEncoderReader.Direction.Reverse)//260.0)
+        rightClawEncoderReader =    AxonEncoderReader(rightClawEncoder, angleOffsetDegrees = -70.0, AxonEncoderReader.Direction.Reverse)
 
         liftMagnetLimit = ctrlHub.getDigitalController(6) as DigitalChannel
 
@@ -278,8 +285,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         armServo2.direction = DcMotorSimple.Direction.FORWARD
 
         //Claw
-        leftClawServo.direction = Servo.Direction.REVERSE
-        rightClawServo.direction = Servo.Direction.REVERSE
+        leftClawServo.direction = DcMotorSimple.Direction.FORWARD
+        rightClawServo.direction = DcMotorSimple.Direction.FORWARD
 
         //IMU
         val parameters:IMU.Parameters = IMU.Parameters(RevHubOrientationOnRobot(
@@ -384,7 +391,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         arm.powerSubsystem(armPower, this)
 
         /**Claws*/
-        wrist.powerSubsystem(targetState.targetRobot.depoTarget.wristPosition, this)
+        wrist.powerSubsystem(targetState.targetRobot.depoTarget.wristPosition, actualState.actualRobot.depoState.wristAngles,this)
 //        val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.left) {
 //            Claw.ClawTarget.Gripping -> RobotTwoHardware.LeftClawPosition.Gripping
 //            Claw.ClawTarget.Retracted -> RobotTwoHardware.LeftClawPosition.Retracted

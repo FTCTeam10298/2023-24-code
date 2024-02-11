@@ -787,8 +787,8 @@ class RobotTwoAuto: OpMode() {
                 intake.powerSubsystem(targetState.targetRobot.collectorSystemState.collectorState.power, hardware)
                 lift.powerSubsystem(lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks), hardware)
                 arm.powerSubsystem(arm.calcPowerToReachTarget(targetState.targetRobot.depoState.armPos.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees), hardware)
-                hardware.rightClawServo.position = targetState.targetRobot.depoState.rightClawPosition.position
-                hardware.leftClawServo.position = targetState.targetRobot.depoState.leftClawPosition.position
+                hardware.rightClawServo.power = TODO()// targetState.targetRobot.depoState.rightClawPosition.position
+                hardware.leftClawServo.power = TODO()//targetState.targetRobot.depoState.leftClawPosition.position
             }
         )
 

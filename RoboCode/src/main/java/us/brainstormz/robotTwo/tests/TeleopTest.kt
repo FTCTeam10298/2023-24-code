@@ -3,19 +3,13 @@ package us.brainstormz.robotTwo.tests
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
-import us.brainstormz.localizer.PhoHardware
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorSystem
 import us.brainstormz.robotTwo.DepoManager
-import us.brainstormz.robotTwo.DepoTarget
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetWorld
-import us.brainstormz.robotTwo.TeleOpMode
-import us.brainstormz.robotTwo.subsystems.Arm
-import us.brainstormz.robotTwo.subsystems.Claw
-import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 
@@ -178,7 +172,7 @@ class TeleopTest {
                             armAngleDegrees = 0.0,
                             liftPositionTicks = 0,
                             isLiftLimitActivated = false,
-                            wristAngles = Wrist.ActualWrist(leftClawServoPosition = 0.0, rightClawServoPosition = 0.0),
+                            wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
                     ),
                     collectorSystemState = CollectorSystem.ActualCollector(
                             extendoPositionTicks = 0,

@@ -42,8 +42,8 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
         armServo1 = FauxCRServo()
         armServo2 = FauxCRServo()
 
-        rightClawServo = FauxServo()
-        leftClawServo = FauxServo()
+        rightClawServo = FauxCRServo()
+        leftClawServo = FauxCRServo()
         launcherServo = FauxServo()
 
 

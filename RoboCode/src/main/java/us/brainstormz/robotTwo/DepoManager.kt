@@ -240,6 +240,7 @@ class DepoManager(
         val inputIsDownOrNone = depoInput == RobotTwoTeleOp.DepoInput.NoInput || depoInput == RobotTwoTeleOp.DepoInput.Down
         val previousLiftTargetWasReset = previousDepoTarget.liftPosition == Lift.LiftPositions.ResetEncoder
 //        val
+
         val withApplicableLiftReset =
                 if (actualDepo.isLiftLimitActivated && armAndLiftAreAtFinalRestingPlace && inputIsDownOrNone && targetHasNotChanged && !previousLiftTargetWasReset) {
                     movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.ResetEncoder)

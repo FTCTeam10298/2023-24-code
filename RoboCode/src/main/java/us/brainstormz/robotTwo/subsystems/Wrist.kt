@@ -19,14 +19,16 @@ class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
         }
     }
 
-    data class ActualWrist(val leftClawServoPosition: Double, val rightClawServoPosition: Double)
+    data class ActualWrist(val leftClawAngleDegrees: Double, val rightClawAngleDegrees: Double)
     fun getWristActualState(hardware: RobotTwoHardware): ActualWrist {
-        return ActualWrist(leftClawServoPosition = left.getClawServoPosition(hardware.leftClawServo), rightClawServoPosition = right.getClawServoPosition(hardware.rightClawServo))
+        return ActualWrist(
+                leftClawAngleDegrees = left.getClawAngleDegrees(hardware.leftClawEncoderReader),
+                rightClawAngleDegrees = right.getClawAngleDegrees(hardware.rightClawEncoderReader))
     }
 
-    fun powerSubsystem(target: WristTargets, hardware: RobotTwoHardware) {
-        left.powerSubsystem(targetToLeftClawMap[target.left]!!.position, hardware.leftClawServo)
-        right.powerSubsystem(targetToRightClawMap[target.right]!!.position, hardware.rightClawServo)
+    fun powerSubsystem(target: WristTargets, actual: ActualWrist, hardware: RobotTwoHardware) {
+        left.powerSubsystem(target.right, actual.leftClawAngleDegrees, hardware.leftClawServo)
+        right.powerSubsystem(target.right, actual.rightClawAngleDegrees, hardware.rightClawServo)
     }
 
     fun wristIsAtPosition(target: WristTargets, actual: ActualWrist): Boolean {
@@ -49,8 +51,8 @@ class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
             Claw.ClawTarget.Retracted to RobotTwoHardware.RightClawPosition.Retracted
     )
     private fun convertActualToClosestWristTarget(actual: ActualWrist): WristTargets {
-        return WristTargets(targetToLeftClawMap.minBy { (actual.leftClawServoPosition - it.value.position).absoluteValue }.key,
-                            targetToRightClawMap.minBy{ (actual.rightClawServoPosition - it.value.position).absoluteValue }.key)
+        return WristTargets(targetToLeftClawMap.minBy { (actual.leftClawAngleDegrees - it.value.position).absoluteValue }.key,
+                            targetToRightClawMap.minBy{ (actual.rightClawAngleDegrees - it.value.position).absoluteValue }.key)
     }
     fun getActualWristFromWristTargets(target: WristTargets): ActualWrist {
         return ActualWrist( targetToLeftClawMap[target.left]!!.position,
