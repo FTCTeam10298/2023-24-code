@@ -156,17 +156,19 @@ class Transfer(private val telemetry: Telemetry) {
         }
 
         val doesEachColorChannelPass = reading.asList.mapIndexed {i, it ->
-            it > (nothingReading.asList[i] * 4/3)
+            it > (nothingReading.asList[i] * 2)
         }
 
-        val howManyChannelsPass = doesEachColorChannelPass.fold(0) {acc, it ->
+        val numberOfPassingChannels = doesEachColorChannelPass.fold(0) {acc, it ->
             if (it) {
                 acc + 1
             } else
                 acc
         }
 
-        return howManyChannelsPass >= 3
+        telemetry.addLine("numberOfPassingChannels: $numberOfPassingChannels")
+
+        return numberOfPassingChannels >= 3
     }
 
 //    val rightWhitePixelReading = SensorReading(red = 624, green= 619, blue= 539, alpha= 1717)//(red= 1113, green= 1068, blue= 967, alpha= 3014)
