@@ -39,18 +39,13 @@ class Extendo: Subsystem {
     }
 
     fun getExtendoPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
-//    fun arePixelsAlignedInTransfer(): Boolean {
-//        val isLeftFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(leftEncoderReader), leftFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
-//        val isRightFlapAngleAcceptable = isFlapAtAngle(getFlapAngleDegrees(rightEncoderReader), rightFlapTransferReadyAngleDegrees, flapAngleToleranceDegrees = 20.0)
-//        return isLeftFlapAngleAcceptable && isRightFlapAngleAcceptable
-//    }
-//
-//    fun moveCollectorAllTheWayIn() {
-//        if (!isExtendoAllTheWayIn()) {
-//            powerExtendo(-0.5)
-//        }
-//    }
 
+    fun getVelocityTicksPerMili(actualTicks: Int, actualTimeMilis: Long, previousActualTicks: Int, previousActualTimeMilis: Long): Double {
+        val deltaTimeMilis: Long = actualTimeMilis - previousActualTimeMilis
+        val deltaTicks: Int = actualTicks - previousActualTicks
+        val velocityTicksPerMili: Double = (deltaTicks.toDouble())/(deltaTimeMilis)
+        return velocityTicksPerMili
+    }
 
     override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {
         val allowedPower = if (hardware.extendoMotorMaster.isOverCurrent) {
