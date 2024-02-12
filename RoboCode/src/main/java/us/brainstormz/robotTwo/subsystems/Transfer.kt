@@ -159,16 +159,15 @@ class Transfer(private val telemetry: Telemetry) {
         return alpha > alphaDetectionThreshold
     }
 
-    val rightWhiteReading = SensorReading(red= 1113, green= 1068, blue= 967, alpha= 3014)
-    val leftWhiteReading = SensorReading(red= 9364, green= 10240, blue= 9907, alpha= 10240)
+    val rightWhitePixelReading = SensorReading(red = 624, green= 619, blue= 539, alpha= 1717)//(red= 1113, green= 1068, blue= 967, alpha= 3014)
+    val leftWhitePixelReading = SensorReading(red = 4290, green= 4992, blue= 4262, alpha= 10240)//(red= 9364, green= 10240, blue= 9907, alpha= 10240)
     private val rgbChannelRange: IntRange = 0..255
-//    private val whiteRGB = RGBValue(255, 255, 255)
     private fun getRGBFromSensorReading(reading: SensorReading, whiteReading: SensorReading): RGBValue {
         val conversionFactors = whiteReading.rgbAsMap.map { (color, colorChannelOfWhite) ->
             //e.g. readingToRGBCoversion = red= 9364 * red= 255
             //9364 * x = 225
             //x = 255/9364
-            val conversionFactor = (255.0)/colorChannelOfWhite.toDouble()
+            val conversionFactor = (rgbChannelRange.last)/colorChannelOfWhite.toDouble()
 
             color to conversionFactor
         }.toMap()
@@ -188,8 +187,8 @@ class Transfer(private val telemetry: Telemetry) {
 
     fun findColorFromReading(reading: SensorReading, side: Side): RobotTwoTeleOp.PixelColor {
         val whiteReading = when (side) {
-            Side.Left -> leftWhiteReading
-            Side.Right -> rightWhiteReading
+            Side.Left -> leftWhitePixelReading
+            Side.Right -> rightWhitePixelReading
         }
         val readingAsRGBColor = getRGBFromSensorReading(reading, whiteReading)
         println("readingAsRGBColor: $readingAsRGBColor")
@@ -277,11 +276,12 @@ fun main() {
     val transfer = Transfer(PrintlnTelemetry())
 
     val actualRightReadings = Transfer.Side.Right to mapOf(
-            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 624, green= 619, blue= 539, alpha= 1717)
+            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 624, green= 619, blue= 539, alpha= 1717),
     )
 
-    val actualLeftReadings = Transfer.Side.Right to mapOf(
-            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 4290, green= 4992, blue= 4262, alpha= 10240)
+    val actualLeftReadings = Transfer.Side.Left to mapOf(
+            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 4290, green= 4992, blue= 4262, alpha= 10240),
+            RobotTwoTeleOp.PixelColor.Purple to Transfer.SensorReading(red = 9364, green= 10240, blue= 9907, alpha= 10240)
     )
 
     val allTests = listOf(actualRightReadings, actualLeftReadings)
