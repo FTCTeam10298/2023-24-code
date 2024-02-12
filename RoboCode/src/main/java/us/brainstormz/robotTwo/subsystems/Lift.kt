@@ -18,7 +18,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         PastDown(0),
         Down(0),
         BackboardBottomRow(330),
-        ClearForArmToMove(450),
+        ClearForArmToMove(547),
         WaitForArmToMove(800),
         SetLine1(800),
         SetLine2(1400),
