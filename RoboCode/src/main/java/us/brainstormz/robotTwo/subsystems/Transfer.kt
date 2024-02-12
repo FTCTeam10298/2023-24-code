@@ -145,61 +145,71 @@ class Transfer(private val telemetry: Telemetry) {
         }
     }
 
-    val leftAlphaDetectionThreshold = 600
-    val rightAlphaDetectionThreshold = 600
+    val leftNothingReading = SensorReading(red= 73, green= 115, blue= 158, alpha= 324)
+    val rightNothingReading = SensorReading(red= 10, green= 13, blue= 118, alpha= 38)
     fun isPixelIn(reading: SensorReading, side: Side): Boolean {
         telemetry.addLine("$side reading: $reading")
-        val alpha = reading.alpha
 
-        val alphaDetectionThreshold = when (side) {
-            Side.Left -> leftAlphaDetectionThreshold
-            Side.Right -> rightAlphaDetectionThreshold
+        val nothingReading = when (side) {
+            Side.Left -> leftNothingReading
+            Side.Right -> rightNothingReading
         }
 
-        return alpha > alphaDetectionThreshold
-    }
-
-    val rightWhitePixelReading = SensorReading(red = 624, green= 619, blue= 539, alpha= 1717)//(red= 1113, green= 1068, blue= 967, alpha= 3014)
-    val leftWhitePixelReading = SensorReading(red = 4290, green= 4992, blue= 4262, alpha= 10240)//(red= 9364, green= 10240, blue= 9907, alpha= 10240)
-    private val rgbChannelRange: IntRange = 0..255
-    private fun getRGBFromSensorReading(reading: SensorReading, whiteReading: SensorReading): RGBValue {
-        val conversionFactors = whiteReading.rgbAsMap.map { (color, colorChannelOfWhite) ->
-            //e.g. readingToRGBCoversion = red= 9364 * red= 255
-            //9364 * x = 225
-            //x = 255/9364
-            val conversionFactor = (rgbChannelRange.last)/colorChannelOfWhite.toDouble()
-
-            color to conversionFactor
-        }.toMap()
-
-        val convertedChannels = reading.rgbAsMap.map {(color, colorChannelOfReading) ->
-            val conversionFactorForThisChannel = conversionFactors[color]!!
-            val convertedChannel = colorChannelOfReading * conversionFactorForThisChannel
-            color to convertedChannel
-        }.toMap()
-
-        val rangeLimited = convertedChannels.map {(color, colorChannelOfReading) ->
-            color to colorChannelOfReading.coerceIn(rgbChannelRange.first.toDouble(), rgbChannelRange.last.toDouble())
-        }.toMap()
-
-        return RGBValue(rangeLimited[RGB.Red]!!, rangeLimited[RGB.Green]!!, rangeLimited[RGB.Blue]!!)
-    }
-
-    fun findColorFromReading(reading: SensorReading, side: Side): RobotTwoTeleOp.PixelColor {
-        val whiteReading = when (side) {
-            Side.Left -> leftWhitePixelReading
-            Side.Right -> rightWhitePixelReading
+        val doesEachColorChannelPass = reading.asList.mapIndexed {i, it ->
+            it > (nothingReading.asList[i] * 4/3)
         }
-        val readingAsRGBColor = getRGBFromSensorReading(reading, whiteReading)
-        println("readingAsRGBColor: $readingAsRGBColor")
 
-        val allPossibleColors = pixelColorsToRGB.asMap.filter { (pixelColor, rgbRange) ->
-            rgbRange.contains(readingAsRGBColor)
+        val howManyChannelsPass = doesEachColorChannelPass.fold(0) {acc, it ->
+            if (it) {
+                acc + 1
+            } else
+                acc
         }
-        val pixelColor = allPossibleColors.keys.firstOrNull() ?: RobotTwoTeleOp.PixelColor.Unknown
-        return pixelColor
+
+        return howManyChannelsPass >= 3
     }
 
+//    val rightWhitePixelReading = SensorReading(red = 624, green= 619, blue= 539, alpha= 1717)//(red= 1113, green= 1068, blue= 967, alpha= 3014)
+//    val leftWhitePixelReading = SensorReading(red = 4290, green= 4992, blue= 4262, alpha= 10240)//(red= 9364, green= 10240, blue= 9907, alpha= 10240)
+//    private val rgbChannelRange: IntRange = 0..255
+//    private fun getRGBFromSensorReading(reading: SensorReading, whiteReading: SensorReading): RGBValue {
+//        val conversionFactors = whiteReading.rgbAsMap.map { (color, colorChannelOfWhite) ->
+//            //e.g. readingToRGBCoversion = red= 9364 * red= 255
+//            //9364 * x = 225
+//            //x = 255/9364
+//            val conversionFactor = (rgbChannelRange.last)/colorChannelOfWhite.toDouble()
+//
+//            color to conversionFactor
+//        }.toMap()
+//
+//        val convertedChannels = reading.rgbAsMap.map {(color, colorChannelOfReading) ->
+//            val conversionFactorForThisChannel = conversionFactors[color]!!
+//            val convertedChannel = colorChannelOfReading * conversionFactorForThisChannel
+//            color to convertedChannel
+//        }.toMap()
+//
+//        val rangeLimited = convertedChannels.map {(color, colorChannelOfReading) ->
+//            color to colorChannelOfReading.coerceIn(rgbChannelRange.first.toDouble(), rgbChannelRange.last.toDouble())
+//        }.toMap()
+//
+//        return RGBValue(rangeLimited[RGB.Red]!!, rangeLimited[RGB.Green]!!, rangeLimited[RGB.Blue]!!)
+//    }
+//
+//    fun findColorFromReading(reading: SensorReading, side: Side): RobotTwoTeleOp.PixelColor {
+//        val whiteReading = when (side) {
+//            Side.Left -> leftWhitePixelReading
+//            Side.Right -> rightWhitePixelReading
+//        }
+//        val readingAsRGBColor = getRGBFromSensorReading(reading, whiteReading)
+//        println("readingAsRGBColor: $readingAsRGBColor")
+//
+//        val allPossibleColors = pixelColorsToRGB.asMap.filter { (pixelColor, rgbRange) ->
+//            rgbRange.contains(readingAsRGBColor)
+//        }
+//        val pixelColor = allPossibleColors.keys.firstOrNull() ?: RobotTwoTeleOp.PixelColor.Unknown
+//        return pixelColor
+//    }
+//
     enum class RGB {
         Red,
         Green,
@@ -218,87 +228,87 @@ class Transfer(private val telemetry: Telemetry) {
                 alpha = sensor.alpha()
         )
     }
-
-    data class RGBValue(val red: Double, val green: Double, val blue: Double) {
-        constructor(red: Int, green: Int, blue: Int): this(red.toDouble(), green.toDouble(), blue.toDouble())
-        val asMap = mapOf(RGB.Red to red, RGB.Green to green, RGB.Blue to blue)
-    }
-
-    data class RGBRange(val low: RGBValue, val high: RGBValue) {
-        fun getRangeForColor(color: RGB): ClosedRange<Double> = low.asMap[color]!!..high.asMap[color]!!
-//                when (color) {
-//                    RGB.Red -> low.red..high.red
-//                    RGB.Green -> low.green..high.green
-//                    RGB.Blue -> low.blue..high.blue
-//                }
-
-        fun contains(color: RGBValue): Boolean {
-            return color.asMap.toList().fold(true) {acc, (color, value) ->
-                val rangeForColor = getRangeForColor(color)
-                val colorIsInRange = rangeForColor.contains(value)
-                println("value: $value in rangeForColor: $rangeForColor is $colorIsInRange")
-
-                acc && colorIsInRange
-            }
-        }
-    }
-
-    data class PixelColorsToRGB(val purple: RGBRange, val green: RGBRange, val white: RGBRange, val yellow: RGBRange) {
-        val asMap: Map<RobotTwoTeleOp.PixelColor, RGBRange> = mapOf(
-                        RobotTwoTeleOp.PixelColor.Purple to purple,
-                        RobotTwoTeleOp.PixelColor.Green to green,
-                        RobotTwoTeleOp.PixelColor.White to white,
-                        RobotTwoTeleOp.PixelColor.Yellow to yellow
-        )
-    }
-
-    private val pixelColorsToRGB = PixelColorsToRGB(
-            purple = RGBRange(
-                    RGBValue(76, 2, 171),
-                    RGBValue(198, 73, 247)
-            ),
-            green = RGBRange(
-                    RGBValue(2, 207, 2),
-                    RGBValue(66, 250, 151)
-            ),
-            white = RGBRange(
-                    RGBValue(140,140, 140),
-                    RGBValue(255, 255, 255)
-            ),
-            yellow = RGBRange(
-                    RGBValue(217, 128, 0),
-                    RGBValue(255, 255, 128)
-            ),
-    )
+//
+//    data class RGBValue(val red: Double, val green: Double, val blue: Double) {
+//        constructor(red: Int, green: Int, blue: Int): this(red.toDouble(), green.toDouble(), blue.toDouble())
+//        val asMap = mapOf(RGB.Red to red, RGB.Green to green, RGB.Blue to blue)
+//    }
+//
+//    data class RGBRange(val low: RGBValue, val high: RGBValue) {
+//        fun getRangeForColor(color: RGB): ClosedRange<Double> = low.asMap[color]!!..high.asMap[color]!!
+////                when (color) {
+////                    RGB.Red -> low.red..high.red
+////                    RGB.Green -> low.green..high.green
+////                    RGB.Blue -> low.blue..high.blue
+////                }
+//
+//        fun contains(color: RGBValue): Boolean {
+//            return color.asMap.toList().fold(true) {acc, (color, value) ->
+//                val rangeForColor = getRangeForColor(color)
+//                val colorIsInRange = rangeForColor.contains(value)
+//                println("value: $value in rangeForColor: $rangeForColor is $colorIsInRange")
+//
+//                acc && colorIsInRange
+//            }
+//        }
+//    }
+//
+//    data class PixelColorsToRGB(val purple: RGBRange, val green: RGBRange, val white: RGBRange, val yellow: RGBRange) {
+//        val asMap: Map<RobotTwoTeleOp.PixelColor, RGBRange> = mapOf(
+//                        RobotTwoTeleOp.PixelColor.Purple to purple,
+//                        RobotTwoTeleOp.PixelColor.Green to green,
+//                        RobotTwoTeleOp.PixelColor.White to white,
+//                        RobotTwoTeleOp.PixelColor.Yellow to yellow
+//        )
+//    }
+//
+//    private val pixelColorsToRGB = PixelColorsToRGB(
+//            purple = RGBRange(
+//                    RGBValue(76, 2, 171),
+//                    RGBValue(198, 73, 247)
+//            ),
+//            green = RGBRange(
+//                    RGBValue(2, 207, 2),
+//                    RGBValue(66, 250, 151)
+//            ),
+//            white = RGBRange(
+//                    RGBValue(140,140, 140),
+//                    RGBValue(255, 255, 255)
+//            ),
+//            yellow = RGBRange(
+//                    RGBValue(217, 128, 0),
+//                    RGBValue(255, 255, 128)
+//            ),
+//    )
 }
 
-fun main() {
-    val transfer = Transfer(PrintlnTelemetry())
-
-    val actualRightReadings = Transfer.Side.Right to mapOf(
-            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 624, green= 619, blue= 539, alpha= 1717),
-    )
-
-    val actualLeftReadings = Transfer.Side.Left to mapOf(
-            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 4290, green= 4992, blue= 4262, alpha= 10240),
-            RobotTwoTeleOp.PixelColor.Purple to Transfer.SensorReading(red = 9364, green= 10240, blue= 9907, alpha= 10240)
-    )
-
-    val allTests = listOf(actualRightReadings, actualLeftReadings)
-    val resultOfAllTests = allTests.fold(true) {acc, (side, map) ->
-        acc && map.toList().fold(true) {acc, (expectedPixelColor, inputReading) ->
-            println("\n\ninputReading: $inputReading")
-            println("side: $side")
-            println("expectedPixelColor: $expectedPixelColor\n")
-
-            val outputPixelColor = transfer.findColorFromReading(inputReading, side)
-            println("\noutputPixelColor: $outputPixelColor")
-
-            val pixelWasIdentifiedCorrectly = expectedPixelColor == outputPixelColor
-            println("\npixelWasIdentifiedCorrectly: $pixelWasIdentifiedCorrectly")
-
-            acc && pixelWasIdentifiedCorrectly
-        }
-    }
-    println("\n\nresultOfAllTests: $resultOfAllTests")
-}
+//fun main() {
+//    val transfer = Transfer(PrintlnTelemetry())
+//
+//    val actualRightReadings = Transfer.Side.Right to mapOf(
+//            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 624, green= 619, blue= 539, alpha= 1717),
+//    )
+//
+//    val actualLeftReadings = Transfer.Side.Left to mapOf(
+//            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 4290, green= 4992, blue= 4262, alpha= 10240),
+//            RobotTwoTeleOp.PixelColor.Purple to Transfer.SensorReading(red = 9364, green= 10240, blue= 9907, alpha= 10240)
+//    )
+//
+//    val allTests = listOf(actualRightReadings, actualLeftReadings)
+//    val resultOfAllTests = allTests.fold(true) {acc, (side, map) ->
+//        acc && map.toList().fold(true) {acc, (expectedPixelColor, inputReading) ->
+//            println("\n\ninputReading: $inputReading")
+//            println("side: $side")
+//            println("expectedPixelColor: $expectedPixelColor\n")
+//
+//            val outputPixelColor = transfer.findColorFromReading(inputReading, side)
+//            println("\noutputPixelColor: $outputPixelColor")
+//
+//            val pixelWasIdentifiedCorrectly = expectedPixelColor == outputPixelColor
+//            println("\npixelWasIdentifiedCorrectly: $pixelWasIdentifiedCorrectly")
+//
+//            acc && pixelWasIdentifiedCorrectly
+//        }
+//    }
+//    println("\n\nresultOfAllTests: $resultOfAllTests")
+//}

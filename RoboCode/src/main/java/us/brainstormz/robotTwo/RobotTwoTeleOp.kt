@@ -424,6 +424,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val transferLeftSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
         val transferRightSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
         val areBothPixelsIn = transferLeftSensorState && transferRightSensorState
+        telemetry.addLine("transferLeftSensorState: $transferLeftSensorState")
+        telemetry.addLine("transferRightSensorState: $transferRightSensorState")
 
         val previousTransferLeftSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
         val previousTransferRightSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
