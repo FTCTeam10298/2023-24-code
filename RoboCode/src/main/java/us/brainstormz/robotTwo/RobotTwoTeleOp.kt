@@ -435,7 +435,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 previousTargetState.doingHandoff
             }
         }
-        val handoffIsReadyCheck = handoffManager.checkIfHandoffIsReady(actualRobot, previousTargetState.targetRobot)
+        val handoffIsReadyCheck = handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)
         telemetry.addLine("doHandoffSequence: $doHandoffSequence")
         telemetry.addLine("handoffIsReadyCheck: $handoffIsReadyCheck")
 
@@ -499,33 +499,34 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
 
-        val spoofDriverInputForDepo = driverInput.copy(depo = if (driverInput.depo == DepoInput.NoInput) {
-            val driverOneIsUsingTheClaws = previousTargetState.driverInput.bumperMode == Gamepad1BumperMode.Claws
-            val isWristClosedOrBeingToldToClose = driverInput.wrist.bothClaws.toList().fold(true) {acc, (side, clawInput) ->
-                acc && ((clawInput == ClawInput.Drop) || wrist.clawsAsMap[side]!!.isClawAtAngle(ClawTarget.Retracted, actualRobot.depoState.wristAngles.getBySide(side)))
-            }
-            val driverOneWantsToRetract = driverOneIsUsingTheClaws && isWristClosedOrBeingToldToClose
-            if (weWantToStartHandoff || driverOneWantsToRetract) {
-                DepoInput.Down
-            } else {
-                previousTargetState.driverInput.depo
-            }
-        } else {
-            driverInput.depo
-        }).copy(wrist=
-                if (handoffIsReadyCheck) {
-                    fun boolToClawInput(bool: Boolean): ClawInput {
-                        return when (bool) {
-                            true -> ClawInput.Hold
-                            false -> ClawInput.Drop
+        val spoofDriverInputForDepo = driverInput.copy(
+                depo = if (driverInput.depo == DepoInput.NoInput) {
+                            val driverOneIsUsingTheClaws = previousTargetState.driverInput.bumperMode == Gamepad1BumperMode.Claws
+                            val isWristClosedOrBeingToldToClose = driverInput.wrist.bothClaws.toList().fold(true) {acc, (side, clawInput) ->
+                                acc && ((clawInput == ClawInput.Drop) || wrist.clawsAsMap[side]!!.isClawAtAngle(ClawTarget.Retracted, actualRobot.depoState.wristAngles.getBySide(side)))
+                            }
+                            val driverOneWantsToRetract = driverOneIsUsingTheClaws && isWristClosedOrBeingToldToClose
+                            if (weWantToStartHandoff || driverOneWantsToRetract) {
+                                DepoInput.Down
+                            } else {
+                                previousTargetState.driverInput.depo
+                            }
+                        } else {
+                            driverInput.depo
+                        },
+                wrist = if (handoffIsReadyCheck) {
+                            fun boolToClawInput(bool: Boolean): ClawInput {
+                                return when (bool) {
+                                    true -> ClawInput.Hold
+                                    false -> ClawInput.Drop
+                                }
+                            }
+                            WristInput(
+                                    left= boolToClawInput(transferLeftSensorState),
+                                    right= boolToClawInput(transferRightSensorState))
+                        } else {
+                            WristInput(ClawInput.Drop, ClawInput.Drop)//driverInput.wrist
                         }
-                    }
-                    WristInput(
-                            left= boolToClawInput(transferLeftSensorState),
-                            right= boolToClawInput(transferRightSensorState))
-                } else {
-                    driverInput.wrist
-                }
         )
 
         val depoTarget: DepoTarget = if (driverInputIsManual || depoShouldStayManualFromLastLoop) {

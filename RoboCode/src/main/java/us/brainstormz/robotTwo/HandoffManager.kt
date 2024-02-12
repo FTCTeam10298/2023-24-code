@@ -36,19 +36,25 @@ class HandoffManager(
             val lights: BlinkinPattern,
             val armState: Arm.Positions)
 
-    fun checkIfHandoffIsReady(actualRobot: ActualRobot, previousTargetRobot: TargetRobot): Boolean {
-        val isCollectorAllTheWayIn = actualRobot.collectorSystemState.extendoLimitIsActivated
-        val liftExtensionIsAllTheWayDown = actualRobot.depoState.isLiftLimitActivated
-        val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
-        telemetry.addLine("isCollectorAllTheWayIn: $isCollectorAllTheWayIn")
+    fun checkIfHandoffIsReady(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Boolean {
+        val isExtendoAllTheWayIn = actualWorld.actualRobot.collectorSystemState.extendoLimitIsActivated
+        val extendoIsMovingInOrNotAtAll = extendo.getVelocityTicksPerMili(
+                actualWorld.actualRobot.collectorSystemState.extendoPositionTicks,
+                actualWorld.timestampMilis,
+                previousActualWorld.actualRobot.collectorSystemState.extendoPositionTicks,
+                previousActualWorld.timestampMilis) <= 0
+        val extendoIsReady = extendoIsMovingInOrNotAtAll
+
+        val liftExtensionIsAllTheWayDown = actualWorld.actualRobot.depoState.isLiftLimitActivated
+        telemetry.addLine("isExtendoAllTheWayIn: $isExtendoAllTheWayIn")
         telemetry.addLine("liftExtensionIsAllTheWayDown: $liftExtensionIsAllTheWayDown")
 
-        val isArmReadyToTransfer = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualRobot.depoState.armAngleDegrees)
+        val isArmReadyToTransfer = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)
         telemetry.addLine("isArmReadyToTransfer: $isArmReadyToTransfer")
 
-        val areRollersReadyToTransfer = true//collector.arePixelsAlignedInTransfer()
+//        val areRollersReadyToTransfer = true//collector.arePixelsAlignedInTransfer()
 
-        val readyToHandoff = bothExtensionsAreAllTheWayIn && isArmReadyToTransfer && areRollersReadyToTransfer
+        val readyToHandoff = extendoIsReady && liftExtensionIsAllTheWayDown && isArmReadyToTransfer
         return readyToHandoff
     }
 
