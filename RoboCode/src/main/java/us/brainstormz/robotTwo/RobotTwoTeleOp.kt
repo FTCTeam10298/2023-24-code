@@ -19,6 +19,7 @@ import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
+import us.brainstormz.utils.DataClassHelper
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -134,20 +135,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val rollers: RollerInput,
             val driveVelocity: PositionAndRotation
     ) {
-        override fun toString(): String =
-                "DriverInput(\n" +
-                "   bumperMode=$bumperMode\n" +
-                "   lightInput=$lightInput\n" +
-                "   depo=$depo\n" +
-                "   wrist=$wrist\n" +
-                "   collector=$collector\n" +
-                "   extendo=$extendo\n" +
-                "   hang=$hang\n" +
-                "   launcher=$launcher\n" +
-                "   handoff=$handoff\n" +
-                "   rollers=$rollers\n" +
-                "   driveVelocity=$driveVelocity\n" +
-                ")"
+        override fun toString(): String = DataClassHelper.dataClassToString(this)
     }
     fun getDriverInput(actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): DriverInput {
         val gamepad1 = actualWorld.actualGamepad1
@@ -424,8 +412,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val transferLeftSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
         val transferRightSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
         val areBothPixelsIn = transferLeftSensorState && transferRightSensorState
-        telemetry.addLine("transferLeftSensorState: $transferLeftSensorState")
-        telemetry.addLine("transferRightSensorState: $transferRightSensorState")
 
         val previousTransferLeftSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
         val previousTransferRightSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
@@ -495,7 +481,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 //                    }
                     Extendo.ExtendoPositions.AllTheWayInTarget
                 } else {
-
                     previousTargetState.targetRobot.collectorTarget.extendoPositions
                 }
             } }
@@ -738,7 +723,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
-    var isFirstTimeInLoop = true
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) {
 
         for (hub in hardware.allHubs) {
@@ -747,10 +731,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = { previousActualState ->
-
-                    telemetry.addLine("previousActualState ${previousActualState?.actualGamepad2}")
-                    telemetry.addLine("gamepad2 $gamepad2")
-
                     val currentGamepad1 = Gamepad()
                     currentGamepad1.copy(gamepad1)
                     val currentGamepad2 = Gamepad()
@@ -763,14 +743,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     )
                 },
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
+                    telemetry.addLine("actualState: $actualState\n")
                     val previousActualState = previousActualState ?: actualState
                     val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
                     val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                     getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                 },
                 stateFulfiller = { targetState, actualState ->
-                    telemetry.addLine("actualState: $actualState")
-                    telemetry.addLine("targetState: $targetState")
+                    telemetry.addLine("\ntargetState: $targetState")
                     hardware.actuateRobot(
                             targetState,
                             actualState,
@@ -791,8 +771,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
         telemetry.addLine("loop time: $loopTime milis")
+        telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
 
         telemetry.update()
-        isFirstTimeInLoop = false
     }
 }

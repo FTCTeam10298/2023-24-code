@@ -148,7 +148,6 @@ class Transfer(private val telemetry: Telemetry) {
     val leftNothingReading = SensorReading(red= 73, green= 115, blue= 158, alpha= 324)
     val rightNothingReading = SensorReading(red= 10, green= 13, blue= 118, alpha= 38)
     fun isPixelIn(reading: SensorReading, side: Side): Boolean {
-        telemetry.addLine("$side reading: $reading")
 
         val nothingReading = when (side) {
             Side.Left -> leftNothingReading
@@ -165,8 +164,6 @@ class Transfer(private val telemetry: Telemetry) {
             } else
                 acc
         }
-
-        telemetry.addLine("numberOfPassingChannels: $numberOfPassingChannels")
 
         return numberOfPassingChannels >= 3
     }
