@@ -263,7 +263,7 @@ class Transfer(private val telemetry: Telemetry) {
                     RGBValue(66, 250, 151)
             ),
             white = RGBRange(
-                    RGBValue(199, 199, 199),
+                    RGBValue(140,140, 140),
                     RGBValue(255, 255, 255)
             ),
             yellow = RGBRange(
@@ -276,15 +276,29 @@ class Transfer(private val telemetry: Telemetry) {
 fun main() {
     val transfer = Transfer(PrintlnTelemetry())
 
-    val inputReading = transfer.leftWhiteReading
-    val side = Transfer.Side.Left
-    val expectedPixelColor = RobotTwoTeleOp.PixelColor.White
+    val actualRightReadings = Transfer.Side.Right to mapOf(
+            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 624, green= 619, blue= 539, alpha= 1717)
+    )
 
-    println("inputReading: $inputReading")
-    println("side: $side")
-    println("expectedPixelColor: $expectedPixelColor\n")
+    val actualLeftReadings = Transfer.Side.Right to mapOf(
+            RobotTwoTeleOp.PixelColor.White to Transfer.SensorReading(red = 4290, green= 4992, blue= 4262, alpha= 10240)
+    )
 
-    val outputPixelColor = transfer.findColorFromReading(inputReading, side)
+    val allTests = listOf(actualRightReadings, actualLeftReadings)
+    val resultOfAllTests = allTests.fold(true) {acc, (side, map) ->
+        acc && map.toList().fold(true) {acc, (expectedPixelColor, inputReading) ->
+            println("\n\ninputReading: $inputReading")
+            println("side: $side")
+            println("expectedPixelColor: $expectedPixelColor\n")
 
-    println("\noutputPixelColor: $outputPixelColor")
+            val outputPixelColor = transfer.findColorFromReading(inputReading, side)
+            println("\noutputPixelColor: $outputPixelColor")
+
+            val pixelWasIdentifiedCorrectly = expectedPixelColor == outputPixelColor
+            println("\npixelWasIdentifiedCorrectly: $pixelWasIdentifiedCorrectly")
+
+            acc && pixelWasIdentifiedCorrectly
+        }
+    }
+    println("\n\nresultOfAllTests: $resultOfAllTests")
 }
