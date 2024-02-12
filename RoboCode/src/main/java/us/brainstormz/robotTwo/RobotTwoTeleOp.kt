@@ -513,7 +513,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         } else {
             driverInput.depo
         }).copy(wrist=
-                if (handoffIsReadyCheck && doHandoffSequence) {
+                if (handoffIsReadyCheck) {
                     fun boolToClawInput(bool: Boolean): ClawInput {
                         return when (bool) {
                             true -> ClawInput.Hold

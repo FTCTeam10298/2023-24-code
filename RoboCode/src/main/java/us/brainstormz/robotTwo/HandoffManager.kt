@@ -40,8 +40,11 @@ class HandoffManager(
         val isCollectorAllTheWayIn = actualRobot.collectorSystemState.extendoLimitIsActivated
         val liftExtensionIsAllTheWayDown = actualRobot.depoState.isLiftLimitActivated
         val bothExtensionsAreAllTheWayIn = liftExtensionIsAllTheWayDown && isCollectorAllTheWayIn
+        telemetry.addLine("isCollectorAllTheWayIn: $isCollectorAllTheWayIn")
+        telemetry.addLine("liftExtensionIsAllTheWayDown: $liftExtensionIsAllTheWayDown")
 
-        val isArmReadyToTransfer = actualRobot.depoState.armAngleDegrees <= Arm.Positions.In.angleDegrees
+        val isArmReadyToTransfer = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualRobot.depoState.armAngleDegrees)
+        telemetry.addLine("isArmReadyToTransfer: $isArmReadyToTransfer")
 
         val areRollersReadyToTransfer = true//collector.arePixelsAlignedInTransfer()
 

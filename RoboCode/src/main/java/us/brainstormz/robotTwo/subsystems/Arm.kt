@@ -37,6 +37,15 @@ class Arm: Subsystem {
         return currentAngleDegrees in acceptableRange
     }
 
+    fun checkIfArmIsAtTarget(armTarget: Arm.Positions, actualArmAngleDegrees: Double): Boolean {
+        return when (armTarget) {
+            Arm.Positions.ClearLiftMovement -> actualArmAngleDegrees < Arm.Positions.TooFarIn.angleDegrees && actualArmAngleDegrees >= Arm.Positions.ClearLiftMovement.angleDegrees
+            Arm.Positions.In -> actualArmAngleDegrees >= (Arm.Positions.In.angleDegrees)
+            Arm.Positions.Out -> actualArmAngleDegrees <= (Arm.Positions.OkToDropPixels.angleDegrees + 2)
+            else -> isArmAtAngle(armTarget.angleDegrees, actualArmAngleDegrees)
+        }
+    }
+
 //    fun moveArmTowardPosition(targetPosition: Double) {
 //        val power = calcPowerToReachTarget(targetPosition)
 //        powerArm(power)
