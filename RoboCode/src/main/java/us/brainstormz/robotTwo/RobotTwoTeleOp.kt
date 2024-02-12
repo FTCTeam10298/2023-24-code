@@ -509,7 +509,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
 
         val spoofDriverInputForDepo = driverInput.copy(depo = if (driverInput.depo == DepoInput.NoInput) {
-            if (weWantToStartHandoff) {
+            val driverOneIsUsingTheClaws = previousTargetState.driverInput.bumperMode == Gamepad1BumperMode.Claws
+            val isWristClosedOrBeingToldToClose = driverInput.wrist.bothClaws.toList().fold(true) {acc, (side, clawInput) ->
+                acc && ((clawInput == ClawInput.Drop) || wrist.clawsAsMap[side]!!.isClawAtAngle(ClawTarget.Retracted, actualRobot.depoState.wristAngles.getBySide(side)))
+            }
+            val driverOneWantsToRetract = driverOneIsUsingTheClaws && isWristClosedOrBeingToldToClose
+            if (weWantToStartHandoff || driverOneWantsToRetract) {
                 DepoInput.Down
             } else {
                 previousTargetState.driverInput.depo
