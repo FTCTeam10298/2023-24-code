@@ -29,7 +29,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     //Handoff
 
     val intake = Intake()
-    val transfer = Transfer()
+    val transfer = Transfer(telemetry)
     val extendo = Extendo()
     val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
 
@@ -435,10 +435,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val inputsConflictWithTransfer = driverInput.extendo == ExtendoInput.Extend || (driverInput.depo != DepoInput.NoInput)
 
-        telemetry.addLine("\nHANDOFF:")
         val doHandoffSequence: Boolean = when {
             inputsConflictWithTransfer -> {
-                telemetry.addLine("Canceled due to conflicting inputs")
                 false
             }
             weWantToStartHandoff -> {
@@ -446,12 +444,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 true
             }
             else -> {
-                telemetry.addLine("Doing the same thing as last time")
                 previousTargetState.doingHandoff
             }
         }
         val handoffIsReadyCheck = handoffManager.checkIfHandoffIsReady(actualRobot, previousTargetState.targetRobot)
-        telemetry.addLine("Are we doing handoff: $doHandoffSequence")
+        telemetry.addLine("doHandoffSequence: $doHandoffSequence")
+        telemetry.addLine("handoffIsReadyCheck: $handoffIsReadyCheck")
 
         /**Intake Noodles*/
         val intakeNoodleTarget = intake.getCollectorState(
@@ -509,14 +507,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
 
         val spoofDriverInputForDepo = driverInput.copy(depo = if (driverInput.depo == DepoInput.NoInput) {
-            telemetry.addLine("spoofing driver input because it's noinput")
             if (weWantToStartHandoff) {
                 DepoInput.Down
             } else {
                 previousTargetState.driverInput.depo
             }
         } else {
-            telemetry.addLine("Driver input is ${driverInput.depo}")
             driverInput.depo
         }).copy(wrist=
                 if (handoffIsReadyCheck && doHandoffSequence) {
@@ -544,7 +540,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     targetType = DepoTargetType.Manual
             )
         } else {
-            telemetry.addLine("spoofDriverInputForDepo: $spoofDriverInputForDepo")
             depoManager.fullyManageDepo(
                     target= spoofDriverInputForDepo,
                     previousDepoTarget= previousTargetState.targetRobot.depoTarget,
@@ -605,7 +600,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 //                }
             }
         }
-        telemetry.addLine("desiredPixelLightPattern: $desiredPixelLightPattern")
 
         val timeToDisplayColorMilis = 1000
         val timeWhenCurrentColorStartedBeingDisplayedMilis = previousTargetState.targetRobot.lights.timeOfColorChangeMilis

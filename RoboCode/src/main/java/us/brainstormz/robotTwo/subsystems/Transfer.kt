@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo.subsystems
 
 import com.qualcomm.robotcore.hardware.ColorSensor
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.AxonEncoderReader
@@ -8,7 +9,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import kotlin.math.abs
 
-class Transfer {
+class Transfer(private val telemetry: Telemetry) {
     enum class RollerPowers(val power: Double) {
         Off(0.0),
         GoToHoldingPosition(0.0),
@@ -146,6 +147,7 @@ class Transfer {
     val leftAlphaDetectionThreshold = 600
     val rightAlphaDetectionThreshold = 600
     fun isPixelIn(reading: SensorReading, side: Side): Boolean {
+        telemetry.addLine("$side reading: $reading")
         val alpha = reading.alpha
 
         val alphaDetectionThreshold = when (side) {

@@ -687,7 +687,7 @@ class RobotTwoAuto: OpMode() {
     private lateinit var mecanumMovement: MecanumMovement
 
     private val intake = Intake()
-    private val transfer = Transfer()
+    private val transfer = Transfer(telemetry)
     private val extendo = Extendo()
 
     private lateinit var collectorSystem: CollectorSystem
