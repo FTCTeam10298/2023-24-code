@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualRobot
+import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.absoluteValue
 
@@ -40,7 +41,12 @@ class Extendo: Subsystem {
 
     fun getExtendoPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
 
-    fun getVelocityTicksPerMili(actualTicks: Int, actualTimeMilis: Long, previousActualTicks: Int, previousActualTimeMilis: Long): Double {
+//    fun getVelocityTicksPerMili(actualTicks: Int, actualTimeMilis: Long, previousActualTicks: Int, previousActualTimeMilis: Long): Double {
+    fun getVelocityTicksPerMili(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Double {
+        val actualTicks: Int = actualWorld.actualRobot.collectorSystemState.extendoPositionTicks
+        val actualTimeMilis: Long = actualWorld.timestampMilis
+        val previousActualTicks: Int = previousActualWorld.actualRobot.collectorSystemState.extendoPositionTicks
+        val previousActualTimeMilis: Long = previousActualWorld.timestampMilis
         val deltaTimeMilis: Long = actualTimeMilis - previousActualTimeMilis
         val deltaTicks: Int = actualTicks - previousActualTicks
         val velocityTicksPerMili: Double = (deltaTicks.toDouble())/(deltaTimeMilis)
