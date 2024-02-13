@@ -456,10 +456,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("handoffIsReadyCheck: $handoffIsReadyCheck")
 
         /**Intake Noodles*/
+        val timeSinceEjectionStartedMilis: Long = actualWorld.timestampMilis - previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis
+        val timeToStopEjecting = timeSinceEjectionStartedMilis > 1000
+        val wasPreviouslyEjecting = previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.Eject
         val intakeNoodleTarget = intake.getCollectorState(
                 driverInput = if (theRobotJustCollectedTwoPixels) {
                     Intake.CollectorPowers.Eject
-                } else if (previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.Eject && areBothPixelsIn && handoffIsReadyCheck && doHandoffSequence) {
+                } else if (timeToStopEjecting && wasPreviouslyEjecting && doHandoffSequence) {
                     Intake.CollectorPowers.Off
                 } else {
                     when (driverInput.collector) {
@@ -471,6 +474,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 },
                 isPixelInLeft = transferLeftSensorState,
                 isPixelInRight= transferRightSensorState)
+        val timeOfEjectionStartMilis = if (theRobotJustCollectedTwoPixels) {
+            actualWorld.timestampMilis
+        } else {
+            previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis
+        }
 
         /**Rollers */
         val autoRollerState = transfer.getAutoPixelSortState(isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake, actualRobot)
@@ -710,6 +718,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         depoTarget = depoTarget,
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = intakeNoodleTarget,
+                                timeOfEjectionStartMilis = timeOfEjectionStartMilis,
                                 rollers = rollerTargetState,
                                 extendoPositions = extendoState,
                         ),
@@ -753,6 +762,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         depoTarget = initDepoTarget,
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = Intake.CollectorPowers.Off,
+                                timeOfEjectionStartMilis = 0,
                                 rollers = Transfer.RollerState(
                                         leftServoCollect = Transfer.RollerPowers.Off,
                                         rightServoCollect = Transfer.RollerPowers.Off,

@@ -22,6 +22,7 @@ data class DepoTarget(
 }
 data class CollectorTarget(
         val extendoPositions: Extendo.ExtendoPositions,
+        val timeOfEjectionStartMilis: Long,
         val intakeNoodles: Intake.CollectorPowers,
         val rollers: Transfer.RollerState
 ) {
