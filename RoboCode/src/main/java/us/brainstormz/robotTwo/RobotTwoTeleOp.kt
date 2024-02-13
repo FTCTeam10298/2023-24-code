@@ -540,6 +540,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }.toMap()
 
+        telemetry.addLine("clawInputPerSide: $clawInputPerSide")
+
         val spoofDriverInputForDepo = driverInput.copy(
                 depo = if (driverInput.depo == DepoInput.NoInput) {
                             val driverOneIsUsingTheClaws = previousTargetState.driverInput.bumperMode == Gamepad1BumperMode.Claws
@@ -558,7 +560,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 wrist = WristInput(clawInputPerSide[Transfer.Side.Left]!!,  clawInputPerSide[Transfer.Side.Right]!!)
         )
 
-        val depoTarget: DepoTarget = if (driverInputIsManual || depoShouldStayManualFromLastLoop) {
+        val driverInputIsManual = driverInput.depo == DepoInput.Manual
+        val depoWasManualLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual
+        val noAutomationTakingOver = !doingHandoff
+        val depoTarget: DepoTarget = if ((driverInputIsManual || depoWasManualLastLoop) && noAutomationTakingOver) {
             val liftPosition: Lift.LiftPositions = Lift.LiftPositions.Manual
             val armPosition = Arm.Positions.Manual
             DepoTarget(

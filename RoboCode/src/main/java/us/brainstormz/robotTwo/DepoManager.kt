@@ -211,6 +211,7 @@ class DepoManager(
                         if (armAndLiftAreAtFinalRestingPlace) {
                             wristInput
                         } else {
+                            telemetry.addLine("keeping wrist closed because arm and lift aren't ready")
                             //When going in/out keep the claws retracted/griping so that pixels can't get dropped
                             movingArmAndLiftTarget.wristPosition
                         }
