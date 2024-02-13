@@ -188,13 +188,19 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         /**Bumper Mode*/
         val gamepad1DpadIsActive = depoGamepad1Input != DepoInput.NoInput
-        val liftTargetIsDown = previousRobot.depoState.liftPositionTicks <= Lift.LiftPositions.Down.ticks
-        val bothClawsAreRetracted = previousTargetState.targetRobot.depoTarget.wristPosition == WristTargets(both= ClawTarget.Retracted)
+        val gamepad2DpadIsActive = depoGamepad2Input != null
+        val liftTargetIsDown = previousRobotTarget.depoTarget.liftPosition == Lift.LiftPositions.Down
+        val bothClawsAreRetracted = wrist.wristIsAtPosition(WristTargets(both= ClawTarget.Retracted), actualWorld.actualRobot.depoState.wristAngles)
+
+        telemetry.addLine("gamepad2DpadIsActive: $gamepad2DpadIsActive")
+        telemetry.addLine("liftTargetIsDown: $liftTargetIsDown")
+        telemetry.addLine("bothClawsAreRetracted: $bothClawsAreRetracted")
+
         val gamepadOneBumperMode: Gamepad1BumperMode = when {
             gamepad1DpadIsActive -> {
                 Gamepad1BumperMode.Claws
             }
-            !gamepad1DpadIsActive && (bothClawsAreRetracted || liftTargetIsDown) -> {
+            gamepad2DpadIsActive || bothClawsAreRetracted || liftTargetIsDown /*|| !gamepad1DpadIsActive*/-> {
                 Gamepad1BumperMode.Collector
             }
             else -> {
@@ -443,7 +449,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val intakeNoodleTarget = intake.getCollectorState(
                 driverInput = if (theRobotJustCollectedTwoPixels) {
                     Intake.CollectorPowers.Eject
-                } else if (handoffIsReadyCheck) {
+                } else if (handoffIsReadyCheck && doHandoffSequence) {
                     Intake.CollectorPowers.Off
                 } else {
                     when (driverInput.collector) {
@@ -528,6 +534,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             } else {
                                 WristInput(ClawInput.Drop, ClawInput.Drop)
                             }
+                        } else if (previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.GoingHome && extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) > 0.1) {
+                            WristInput(ClawInput.Drop, ClawInput.Drop)
                         } else {
                             driverInput.wrist
                         }
