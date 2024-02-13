@@ -508,17 +508,21 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
 
-        val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val areDepositing = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.GoingOut
-        val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
 
-
+        fun isPixelInSide(side: Transfer.Side): Boolean {
+            val reading = when (side) {
+                Transfer.Side.Left -> actualWorld.actualRobot.collectorSystemState.leftTransferState
+                Transfer.Side.Right -> actualWorld.actualRobot.collectorSystemState.rightTransferState
+            }
+            return transfer.isPixelIn(reading, side)
+        }
         val doingHandoff = doHandoffSequence && previousTargetState.targetRobot.depoTarget.targetType != DepoTargetType.GoingOut
         val collectorIsMovingOut = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) > 0.1
         val mapOfClawInputsToConditions: Map<ClawInput, (Transfer.Side) -> List<Boolean>> = mapOf(
                 ClawInput.Hold to {side ->
                     listOf(
-                            doingHandoff && handoffIsReadyCheck,
+                            doingHandoff && handoffIsReadyCheck && isPixelInSide(Transfer.Side.entries.first{it != side} /*claws Are Flipped when down*/),
                     )
                 },
                 ClawInput.Drop to {side ->
