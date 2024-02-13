@@ -498,12 +498,46 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             } }
 
         /**Depo*/
+        fun boolToClawInput(bool: Boolean): ClawInput {
+            return when (bool) {
+                true -> ClawInput.Hold
+                false -> ClawInput.Drop
+            }
+        }
         val driverInputWrist = WristTargets(
                 left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
 
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
+
+
+        val doingHandoff = doHandoffSequence && previousTargetState.targetRobot.depoTarget.targetType != DepoTargetType.GoingOut
+        val collectorIsMovingOut = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) > 0.1
+        val mapOfClawInputsToConditions: Map<ClawInput, (Transfer.Side) -> List<Boolean>> = mapOf(
+                ClawInput.Hold to {side ->
+                    listOf(
+                            doingHandoff && handoffIsReadyCheck,
+                    )
+                },
+                ClawInput.Drop to {side ->
+                    listOf(
+                            intakeNoodleTarget == Intake.CollectorPowers.Intake,
+                            doingHandoff && !handoffIsReadyCheck,
+                            collectorIsMovingOut
+                    )
+                },
+        )
+        val clawInputPerSide = Transfer.Side.entries.map { side ->
+            val driverInputForThisSide = driverInput.wrist.bothClaws.entries.first {it.key == side}.value
+            side to mapOfClawInputsToConditions.entries.fold(driverInputForThisSide) { acc, (clawInput, listOfConditions) ->
+                val doesValueMatch: Boolean = listOfConditions(side).fold(false) {acc, it -> acc || it}
+                if (doesValueMatch)
+                    clawInput
+                else
+                    acc
+            }
+        }.toMap()
 
         val spoofDriverInputForDepo = driverInput.copy(
                 depo = if (driverInput.depo == DepoInput.NoInput) {
@@ -520,26 +554,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         } else {
                             driverInput.depo
                         },
-                wrist = if (doHandoffSequence && previousTargetState.targetRobot.depoTarget.targetType != DepoTargetType.GoingOut) {
-                            if (handoffIsReadyCheck) {
-//                                fun boolToClawInput(bool: Boolean): ClawInput {
-//                                    return when (bool) {
-//                                        true -> ClawInput.Hold
-//                                        false -> ClawInput.Drop
-//                                    }
-//                                }
-//                                WristInput(
-//                                        left = boolToClawInput(transferRightSensorState),//remember claws are switched
-//                                        right = boolToClawInput(transferLeftSensorState))
-                                WristInput(ClawInput.Hold, ClawInput.Hold)
-                            } else {
-                                WristInput(ClawInput.Drop, ClawInput.Drop)
-                            }
-                        } else if (previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.GoingHome && extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) > 0.1) {
-                            WristInput(ClawInput.Drop, ClawInput.Drop)
-                        } else {
-                            driverInput.wrist
-                        }
+                wrist = WristInput(clawInputPerSide[Transfer.Side.Left]!!,  clawInputPerSide[Transfer.Side.Right]!!)
         )
 
         val depoTarget: DepoTarget = if (driverInputIsManual || depoShouldStayManualFromLastLoop) {
