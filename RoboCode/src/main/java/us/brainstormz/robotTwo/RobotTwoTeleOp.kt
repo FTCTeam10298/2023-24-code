@@ -514,18 +514,22 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         } else {
                             driverInput.depo
                         },
-                wrist = if (handoffIsReadyCheck) {
-                            fun boolToClawInput(bool: Boolean): ClawInput {
-                                return when (bool) {
-                                    true -> ClawInput.Hold
-                                    false -> ClawInput.Drop
+                wrist = if (doHandoffSequence) {
+                            if (handoffIsReadyCheck) {
+                                fun boolToClawInput(bool: Boolean): ClawInput {
+                                    return when (bool) {
+                                        true -> ClawInput.Hold
+                                        false -> ClawInput.Drop
+                                    }
                                 }
+                                WristInput(
+                                        left = boolToClawInput(transferRightSensorState),//remember claws are switched
+                                        right = boolToClawInput(transferLeftSensorState))
+                            } else {
+                                WristInput(ClawInput.Drop, ClawInput.Drop)
                             }
-                            WristInput(
-                                    left= boolToClawInput(transferLeftSensorState),
-                                    right= boolToClawInput(transferRightSensorState))
                         } else {
-                            WristInput(ClawInput.Drop, ClawInput.Drop)//driverInput.wrist
+                            driverInput.wrist
                         }
         )
 
