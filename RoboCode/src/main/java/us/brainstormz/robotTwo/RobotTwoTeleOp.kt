@@ -200,7 +200,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             gamepad1DpadIsActive -> {
                 Gamepad1BumperMode.Claws
             }
-            gamepad2DpadIsActive || bothClawsAreRetracted || liftTargetIsDown /*|| !gamepad1DpadIsActive*/-> {
+            gamepad2DpadIsActive || bothClawsAreRetracted -> {
                 Gamepad1BumperMode.Collector
             }
             else -> {
