@@ -358,7 +358,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                 if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendoLimitIsActivated) {
                     extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
                 } else {
-                    -0.4
+                    -0.48
                 }
             }
             else -> {
