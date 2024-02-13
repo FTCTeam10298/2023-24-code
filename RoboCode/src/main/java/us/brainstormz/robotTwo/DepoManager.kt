@@ -166,8 +166,8 @@ class DepoManager(
                     }
                     DepoTargetType.GoingHome -> {
                         val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
-                        val liftIsAlreadyDecentlyFarDown = actualDepo.liftPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks-100
-                        if (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox) {
+                        val liftIsAlreadyDecentlyFarDown = actualDepo.liftPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
+                        if (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox && !eitherClawIsGripping) {
                             finalDepoTarget.liftPosition
                         } else {
                             telemetry.addLine("lift is waiting for the arm")
