@@ -354,11 +354,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                 0.0
             }
             Extendo.ExtendoPositions.AllTheWayInTarget -> {
-                val atZeroPosition = actualState.actualRobot.collectorSystemState.extendoPositionTicks <= Extendo.ExtendoPositions.Min.ticks
+                val atZeroPosition = actualState.actualRobot.collectorSystemState.extendoPositionTicks <= Extendo.ExtendoPositions.Min.ticks + 5
                 if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendoLimitIsActivated) {
                     extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
                 } else {
-                    -0.3
+                    -0.4
                 }
             }
             else -> {
