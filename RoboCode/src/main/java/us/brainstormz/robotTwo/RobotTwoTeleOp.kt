@@ -449,7 +449,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val intakeNoodleTarget = intake.getCollectorState(
                 driverInput = if (theRobotJustCollectedTwoPixels) {
                     Intake.CollectorPowers.Eject
-                } else if (handoffIsReadyCheck && doHandoffSequence) {
+                } else if (previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.Eject && areBothPixelsIn && handoffIsReadyCheck && doHandoffSequence) {
                     Intake.CollectorPowers.Off
                 } else {
                     when (driverInput.collector) {
