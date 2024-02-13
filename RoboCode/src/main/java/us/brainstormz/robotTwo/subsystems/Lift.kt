@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.operationFramework.Subsystem
@@ -8,6 +9,7 @@ import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 class Lift(private val telemetry: Telemetry): Subsystem {
 
@@ -50,20 +52,32 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         hardware.liftMotorSlave.power = allowedPower
     }
 
+    fun resetPosition(hardware: RobotTwoHardware) {
+        powerSubsystem(0.0, hardware)
+        hardware.liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        hardware.liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        pid.reset()
+    }
 
     fun isLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.liftMagnetLimit.state
 
     private val liftBottomLimitAmps = 8.0
     fun isLiftDrawingTooMuchCurrent(hardware: RobotTwoHardware) = hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS) > liftBottomLimitAmps
+    fun getLiftCurrentAmps(hardware: RobotTwoHardware) = hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS)
 
     fun getCurrentPositionTicks(hardware: RobotTwoHardware): Int {
         return  hardware.liftMotorMaster.currentPosition
     }
 
-    private val pid = PID(kp = 0.002)
+    private val pid = PID(kp = 0.0015)
     fun calculatePowerToMoveToPosition(targetPositionTicks: Int, currentPosition: Int): Double {
         val positionError = targetPositionTicks - currentPosition
-        val power = pid.calcPID(positionError.toDouble())
+        val gravityConstant = if (positionError.sign > 0) {
+            0.1
+        } else {
+            0.0
+        }
+        val power = pid.calcPID(positionError.toDouble()) + gravityConstant
         return power
     }
 

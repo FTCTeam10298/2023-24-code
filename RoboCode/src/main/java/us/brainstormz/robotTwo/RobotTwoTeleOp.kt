@@ -427,7 +427,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val weWantToStartHandoff = driverInput.handoff == HandoffInput.StartHandoff || theRobotJustCollectedTwoPixels
 
-        val inputsConflictWithTransfer = driverInput.extendo == ExtendoInput.Extend || (driverInput.depo != DepoInput.NoInput)
+        val inputsConflictWithTransfer = driverInput.extendo == ExtendoInput.Extend || (driverInput.depo == DepoInput.Manual)
 
         val doHandoffSequence: Boolean = when {
             inputsConflictWithTransfer -> {
