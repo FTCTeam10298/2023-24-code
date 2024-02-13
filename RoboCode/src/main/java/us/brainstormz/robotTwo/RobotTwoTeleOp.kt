@@ -293,8 +293,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         /**Rollers*/
         val rollers = when {
-            gamepad1.b -> {
-                RollerInput.BothIn
+            gamepad1.b && !previousGamepad1.b-> {
+                if (previousTargetState.driverInput.rollers != RollerInput.BothIn) {
+                    RollerInput.BothIn
+                } else {
+                    RollerInput.NoInput
+                }
             }
             gamepad1.right_stick_button && gamepad1.left_stick_button -> {
                 RollerInput.BothOut
@@ -305,7 +309,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             gamepad1.left_stick_button -> {
                 RollerInput.LeftOut
             }
-            else -> RollerInput.NoInput
+            else -> {
+                if (previousTargetState.driverInput.rollers == RollerInput.BothIn) {
+                    RollerInput.BothIn
+                } else {
+                    RollerInput.NoInput
+                }
+            }
         }
 
         /**Hang*/
