@@ -162,15 +162,16 @@ class DepoManager(
                 //Waiting for arm
                 when (finalDepoTarget.targetType) {
                     DepoTargetType.GoingOut -> {
+                        telemetry.addLine("lift would wait for arm but it's not")
                         finalDepoTarget.liftPosition
                     }
                     DepoTargetType.GoingHome -> {
                         val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
                         val liftIsAlreadyDecentlyFarDown = actualDepo.liftPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
-                        if (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox && !eitherClawIsGripping) {
+                        telemetry.addLine("lift is waiting for the arm")
+                        if (!eitherClawIsGripping && (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox)) {
                             finalDepoTarget.liftPosition
                         } else {
-                            telemetry.addLine("lift is waiting for the arm")
                             Lift.LiftPositions.ClearForArmToMove
                         }
                     }
@@ -238,6 +239,7 @@ class DepoManager(
                     } else {
                         movingArmAndLiftTarget
                     }
+                    movingArmAndLiftTarget
                 }
 
         return withApplicableLiftReset.copy(wristPosition = wristPosition)
