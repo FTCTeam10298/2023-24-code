@@ -509,6 +509,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
 
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
+        val areDepositing = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.GoingOut
         val depoShouldStayManualFromLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual && driverInput.depo == DepoInput.NoInput
 
 
@@ -522,9 +523,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 },
                 ClawInput.Drop to {side ->
                     listOf(
-                            intakeNoodleTarget == Intake.CollectorPowers.Intake,
+                            !areDepositing && intakeNoodleTarget == Intake.CollectorPowers.Intake,
                             doingHandoff && !handoffIsReadyCheck,
-                            collectorIsMovingOut
+                            !areDepositing && collectorIsMovingOut
                     )
                 },
         )
