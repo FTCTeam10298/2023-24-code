@@ -342,14 +342,24 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         )
 
         /**Extendo*/
-        val extendoPower: Double = if (targetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Manual) {
-            extendoOverridePower
-        } else if (targetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.ResetEncoder) {
-            extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-            extendoMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-            0.0
-        } else {
-            extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
+        val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendoPositions) {
+            Extendo.ExtendoPositions.Manual -> {
+                extendoOverridePower
+            }
+            Extendo.ExtendoPositions.ResetEncoder -> {
+                extendo.resetPosition(this)
+                0.0
+            }
+            Extendo.ExtendoPositions.AllTheWayInTarget -> {
+                if (actualState.actualRobot.collectorSystemState.extendoLimitIsActivated) {
+                    extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
+                } else {
+                    -0.3
+                }
+            }
+            else -> {
+                extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
+            }
         }
         extendo.powerSubsystem(extendoPower, this)
 

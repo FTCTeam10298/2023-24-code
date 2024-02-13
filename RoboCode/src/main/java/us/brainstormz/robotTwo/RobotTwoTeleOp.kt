@@ -475,17 +475,17 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 Extendo.ExtendoPositions.Manual
             }
             ExtendoInput.NoInput -> {
+                val limitIsActivated = actualRobot.collectorSystemState.extendoLimitIsActivated
                 val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Min
                 val extendoIsManual = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Manual
-                if ((extendoIsAlreadyGoingIn || extendoIsManual) && actualRobot.collectorSystemState.extendoLimitIsActivated) {
+                if ((extendoIsAlreadyGoingIn || extendoIsManual) && limitIsActivated) {
                     Extendo.ExtendoPositions.ResetEncoder
                 } else if (doHandoffSequence) {
-//                    if (handoffIsReadyCheck) {
-//                        Extendo.ExtendoPositions.AllTheWayInTarget
-//                    } else {
-//                        Extendo.ExtendoPositions.ClearTransfer
-//                    }
-                    Extendo.ExtendoPositions.AllTheWayInTarget
+                    if (!limitIsActivated) {
+                        Extendo.ExtendoPositions.AllTheWayInTarget
+                    } else {
+                        Extendo.ExtendoPositions.Min
+                    }
                 } else {
                     previousTargetState.targetRobot.collectorTarget.extendoPositions
                 }

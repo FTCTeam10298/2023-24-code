@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import com.qualcomm.robotcore.hardware.DcMotor
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualRobot
@@ -14,7 +15,6 @@ class Extendo: Subsystem {
         Min(0),
         ResetEncoder(0),
         Manual(0),
-        ClearTransfer(230),
         CloserBackboardPixelPosition(500),
         MidBackboardPixelPosition(1000),
         FarBackboardPixelPosition(1750),
@@ -56,6 +56,13 @@ class Extendo: Subsystem {
 
         hardware.extendoMotorMaster.power = allowedPower
         hardware.extendoMotorSlave.power = allowedPower
+    }
+
+    fun resetPosition(hardware: RobotTwoHardware) {
+        powerSubsystem(0.0, hardware)
+        hardware.extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        hardware.extendoMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        pid.reset()
     }
 
     private val pid = PID(kp = 0.0025)
