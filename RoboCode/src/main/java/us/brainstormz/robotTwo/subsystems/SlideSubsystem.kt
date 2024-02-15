@@ -2,6 +2,7 @@ package us.brainstormz.robotTwo.subsystems
 
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.utils.DataClassHelper
 import kotlin.math.absoluteValue
 
 interface SlideSubsystem {
@@ -10,7 +11,9 @@ interface SlideSubsystem {
             open val limitSwitchIsActivated: Boolean,
             open val zeroPositionOffsetTicks: Int,
             open val ticksMovedSinceReset: Int,
-    )
+    ) {
+        override fun toString() = DataClassHelper.dataClassToString(this)
+    }
 
     val pid: PID
 
