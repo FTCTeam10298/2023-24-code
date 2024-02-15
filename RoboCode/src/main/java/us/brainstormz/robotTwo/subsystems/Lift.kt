@@ -44,6 +44,8 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.liftMotorMaster.currentPosition
     override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.liftMagnetLimit.state
+    override val allowedMovementBeforeResetTicks: Int = 200
+    override val allTheWayInTicks: Int = 0
 
     class ActualLift(override val currentPositionTicks: Int,
                      override val limitSwitchIsActivated: Boolean,

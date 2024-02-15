@@ -30,29 +30,12 @@ class Extendo: Subsystem, SlideSubsystem {
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
     }
 
-    fun isExtendoAllTheWayIn(actualRobot: ActualRobot): Boolean {
-        val limitIsActive = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
-        val extendoPositionIsAccurate = actualRobot.collectorSystemState.extendo.ticksMovedSinceReset <= 200
-        val extendoIsInAccordingToTicks = actualRobot.collectorSystemState.extendo.currentPositionTicks <= ExtendoPositions.Min.ticks
-        return limitIsActive || (extendoPositionIsAccurate && extendoIsInAccordingToTicks)
-    }
-
-
-    fun getExtendoTicksMovedSinceReset(hardware: RobotTwoHardware, extendoPositionTicks: Int, previousActualWorld: ActualWorld?): Int {
-        val extendoWasResetLastLoop = previousActualWorld?.actualRobot?.collectorSystemState?.extendo?.limitSwitchIsActivated == true
-        val ticksMovedSinceReset = if (extendoWasResetLastLoop) {
-            0
-        } else {
-            val previousPositionTicks = previousActualWorld?.actualRobot?.collectorSystemState?.extendo?.currentPositionTicks ?: extendoPositionTicks
-            val currentPositionTicks = extendoPositionTicks
-            val deltaPositionTicks = currentPositionTicks-previousPositionTicks
-
-            val previousTicksMovedSinceReset = previousActualWorld?.actualRobot?.collectorSystemState?.extendo?.ticksMovedSinceReset ?: 0
-
-            deltaPositionTicks.absoluteValue + previousTicksMovedSinceReset
-        }
-        return ticksMovedSinceReset
-    }
+//    fun isExtendoAllTheWayIn(actualRobot: ActualRobot): Boolean {
+//        val limitIsActive = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
+//        val extendoPositionIsAccurate = actualRobot.collectorSystemState.extendo.ticksMovedSinceReset <= 200
+//        val extendoIsInAccordingToTicks = actualRobot.collectorSystemState.extendo.currentPositionTicks <= ExtendoPositions.Min.ticks
+//        return limitIsActive || (extendoPositionIsAccurate && extendoIsInAccordingToTicks)
+//    }
 
 //    fun getVelocityTicksPerMili(actualTicks: Int, actualTimeMilis: Long, previousActualTicks: Int, previousActualTimeMilis: Long): Double {
     fun getVelocityTicksPerMili(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Double {
@@ -77,15 +60,10 @@ class Extendo: Subsystem, SlideSubsystem {
         hardware.extendoMotorSlave.power = allowedPower
     }
 
-    fun resetPosition(hardware: RobotTwoHardware) {
-        powerSubsystem(0.0, hardware)
-        hardware.extendoMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        hardware.extendoMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        pid.reset()
-    }
-
     override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
     override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.extendoMagnetLimit.state
+    override val allowedMovementBeforeResetTicks: Int = 200
+    override val allTheWayInTicks: Int = 0
 
     override val pid = PID(kp = 0.0025)
     fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {

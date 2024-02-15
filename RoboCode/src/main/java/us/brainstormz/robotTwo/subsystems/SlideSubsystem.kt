@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo.subsystems
 
 import us.brainstormz.pid.PID
+import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.utils.DataClassHelper
 import kotlin.math.absoluteValue
@@ -28,6 +29,20 @@ interface SlideSubsystem {
         }
     }
 
+    private fun getTicksMovedSinceReset(currentPositionTicks: Int, limitSwitchIsActivated: Boolean, previousActualSlideSubsystem: ActualSlideSubsystem?): Int {
+        val ticksMovedSinceReset = if (limitSwitchIsActivated) {
+            0
+        } else {
+            val previousPositionTicks = previousActualSlideSubsystem?.currentPositionTicks ?: currentPositionTicks
+            val deltaPositionTicks = currentPositionTicks - previousPositionTicks
+
+            val previousTicksMovedSinceReset = previousActualSlideSubsystem?.ticksMovedSinceReset ?: 0
+
+            deltaPositionTicks.absoluteValue + previousTicksMovedSinceReset
+        }
+        return ticksMovedSinceReset
+    }
+
     fun getActualSlideSubsystem(hardware: RobotTwoHardware, previousActualSlideSubsystem: ActualSlideSubsystem?): ActualSlideSubsystem {
         val rawPositionTicks = getRawPositionTicks(hardware)
         val limitSwitchIsActivated = getIsLimitSwitchActivated(hardware)
@@ -46,17 +61,12 @@ interface SlideSubsystem {
         )
     }
 
-    fun getTicksMovedSinceReset(currentPositionTicks: Int, limitSwitchIsActivated: Boolean, previousActualSlideSubsystem: ActualSlideSubsystem?): Int {
-        val ticksMovedSinceReset = if (limitSwitchIsActivated) {
-            0
-        } else {
-            val previousPositionTicks = previousActualSlideSubsystem?.currentPositionTicks ?: currentPositionTicks
-            val deltaPositionTicks = currentPositionTicks - previousPositionTicks
-
-            val previousTicksMovedSinceReset = previousActualSlideSubsystem?.ticksMovedSinceReset ?: 0
-
-            deltaPositionTicks.absoluteValue + previousTicksMovedSinceReset
-        }
-        return ticksMovedSinceReset
+    val allowedMovementBeforeResetTicks: Int
+    val allTheWayInTicks: Int
+    fun isSlideSystemAllTheWayIn(actualSlideSubsystem: ActualSlideSubsystem): Boolean {
+        val limitIsActive = actualSlideSubsystem.limitSwitchIsActivated
+        val positionIsAccurate = actualSlideSubsystem.ticksMovedSinceReset <= allowedMovementBeforeResetTicks
+        val isInAccordingToTicks = actualSlideSubsystem.currentPositionTicks <= allTheWayInTicks
+        return limitIsActive || (positionIsAccurate && isInAccordingToTicks)
     }
 }
