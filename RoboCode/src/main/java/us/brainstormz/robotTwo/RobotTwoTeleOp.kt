@@ -332,7 +332,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Hang*/
-        val hang = if (gamepad1.x || (gamepad2.left_stick_button && gamepad2.right_stick_button)) {
+        val hang = if (gamepad2.left_stick_button && gamepad2.right_stick_button) {
             HangInput.Deploy
         } else {
             HangInput.NoInput
