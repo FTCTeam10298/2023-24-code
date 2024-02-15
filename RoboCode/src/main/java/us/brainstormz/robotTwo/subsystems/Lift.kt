@@ -26,7 +26,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         SetLine1(800),
         SetLine2(1400),
         SetLine3(2100),
-        Max(2300)
+        Max(2100)
     }
 
     fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput): LiftPositions {

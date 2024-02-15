@@ -204,19 +204,30 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
         telemetry.addLine("liftControlMode: $liftControlMode")
 
-        val liftStickInput = gamepad2.right_stick_y.toDouble()
+        val liftStickInput = -gamepad2.right_stick_y.toDouble()
         val isLiftControlActive = liftStickInput.absoluteValue > 0.2
 
         val isLiftManualOverrideActive = isLiftControlActive && liftControlMode == LiftControlMode.Override
+        val dpadAdjustIsActive = isLiftControlActive && liftControlMode == LiftControlMode.Adjust
 
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
-        val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= 0.2
+        val armManualOverrideActivationThreshold = when {
+            isLiftManualOverrideActive -> {
+                0.2
+            }
+            dpadAdjustIsActive -> {
+                0.4
+            }
+            else -> {
+                0.2
+            }
+        }
+        val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= armManualOverrideActivationThreshold
 
-        val dpadAdjustIsActive = isLiftControlActive && liftControlMode == LiftControlMode.Adjust
 
         val depoInput = if (isLiftManualOverrideActive || isArmManualOverrideActive) {
             DepoInput.Manual
-        } else if (dpadAdjustIsActive) {
+        } else if (dpadAdjustIsActive || (previousTargetState.driverInput.depo == DepoInput.ScoringHeightAdjust && dpadInput == DepoInput.NoInput)) {
             DepoInput.ScoringHeightAdjust
         } else {
             dpadInput
@@ -229,11 +240,23 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             } else {
                 previousRobotTarget.depoTarget.liftVariableInput
             }
-            val depoScoringHeightTicks = liftPositionToAdjustOffOf + (liftStickInput * 10)
+            val maxLiftAdjustSpeedTicksPerSecond: Double = 900.0
+            val maxLiftAdjustSpeedTicksPerMili: Double = maxLiftAdjustSpeedTicksPerSecond/1000.0
+            val timeSinceLastOpportunityToMoveLiftMilis = actualWorld.timestampMilis - previousActualWorld.timestampMilis
+            val maxLiftAdjustTicks = maxLiftAdjustSpeedTicksPerMili * timeSinceLastOpportunityToMoveLiftMilis
+
+            telemetry.addLine("liftPositionToAdjustOffOf: $liftPositionToAdjustOffOf")
+            telemetry.addLine("timeSinceLastOpportunityToMoveLiftMilis: $timeSinceLastOpportunityToMoveLiftMilis")
+            telemetry.addLine("maxLiftAdjustTicks: $maxLiftAdjustTicks")
+            telemetry.addLine("liftStickInput: $liftStickInput")
+
+            val depoScoringHeightTicks = (liftPositionToAdjustOffOf + (liftStickInput * maxLiftAdjustTicks)).coerceIn(Lift.LiftPositions.Down.ticks.toDouble()..Lift.LiftPositions.Max.ticks.toDouble())
+            telemetry.addLine("depoScoringHeightTicks: $depoScoringHeightTicks")
+
             depoScoringHeightTicks
         } else {
             //Power to set
-            -liftStickInput
+            liftStickInput
         }
 
 
@@ -887,7 +910,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     hardware.lights.setPattern(targetState.targetRobot.lights.targetColor.blinkinPattern)
                 }
         )
-
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
         telemetry.addLine("loop time: $loopTime milis")
         telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
