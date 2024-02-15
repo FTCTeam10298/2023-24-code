@@ -176,6 +176,7 @@ class TeleopTest {
                     ),
                     collectorSystemState = CollectorSystem.ActualCollector(
                             extendoPositionTicks = 0,
+                            extendoTicksSinceLastReset = 0,
                             extendoCurrentAmps = 0.0,
                             extendoLimitIsActivated = false,
                             leftRollerAngleDegrees = 0.0,

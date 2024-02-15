@@ -769,7 +769,7 @@ class RobotTwoAuto: OpMode() {
         functionalReactiveAutoRunner.loop(
             actualStateGetter = { previousActualState ->
                 ActualWorld(
-                        actualRobot = hardware.getActualState(mecanumMovement.localizer, collectorSystem, depoManager),
+                        actualRobot = hardware.getActualState(mecanumMovement.localizer, collectorSystem, depoManager, previousActualState),
                         actualGamepad1 = Gamepad(),
                         actualGamepad2 = Gamepad(),
                         timestampMilis = System.currentTimeMillis()

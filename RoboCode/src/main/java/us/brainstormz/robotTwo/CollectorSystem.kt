@@ -23,6 +23,7 @@ class CollectorSystem(
 
     data class ActualCollector(
             val extendoPositionTicks: Int,
+            val extendoTicksSinceLastReset: Int,
             val extendoCurrentAmps: Double,
             val extendoLimitIsActivated: Boolean,
             val leftRollerAngleDegrees: Double,
@@ -31,10 +32,12 @@ class CollectorSystem(
             val rightTransferState: Transfer.SensorReading,
     )
 
-    fun getCurrentState(hardware: RobotTwoHardware): ActualCollector {
+    fun getCurrentState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualCollector {
 
+        val extendoPositionTicks = extendo.getExtendoPositionTicks(hardware)
         return ActualCollector(
-                extendoPositionTicks= extendo.getExtendoPositionTicks(hardware),
+                extendoPositionTicks= extendoPositionTicks,
+                extendoTicksSinceLastReset= extendo.getExtendoTicksMovedSinceReset(hardware, extendoPositionTicks, previousActualWorld),
                 extendoCurrentAmps = hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS),
                 extendoLimitIsActivated = extendo.getExtendoLimitIsActivated(hardware),
                 leftRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Left, hardware),

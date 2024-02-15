@@ -41,6 +41,22 @@ class Extendo: Subsystem {
 
     fun getExtendoPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
 
+    fun getExtendoTicksMovedSinceReset(hardware: RobotTwoHardware, extendoPositionTicks: Int, previousActualWorld: ActualWorld?): Int {
+        val extendoWasResetLastLoop = previousActualWorld?.actualRobot?.collectorSystemState?.extendoLimitIsActivated == true
+        val ticksMovedSinceReset = if (extendoWasResetLastLoop) {
+            0
+        } else {
+            val previousPositionTicks = previousActualWorld?.actualRobot?.collectorSystemState?.extendoPositionTicks ?: extendoPositionTicks
+            val currentPositionTicks = extendoPositionTicks
+            val deltaPositionTicks = currentPositionTicks-previousPositionTicks
+
+            val previousTicksMovedSinceReset = previousActualWorld?.actualRobot?.collectorSystemState?.extendoTicksSinceLastReset ?: 0
+
+            deltaPositionTicks.absoluteValue + previousTicksMovedSinceReset
+        }
+        return ticksMovedSinceReset
+    }
+
 //    fun getVelocityTicksPerMili(actualTicks: Int, actualTimeMilis: Long, previousActualTicks: Int, previousActualTimeMilis: Long): Double {
     fun getVelocityTicksPerMili(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Double {
         val actualTicks: Int = actualWorld.actualRobot.collectorSystemState.extendoPositionTicks

@@ -224,7 +224,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
         val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= armManualOverrideActivationThreshold
 
-
         val depoInput = if (isLiftManualOverrideActive || isArmManualOverrideActive) {
             DepoInput.Manual
         } else if (dpadAdjustIsActive || (previousTargetState.driverInput.depo == DepoInput.ScoringHeightAdjust && dpadInput == DepoInput.NoInput)) {
@@ -588,7 +587,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 } else {
                     previousTargetState.targetRobot.collectorTarget.extendoPositions
                 }
-            } }
+            }
+        }
+        val ticksSinceLastExtendoReset = actualRobot.collectorSystemState.extendoTicksSinceLastReset
+        telemetry.addLine("ticksSinceLastExtendoReset: $ticksSinceLastExtendoReset")
 
         /**Depo*/
         fun boolToClawInput(bool: Boolean): ClawInput {
@@ -879,7 +881,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     val currentGamepad2 = Gamepad()
                     currentGamepad2.copy(gamepad2)
                     ActualWorld(
-                            actualRobot = hardware.getActualState(localizer = odometryLocalizer, depoManager = depoManager, collectorSystem = collectorSystem),
+                            actualRobot = hardware.getActualState(localizer = odometryLocalizer, depoManager = depoManager, collectorSystem = collectorSystem, previousActualWorld= previousActualState),
                             actualGamepad1 = currentGamepad1,
                             actualGamepad2 = currentGamepad2,
                             timestampMilis = System.currentTimeMillis()

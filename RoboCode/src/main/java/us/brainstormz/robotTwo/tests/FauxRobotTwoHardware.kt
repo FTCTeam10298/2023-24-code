@@ -15,6 +15,7 @@ import us.brainstormz.faux.hardware.FauxImu
 import us.brainstormz.faux.hardware.FauxServo
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.robotTwo.ActualRobot
+import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorSystem
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoHardware
@@ -65,6 +66,6 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
     }
 
     lateinit var actualRobot: ActualRobot
-    override fun getActualState(localizer: Localizer, collectorSystem: CollectorSystem, depoManager: DepoManager): ActualRobot = actualRobot
+    override fun getActualState(localizer: Localizer, collectorSystem: CollectorSystem, depoManager: DepoManager, previousActualWorld: ActualWorld?): ActualRobot = actualRobot
 }
 

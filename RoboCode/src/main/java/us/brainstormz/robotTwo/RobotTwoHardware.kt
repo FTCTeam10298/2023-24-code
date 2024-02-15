@@ -302,19 +302,14 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         power == it.ticks.toDouble()
     } ?: Lift.LiftPositions.Down
 
-    open fun getActualState(localizer: Localizer, collectorSystem: CollectorSystem, depoManager: DepoManager): ActualRobot {
+    open fun getActualState(localizer: Localizer, collectorSystem: CollectorSystem, depoManager: DepoManager, previousActualWorld: ActualWorld?): ActualRobot {
         telemetry.addLine("getting state")
         telemetry.addLine("extendo current position: ${extendoMotorMaster.currentPosition}")
-//        telemetry.addLine("what extendo says is the current position: ${collectorSystem.extendo.getExtendoPositionTicks(hardware)}")
         return ActualRobot(
                 positionAndRotation = localizer.currentPositionAndRotation(),
-                collectorSystemState = collectorSystem.getCurrentState(this),
+                collectorSystemState = collectorSystem.getCurrentState(this, previousActualWorld),
                 depoState = depoManager.getDepoState(this)
         )
-//        return ActualWorld(
-//                actualRobot = actualRobot,
-//                System.currentTimeMillis()
-//        )
     }
 
     var jankTimeOfLiftResetEncoderMoveStartMilis = 0L
