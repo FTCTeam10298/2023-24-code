@@ -76,7 +76,7 @@ class DepoManager(
 
         return DepoTarget(
                 liftPosition = liftTarget,
-                depoScoringHeightAdjust = depoScoringHeightAdjust,
+                liftVariableInput = depoScoringHeightAdjust,
                 armPosition = armTarget,
                 wristPosition = wristTarget,
                 targetType = depoTargetType
@@ -234,11 +234,9 @@ class DepoManager(
 //            previousTargetDepo.liftPosition
 //        }
 
-        val depoScoringHeightTicks = actualDepo.liftPositionTicks + (finalDepoTarget.depoScoringHeightAdjust * 10)
-
         return DepoTarget(
                 liftPosition = liftTarget,
-                depoScoringHeightAdjust = depoScoringHeightTicks,
+                liftVariableInput = finalDepoTarget.liftVariableInput,
                 armPosition = armTarget,
                 wristPosition = wristTarget,
                 targetType = finalDepoTarget.targetType

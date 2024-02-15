@@ -5,7 +5,6 @@ import com.acmerobotics.roadrunner.ftc.RawEncoder
 //import com.outoftheboxrobotics.photoncore.hardware.motor.PhotonDcMotor
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
-import com.qualcomm.hardware.rev.RevColorSensorV3
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.AnalogInput
@@ -29,7 +28,6 @@ import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.subsystems.Arm
-import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
@@ -332,7 +330,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             arm: Arm,
             wrist: Wrist,
             extendoOverridePower: Double,
-            liftOverridePower: Double,
             armOverridePower: Double
     ) {
         /**Drive*/
@@ -376,11 +373,12 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         /**Lift*/
         val liftPower: Double = when (targetState.targetRobot.depoTarget.liftPosition) {
             Lift.LiftPositions.Manual -> {
-                telemetry.addLine("Running lift in manual mode at power $liftOverridePower")
-                -liftOverridePower
+                telemetry.addLine("Running lift in manual mode at power ${targetState.targetRobot.depoTarget.liftVariableInput}")
+                targetState.targetRobot.depoTarget.liftVariableInput
             }
             Lift.LiftPositions.ScoringHeightAdjust -> {
-                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.depoScoringHeightAdjust.toInt(), actualState.actualRobot.depoState.liftPositionTicks)
+                telemetry.addLine("Adjusting lift to position ${targetState.targetRobot.depoTarget.liftVariableInput.toInt()}")
+                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftVariableInput.toInt(), actualState.actualRobot.depoState.liftPositionTicks)
             }
             Lift.LiftPositions.ResetEncoder -> {
                 lift.resetPosition(this)
