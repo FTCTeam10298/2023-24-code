@@ -99,7 +99,7 @@ class RobotTwoAuto: OpMode() {
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
                         val isRobotAtPosition = isRobotAtPosition(targetState, actualState)
-                        val isCollectorAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isCollectorAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
                         isRobotAtPosition&& isCollectorAtPosition
                     },),
             AutoTargetWorld(
@@ -128,7 +128,7 @@ class RobotTwoAuto: OpMode() {
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
                         val isRobotAtPosition = isRobotAtPosition(targetState, actualState)
-                        val isCollectorRetracted = extendo.isExtendoAtPosition(ExtendoPositions.Min.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isCollectorRetracted = extendo.isExtendoAtPosition(ExtendoPositions.Min.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
                         isRobotAtPosition && isCollectorRetracted
                     },),
             AutoTargetWorld(
@@ -230,7 +230,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
                         isExtendoAtPosition && isRobotAtPosition(targetState, actualState)
                     },),
             AutoTargetWorld(
@@ -249,7 +249,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoABitAwayFromThePurple = actualState.actualRobot.collectorSystemState.extendoPositionTicks <= (ExtendoPositions.Max.ticks - 80)
+                        val isExtendoABitAwayFromThePurple = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks - 80)
                         isExtendoABitAwayFromThePurple
                     },),
             AutoTargetWorld(
@@ -259,7 +259,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoHalfwayIn = actualState.actualRobot.collectorSystemState.extendoPositionTicks <= (ExtendoPositions.Max.ticks / 2)
+                        val isExtendoHalfwayIn = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks / 2)
                         isExtendoHalfwayIn
                     },),
             AutoTargetWorld(
@@ -295,7 +295,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
                         isExtendoAtPosition && isRobotAtPosition(targetState, actualState)
                     },),
             AutoTargetWorld(
@@ -314,7 +314,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoABitAwayFromThePurple = actualState.actualRobot.collectorSystemState.extendoPositionTicks <= (ExtendoPositions.Max.ticks - 80)
+                        val isExtendoABitAwayFromThePurple = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks - 80)
                         isExtendoABitAwayFromThePurple
                     },),
             AutoTargetWorld(
@@ -324,7 +324,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoHalfwayIn = actualState.actualRobot.collectorSystemState.extendoPositionTicks <= (ExtendoPositions.Max.ticks / 2)
+                        val isExtendoHalfwayIn = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks / 2)
                         isExtendoHalfwayIn
                     },),
             AutoTargetWorld(
@@ -384,7 +384,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendoPositionTicks)
+                        val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
                         isExtendoAtPosition && isRobotAtPosition(targetState, actualState)
                     },),
             AutoTargetWorld(
@@ -403,7 +403,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoABitAwayFromThePurple = actualState.actualRobot.collectorSystemState.extendoPositionTicks <= (ExtendoPositions.Max.ticks - 80)
+                        val isExtendoABitAwayFromThePurple = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks - 80)
                         isExtendoABitAwayFromThePurple
                     },),
             AutoTargetWorld(
@@ -413,7 +413,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        val isExtendoHalfwayIn = actualState.actualRobot.collectorSystemState.extendoPositionTicks <= (ExtendoPositions.Max.ticks / 2)
+                        val isExtendoHalfwayIn = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks / 2)
                         isExtendoHalfwayIn
                     },),
             AutoTargetWorld(

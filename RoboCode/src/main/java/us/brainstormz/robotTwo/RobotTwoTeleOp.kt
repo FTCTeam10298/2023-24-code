@@ -424,7 +424,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             0.0
         }
 
-        val isAtTheEndOfExtendo = actualWorld.actualRobot.collectorSystemState.extendoPositionTicks >= Extendo.ExtendoPositions.Max.ticks || actualWorld.actualRobot.collectorSystemState.extendoCurrentAmps > 6.0
+        val isAtTheEndOfExtendo = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= Extendo.ExtendoPositions.Max.ticks || actualWorld.actualRobot.collectorSystemState.extendoCurrentAmps > 6.0
         val extendoCompensationPower = if (isAtTheEndOfExtendo && yInput == 0.0) {
             gamepad1.right_trigger.toDouble()
         } else {
@@ -573,11 +573,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 Extendo.ExtendoPositions.Manual
             }
             ExtendoInput.NoInput -> {
-                val limitIsActivated = actualRobot.collectorSystemState.extendoLimitIsActivated
+                val limitIsActivated = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
                 val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Min
                 val extendoIsManual = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Manual
                 if ((extendoIsAlreadyGoingIn || extendoIsManual) && limitIsActivated) {
-                    Extendo.ExtendoPositions.ResetEncoder
+                    previousTargetState.targetRobot.collectorTarget.extendoPositions
                 } else if (doHandoffSequence) {
                     if (!limitIsActivated) {
                         Extendo.ExtendoPositions.AllTheWayInTarget
@@ -589,7 +589,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 }
             }
         }
-        val ticksSinceLastExtendoReset = actualRobot.collectorSystemState.extendoTicksSinceLastReset
+        val ticksSinceLastExtendoReset = actualRobot.collectorSystemState.extendo.ticksMovedSinceReset
         telemetry.addLine("ticksSinceLastExtendoReset: $ticksSinceLastExtendoReset")
 
         /**Depo*/

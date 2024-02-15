@@ -341,13 +341,13 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             Extendo.ExtendoPositions.Manual -> {
                 extendoOverridePower
             }
-            Extendo.ExtendoPositions.ResetEncoder -> {
-                extendo.resetPosition(this)
-                0.0
-            }
+//            Extendo.ExtendoPositions.ResetEncoder -> {
+//                extendo.resetPosition(this)
+//                0.0
+//            }
             Extendo.ExtendoPositions.AllTheWayInTarget -> {
-                val atZeroPosition = actualState.actualRobot.collectorSystemState.extendoPositionTicks <= Extendo.ExtendoPositions.Min.ticks + 5
-                if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendoLimitIsActivated) {
+                val atZeroPosition = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= Extendo.ExtendoPositions.Min.ticks + 5
+                if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
                     extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
                 } else {
                     -0.48

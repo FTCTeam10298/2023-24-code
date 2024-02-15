@@ -4,6 +4,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 
 class CollectorSystem(
@@ -22,10 +23,11 @@ class CollectorSystem(
 
 
     data class ActualCollector(
-            val extendoPositionTicks: Int,
-            val extendoTicksSinceLastReset: Int,
+            val extendo: SlideSubsystem.ActualSlideSubsystem,
+//            val extendoPositionTicks: Int,
+//            val extendoTicksSinceLastReset: Int,
             val extendoCurrentAmps: Double,
-            val extendoLimitIsActivated: Boolean,
+//            val extendoLimitIsActivated: Boolean,
             val leftRollerAngleDegrees: Double,
             val rightRollerAngleDegrees: Double,
             val leftTransferState: Transfer.SensorReading,
@@ -33,13 +35,12 @@ class CollectorSystem(
     )
 
     fun getCurrentState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualCollector {
-
-        val extendoPositionTicks = extendo.getExtendoPositionTicks(hardware)
         return ActualCollector(
-                extendoPositionTicks= extendoPositionTicks,
-                extendoTicksSinceLastReset= extendo.getExtendoTicksMovedSinceReset(hardware, extendoPositionTicks, previousActualWorld),
+                extendo= extendo.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.collectorSystemState?.extendo),
+//                extendoPositionTicks= extendoPositionTicks,
+//                extendoTicksSinceLastReset= extendo.getExtendoTicksMovedSinceReset(hardware, extendoPositionTicks, previousActualWorld),
                 extendoCurrentAmps = hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS),
-                extendoLimitIsActivated = extendo.getExtendoLimitIsActivated(hardware),
+//                extendoLimitIsActivated = extendo.getExtendoLimitIsActivated(hardware),
                 leftRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Left, hardware),
                 rightRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Right, hardware),
                 leftTransferState= transfer.getSensorReading(hardware.leftTransferSensor),

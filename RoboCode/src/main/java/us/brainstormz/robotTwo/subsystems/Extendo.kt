@@ -14,7 +14,6 @@ class Extendo: Subsystem, SlideSubsystem {
     enum class ExtendoPositions(val ticks: Int) {
         AllTheWayInTarget(-10),
         Min(0),
-        ResetEncoder(0),
         Manual(0),
         CloserBackboardPixelPosition(500),
         MidBackboardPixelPosition(1000),
@@ -32,23 +31,23 @@ class Extendo: Subsystem, SlideSubsystem {
     }
 
     fun isExtendoAllTheWayIn(actualRobot: ActualRobot): Boolean {
-        val limitIsActive = actualRobot.collectorSystemState.extendoLimitIsActivated
-        val extendoPositionIsAccurate = actualRobot.collectorSystemState.extendoTicksSinceLastReset <= 200
-        val extendoIsInAccordingToTicks = actualRobot.collectorSystemState.extendoPositionTicks <= ExtendoPositions.Min.ticks
+        val limitIsActive = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
+        val extendoPositionIsAccurate = actualRobot.collectorSystemState.extendo.ticksMovedSinceReset <= 200
+        val extendoIsInAccordingToTicks = actualRobot.collectorSystemState.extendo.currentPositionTicks <= ExtendoPositions.Min.ticks
         return limitIsActive || (extendoPositionIsAccurate && extendoIsInAccordingToTicks)
     }
 
 
     fun getExtendoTicksMovedSinceReset(hardware: RobotTwoHardware, extendoPositionTicks: Int, previousActualWorld: ActualWorld?): Int {
-        val extendoWasResetLastLoop = previousActualWorld?.actualRobot?.collectorSystemState?.extendoLimitIsActivated == true
+        val extendoWasResetLastLoop = previousActualWorld?.actualRobot?.collectorSystemState?.extendo?.limitSwitchIsActivated == true
         val ticksMovedSinceReset = if (extendoWasResetLastLoop) {
             0
         } else {
-            val previousPositionTicks = previousActualWorld?.actualRobot?.collectorSystemState?.extendoPositionTicks ?: extendoPositionTicks
+            val previousPositionTicks = previousActualWorld?.actualRobot?.collectorSystemState?.extendo?.currentPositionTicks ?: extendoPositionTicks
             val currentPositionTicks = extendoPositionTicks
             val deltaPositionTicks = currentPositionTicks-previousPositionTicks
 
-            val previousTicksMovedSinceReset = previousActualWorld?.actualRobot?.collectorSystemState?.extendoTicksSinceLastReset ?: 0
+            val previousTicksMovedSinceReset = previousActualWorld?.actualRobot?.collectorSystemState?.extendo?.ticksMovedSinceReset ?: 0
 
             deltaPositionTicks.absoluteValue + previousTicksMovedSinceReset
         }
@@ -57,9 +56,9 @@ class Extendo: Subsystem, SlideSubsystem {
 
 //    fun getVelocityTicksPerMili(actualTicks: Int, actualTimeMilis: Long, previousActualTicks: Int, previousActualTimeMilis: Long): Double {
     fun getVelocityTicksPerMili(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Double {
-        val actualTicks: Int = actualWorld.actualRobot.collectorSystemState.extendoPositionTicks
+        val actualTicks: Int = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks
         val actualTimeMilis: Long = actualWorld.timestampMilis
-        val previousActualTicks: Int = previousActualWorld.actualRobot.collectorSystemState.extendoPositionTicks
+        val previousActualTicks: Int = previousActualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks
         val previousActualTimeMilis: Long = previousActualWorld.timestampMilis
         val deltaTimeMilis: Long = actualTimeMilis - previousActualTimeMilis
         val deltaTicks: Int = actualTicks - previousActualTicks
@@ -88,12 +87,9 @@ class Extendo: Subsystem, SlideSubsystem {
     override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
     override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.extendoMagnetLimit.state
 
-    fun getExtendoPositionTicks(hardware: RobotTwoHardware) = getRawPositionTicks(hardware)
-    fun getExtendoLimitIsActivated(hardware: RobotTwoHardware) = getIsLimitSwitchActivated(hardware)
-
     override val pid = PID(kp = 0.0025)
     fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
-        val currentPosition = actualRobot.collectorSystemState.extendoPositionTicks
+        val currentPosition = actualRobot.collectorSystemState.extendo.currentPositionTicks
         val positionError = targetPositionTicks - currentPosition.toDouble()
         val power = pid.calcPID(positionError)
         return power

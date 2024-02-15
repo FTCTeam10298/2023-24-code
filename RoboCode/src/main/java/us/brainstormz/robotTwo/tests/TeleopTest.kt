@@ -11,6 +11,7 @@ import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 
@@ -177,10 +178,15 @@ class TeleopTest {
                             wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
                     ),
                     collectorSystemState = CollectorSystem.ActualCollector(
-                            extendoPositionTicks = 0,
-                            extendoTicksSinceLastReset = 0,
+                            extendo = SlideSubsystem.ActualSlideSubsystem(
+                                    currentPositionTicks = 0,
+                                    ticksMovedSinceReset = 0,
+                                    limitSwitchIsActivated = false,
+                                    zeroPositionOffsetTicks = 0),
+//                            extendoPositionTicks = 0,
+//                            extendoTicksSinceLastReset = 0,
                             extendoCurrentAmps = 0.0,
-                            extendoLimitIsActivated = false,
+//                            extendoLimitIsActivated = false,
                             leftRollerAngleDegrees = 0.0,
                             rightRollerAngleDegrees = 0.0,
                             leftTransferState = emptySensorReading,
