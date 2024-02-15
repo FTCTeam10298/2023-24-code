@@ -12,7 +12,7 @@ import us.brainstormz.robotTwo.RobotTwoTeleOp
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
-class Lift(private val telemetry: Telemetry): Subsystem {
+class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     enum class LiftPositions(val ticks: Int) {
         Manual(0),
@@ -42,7 +42,11 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         }
     }
 
-    private fun isLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.liftMagnetLimit.state
+    override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.liftMotorMaster.currentPosition
+    override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.liftMagnetLimit.state
+
+
+    private fun isLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = getIsLimitSwitchActivated(hardware)
 
     private fun getLiftZeroPositionOffsetTicks(liftCurrentPositionTicks: Int, limitSwitchIsActivated: Boolean, previousActualWorld: ActualWorld?): Int {
 //        powerSubsystem(0.0, hardware)
@@ -57,20 +61,27 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         }
     }
 
-    data class ActualLift(val currentPositionTicks: Int, val limitSwitchIsActivated: Boolean, val zeroPositionOffsetTicks: Int = 0)
+    class ActualLift(override val currentPositionTicks: Int,
+                     override val limitSwitchIsActivated: Boolean,
+                     override val zeroPositionOffsetTicks: Int = 0,
+                     override val ticksMovedSinceReset: Int = 0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset)
     fun getActualLift(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualLift {
-        val rawPositionTicks = hardware.liftMotorMaster.currentPosition
-        val limitSwitchIsActivated = isLimitSwitchActivated(hardware)
-
-        val zeroPositionOffsetTicks = getLiftZeroPositionOffsetTicks(rawPositionTicks, limitSwitchIsActivated, previousActualWorld)
-
-        val currentPositionTicks = rawPositionTicks - zeroPositionOffsetTicks
-
-        return ActualLift(
-                currentPositionTicks = currentPositionTicks,
-                zeroPositionOffsetTicks= zeroPositionOffsetTicks,
-                limitSwitchIsActivated= limitSwitchIsActivated)
+        return getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.depoState?.lift) as ActualLift
     }
+//    data class ActualLift(val currentPositionTicks: Int, val limitSwitchIsActivated: Boolean, val zeroPositionOffsetTicks: Int = 0)
+//    fun getActualLift(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualLift {
+//        val rawPositionTicks = hardware.liftMotorMaster.currentPosition
+//        val limitSwitchIsActivated = isLimitSwitchActivated(hardware)
+//
+//        val zeroPositionOffsetTicks = getLiftZeroPositionOffsetTicks(rawPositionTicks, limitSwitchIsActivated, previousActualWorld)
+//
+//        val currentPositionTicks = rawPositionTicks - zeroPositionOffsetTicks
+//
+//        return ActualLift(
+//                currentPositionTicks = currentPositionTicks,
+//                zeroPositionOffsetTicks= zeroPositionOffsetTicks,
+//                limitSwitchIsActivated= limitSwitchIsActivated)
+//    }
 
 
     private val acceptablePositionErrorTicks = 100
@@ -103,7 +114,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         hardware.liftMotorSlave.power = allowedPower
     }
 
-    private val pid = PID(kp = 0.0015)
+    override val pid = PID(kp = 0.0015)
     fun calculatePowerToMoveToPosition(targetPositionTicks: Int, currentPosition: Int): Double {
         val positionError = targetPositionTicks - currentPosition
         val gravityConstant = if (positionError.sign > 0) {

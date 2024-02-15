@@ -8,7 +8,7 @@ import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.absoluteValue
 
-class Extendo: Subsystem {
+class Extendo: Subsystem, SlideSubsystem {
     val maxSafeCurrentAmps = 5.5
 
     enum class ExtendoPositions(val ticks: Int) {
@@ -31,10 +31,6 @@ class Extendo: Subsystem {
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
     }
 
-    fun getExtendoLimitIsActivated(hardware: RobotTwoHardware): Boolean {
-        return !hardware.extendoMagnetLimit.state
-    }
-
     fun isExtendoAllTheWayIn(actualRobot: ActualRobot): Boolean {
         val limitIsActive = actualRobot.collectorSystemState.extendoLimitIsActivated
         val extendoPositionIsAccurate = actualRobot.collectorSystemState.extendoTicksSinceLastReset <= 200
@@ -42,7 +38,6 @@ class Extendo: Subsystem {
         return limitIsActive || (extendoPositionIsAccurate && extendoIsInAccordingToTicks)
     }
 
-    fun getExtendoPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
 
     fun getExtendoTicksMovedSinceReset(hardware: RobotTwoHardware, extendoPositionTicks: Int, previousActualWorld: ActualWorld?): Int {
         val extendoWasResetLastLoop = previousActualWorld?.actualRobot?.collectorSystemState?.extendoLimitIsActivated == true
@@ -90,7 +85,13 @@ class Extendo: Subsystem {
         pid.reset()
     }
 
-    private val pid = PID(kp = 0.0025)
+    override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
+    override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.extendoMagnetLimit.state
+
+    fun getExtendoPositionTicks(hardware: RobotTwoHardware) = getRawPositionTicks(hardware)
+    fun getExtendoLimitIsActivated(hardware: RobotTwoHardware) = getIsLimitSwitchActivated(hardware)
+
+    override val pid = PID(kp = 0.0025)
     fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
         val currentPosition = actualRobot.collectorSystemState.extendoPositionTicks
         val positionError = targetPositionTicks - currentPosition.toDouble()
