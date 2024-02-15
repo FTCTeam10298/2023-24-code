@@ -116,6 +116,13 @@ class DepoManager(
         val bothClawsAreAtTarget = wrist.wristIsAtPosition(finalDepoTarget.wristPosition, actualDepo.wristAngles)
         val liftIsAtFinalRestingPlace = lift.isLiftAtPosition(finalDepoTarget.liftPosition.ticks, actualDepo.liftPositionTicks)
 
+        val clawsArentMoving = wristTarget.asMap.entries.fold(true) {acc, (side, claw) ->
+            acc && previousTargetDepo.wristPosition.getClawTargetBySide(side) == claw
+        }
+        telemetry.addLine("clawsArentMoving: $clawsArentMoving")
+        telemetry.addLine("wristTarget: ${wristTarget.asMap}")
+        telemetry.addLine("finalWristPosition: ${finalDepoTarget.wristPosition.asMap}")
+
         val armTarget: Arm.Positions = if (bothClawsAreAtTarget) {
             when (liftIsAtFinalRestingPlace) {
                 true -> {
@@ -145,7 +152,12 @@ class DepoManager(
                     }
                 }
                 DepoTargetType.GoingOut -> {
-                    previousTargetDepo.armPosition
+                    val liftIsAboveClear = actualDepo.liftPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
+                    if (clawsArentMoving && liftIsAboveClear) {
+                        finalDepoTarget.armPosition
+                    } else {
+                        previousTargetDepo.armPosition
+                    }
                 }
                 else -> {
                     previousTargetDepo.armPosition
@@ -157,17 +169,20 @@ class DepoManager(
         val armIsAtTarget = checkIfArmIsAtTarget(armTarget, actualDepo.armAngleDegrees)
         telemetry.addLine("armIsAtTarget: $armIsAtTarget")
 
-        val liftTarget: Lift.LiftPositions = if (bothClawsAreAtTarget) {
-            if (armIsAtTarget) {
-                finalDepoTarget.liftPosition
-            } else {
-                //Waiting for arm
-                when (finalDepoTarget.targetType) {
-                    DepoTargetType.GoingOut -> {
-                        telemetry.addLine("lift would wait for arm but it's not")
+        val liftTarget: Lift.LiftPositions = when (finalDepoTarget.targetType) {
+            DepoTargetType.GoingOut -> {
+                if (clawsArentMoving) {
+                    finalDepoTarget.liftPosition
+                } else {
+                    telemetry.addLine("lift is waiting for the claws")
+                    previousTargetDepo.liftPosition
+                }
+            }
+            DepoTargetType.GoingHome -> {
+                if (bothClawsAreAtTarget) {
+                    if (armIsAtTarget) {
                         finalDepoTarget.liftPosition
-                    }
-                    DepoTargetType.GoingHome -> {
+                    } else {
                         val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
                         val liftIsAlreadyDecentlyFarDown = actualDepo.liftPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
                         telemetry.addLine("lift is waiting for the arm")
@@ -177,16 +192,47 @@ class DepoManager(
                             Lift.LiftPositions.ClearForArmToMove
                         }
                     }
-                    else -> {
-                        telemetry.addLine("lift is confused af (asinine and futile)")
-                        previousTargetDepo.liftPosition
-                    }
+                } else {
+                    telemetry.addLine("lift is waiting for the claws")
+                    previousTargetDepo.liftPosition
                 }
             }
-        } else {
-            telemetry.addLine("lift is waiting for the claws")
-            previousTargetDepo.liftPosition
+            else -> {
+                telemetry.addLine("lift is confused af (asinine and futile)")
+                previousTargetDepo.liftPosition
+            }
         }
+
+//        val liftTarget: Lift.LiftPositions = if (bothClawsAreAtTarget) {
+//            if (armIsAtTarget) {
+//                finalDepoTarget.liftPosition
+//            } else {
+//                //Waiting for arm
+//                when (finalDepoTarget.targetType) {
+//                    DepoTargetType.GoingOut -> {
+//                        telemetry.addLine("lift would wait for arm but it's not")
+//                        finalDepoTarget.liftPosition
+//                    }
+//                    DepoTargetType.GoingHome -> {
+//                        val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
+//                        val liftIsAlreadyDecentlyFarDown = actualDepo.liftPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
+//                        telemetry.addLine("lift is waiting for the arm")
+//                        if (!eitherClawIsGripping && (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox)) {
+//                            finalDepoTarget.liftPosition
+//                        } else {
+//                            Lift.LiftPositions.ClearForArmToMove
+//                        }
+//                    }
+//                    else -> {
+//                        telemetry.addLine("lift is confused af (asinine and futile)")
+//                        previousTargetDepo.liftPosition
+//                    }
+//                }
+//            }
+//        } else {
+//            telemetry.addLine("lift is waiting for the claws")
+//            previousTargetDepo.liftPosition
+//        }
 
         val depoScoringHeightTicks = actualDepo.liftPositionTicks + (finalDepoTarget.depoScoringHeightAdjust * 10)
 
