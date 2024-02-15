@@ -147,7 +147,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.BackboardBottomRow, RobotTwoHardware.LeftClawPosition.Gripping, RobotTwoHardware.RightClawPosition.Gripping)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks)
+                        lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
                     },),
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -183,7 +183,7 @@ class RobotTwoAuto: OpMode() {
                             depoState = DepoState(Arm.Positions.ClearLiftMovement, Lift.LiftPositions.Down, RobotTwoHardware.LeftClawPosition.Retracted, RobotTwoHardware.RightClawPosition.Retracted)
                     ),
                     isTargetReached = {targetState: AutoTargetWorld, actualState: ActualWorld ->
-                        lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks)
+                        lift.isLiftAtPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
                     },),
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -785,7 +785,7 @@ class RobotTwoAuto: OpMode() {
                 mecanumMovement.moveTowardTarget(targetState.targetRobot.positionAndRotation)
                 extendo.powerSubsystem(extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorSystemState.extendoPosition.ticks, actualState.actualRobot), hardware)
                 intake.powerSubsystem(targetState.targetRobot.collectorSystemState.collectorState.power, hardware)
-                lift.powerSubsystem(lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks), hardware)
+                lift.powerSubsystem(lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoState.liftPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks), hardware)
                 arm.powerSubsystem(arm.calcPowerToReachTarget(targetState.targetRobot.depoState.armPos.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees), hardware)
                 hardware.rightClawServo.power = TODO()// targetState.targetRobot.depoState.rightClawPosition.position
                 hardware.leftClawServo.power = TODO()//targetState.targetRobot.depoState.leftClawPosition.position

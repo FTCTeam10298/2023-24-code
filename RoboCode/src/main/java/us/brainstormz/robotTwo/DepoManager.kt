@@ -18,8 +18,10 @@ class DepoManager(
 
     data class ActualDepo(
             val armAngleDegrees: Double,
-            val liftPositionTicks: Int,
-            val isLiftLimitActivated: Boolean,
+            val lift: Lift.ActualLift,
+//            val liftPositionTicks: Int,
+//            val liftZeroPositionOffsetTicks: Int,
+//            val isLiftLimitActivated: Boolean,
             val wristAngles: Wrist.ActualWrist
     )
 
@@ -114,7 +116,7 @@ class DepoManager(
         }
 
         val bothClawsAreAtTarget = wrist.wristIsAtPosition(finalDepoTarget.wristPosition, actualDepo.wristAngles)
-        val liftIsAtFinalRestingPlace = lift.isLiftAtPosition(finalDepoTarget.liftPosition.ticks, actualDepo.liftPositionTicks)
+        val liftIsAtFinalRestingPlace = lift.isLiftAtPosition(finalDepoTarget.liftPosition.ticks, actualDepo.lift.currentPositionTicks)
 
         val clawsArentMoving = wristTarget.asMap.entries.fold(true) {acc, (side, claw) ->
             acc && previousTargetDepo.wristPosition.getClawTargetBySide(side) == claw
@@ -129,7 +131,7 @@ class DepoManager(
                     finalDepoTarget.armPosition
                 }
                 false -> {
-                    val liftIsAtOrAboveClear = actualDepo.liftPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
+                    val liftIsAtOrAboveClear = actualDepo.lift.currentPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
                     val depoTargetIsOut = finalDepoTarget.targetType == DepoTargetType.GoingOut
                     if (depoTargetIsOut && liftIsAtOrAboveClear) {
                         finalDepoTarget.armPosition
@@ -142,7 +144,7 @@ class DepoManager(
         } else {
             when (finalDepoTarget.targetType) {
                 DepoTargetType.GoingHome -> {
-                    val liftIsAboveClear = actualDepo.liftPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
+                    val liftIsAboveClear = actualDepo.lift.currentPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
                     if (eitherClawIsGripping && liftIsAboveClear) {
                         //If depo is going in and either claw is gripping then go out, drop then come in.
                         Arm.Positions.Out
@@ -152,7 +154,7 @@ class DepoManager(
                     }
                 }
                 DepoTargetType.GoingOut -> {
-                    val liftIsAboveClear = actualDepo.liftPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
+                    val liftIsAboveClear = actualDepo.lift.currentPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
                     if (clawsArentMoving && liftIsAboveClear) {
                         finalDepoTarget.armPosition
                     } else {
@@ -184,7 +186,7 @@ class DepoManager(
                         finalDepoTarget.liftPosition
                     } else {
                         val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
-                        val liftIsAlreadyDecentlyFarDown = actualDepo.liftPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
+                        val liftIsAlreadyDecentlyFarDown = actualDepo.lift.currentPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
                         telemetry.addLine("lift is waiting for the arm")
                         if (!eitherClawIsGripping && (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox)) {
                             finalDepoTarget.liftPosition
@@ -215,7 +217,7 @@ class DepoManager(
 //                    }
 //                    DepoTargetType.GoingHome -> {
 //                        val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
-//                        val liftIsAlreadyDecentlyFarDown = actualDepo.liftPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
+//                        val liftIsAlreadyDecentlyFarDown = actualDepo.lift.currentPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
 //                        telemetry.addLine("lift is waiting for the arm")
 //                        if (!eitherClawIsGripping && (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox)) {
 //                            finalDepoTarget.liftPosition
@@ -281,10 +283,10 @@ class DepoManager(
         val previousLiftTargetWasReset = previousDepoTarget.liftPosition == Lift.LiftPositions.ResetEncoder
 
         val withApplicableLiftReset =
-                if (actualDepo.isLiftLimitActivated && armAndLiftAreAtFinalRestingPlace && inputIsDownOrNone && targetHasNotChanged && !previousLiftTargetWasReset) {
+                if (actualDepo.lift.limitSwitchIsActivated && armAndLiftAreAtFinalRestingPlace && inputIsDownOrNone && targetHasNotChanged && !previousLiftTargetWasReset) {
                     movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.ResetEncoder)
                 } else {
-                    if (!actualDepo.isLiftLimitActivated && actualDepo.liftPositionTicks <= 10  && !previousLiftTargetWasReset) {
+                    if (!actualDepo.lift.limitSwitchIsActivated && actualDepo.lift.currentPositionTicks <= 10 && !previousLiftTargetWasReset) {
                         movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.PastDown)
                     } else {
                         movingArmAndLiftTarget
@@ -296,16 +298,18 @@ class DepoManager(
     }
 
     fun checkIfArmAndLiftAreAtTarget(target: DepoTarget, actualDepo: ActualDepo): Boolean {
-        val liftIsAtTarget = lift.isLiftAtPosition(target.liftPosition.ticks, actualDepo.liftPositionTicks)
+        val liftIsAtTarget = lift.isLiftAtPosition(target.liftPosition.ticks, actualDepo.lift.currentPositionTicks)
         val armIsAtTarget = checkIfArmIsAtTarget(target.armPosition, actualDepo.armAngleDegrees)//arm.isArmAtAngle(target.armPosition.angleDegrees, actualDepo.armAngleDegrees)
         return liftIsAtTarget && armIsAtTarget
     }
 
-    fun getDepoState(hardware: RobotTwoHardware): ActualDepo {
+    fun getDepoState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualDepo {
         return ActualDepo(
                 armAngleDegrees = arm.getArmAngleDegrees(hardware),
-                liftPositionTicks = lift.getCurrentPositionTicks(hardware),
-                isLiftLimitActivated = lift.isLimitSwitchActivated(hardware),
+                lift = lift.getActualLift(hardware, previousActualWorld),
+//                liftPositionTicks = lift.getCurrentPositionTicks(hardware),
+//                liftZeroPositionOffsetTicks = ,
+//                isLiftLimitActivated = lift.isLimitSwitchActivated(hardware),
                 wristAngles = wrist.getWristActualState(hardware)
         )
     }

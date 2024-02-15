@@ -308,7 +308,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         return ActualRobot(
                 positionAndRotation = localizer.currentPositionAndRotation(),
                 collectorSystemState = collectorSystem.getCurrentState(this, previousActualWorld),
-                depoState = depoManager.getDepoState(this)
+                depoState = depoManager.getDepoState(this, previousActualWorld)
         )
     }
 
@@ -373,16 +373,16 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             }
             Lift.LiftPositions.ScoringHeightAdjust -> {
                 telemetry.addLine("Adjusting lift to position ${targetState.targetRobot.depoTarget.liftVariableInput.toInt()}")
-                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftVariableInput.toInt(), actualState.actualRobot.depoState.liftPositionTicks)
+                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftVariableInput.toInt(), actualState.actualRobot.depoState.lift.currentPositionTicks)
             }
             Lift.LiftPositions.ResetEncoder -> {
-                lift.resetPosition(this)
+//                lift.resetPosition(this)
                 0.0
             }
             Lift.LiftPositions.PastDown -> {
 //                val atZeroPosition = actualState.actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.Down.ticks
 //                if (!atZeroPosition || actualState.actualRobot.depoState.isLiftLimitActivated) {
-                    lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks)
+                    lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
 //                } else {
 //                    val currentTimeMilis = System.currentTimeMillis()
 //                    val timeSincePowerStart = currentTimeMilis - jankTimeOfLiftResetEncoderMoveStartMilis
@@ -398,7 +398,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 //                }
             }
             else -> {
-                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot.depoState.liftPositionTicks)
+                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
             }
         }
         telemetry.addLine("lift position: ${targetState.targetRobot.depoTarget.liftPosition}")
