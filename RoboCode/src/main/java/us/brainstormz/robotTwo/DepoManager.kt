@@ -278,23 +278,23 @@ class DepoManager(
                     else -> previousDepoTarget.wristPosition
                 }
 
-        val targetHasNotChanged = movingArmAndLiftTarget == previousDepoTarget
-        val inputIsDownOrNone = depoInput == RobotTwoTeleOp.DepoInput.NoInput || depoInput == RobotTwoTeleOp.DepoInput.Down
-        val previousLiftTargetWasReset = previousDepoTarget.liftPosition == Lift.LiftPositions.ResetEncoder
+//        val targetHasNotChanged = movingArmAndLiftTarget == previousDepoTarget
+//        val inputIsDownOrNone = depoInput == RobotTwoTeleOp.DepoInput.NoInput || depoInput == RobotTwoTeleOp.DepoInput.Down
+//        val previousLiftTargetWasReset = previousDepoTarget.liftPosition == Lift.LiftPositions.ResetEncoder
+//
+//        val withApplicableLiftReset =
+//                if (actualDepo.lift.limitSwitchIsActivated && armAndLiftAreAtFinalRestingPlace && inputIsDownOrNone && targetHasNotChanged && !previousLiftTargetWasReset) {
+//                    movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.ResetEncoder)
+//                } else {
+//                    if (!actualDepo.lift.limitSwitchIsActivated && actualDepo.lift.currentPositionTicks <= 10 && !previousLiftTargetWasReset) {
+//                        movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.PastDown)
+//                    } else {
+//                        movingArmAndLiftTarget
+//                    }
+//                    movingArmAndLiftTarget
+//                }
 
-        val withApplicableLiftReset =
-                if (actualDepo.lift.limitSwitchIsActivated && armAndLiftAreAtFinalRestingPlace && inputIsDownOrNone && targetHasNotChanged && !previousLiftTargetWasReset) {
-                    movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.ResetEncoder)
-                } else {
-                    if (!actualDepo.lift.limitSwitchIsActivated && actualDepo.lift.currentPositionTicks <= 10 && !previousLiftTargetWasReset) {
-                        movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.PastDown)
-                    } else {
-                        movingArmAndLiftTarget
-                    }
-                    movingArmAndLiftTarget
-                }
-
-        return withApplicableLiftReset.copy(wristPosition = wristPosition)
+        return movingArmAndLiftTarget.copy(wristPosition = wristPosition)
     }
 
     fun checkIfArmAndLiftAreAtTarget(target: DepoTarget, actualDepo: ActualDepo): Boolean {

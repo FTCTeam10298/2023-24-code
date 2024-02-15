@@ -16,7 +16,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
 
     enum class LiftPositions(val ticks: Int) {
         Manual(0),
-        ResetEncoder(0),
+//        ResetEncoder(0),
         Nothing(0),
         ScoringHeightAdjust(0),
         PastDown(0),

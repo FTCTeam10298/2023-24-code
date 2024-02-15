@@ -375,10 +375,10 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                 telemetry.addLine("Adjusting lift to position ${targetState.targetRobot.depoTarget.liftVariableInput.toInt()}")
                 lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftVariableInput.toInt(), actualState.actualRobot.depoState.lift.currentPositionTicks)
             }
-            Lift.LiftPositions.ResetEncoder -> {
-//                lift.resetPosition(this)
-                0.0
-            }
+//            Lift.LiftPositions.ResetEncoder -> {
+////                lift.resetPosition(this)
+//                0.0
+//            }
             Lift.LiftPositions.PastDown -> {
 //                val atZeroPosition = actualState.actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.Down.ticks
 //                if (!atZeroPosition || actualState.actualRobot.depoState.isLiftLimitActivated) {
