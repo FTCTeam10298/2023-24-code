@@ -4,6 +4,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 
@@ -18,7 +19,7 @@ class DepoManager(
 
     data class ActualDepo(
             val armAngleDegrees: Double,
-            val lift: Lift.ActualLift,
+            val lift: SlideSubsystem.ActualSlideSubsystem,
 //            val liftPositionTicks: Int,
 //            val liftZeroPositionOffsetTicks: Int,
 //            val isLiftLimitActivated: Boolean,
@@ -306,7 +307,7 @@ class DepoManager(
     fun getDepoState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualDepo {
         return ActualDepo(
                 armAngleDegrees = arm.getArmAngleDegrees(hardware),
-                lift = lift.getActualLift(hardware, previousActualWorld),
+                lift = lift.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.depoState?.lift),
 //                liftPositionTicks = lift.getCurrentPositionTicks(hardware),
 //                liftZeroPositionOffsetTicks = ,
 //                isLiftLimitActivated = lift.isLimitSwitchActivated(hardware),

@@ -45,43 +45,10 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.liftMotorMaster.currentPosition
     override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.liftMagnetLimit.state
 
-
-    private fun isLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = getIsLimitSwitchActivated(hardware)
-
-    private fun getLiftZeroPositionOffsetTicks(liftCurrentPositionTicks: Int, limitSwitchIsActivated: Boolean, previousActualWorld: ActualWorld?): Int {
-//        powerSubsystem(0.0, hardware)
-//        hardware.liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-//        hardware.liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-
-        return if (limitSwitchIsActivated) {
-            pid.reset()
-            liftCurrentPositionTicks
-        } else {
-            previousActualWorld?.actualRobot?.depoState?.lift?.zeroPositionOffsetTicks ?: 0
-        }
-    }
-
     class ActualLift(override val currentPositionTicks: Int,
                      override val limitSwitchIsActivated: Boolean,
                      override val zeroPositionOffsetTicks: Int = 0,
                      override val ticksMovedSinceReset: Int = 0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset)
-    fun getActualLift(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualLift {
-        return getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.depoState?.lift) as ActualLift
-    }
-//    data class ActualLift(val currentPositionTicks: Int, val limitSwitchIsActivated: Boolean, val zeroPositionOffsetTicks: Int = 0)
-//    fun getActualLift(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualLift {
-//        val rawPositionTicks = hardware.liftMotorMaster.currentPosition
-//        val limitSwitchIsActivated = isLimitSwitchActivated(hardware)
-//
-//        val zeroPositionOffsetTicks = getLiftZeroPositionOffsetTicks(rawPositionTicks, limitSwitchIsActivated, previousActualWorld)
-//
-//        val currentPositionTicks = rawPositionTicks - zeroPositionOffsetTicks
-//
-//        return ActualLift(
-//                currentPositionTicks = currentPositionTicks,
-//                zeroPositionOffsetTicks= zeroPositionOffsetTicks,
-//                limitSwitchIsActivated= limitSwitchIsActivated)
-//    }
 
 
     private val acceptablePositionErrorTicks = 100
