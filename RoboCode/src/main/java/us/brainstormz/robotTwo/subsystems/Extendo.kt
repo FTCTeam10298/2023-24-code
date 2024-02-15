@@ -36,7 +36,10 @@ class Extendo: Subsystem {
     }
 
     fun isExtendoAllTheWayIn(actualRobot: ActualRobot): Boolean {
-        return actualRobot.collectorSystemState.extendoLimitIsActivated
+        val limitIsActive = actualRobot.collectorSystemState.extendoLimitIsActivated
+        val extendoPositionIsAccurate = actualRobot.collectorSystemState.extendoTicksSinceLastReset <= 200
+        val extendoIsInAccordingToTicks = actualRobot.collectorSystemState.extendoPositionTicks <= ExtendoPositions.Min.ticks
+        return limitIsActive || (extendoPositionIsAccurate && extendoIsInAccordingToTicks)
     }
 
     fun getExtendoPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
