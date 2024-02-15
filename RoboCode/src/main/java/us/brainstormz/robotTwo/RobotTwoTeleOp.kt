@@ -65,6 +65,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         SetLine1,
         SetLine2,
         SetLine3,
+        ScoringHeightAdjust,
         Down,
         Manual,
         NoInput
@@ -126,6 +127,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val bumperMode: Gamepad1BumperMode,
             val lightInput: LightInput,
             val depo: DepoInput,
+            val depoScoringHeightAdjust: Double,
             val wrist: WristInput,
             val collector: CollectorInput,
             val extendo: ExtendoInput,
@@ -180,10 +182,21 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val areLiftManualControlsActive = liftOverrideStickValue.absoluteValue > 0.2
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
         val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= 0.2
-        val depoInput: DepoInput = if (areLiftManualControlsActive || isArmManualOverrideActive) {
+
+        val depoInputWithoutHeightAdjust: DepoInput = if (areLiftManualControlsActive || isArmManualOverrideActive) {
             DepoInput.Manual
         } else {
             depoGamepad2Input ?: depoGamepad1Input
+        }
+        val depoScoringHeightAdjust = if (depoInputWithoutHeightAdjust != DepoInput.Manual) {
+            gamepad2.right_stick_y.toDouble()
+        } else {
+            0.0
+        }
+        val depoInput: DepoInput = if (previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.GoingOut && depoInputWithoutHeightAdjust != DepoInput.Manual && depoInputWithoutHeightAdjust != DepoInput.Down && depoScoringHeightAdjust != 0.0) {
+            DepoInput.ScoringHeightAdjust
+        } else {
+            depoInputWithoutHeightAdjust
         }
 
         /**Bumper Mode*/
@@ -396,6 +409,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         return DriverInput(
                 driveVelocity = driveVelocity,
                 depo = depoInput,
+                depoScoringHeightAdjust = depoScoringHeightAdjust,
                 wrist = WristInput(leftClaw, rightClaw),
                 collector = inputCollectorStateSystem,
                 rollers = rollers,
@@ -577,7 +591,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 previousTargetState.driverInput.depo
                             }
                         } else {
-                            driverInput.depo
+                            if (driverInput.depo == DepoInput.ScoringHeightAdjust) {
+                                driverInput.depo
+                            } else {
+                                driverInput.depo
+                            }
                         },
                 wrist = WristInput(clawInputPerSide[Transfer.Side.Left]!!,  clawInputPerSide[Transfer.Side.Right]!!)
         )
@@ -592,6 +610,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     liftPosition = liftPosition,
                     armPosition = armPosition,
                     wristPosition = driverInputWrist,
+                    depoScoringHeightAdjust = driverInput.depoScoringHeightAdjust,
                     targetType = DepoTargetType.Manual
             )
         } else {
@@ -738,6 +757,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val noInput = DriverInput(
                 driveVelocity = PositionAndRotation(),
                 depo = DepoInput.NoInput,
+                depoScoringHeightAdjust = 0.0,
                 wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
                 collector = CollectorInput.NoInput,
                 rollers = RollerInput.NoInput,
@@ -751,6 +771,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val initDepoTarget = DepoTarget(
                 liftPosition = Lift.LiftPositions.Down,
+                depoScoringHeightAdjust = 0.0,
                 armPosition = Arm.Positions.In,
                 wristPosition = WristTargets(ClawTarget.Gripping),
                 targetType = DepoTargetType.GoingHome

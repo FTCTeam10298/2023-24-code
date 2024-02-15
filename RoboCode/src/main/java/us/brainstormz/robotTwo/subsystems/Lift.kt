@@ -17,6 +17,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
         Manual(0),
         ResetEncoder(0),
         Nothing(0),
+        ScoringHeightAdjust(0),
         PastDown(0),
         Down(0),
         BackboardBottomRow(330),
@@ -36,6 +37,7 @@ class Lift(private val telemetry: Telemetry): Subsystem {
             RobotTwoTeleOp.DepoInput.Down -> LiftPositions.Down
             RobotTwoTeleOp.DepoInput.Manual -> LiftPositions.Manual
             RobotTwoTeleOp.DepoInput.NoInput -> LiftPositions.Nothing
+            RobotTwoTeleOp.DepoInput.ScoringHeightAdjust -> LiftPositions.ScoringHeightAdjust
         }
     }
 

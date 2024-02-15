@@ -379,6 +379,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                 telemetry.addLine("Running lift in manual mode at power $liftOverridePower")
                 -liftOverridePower
             }
+            Lift.LiftPositions.ScoringHeightAdjust -> {
+                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.depoScoringHeightAdjust.toInt(), actualState.actualRobot.depoState.liftPositionTicks)
+            }
             Lift.LiftPositions.ResetEncoder -> {
                 lift.resetPosition(this)
                 0.0

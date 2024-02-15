@@ -13,6 +13,7 @@ import us.brainstormz.utils.DataClassHelper
 data class DepoTarget(
         val armPosition: Arm.Positions,
         val liftPosition: Lift.LiftPositions,
+        val depoScoringHeightAdjust: Double,
         val wristPosition: Wrist.WristTargets,
 //        val leftClawPosition: Claw.ClawTarget,
 //        val rightClawPosition: Claw.ClawTarget,

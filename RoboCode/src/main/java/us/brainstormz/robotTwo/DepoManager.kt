@@ -36,13 +36,14 @@ class DepoManager(
             RobotTwoTeleOp.DepoInput.SetLine1 -> DepoTargetType.GoingOut
             RobotTwoTeleOp.DepoInput.SetLine2 -> DepoTargetType.GoingOut
             RobotTwoTeleOp.DepoInput.SetLine3 -> DepoTargetType.GoingOut
+            RobotTwoTeleOp.DepoInput.ScoringHeightAdjust -> DepoTargetType.GoingOut
             RobotTwoTeleOp.DepoInput.Down -> DepoTargetType.GoingHome
             else -> null
         }
     }
 
     var jankSave = WristTargets(Claw.ClawTarget.Gripping)
-    fun getFinalDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, previousWristTarget: WristTargets, previousDepoTargetType: DepoTargetType): DepoTarget? {
+    fun getFinalDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, depoScoringHeightAdjust: Double, previousWristTarget: WristTargets, previousDepoTargetType: DepoTargetType): DepoTarget? {
 
         //close applicable claws otherwise keep the same claw pos
         //If the depo is going out, then if handoff is yes then close applicable claws otherwise keep the same claw pos
@@ -75,6 +76,7 @@ class DepoManager(
 
         return DepoTarget(
                 liftPosition = liftTarget,
+                depoScoringHeightAdjust = depoScoringHeightAdjust,
                 armPosition = armTarget,
                 wristPosition = wristTarget,
                 targetType = depoTargetType
@@ -186,8 +188,11 @@ class DepoManager(
             previousTargetDepo.liftPosition
         }
 
+        val depoScoringHeightTicks = actualDepo.liftPositionTicks + (finalDepoTarget.depoScoringHeightAdjust * 10)
+
         return DepoTarget(
                 liftPosition = liftTarget,
+                depoScoringHeightAdjust = depoScoringHeightTicks,
                 armPosition = armTarget,
                 wristPosition = wristTarget,
                 targetType = finalDepoTarget.targetType
@@ -200,7 +205,7 @@ class DepoManager(
         val depoInput = target.depo
         val wristInput = WristTargets(left= target.wrist.left.toClawTarget() ?: previousDepoTarget.wristPosition.left, right= target.wrist.right.toClawTarget()?:previousDepoTarget.wristPosition.right)
 
-        val finalDepoTarget = getFinalDepoTarget(depoInput, previousDepoTarget.wristPosition, previousDepoTarget.targetType) ?: previousDepoTarget
+        val finalDepoTarget = getFinalDepoTarget(depoInput, target.depoScoringHeightAdjust, previousDepoTarget.wristPosition, previousDepoTarget.targetType) ?: previousDepoTarget
 
         val movingArmAndLiftTarget = coordinateArmLiftAndClaws(finalDepoTarget, previousDepoTarget, actualDepo)
 
