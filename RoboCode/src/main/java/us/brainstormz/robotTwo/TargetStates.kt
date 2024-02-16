@@ -14,17 +14,14 @@ import us.brainstormz.utils.DataClassHelper
 data class DepoTarget(
         val armPosition: Arm.Positions,
         val lift: Lift.TargetLift,
-//        val liftPosition: Lift.LiftPositions,
         val liftVariableInput: Double,
         val wristPosition: Wrist.WristTargets,
-//        val leftClawPosition: Claw.ClawTarget,
-//        val rightClawPosition: Claw.ClawTarget,
         val targetType: DepoManager.DepoTargetType
 ) {
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 }
 data class CollectorTarget(
-        val extendoPositions: Extendo.ExtendoPositions,
+        val extendo: SlideSubsystem.TargetSlideSubsystem,
         val timeOfEjectionStartMilis: Long,
         val intakeNoodles: Intake.CollectorPowers,
         val rollers: Transfer.RollerState

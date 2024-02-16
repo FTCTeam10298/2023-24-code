@@ -23,7 +23,6 @@ class Extendo: Subsystem, SlideSubsystem {
         Max(2000),
     }
 
-
     private val acceptablePositionErrorTicks = 50
     fun isExtendoAtPosition(targetPositionTicks: Int, currentPositionTicks: Int): Boolean {
         val positionErrorTicks = targetPositionTicks - currentPositionTicks

@@ -93,8 +93,8 @@ interface SlideSubsystem {
     class AllTheWayIn(override val ticks: Int): TargetPosition
     open class TargetSlideSubsystem (
             open val targetPosition: TargetPosition,
-            open val power: Double,
             open val movementMode: MovementMode,
+            open val power: Double = 0.0,
             open val timeOfResetMoveDirectionStartMilis: Long = 0)
 
     val stallCurrentAmps: Double

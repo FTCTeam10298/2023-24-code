@@ -16,6 +16,7 @@ import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
@@ -565,7 +566,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Extendo*/
-        val extendoState: Extendo.ExtendoPositions = when (driverInput.extendo) {
+        val extendoState: SlideSubsystem.TargetPosition = when (driverInput.extendo) {
             ExtendoInput.Extend -> {
                 Extendo.ExtendoPositions.Manual
             }
@@ -574,10 +575,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
             ExtendoInput.NoInput -> {
                 val limitIsActivated = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
-                val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Min
-                val extendoIsManual = previousTargetState.targetRobot.collectorTarget.extendoPositions == Extendo.ExtendoPositions.Manual
+                val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Min
+                val extendoIsManual = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Manual
                 if ((extendoIsAlreadyGoingIn || extendoIsManual) && limitIsActivated) {
-                    previousTargetState.targetRobot.collectorTarget.extendoPositions
+                    previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
                 } else if (doHandoffSequence) {
                     if (!limitIsActivated) {
                         Extendo.ExtendoPositions.AllTheWayInTarget
@@ -585,7 +586,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         Extendo.ExtendoPositions.Min
                     }
                 } else {
-                    previousTargetState.targetRobot.collectorTarget.extendoPositions
+                    previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
                 }
             }
         }
@@ -798,7 +799,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 intakeNoodles = intakeNoodleTarget,
                                 timeOfEjectionStartMilis = timeOfEjectionStartMilis,
                                 rollers = rollerTargetState,
-                                extendoPositions = extendoState,
+                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = extendoState, movementMode = SlideSubsystem.MovementMode.Position, power = 0.0),
                         ),
                         hangPowers = hangTarget,
                         launcherPosition = launcherTarget,
@@ -848,7 +849,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         rightServoCollect = Transfer.RollerPowers.Off,
                                         directorState = Transfer.DirectorState.Off
                                 ),
-                                extendoPositions = Extendo.ExtendoPositions.Manual,
+                                extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, SlideSubsystem.MovementMode.Position),
                         ),
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,

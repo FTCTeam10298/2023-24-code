@@ -337,7 +337,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         )
 
         /**Extendo*/
-        val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendoPositions) {
+        val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {
             Extendo.ExtendoPositions.Manual -> {
                 extendoOverridePower
             }
@@ -348,13 +348,13 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             Extendo.ExtendoPositions.AllTheWayInTarget -> {
                 val atZeroPosition = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= Extendo.ExtendoPositions.Min.ticks + 5
                 if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
-                    extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
+                    extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
                 } else {
                     -0.48
                 }
             }
             else -> {
-                extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendoPositions.ticks, actualState.actualRobot)
+                extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
             }
         }
         extendo.powerSubsystem(extendoPower, this)

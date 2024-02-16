@@ -60,7 +60,7 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
     data class TargetLift(override val targetPosition: LiftPositions = LiftPositions.Down,
                      override val power: Double = 0.0,
                      override val movementMode: SlideSubsystem.MovementMode = SlideSubsystem.MovementMode.Position,
-                     override val timeOfResetMoveDirectionStartMilis: Long = 0): SlideSubsystem.TargetSlideSubsystem(targetPosition, power, movementMode, timeOfResetMoveDirectionStartMilis)
+                     override val timeOfResetMoveDirectionStartMilis: Long = 0): SlideSubsystem.TargetSlideSubsystem(targetPosition, movementMode, power, timeOfResetMoveDirectionStartMilis)
 
 
     private val acceptablePositionErrorTicks = 100
