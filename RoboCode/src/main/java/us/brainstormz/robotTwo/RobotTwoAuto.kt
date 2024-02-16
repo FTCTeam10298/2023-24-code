@@ -588,13 +588,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                     },).asTargetWorld,
     )
 
-
-
     data class PathPreAssembled(val purplePlacementPath: Map<PropPosition, List<TargetWorld>>, val driveToBoardPath: List<TargetWorld>, val yellowDepositPath: Map<PropPosition, List<TargetWorld>>, val parkPath: List<TargetWorld>) {
         fun assemblePath(propPosition: PropPosition): List<TargetWorld> {
             val purplePath = purplePlacementPath[propPosition] ?: emptyList()
             val yellowPath = yellowDepositPath[propPosition] ?: emptyList()
-            return purplePath + driveToBoardPath + yellowPath + parkPath
+            return purplePath// + driveToBoardPath + yellowPath + parkPath
         }
     }
     private fun calcAutoTargetStateList(
@@ -603,13 +601,12 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             propPosition: PropPosition
     ): List<TargetWorld> {
 
-
         val redPath: PathPreAssembled = when (startPosition) {
             StartPosition.Backboard -> {
                 PathPreAssembled(
-                        purplePlacementPath = mapOf(propPosition to emptyList()),
+                        purplePlacementPath = emptyMap(),
                         driveToBoardPath = backBoardAuto,
-                        yellowDepositPath = mapOf(propPosition to emptyList()),
+                        yellowDepositPath = emptyMap(),
                         parkPath = listOf()
                 )
             }
