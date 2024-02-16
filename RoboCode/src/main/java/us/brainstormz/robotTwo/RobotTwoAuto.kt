@@ -29,7 +29,6 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Transfer.RollerState
 import us.brainstormz.robotTwo.subsystems.Transfer.DirectorState
 import us.brainstormz.robotTwo.subsystems.Transfer.RollerPowers
-import us.brainstormz.robotTwo.subsystems.Transfer.TransferHalfState
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
 
@@ -690,26 +689,19 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
     private val console = TelemetryConsole(telemetry)
     private val wizard = TelemetryWizard(console, null)
-    private var wizardWasChanged = false
     data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition)
 
-    private fun runMenuWizard(gamepad1: Gamepad): WizardResults {
-        val isWizardDone = wizard.summonWizard(gamepad1)
-        return if (isWizardDone) {
-            wizardWasChanged = true
-            WizardResults(
-                    alliance = when (wizard.wasItemChosen("alliance", "Red")) {
-                        true -> RobotTwoHardware.Alliance.Red
-                        false -> RobotTwoHardware.Alliance.Blue
-                    },
-                    startPosition = when (wizard.wasItemChosen("startingPos", "Audience")) {
-                        true -> StartPosition.Audience
-                        false -> StartPosition.Backboard
-                    }
-            )
-        } else {
-            wizardResults
-        }
+    private fun getMenuWizardResults(gamepad1: Gamepad): WizardResults {
+        return WizardResults(
+                alliance = when (wizard.wasItemChosen("alliance", "Red")) {
+                    true -> RobotTwoHardware.Alliance.Red
+                    false -> RobotTwoHardware.Alliance.Blue
+                },
+                startPosition = when (wizard.wasItemChosen("startingPos", "Audience")) {
+                    true -> StartPosition.Audience
+                    false -> StartPosition.Backboard
+                }
+        )
     }
 
     private lateinit var drivetrain: Drivetrain
@@ -746,11 +738,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         opencv.cameraOrientation = OpenCvCameraRotation.UPRIGHT
     }
 
-    private fun runCamera(opencv: OpenCvAbstraction) {
-        alliance = wizardResults.alliance
-        startPosition = wizardResults.startPosition
-
-        val propColor: PropColors = when (alliance) {
+    private fun runCamera(opencv: OpenCvAbstraction, wizardResults: WizardResults) {
+        val propColor: PropColors = when (wizardResults.alliance) {
             RobotTwoHardware.Alliance.Blue -> PropColors.Blue
             RobotTwoHardware.Alliance.Red -> PropColors.Red
         }
@@ -758,18 +747,27 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         opencv.onNewFrame(propDetector!!::processFrame)
     }
 
-    private var propPosition: PropPosition = PropPosition.Left
-    private var wizardResults = WizardResults(RobotTwoHardware.Alliance.Red, StartPosition.Backboard)
+    private var wizardResults: WizardResults? = null
     fun init_loop(hardware: RobotTwoHardware, opencv: OpenCvAbstraction, gamepad1: Gamepad) {
-        wizardResults = runMenuWizard(gamepad1)
-        if (wizardWasChanged) {
-            runCamera(opencv)
-            hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
+        if (wizardResults == null) {
+            val isWizardDone = wizard.summonWizard(gamepad1)
+            if (isWizardDone) {
+                wizardResults = getMenuWizardResults(gamepad1)
+
+                alliance = wizardResults!!.alliance
+                startPosition = wizardResults!!.startPosition
+
+                runCamera(opencv, wizardResults!!)
+                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
+            }
+        } else {
+            telemetry.addLine("propPosition? = ${propDetector?.propPosition}")
+            telemetry.addLine("wizardResults = ${wizardResults}")
         }
     }
 
     fun start(hardware: RobotTwoHardware, opencv: OpenCvAbstraction) {
-        propPosition = propDetector?.propPosition ?: propPosition
+        val propPosition = propDetector?.propPosition ?: PropPosition.Right
         opencv.stop()
 
         val startPositionAndRotation: PositionAndRotation = when (alliance) {
@@ -779,7 +777,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
         drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
 
-        autoStateList = calcAutoTargetStateList(alliance, startPosition, PropPosition.Center)
+        autoStateList = calcAutoTargetStateList(alliance, startPosition, propPosition)
         autoListIterator = autoStateList.listIterator()
 
         hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
