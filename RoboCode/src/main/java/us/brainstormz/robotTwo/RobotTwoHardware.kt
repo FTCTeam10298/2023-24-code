@@ -28,6 +28,7 @@ import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
@@ -318,7 +319,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
     fun actuateRobot(
             targetState: TargetWorld, actualState: ActualWorld,
-            movement: MecanumDriveTrain,
+            drivetrain: Drivetrain,
             extendo: Extendo,
             intake: Intake,
             transfer: Transfer,
@@ -329,13 +330,14 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             armOverridePower: Double
     ) {
         /**Drive*/
-        movement.setSpeedAll(
-                vY = targetState.targetRobot.positionAndRotation.y,
-                vX = targetState.targetRobot.positionAndRotation.x,
-                vA = targetState.targetRobot.positionAndRotation.r,
-                maxPower = 1.0,
-                minPower = 0.0
-        )
+        drivetrain.actuateDrivetrain(targetState.targetRobot.drivetrainTarget, actualState.actualRobot.positionAndRotation)
+//        movement.setSpeedAll(
+//                vY = targetState.targetRobot.positionAndRotation.y,
+//                vX = targetState.targetRobot.positionAndRotation.x,
+//                vA = targetState.targetRobot.positionAndRotation.r,
+//                maxPower = 1.0,
+//                minPower = 0.0
+//        )
 
         /**Extendo*/
         val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {

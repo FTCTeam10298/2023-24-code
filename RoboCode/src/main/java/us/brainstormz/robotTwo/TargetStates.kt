@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
@@ -28,7 +29,7 @@ data class CollectorTarget(
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 }
 data class TargetRobot(
-        val positionAndRotation: PositionAndRotation,
+        val drivetrainTarget: Drivetrain.DrivetrainTarget,
         val depoTarget: DepoTarget,
         val collectorTarget: CollectorTarget,
         val hangPowers: RobotTwoHardware.HangPowers,

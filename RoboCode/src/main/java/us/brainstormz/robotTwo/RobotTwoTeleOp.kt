@@ -15,6 +15,7 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
+import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
@@ -48,10 +49,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, extendo, arm, telemetry)
 
 
-    lateinit var movement: MecanumDriveTrain
-//    lateinit var odometryLocalizer: RRTwoWheelLocalizer
+    lateinit var movement: Drivetrain
+    val fauxLocalizer = FauxLocalizer()
     fun init(hardware: RobotTwoHardware) {
-        movement = MecanumDriveTrain(hardware)
+        movement = Drivetrain(hardware, fauxLocalizer, telemetry)
 //        odometryLocalizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
 
         for (module in hardware.allHubs) {
@@ -148,7 +149,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val launcher: LauncherInput,
             val handoff: HandoffInput,
             val rollers: RollerInput,
-            val driveVelocity: PositionAndRotation
+            val driveVelocity: Drivetrain.DrivetrainPower
     ) {
         override fun toString(): String = DataClassHelper.dataClassToString(this)
     }
@@ -441,7 +442,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val y = yInput + extendoCompensationPower + driver2YInput
         val x = xInput + driver2XInput
         val r = -rInput * abs(rInput)
-        val driveVelocity = PositionAndRotation(x= x, y= y, r= r)
+        val driveVelocity = Drivetrain.DrivetrainPower(x= x, y= y, r= r)
 
         /**Lights*/
         val previousIsAnyColorButtonPressed = previousGamepad2.a || previousGamepad2.b || previousGamepad2.x || previousGamepad2.y
@@ -803,7 +804,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         return TargetWorld(
                 targetRobot = TargetRobot(
-                        positionAndRotation = driveTarget,
+                        drivetrainTarget = Drivetrain.DrivetrainTarget(
+                                power = driveTarget,
+                                movementMode = MovementMode.Power,
+                                targetPosition = PositionAndRotation()
+                        ),
                         depoTarget = depoTarget,
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = intakeNoodleTarget,
@@ -826,7 +831,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     companion object {
         val noInput = DriverInput(
-                driveVelocity = PositionAndRotation(),
+                driveVelocity = Drivetrain.DrivetrainPower(),
                 depo = DepoInput.NoInput,
                 depoScoringHeightAdjust = 0.0,
                 wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
@@ -849,7 +854,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val initialPreviousTargetState = TargetWorld(
                 targetRobot = TargetRobot(
-                        positionAndRotation = PositionAndRotation(),
+                        drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(), MovementMode.Power, Drivetrain.DrivetrainPower()),
                         depoTarget = initDepoTarget,
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = Intake.CollectorPowers.Off,
@@ -876,8 +881,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 gamepad1Rumble = null
         )
     }
-
-    val fauxLocalizer = FauxLocalizer()
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
@@ -912,7 +915,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     hardware.actuateRobot(
                             targetState,
                             actualState,
-                            movement= movement,
+                            drivetrain = movement,
                             wrist= wrist,
                             arm= arm,
                             lift= lift,

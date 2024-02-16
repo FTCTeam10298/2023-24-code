@@ -19,6 +19,7 @@ import us.brainstormz.robotTwo.CollectorSystem.*
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
+import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
@@ -61,7 +62,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
     }
 
     private fun isRobotAtPosition(targetWorld: TargetWorld, actualState: ActualWorld): Boolean {
-        return mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetWorld.targetRobot.positionAndRotation)
+        return mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetWorld.targetRobot.drivetrainTarget.targetPosition)
     }
 
     private val targetWorldToBeReplacedWithInjection = AutoTargetWorld( targetRobot = RobotState(collectorSystemState = CollectorState(Intake.CollectorPowers.Off, Extendo.ExtendoPositions.Min, Transfer.RollerState(Transfer.RollerPowers.Off, Transfer.RollerPowers.Off, Transfer.DirectorState.Off), TransferHalfState(false, 0), TransferHalfState(false, 0)), positionAndRotation = PositionAndRotation(), depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Down, ClawTarget.Retracted, ClawTarget.Retracted)),
@@ -207,7 +208,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.In, Lift.LiftPositions.Down, ClawTarget.Retracted, ClawTarget.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-                        val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState?.targetRobot?.positionAndRotation ?: PositionAndRotation())
+                        val isRobotAtPosition = mecanumMovement.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState.targetRobot.drivetrainTarget.targetPosition)
                         telemetry.addLine("isRobotAtPosition: $isRobotAtPosition")
                         isRobotAtPosition
                     },),
@@ -343,7 +344,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld ->
-                        mecanumMovement.isRobotAtPosition(precisionInches = 3.0, precisionDegrees = 3.0, currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState.targetRobot.positionAndRotation)
+                        mecanumMovement.isRobotAtPosition(precisionInches = 3.0, precisionDegrees = 3.0, currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetState.targetRobot.drivetrainTarget.targetPosition)
                     },),
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -681,7 +682,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         }
     }
 
-    private lateinit var mecanumMovement: MecanumMovement
+    private lateinit var mecanumMovement: Drivetrain
 
     private val intake = Intake()
     private val transfer = Transfer(telemetry)
@@ -699,7 +700,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
     fun init(hardware: RobotTwoHardware, opencv: OpenCvAbstraction) {
         val odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
-        mecanumMovement = MecanumMovement(odometryLocalizer, hardware, telemetry)
+        mecanumMovement = Drivetrain(hardware, odometryLocalizer, telemetry)
 
         collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
         lift = Lift(telemetry)
@@ -763,7 +764,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 targetWorld.targetRobot.collectorTarget.rollers,
                                 TransferHalfState(false, 0),
                                 TransferHalfState(false, 0)),
-                        positionAndRotation = targetWorld.targetRobot.positionAndRotation,
+                        positionAndRotation = targetWorld.targetRobot.drivetrainTarget.targetPosition,
                         depoState = DepoState(targetWorld.targetRobot.depoTarget.armPosition, targetWorld.targetRobot.depoTarget.lift.targetPosition as Lift.LiftPositions, leftClawPosition = targetWorld.targetRobot.depoTarget.wristPosition.left, rightClawPosition = targetWorld.targetRobot.depoTarget.wristPosition.right)
                 ),
                 isTargetReached = targetWorld.isTargetReached,
@@ -777,7 +778,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         val targetRobot = autoTargetWorld.targetRobot
         return TargetWorld(
                 targetRobot = TargetRobot(
-                        positionAndRotation = targetRobot.positionAndRotation,
+                        drivetrainTarget = Drivetrain.DrivetrainTarget(
+                                targetPosition = targetRobot.positionAndRotation,
+                                movementMode = MovementMode.Position,
+                                power = Drivetrain.DrivetrainPower()
+                        ),
                         depoTarget = DepoTarget(
                                 armPosition = targetRobot.depoState.armPos,
                                 lift= Lift.TargetLift(
@@ -844,7 +849,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 hardware.actuateRobot(
                         universalTargetWorld,
                         actualState,
-                        movement= mecanumMovement,
+                        drivetrain = mecanumMovement,
                         wrist= wrist,
                         arm= arm,
                         lift= lift,
@@ -857,7 +862,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
                 hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)//targetState.targetRobot.lights.targetColor.blinkinPattern)
 
-//                mecanumMovement.moveTowardTarget(targetState.targetRobot.positionAndRotation)
+//                mecanumMovement.moveTowardTarget(targetState.targetRobot.drivetrainTarget.targetPosition)
 //                extendo.powerSubsystem(extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot), hardware)
 //                intake.powerSubsystem(targetState.targetRobot.collectorSystemState.collectorState.power, hardware)
 //                lift.powerSubsystem(lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks), hardware)
