@@ -38,9 +38,7 @@ class HandoffManager(
 
     fun checkIfHandoffIsReady(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Boolean {
         val isExtendoAllTheWayIn = extendo.isSlideSystemAllTheWayIn(actualWorld.actualRobot.collectorSystemState.extendo)
-        val extendoIsMovingInOrNotAtAll = extendo.getVelocityTicksPerMili(
-                actualWorld,
-                previousActualWorld) <= 0
+        val extendoIsMovingInOrNotAtAll = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) <= 0
         val extendoIsReady = extendoIsMovingInOrNotAtAll && isExtendoAllTheWayIn
 
         val liftExtensionIsAllTheWayDown = lift.isSlideSystemAllTheWayIn(actualWorld.actualRobot.depoState.lift)//10 >= actualWorld.actualRobot.depoState.lift.currentPositionTicks//actualWorld.actualRobot.depoState.isLiftLimitActivated

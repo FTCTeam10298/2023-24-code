@@ -39,14 +39,11 @@ class Extendo: Subsystem, SlideSubsystem {
 
 //    fun getVelocityTicksPerMili(actualTicks: Int, actualTimeMilis: Long, previousActualTicks: Int, previousActualTimeMilis: Long): Double {
     fun getVelocityTicksPerMili(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Double {
-        val actualTicks: Int = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks
+        val actualExtendo = actualWorld.actualRobot.collectorSystemState.extendo
         val actualTimeMilis: Long = actualWorld.timestampMilis
-        val previousActualTicks: Int = previousActualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks
+        val previousActualExtendo = previousActualWorld.actualRobot.collectorSystemState.extendo
         val previousActualTimeMilis: Long = previousActualWorld.timestampMilis
-        val deltaTimeMilis: Long = actualTimeMilis - previousActualTimeMilis
-        val deltaTicks: Int = actualTicks - previousActualTicks
-        val velocityTicksPerMili: Double = (deltaTicks.toDouble())/(deltaTimeMilis)
-        return velocityTicksPerMili
+        return super.getVelocityTicksPerMili(actualExtendo, actualTimeMilis, previousActualExtendo, previousActualTimeMilis)
     }
 
     override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {

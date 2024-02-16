@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo.subsystems
 
 import us.brainstormz.pid.PID
+import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.utils.DataClassHelper
 import kotlin.math.absoluteValue
@@ -71,6 +72,15 @@ interface SlideSubsystem {
         return limitIsActive || (positionIsAccurate && isInAccordingToTicks)
     }
 
+    fun getVelocityTicksPerMili(actualSlideSubsystem: ActualSlideSubsystem, actualTimestampMilis: Long, previousSlideSubsystem: ActualSlideSubsystem, previousTimestampMilis: Long): Double {
+        val actualTicks: Int = actualSlideSubsystem.currentPositionTicks
+        val previousActualTicks: Int = previousSlideSubsystem.currentPositionTicks
+        val deltaTimeMilis: Long = actualTimestampMilis - previousTimestampMilis
+        val deltaTicks: Int = actualTicks - previousActualTicks
+        val velocityTicksPerMili: Double = (deltaTicks.toDouble())/(deltaTimeMilis)
+        return velocityTicksPerMili
+    }
+
     enum class MovementMode {
         Position,
         Power
@@ -78,9 +88,24 @@ interface SlideSubsystem {
     interface TargetPosition { val ticks: Int }
     data class TargetSlideSubsystem(val targetPosition: TargetPosition, val power: Double, val movementMode: MovementMode)
     fun findLimitToReset(actualSlideSubsystem: ActualSlideSubsystem, previousActualSlideSubsystem: ActualSlideSubsystem, previousTargetSlideSubsystem: TargetSlideSubsystem): TargetSlideSubsystem {
-        return if (actualSlideSubsystem.ticksMovedSinceReset > allowedMovementBeforeResetTicks) {
-            actualSlideSubsystem.zeroPositionOffsetTicks
-
+        val resetIsNeeded = actualSlideSubsystem.ticksMovedSinceReset > allowedMovementBeforeResetTicks
+        return if (resetIsNeeded) {
+//            actualSlideSubsystem.zeroPositionOffsetTicks
+//
+//
+//            val slideIsMovingIn = previousTargetSlideSubsystem.targetPosition ==
+//
+//            val extendoIsAlreadyGoingIn = previousTargetSlideSubsystem.targetPosition == Extendo.ExtendoPositions.Min
+//            val extendoIsManual = previousTargetSlideSubsystem.targetPosition == Extendo.ExtendoPositions.Manual
+//            if ((extendoIsAlreadyGoingIn || extendoIsManual) && limitIsActivated) {
+//                previousTargetSlideSubsystem.targetPosition
+//            } else  {
+//                if (!limitIsActivated) {
+//                    Extendo.ExtendoPositions.AllTheWayInTarget
+//                } else {
+//                    Extendo.ExtendoPositions.Min
+//                }
+//            }
 
             previousTargetSlideSubsystem
         } else {
