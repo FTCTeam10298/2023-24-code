@@ -17,8 +17,8 @@ class CollectorSystem(
             val collectorState: Intake.CollectorPowers,
             val extendoPosition: Extendo.ExtendoPositions,
             val transferRollersState: Transfer.RollerState,
-            val transferLeftSensorState: Transfer.TransferHalfState,
-            val transferRightSensorState: Transfer.TransferHalfState,
+//            val transferLeftSensorState: Transfer.TransferHalfState,
+//            val transferRightSensorState: Transfer.TransferHalfState,
     )
 
 
