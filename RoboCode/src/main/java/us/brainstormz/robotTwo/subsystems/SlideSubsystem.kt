@@ -70,4 +70,21 @@ interface SlideSubsystem {
         val isInAccordingToTicks = actualSlideSubsystem.currentPositionTicks <= allTheWayInPositionTicks
         return limitIsActive || (positionIsAccurate && isInAccordingToTicks)
     }
+
+    enum class MovementMode {
+        Position,
+        Power
+    }
+    interface TargetPosition { val ticks: Int }
+    data class TargetSlideSubsystem(val targetPosition: TargetPosition, val power: Double, val movementMode: MovementMode)
+    fun findLimitToReset(actualSlideSubsystem: ActualSlideSubsystem, previousActualSlideSubsystem: ActualSlideSubsystem, previousTargetSlideSubsystem: TargetSlideSubsystem): TargetSlideSubsystem {
+        return if (actualSlideSubsystem.ticksMovedSinceReset > allowedMovementBeforeResetTicks) {
+            actualSlideSubsystem.zeroPositionOffsetTicks
+
+
+            previousTargetSlideSubsystem
+        } else {
+            previousTargetSlideSubsystem
+        }
+    }
 }

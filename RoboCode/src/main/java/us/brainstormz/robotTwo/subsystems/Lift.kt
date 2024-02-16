@@ -14,7 +14,7 @@ import kotlin.math.sign
 
 class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
-    enum class LiftPositions(val ticks: Int) {
+    enum class LiftPositions(override val ticks: Int): SlideSubsystem.TargetPosition {
         Manual(0),
         Nothing(0),
         ScoringHeightAdjust(0),

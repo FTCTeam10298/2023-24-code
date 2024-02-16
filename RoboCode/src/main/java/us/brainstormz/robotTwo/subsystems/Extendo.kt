@@ -11,7 +11,7 @@ import kotlin.math.absoluteValue
 class Extendo: Subsystem, SlideSubsystem {
     val maxSafeCurrentAmps = 5.5
 
-    enum class ExtendoPositions(val ticks: Int) {
+    enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.TargetPosition {
         AllTheWayInTarget(-10),
         Min(0),
         Manual(0),
