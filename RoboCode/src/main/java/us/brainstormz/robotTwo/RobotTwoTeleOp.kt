@@ -5,6 +5,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
@@ -47,10 +48,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
 
     lateinit var movement: MecanumDriveTrain
-    lateinit var odometryLocalizer: RRTwoWheelLocalizer
+//    lateinit var odometryLocalizer: RRTwoWheelLocalizer
     fun init(hardware: RobotTwoHardware) {
         movement = MecanumDriveTrain(hardware)
-        odometryLocalizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
+//        odometryLocalizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
 
         for (module in hardware.allHubs) {
             module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
@@ -875,6 +876,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
     }
 
+    val fauxLocalizer = FauxLocalizer()
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
@@ -891,7 +893,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     val currentGamepad2 = Gamepad()
                     currentGamepad2.copy(gamepad2)
                     ActualWorld(
-                            actualRobot = hardware.getActualState(localizer = odometryLocalizer, depoManager = depoManager, collectorSystem = collectorSystem, previousActualWorld= previousActualState),
+                            actualRobot = hardware.getActualState(localizer = fauxLocalizer, depoManager = depoManager, collectorSystem = collectorSystem, previousActualWorld= previousActualState),
                             actualGamepad1 = currentGamepad1,
                             actualGamepad2 = currentGamepad2,
                             timestampMilis = System.currentTimeMillis()
