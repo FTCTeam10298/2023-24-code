@@ -51,7 +51,7 @@ class Autonomous: OpMode() {
     }
 
     override fun loop() {
-        auto.loop(hardware= hardware)
+        auto.loop(hardware= hardware, gamepad1)
     }
 
 }

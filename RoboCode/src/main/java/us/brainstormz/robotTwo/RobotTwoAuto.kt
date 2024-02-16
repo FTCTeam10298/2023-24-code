@@ -817,15 +817,16 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<AutoTargetWorld, ActualWorld>()
     private val loopTimeMeasurer = DeltaTimeMeasurer()
-    private val fakeGamepadForActualWorld = Gamepad()
-    fun loop(hardware: RobotTwoHardware) {
-
+//    private val fakeGamepadForActualWorld = Gamepad()
+    fun loop(hardware: RobotTwoHardware, gamepad1: Gamepad) {
         functionalReactiveAutoRunner.loop(
             actualStateGetter = { previousActualState ->
+                val currentGamepad1 = Gamepad()
+                currentGamepad1.copy(gamepad1)
                 ActualWorld(
                         actualRobot = hardware.getActualState(mecanumMovement.localizer, collectorSystem, depoManager, previousActualState),
-                        actualGamepad1 = fakeGamepadForActualWorld,
-                        actualGamepad2 = fakeGamepadForActualWorld,
+                        actualGamepad1 = currentGamepad1,
+                        actualGamepad2 = currentGamepad1,
                         timestampMilis = System.currentTimeMillis()
                 )
             },

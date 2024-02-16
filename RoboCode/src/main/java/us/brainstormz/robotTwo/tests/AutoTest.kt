@@ -57,7 +57,7 @@ class AutoTest {
             program.start(hardware, openCvAbstraction)
 
             //Run Once
-            program.loop(hardware)
+            program.loop(hardware, gamepad1 = Gamepad())
 
             //Get result
             val result = program.functionalReactiveAutoRunner.previousTargetState!!
