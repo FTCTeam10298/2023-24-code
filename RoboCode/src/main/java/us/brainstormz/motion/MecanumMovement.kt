@@ -23,7 +23,7 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
 //    val defaultRotationPID =        PID(1.000,  0.000050, 0.0)
     val defaultYTranslationPID =    PID(0.18,  0.00001, 1.9)
     val defaultXTranslationPID =    PID(0.5,  0.00015, 1.5)
-    val defaultRotationPID =        PID(4.7)//,  0.0015, 1.5)
+    val defaultRotationPID =        PID(2.0)//,  0.0015, 1.5)
     val defaultPrecisionInches = 5.0
     val defaultPrecisionDegrees = 3.0
 
@@ -64,6 +64,10 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
 //        precisionInches = 1.0
 //        goToPosition(target, linearOpMode, powerRange, asyncTask)
 //    }
+
+//    yTranslationPID: PID = defaultYTranslationPID,
+//                                  xTranslationPID: PID = defaultXTranslationPID,
+//                                  rotationPID: PID = defaultRotationPID
 
     override fun moveTowardTarget(target: PositionAndRotation, powerRange: ClosedRange<Double>): Boolean {
         localizer.recalculatePositionAndRotation()

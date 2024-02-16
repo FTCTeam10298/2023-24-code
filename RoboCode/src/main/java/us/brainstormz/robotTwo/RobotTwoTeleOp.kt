@@ -48,9 +48,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
 
     lateinit var drivetrain: Drivetrain
-    val fauxLocalizer = FauxLocalizer()
     fun init(hardware: RobotTwoHardware) {
-        drivetrain = Drivetrain(hardware, fauxLocalizer, telemetry)
+        drivetrain = Drivetrain(hardware, FauxLocalizer(), telemetry)
 //        odometryLocalizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
 
         for (module in hardware.allHubs) {
@@ -895,7 +894,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     val currentGamepad2 = Gamepad()
                     currentGamepad2.copy(gamepad2)
                     ActualWorld(
-                            actualRobot = hardware.getActualState(localizer = fauxLocalizer, depoManager = depoManager, collectorSystem = collectorSystem, previousActualWorld= previousActualState),
+                            actualRobot = hardware.getActualState(drivetrain= drivetrain, depoManager = depoManager, collectorSystem = collectorSystem, previousActualWorld= previousActualState),
                             actualGamepad1 = currentGamepad1,
                             actualGamepad2 = currentGamepad2,
                             timestampMilis = System.currentTimeMillis()

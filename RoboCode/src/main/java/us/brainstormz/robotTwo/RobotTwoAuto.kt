@@ -791,7 +791,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 val currentGamepad1 = Gamepad()
                 currentGamepad1.copy(gamepad1)
                 ActualWorld(
-                        actualRobot = hardware.getActualState(drivetrain.localizer, collectorSystem, depoManager, previousActualState),
+                        actualRobot = hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState),
                         actualGamepad1 = currentGamepad1,
                         actualGamepad2 = currentGamepad1,
                         timestampMilis = System.currentTimeMillis()

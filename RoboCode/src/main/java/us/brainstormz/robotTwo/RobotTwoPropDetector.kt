@@ -73,20 +73,6 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
             value
         }.key
 
-//        val leftValue = values[PropPosition.Left]!!
-//        val centerValue = values[PropPosition.Center]!!
-//        val rightValue = values[PropPosition.Right]!!
-//
-//        propPosition = if (leftValue >= rightValue && leftValue >= centerValue) {
-//            PropPosition.Left
-//        } else if (rightValue >= centerValue) {
-//            PropPosition.Right
-//        } else {
-//            PropPosition.Center
-//        }
-
-//        telemetry.addLine("propPosition: $propPosition")
-
         positionsMappedToRects.forEach {(position, rect) ->
             val borderColor = if (position == propPosition) colorToDetectAsScalar else white
             Imgproc.rectangle(frame, rect, borderColor, 3)
