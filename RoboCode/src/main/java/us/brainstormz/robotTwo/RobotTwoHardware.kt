@@ -297,16 +297,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                         RevHubOrientationOnRobot.UsbFacingDirection.LEFT))
         imu.initialize(parameters)
         imu.resetYaw()
-
-        //Lights
-//        lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
     }
-
-
-    private fun getLiftPos(power: Double): Lift.LiftPositions = Lift.LiftPositions.entries.firstOrNull { it ->
-        power == it.ticks.toDouble()
-    } ?: Lift.LiftPositions.Down
-
     open fun getActualState(drivetrain: Drivetrain, collectorSystem: CollectorSystem, depoManager: DepoManager, previousActualWorld: ActualWorld?): ActualRobot {
         telemetry.addLine("getting state")
         telemetry.addLine("extendo current position: ${extendoMotorMaster.currentPosition}")
@@ -331,13 +322,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     ) {
         /**Drive*/
         drivetrain.actuateDrivetrain(targetState.targetRobot.drivetrainTarget, actualState.actualRobot.positionAndRotation)
-//        movement.setSpeedAll(
-//                vY = targetState.targetRobot.positionAndRotation.y,
-//                vX = targetState.targetRobot.positionAndRotation.x,
-//                vA = targetState.targetRobot.positionAndRotation.r,
-//                maxPower = 1.0,
-//                minPower = 0.0
-//        )
 
         /**Extendo*/
         val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {

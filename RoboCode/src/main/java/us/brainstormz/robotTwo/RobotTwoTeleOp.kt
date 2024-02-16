@@ -27,37 +27,17 @@ import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
-    //Not working:
-    //Arm to position
-    //Lift manual
-    //Handoff
-
     val intake = Intake()
     val transfer = Transfer(telemetry)
     val extendo = Extendo()
     val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
-
     val leftClaw: Claw = Claw(telemetry)
     val rightClaw: Claw = Claw(telemetry)
     val wrist = Wrist(leftClaw, rightClaw, telemetry= telemetry)
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
-
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, extendo, arm, telemetry)
-
-
-    lateinit var drivetrain: Drivetrain
-    fun init(hardware: RobotTwoHardware) {
-        drivetrain = Drivetrain(hardware, FauxLocalizer(), telemetry)
-//        odometryLocalizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
-
-        for (module in hardware.allHubs) {
-            module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
-        }
-
-    }
-
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
@@ -877,6 +857,16 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 isTargetReached = { _, _ -> false },
                 gamepad1Rumble = null
         )
+    }
+
+
+    lateinit var drivetrain: Drivetrain
+    fun init(hardware: RobotTwoHardware) {
+        drivetrain = Drivetrain(hardware, FauxLocalizer(), telemetry)
+
+        for (module in hardware.allHubs) {
+            module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
+        }
     }
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
