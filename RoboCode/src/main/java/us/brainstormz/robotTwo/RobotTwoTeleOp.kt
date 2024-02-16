@@ -424,7 +424,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             0.0
         }
 
-        val isAtTheEndOfExtendo = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= Extendo.ExtendoPositions.Max.ticks || actualWorld.actualRobot.collectorSystemState.extendoCurrentAmps > 6.0
+        val isAtTheEndOfExtendo = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= Extendo.ExtendoPositions.Max.ticks || actualWorld.actualRobot.collectorSystemState.extendo.currentAmps > 6.0
         val extendoCompensationPower = if (isAtTheEndOfExtendo && yInput == 0.0) {
             gamepad1.right_trigger.toDouble()
         } else {
