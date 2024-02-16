@@ -7,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.motion.MecanumMovement
+import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import java.lang.Thread.sleep
@@ -42,8 +43,9 @@ class OdometryTrackingTest: OpMode() {
 @Autonomous
 class OdometryMovementTest: OpMode() {
     val hardware = RobotTwoHardware(opmode= this, telemetry= telemetry)
-    lateinit var localizer: RRTwoWheelLocalizer
-    lateinit var movement: MecanumMovement
+//    lateinit var localizer: RRTwoWheelLocalizer
+//    lateinit var movement: MecanumMovement
+    lateinit var drivetrain: Drivetrain
 
 //    val console = TelemetryConsole(telemetry)
 //    val wizard = TelemetryWizard(console, null)
@@ -54,8 +56,7 @@ class OdometryMovementTest: OpMode() {
 //        wizard.summonWizardBlocking(gamepad1)
 
         hardware.init(hardwareMap)
-        localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
-        movement = MecanumMovement(hardware= hardware, localizer= localizer, telemetry= telemetry)
+        drivetrain = Drivetrain(hardware, RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick), telemetry)
     }
 
     val positions = listOf<PositionAndRotation>(
@@ -77,7 +78,7 @@ class OdometryMovementTest: OpMode() {
     override fun loop() {
 //        localizer.recalculatePositionAndRotation()
 
-        val currentPosition = localizer.currentPositionAndRotation()
+        val currentPosition = drivetrain.getPosition()
         telemetry.addLine("rr current position: $currentPosition")
 
 //        val driveMotors = mapOf<String, DcMotor>(
@@ -98,8 +99,9 @@ class OdometryMovementTest: OpMode() {
 
 
         telemetry.addLine("currentTarget: $currentTarget")
-        val isAtTarget = movement.moveTowardTarget(currentTarget)
+        drivetrain.actuateDrivetrain(Drivetrain.DrivetrainTarget(currentTarget), currentPosition)
 
+        val isAtTarget = drivetrain.isRobotAtPosition(currentPosition= currentPosition, targetPosition = currentTarget)
         if (isAtTarget) {
             val index = positions.indexOf(currentTarget)
             if (index != (positions.size - 1)) {
