@@ -6,13 +6,15 @@ import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DataClassHelper
 
 data class DepoTarget(
         val armPosition: Arm.Positions,
-        val liftPosition: Lift.LiftPositions,
+        val lift: Lift.TargetLift,
+//        val liftPosition: Lift.LiftPositions,
         val liftVariableInput: Double,
         val wristPosition: Wrist.WristTargets,
 //        val leftClawPosition: Claw.ClawTarget,

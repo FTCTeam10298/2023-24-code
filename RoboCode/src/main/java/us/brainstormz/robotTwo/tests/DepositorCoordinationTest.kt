@@ -27,7 +27,7 @@ class DepoTest {
     }
 
 
-    val movingOutTests: (RobotTwoTeleOp.DepoInput)->List<DepoTest.AllDataForTest> = {input ->
+    val movingOutTests: (RobotTwoTeleOp.DepoInput)->List<AllDataForTest> = {input ->
         val inputLiftPosition = lift.getGetLiftTargetFromDepoTarget(input)
         listOf(
                 DepoTest.AllDataForTest(
@@ -37,7 +37,7 @@ class DepoTest {
                                         depo= input
                                 ),
                                 previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                        liftPosition = Lift.LiftPositions.Down,
+                                        lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                         armPosition = Arm.Positions.In,
                                         wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                         targetType = DepoManager.DepoTargetType.GoingHome
@@ -52,7 +52,7 @@ class DepoTest {
                                 handoffIsReady = false
                         ),
                         expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                                liftPosition = Lift.LiftPositions.Down,
+                                lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                 armPosition = Arm.Positions.In,
                                 wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                 targetType = DepoManager.DepoTargetType.GoingOut
@@ -65,7 +65,7 @@ class DepoTest {
                                         depo= input
                                 ),
                                 previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                        liftPosition = Lift.LiftPositions.Down,
+                                        lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                         armPosition = Arm.Positions.In,
                                         wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                         targetType = DepoManager.DepoTargetType.GoingOut
@@ -80,7 +80,7 @@ class DepoTest {
                                 handoffIsReady = false
                         ),
                         expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                                liftPosition = inputLiftPosition,
+                                lift = Lift.TargetLift(inputLiftPosition),
                                 armPosition = Arm.Positions.ClearLiftMovement,
                                 wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                 targetType = DepoManager.DepoTargetType.GoingOut
@@ -93,7 +93,7 @@ class DepoTest {
                                         depo= input
                                 ),
                                 previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                        liftPosition = inputLiftPosition,
+                                        lift = Lift.TargetLift(inputLiftPosition),
                                         armPosition = Arm.Positions.ClearLiftMovement,
                                         wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                         targetType = DepoManager.DepoTargetType.GoingOut
@@ -108,7 +108,7 @@ class DepoTest {
                                 handoffIsReady = false
                         ),
                         expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                                liftPosition = inputLiftPosition,
+                                lift = Lift.TargetLift(inputLiftPosition),
                                 armPosition = Arm.Positions.Out,
                                 wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                 targetType = DepoManager.DepoTargetType.GoingOut
@@ -121,7 +121,7 @@ class DepoTest {
                                         depo= input
                                 ),
                                 previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                        liftPosition = inputLiftPosition,
+                                        lift = Lift.TargetLift(inputLiftPosition),
                                         armPosition = Arm.Positions.Out,
                                         wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                         targetType = DepoManager.DepoTargetType.GoingOut
@@ -136,7 +136,7 @@ class DepoTest {
                                 handoffIsReady = false
                         ),
                         expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                                liftPosition = inputLiftPosition,
+                                lift = Lift.TargetLift(inputLiftPosition),
                                 armPosition = Arm.Positions.Out,
                                 wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                 targetType = DepoManager.DepoTargetType.GoingOut
@@ -153,7 +153,7 @@ class DepoTest {
                                     depo= RobotTwoTeleOp.DepoInput.Down
                             ),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                     targetType = DepoManager.DepoTargetType.GoingOut
@@ -168,7 +168,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.SetLine3,
+                            lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                             armPosition = Arm.Positions.Out,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -181,7 +181,7 @@ class DepoTest {
                                     depo= RobotTwoTeleOp.DepoInput.Down
                             ),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -196,7 +196,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.SetLine3,
+                            lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                             armPosition = Arm.Positions.Out,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -209,7 +209,7 @@ class DepoTest {
                                     depo= RobotTwoTeleOp.DepoInput.Down
                             ),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                     targetType = DepoManager.DepoTargetType.GoingOut
@@ -224,7 +224,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.SetLine3,
+                            lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                             armPosition = Arm.Positions.Out,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -237,7 +237,7 @@ class DepoTest {
                                     depo= RobotTwoTeleOp.DepoInput.Down
                             ),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -252,7 +252,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.SetLine3,
+                            lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                             armPosition = Arm.Positions.Out,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -265,7 +265,7 @@ class DepoTest {
                                     depo= RobotTwoTeleOp.DepoInput.Down
                             ),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -280,7 +280,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.ClearForArmToMove,
+                            lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -293,7 +293,7 @@ class DepoTest {
                                     depo= RobotTwoTeleOp.DepoInput.Down
                             ),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.ClearForArmToMove,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                                     armPosition = Arm.Positions.ClearLiftMovement,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -308,7 +308,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.ClearForArmToMove,
+                            lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -321,7 +321,7 @@ class DepoTest {
                                     depo= RobotTwoTeleOp.DepoInput.Down
                             ),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.ClearForArmToMove,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                                     armPosition = Arm.Positions.ClearLiftMovement,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -336,7 +336,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -350,7 +350,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput,
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.Down,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                     armPosition = Arm.Positions.In,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -365,7 +365,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.In,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -376,7 +376,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput,
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.Down,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                     armPosition = Arm.Positions.In,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -391,7 +391,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.In,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -402,7 +402,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput,
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.Down,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                     armPosition = Arm.Positions.In,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -417,7 +417,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.ClearForArmToMove,
+                            lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -428,7 +428,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.Down),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.SetLine3,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                     targetType = DepoManager.DepoTargetType.GoingOut
@@ -443,7 +443,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.SetLine3,
+                            lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
                             armPosition = Arm.Positions.Out,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -469,7 +469,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.In,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -490,7 +490,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -511,7 +511,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -522,7 +522,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput,
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.Down,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                     armPosition = Arm.Positions.ClearLiftMovement,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -537,7 +537,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -551,7 +551,7 @@ class DepoTest {
 //                    input= FullyManageDepoTestInputs(
 //                            target = RobotTwoTeleOp.noInput,
 //                            previousDepoTarget = DepoTarget( depoScoringHeightAdjust= 0.0,
-//                                    liftPosition = Lift.LiftPositions.ClearForArmToMove,
+//                                    lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
 //                                    armPosition = Arm.Positions.ClearLiftMovement,
 //                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
 //                                    targetType = DepoManager.DepoTargetType.GoingHome
@@ -565,7 +565,7 @@ class DepoTest {
 //                            handoffIsReady = false
 //                    ),
 //                    expectedOutput= DepoTarget( depoScoringHeightAdjust= 0.0,
-//                            liftPosition = Lift.LiftPositions.Down,
+//                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
 //                            armPosition = Arm.Positions.In,
 //                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
 //                            targetType = DepoManager.DepoTargetType.GoingHome
@@ -583,7 +583,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.Down),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.ClearForArmToMove,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                                     armPosition = Arm.Positions.ClearLiftMovement,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -598,7 +598,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -613,7 +613,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.NoInput, wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.Drop, RobotTwoTeleOp.ClawInput.Drop)),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.SetLine2,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                                     targetType = DepoManager.DepoTargetType.GoingOut
@@ -625,7 +625,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.SetLine2,
+                            lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
                             armPosition = Arm.Positions.Out,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingOut
@@ -636,7 +636,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.Down, wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.Hold, RobotTwoTeleOp.ClawInput.Hold)),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.SetLine2,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingOut
@@ -648,7 +648,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.ClearForArmToMove,
+                            lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -659,7 +659,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.Hold, RobotTwoTeleOp.ClawInput.Hold)),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.Down,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                     armPosition = Arm.Positions.In,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -671,7 +671,7 @@ class DepoTest {
                             handoffIsReady = false
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.In,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -682,7 +682,7 @@ class DepoTest {
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.Hold, RobotTwoTeleOp.ClawInput.Hold)),
                             previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-                                    liftPosition = Lift.LiftPositions.Down,
+                                    lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                     armPosition = Arm.Positions.In,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
                                     targetType = DepoManager.DepoTargetType.GoingHome
@@ -694,7 +694,7 @@ class DepoTest {
                             handoffIsReady = true
                     ),
                     expectedOutput= DepoTarget( liftVariableInput= 0.0,
-                            liftPosition = Lift.LiftPositions.Down,
+                            lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.In,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                             targetType = DepoManager.DepoTargetType.GoingHome
@@ -707,7 +707,7 @@ class DepoTest {
 //                    input= FullyManageDepoTestInputs(
 //                            target = RobotTwoTeleOp.noInput,
 //                            previousDepoTarget = DepoTarget( liftVariableInput= 0.0,
-//                                    liftPosition = Lift.LiftPositions.Down,
+//                                    lift = Lift.TargetLift(Lift.LiftPositions.Down),
 //                                    armPosition = Arm.Positions.In,
 //                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
 //                                    targetType = DepoManager.DepoTargetType.GoingHome
@@ -722,7 +722,7 @@ class DepoTest {
 //                            handoffIsReady = false
 //                    ),
 //                    expectedOutput= DepoTarget( liftVariableInput= 0.0,
-//                            liftPosition = Lift.LiftPositions.,
+//                            lift = Lift.TargetLift(Lift.LiftPositions.),
 //                            armPosition = Arm.Positions.In,
 //                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
 //                            targetType = DepoManager.DepoTargetType.GoingHome

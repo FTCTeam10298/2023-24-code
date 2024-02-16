@@ -90,16 +90,16 @@ interface SlideSubsystem {
         Power
     }
     interface TargetPosition { val ticks: Int }
-    data class TargetSlideSubsystem(
-            val targetPosition: TargetPosition,
-            val power: Double,
-            val movementMode: MovementMode,
-            val timeOfResetMoveDirectionStartMilis: Long)
+    class AllTheWayIn(override val ticks: Int): TargetPosition
+    open class TargetSlideSubsystem (
+            open val targetPosition: TargetPosition,
+            open val power: Double,
+            open val movementMode: MovementMode,
+            open val timeOfResetMoveDirectionStartMilis: Long = 0)
 
     val stallCurrentAmps: Double
     val definitelyMovingVelocityTicksPerMili: Double
     val findResetPower: Double
-
     fun findLimitToReset(actualSlideSubsystem: ActualSlideSubsystem, actualTimestampMilis: Long, previousSlideSubsystem: ActualSlideSubsystem, previousTimestampMilis: Long, previousTargetSlideSubsystem: TargetSlideSubsystem): TargetSlideSubsystem {
         val resetIsNeeded = actualSlideSubsystem.ticksMovedSinceReset > allowedMovementBeforeResetTicks
         return if (resetIsNeeded) {
@@ -133,11 +133,10 @@ interface SlideSubsystem {
                 previousTargetSlideSubsystem.timeOfResetMoveDirectionStartMilis
             }
 
-            return previousTargetSlideSubsystem.copy(
-                    power = power,
-                    movementMode = MovementMode.Power,
-                    timeOfResetMoveDirectionStartMilis = timeOfResetMoveDirectionStartMilis,
-            )
+            return TargetSlideSubsystem(power = power,
+                                        movementMode = MovementMode.Power,
+                                        timeOfResetMoveDirectionStartMilis = timeOfResetMoveDirectionStartMilis,
+                                        targetPosition = previousTargetSlideSubsystem.targetPosition)
         } else {
             previousTargetSlideSubsystem
         }

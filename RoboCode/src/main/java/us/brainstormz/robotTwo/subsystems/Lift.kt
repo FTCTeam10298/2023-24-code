@@ -51,11 +51,16 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override val definitelyMovingVelocityTicksPerMili: Double = 0.01
     override val findResetPower: Double = 0.2
 
-    class ActualLift(override val currentPositionTicks: Int,
+    data class ActualLift(override val currentPositionTicks: Int,
                      override val limitSwitchIsActivated: Boolean,
                      override val zeroPositionOffsetTicks: Int = 0,
                      override val ticksMovedSinceReset: Int = 0,
                      override val currentAmps: Double = 0.0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset, currentAmps)
+
+    data class TargetLift(override val targetPosition: LiftPositions = LiftPositions.Down,
+                     override val power: Double = 0.0,
+                     override val movementMode: SlideSubsystem.MovementMode = SlideSubsystem.MovementMode.Position,
+                     override val timeOfResetMoveDirectionStartMilis: Long = 0): SlideSubsystem.TargetSlideSubsystem(targetPosition, power, movementMode, timeOfResetMoveDirectionStartMilis)
 
 
     private val acceptablePositionErrorTicks = 100
