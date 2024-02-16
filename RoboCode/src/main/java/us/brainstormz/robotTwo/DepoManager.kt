@@ -5,6 +5,7 @@ import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem.TargetPosition
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 
@@ -70,16 +71,15 @@ class DepoManager(
                     else -> return null
                 }
 
-        val liftTarget: Lift.LiftPositions =
+        val liftTarget: SlideSubsystem.TargetPosition =
                 when (depoTargetType) {
-                    DepoTargetType.GoingOut -> lift.getGetLiftTargetFromDepoTarget(depoInput)
+                    DepoTargetType.GoingOut -> lift.getGetLiftTargetFromDepoTarget(depoInput, depoScoringHeightAdjust)
                     DepoTargetType.GoingHome -> Lift.LiftPositions.Down
                     else -> return null
                 }
 
         return DepoTarget(
                 lift = Lift.TargetLift(liftTarget, movementMode = SlideSubsystem.MovementMode.Position),
-                liftVariableInput = depoScoringHeightAdjust,
                 armPosition = armTarget,
                 wristPosition = wristTarget,
                 targetType = depoTargetType
@@ -172,7 +172,7 @@ class DepoManager(
         val armIsAtTarget = checkIfArmIsAtTarget(armTarget, actualDepo.armAngleDegrees)
         telemetry.addLine("armIsAtTarget: $armIsAtTarget")
 
-        val liftTarget: Lift.LiftPositions = when (finalDepoTarget.targetType) {
+        val liftTarget: TargetPosition = when (finalDepoTarget.targetType) {
             DepoTargetType.GoingOut -> {
                 if (clawsArentMoving) {
                     finalDepoTarget.lift.targetPosition
@@ -239,7 +239,6 @@ class DepoManager(
 
         return DepoTarget(
                 lift = Lift.TargetLift(liftTarget, movementMode = SlideSubsystem.MovementMode.Position),
-                liftVariableInput = finalDepoTarget.liftVariableInput,
                 armPosition = armTarget,
                 wristPosition = wristTarget,
                 targetType = finalDepoTarget.targetType

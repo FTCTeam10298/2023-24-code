@@ -188,7 +188,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val dpadInput: DepoInput = depoGamepad2Input ?: depoGamepad1Input
 
         val liftControlMode = when (previousTargetState.targetRobot.depoTarget.lift.targetPosition) {
-            Lift.LiftPositions.ScoringHeightAdjust -> LiftControlMode.Adjust
+//            Lift.LiftPositions.ScoringHeightAdjust -> LiftControlMode.Adjust
             Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
             Lift.LiftPositions.SetLine1 -> LiftControlMode.Adjust
             Lift.LiftPositions.SetLine2 -> LiftControlMode.Adjust
@@ -235,11 +235,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val liftVariableInput = if (depoInput == DepoInput.ScoringHeightAdjust) {
             //Ticks to go to
-            val liftPositionToAdjustOffOf: Double = if (previousRobotTarget.depoTarget.lift.targetPosition != Lift.LiftPositions.ScoringHeightAdjust) {
-                previousRobotTarget.depoTarget.lift.targetPosition.ticks.toDouble()
-            } else {
-                previousRobotTarget.depoTarget.liftVariableInput
-            }
+//            val previousLiftTargetWasCustom = Lift.LiftPositions.entries.contains(previousRobotTarget.depoTarget.lift.targetPosition)
+//            val liftPositionToAdjustOffOf: Double = if (!previousLiftTargetWasCustom) {
+//                previousRobotTarget.depoTarget.lift.targetPosition.ticks.toDouble()
+//            } else {
+//                previousRobotTarget.depoTarget.lift.targetPosition.ticks.toDouble()
+//            }
+            val liftPositionToAdjustOffOf: Double = previousRobotTarget.depoTarget.lift.targetPosition.ticks.toDouble()
             val maxLiftAdjustSpeedTicksPerSecond: Double = 900.0
             val maxLiftAdjustSpeedTicksPerMili: Double = maxLiftAdjustSpeedTicksPerSecond/1000.0
             val timeSinceLastOpportunityToMoveLiftMilis = actualWorld.timestampMilis - previousActualWorld.timestampMilis
@@ -664,13 +666,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val depoWasManualLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual
         val noAutomationTakingOver = !doingHandoff
         val depoTarget: DepoTarget = if ( (driverInputIsManual || (depoWasManualLastLoop && driverInput.depo == DepoInput.NoInput)) && noAutomationTakingOver) {
-            val liftPosition: Lift.LiftPositions = Lift.LiftPositions.Manual
             val armPosition = Arm.Positions.Manual
             DepoTarget(
-                    lift = Lift.TargetLift(liftPosition),
+                    lift = Lift.TargetLift(power = driverInput.depoScoringHeightAdjust, movementMode = SlideSubsystem.MovementMode.Power, targetPosition = previousTargetState.targetRobot.depoTarget.lift.targetPosition),
                     armPosition = armPosition,
                     wristPosition = driverInputWrist,
-                    liftVariableInput = driverInput.depoScoringHeightAdjust,
                     targetType = DepoTargetType.Manual
             )
         } else {
@@ -831,7 +831,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val initDepoTarget = DepoTarget(
                 lift = Lift.TargetLift(Lift.LiftPositions.Down),
-                liftVariableInput = 0.0,
                 armPosition = Arm.Positions.In,
                 wristPosition = WristTargets(ClawTarget.Gripping),
                 targetType = DepoTargetType.GoingHome

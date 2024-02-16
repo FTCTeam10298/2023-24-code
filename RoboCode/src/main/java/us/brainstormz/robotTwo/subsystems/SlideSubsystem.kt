@@ -90,7 +90,7 @@ interface SlideSubsystem {
         Power
     }
     interface TargetPosition { val ticks: Int }
-//    class AllTheWayIn(override val ticks: Int): TargetPosition
+    class VariableTargetPosition(override val ticks: Int): TargetPosition
     open class TargetSlideSubsystem (
             open val targetPosition: TargetPosition,
             open val movementMode: MovementMode,

@@ -31,6 +31,7 @@ import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import java.lang.Thread.sleep
@@ -366,23 +367,17 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         transfer.powerSubsystem(targetState.targetRobot.collectorTarget.rollers, this, actualRobot = actualState.actualRobot)
 
         /**Lift*/
-        val liftPower: Double = when (targetState.targetRobot.depoTarget.lift.targetPosition) {
-            Lift.LiftPositions.Manual -> {
-                telemetry.addLine("Running lift in manual mode at power ${targetState.targetRobot.depoTarget.liftVariableInput}")
-                targetState.targetRobot.depoTarget.liftVariableInput
-            }
-            Lift.LiftPositions.ScoringHeightAdjust -> {
-                telemetry.addLine("Adjusting lift to position ${targetState.targetRobot.depoTarget.liftVariableInput.toInt()}")
-                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftVariableInput.toInt(), actualState.actualRobot.depoState.lift.currentPositionTicks)
-            }
-//            Lift.LiftPositions.ResetEncoder -> {
-////                lift.resetPosition(this)
-//                0.0
-//            }
-            Lift.LiftPositions.PastDown -> {
+        val liftPower: Double = when (targetState.targetRobot.depoTarget.lift.movementMode) {
+            SlideSubsystem.MovementMode.Position -> {
+                when (targetState.targetRobot.depoTarget.lift.targetPosition) {
+//                    Lift.LiftPositions.ScoringHeightAdjust -> {
+//                        telemetry.addLine("Adjusting lift to position ${targetState.targetRobot.depoTarget.liftVariableInput.toInt()}")
+//                        lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftVariableInput.toInt(), actualState.actualRobot.depoState.lift.currentPositionTicks)
+//                    }
+                    Lift.LiftPositions.PastDown -> {
 //                val atZeroPosition = actualState.actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.Down.ticks
 //                if (!atZeroPosition || actualState.actualRobot.depoState.isLiftLimitActivated) {
-                    lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
+                        lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
 //                } else {
 //                    val currentTimeMilis = System.currentTimeMillis()
 //                    val timeSincePowerStart = currentTimeMilis - jankTimeOfLiftResetEncoderMoveStartMilis
@@ -396,11 +391,18 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 //                    }
 //                    jankLastLiftMovePower
 //                }
+                    }
+                    else -> {
+                        lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
+                    }
+                }
             }
-            else -> {
-                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
+            SlideSubsystem.MovementMode.Power -> {
+                telemetry.addLine("Running lift in manual mode at power ${targetState.targetRobot.depoTarget.lift.power}")
+                targetState.targetRobot.depoTarget.lift.power
             }
         }
+
         telemetry.addLine("lift position: ${targetState.targetRobot.depoTarget.lift.targetPosition}")
         telemetry.addLine("lift power: $liftPower\n\n")
         lift.powerSubsystem(liftPower, this)

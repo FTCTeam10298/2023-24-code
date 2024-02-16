@@ -15,9 +15,6 @@ import kotlin.math.sign
 class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.TargetPosition {
-        Manual(0),
-        Nothing(0),
-        ScoringHeightAdjust(0),
         PastDown(0),
         Down(0),
         BackboardBottomRow(330),
@@ -29,15 +26,16 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
         Max(2100)
     }
 
-    fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput): LiftPositions {
+    fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, position: Double): SlideSubsystem.TargetPosition {
         return when (depoInput) {
             RobotTwoTeleOp.DepoInput.SetLine1 -> LiftPositions.SetLine1
             RobotTwoTeleOp.DepoInput.SetLine2 -> LiftPositions.SetLine2
             RobotTwoTeleOp.DepoInput.SetLine3 -> LiftPositions.SetLine3
             RobotTwoTeleOp.DepoInput.Down -> LiftPositions.Down
-            RobotTwoTeleOp.DepoInput.Manual -> LiftPositions.Manual
-            RobotTwoTeleOp.DepoInput.NoInput -> LiftPositions.Nothing
-            RobotTwoTeleOp.DepoInput.ScoringHeightAdjust -> LiftPositions.ScoringHeightAdjust
+//            RobotTwoTeleOp.DepoInput.NoInput -> LiftPositions.Nothing
+//            RobotTwoTeleOp.DepoInput.ScoringHeightAdjust -> SlideSubsystem.VariableTargetPosition(ticks = position.toInt())
+//            RobotTwoTeleOp.DepoInput.Manual -> SlideSubsystem.VariableTargetPosition(0)
+            else -> SlideSubsystem.VariableTargetPosition(ticks = position.toInt())
         }
     }
 
@@ -45,6 +43,7 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.liftMagnetLimit.state
     override fun getCurrentAmps(hardware: RobotTwoHardware): Double = hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS)
 
+    /** Note: Lift limit switch is about 98 ticks above bottom */
     override val allowedMovementBeforeResetTicks: Int = 1000
     override val allTheWayInPositionTicks: Int = 0
     override val stallCurrentAmps: Double = 6.0
@@ -57,7 +56,7 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
                      override val ticksMovedSinceReset: Int = 0,
                      override val currentAmps: Double = 0.0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset, currentAmps)
 
-    data class TargetLift(override val targetPosition: LiftPositions = LiftPositions.Down,
+    data class TargetLift(override val targetPosition: SlideSubsystem.TargetPosition = LiftPositions.Down,
                      override val power: Double = 0.0,
                      override val movementMode: SlideSubsystem.MovementMode = SlideSubsystem.MovementMode.Position,
                      override val timeOfResetMoveDirectionStartMilis: Long = 0): SlideSubsystem.TargetSlideSubsystem(targetPosition, movementMode, power, timeOfResetMoveDirectionStartMilis)

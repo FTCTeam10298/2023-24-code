@@ -14,7 +14,6 @@ import us.brainstormz.utils.DataClassHelper
 data class DepoTarget(
         val armPosition: Arm.Positions,
         val lift: Lift.TargetLift,
-        val liftVariableInput: Double,
         val wristPosition: Wrist.WristTargets,
         val targetType: DepoManager.DepoTargetType
 ) {
