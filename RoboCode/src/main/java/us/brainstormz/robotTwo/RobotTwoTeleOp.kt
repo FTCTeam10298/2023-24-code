@@ -762,10 +762,16 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
 
+        val newTimeOfColorChangeMilis = if (currentPixelToBeDisplayed != previousPixelToBeDisplayed) {
+            actualWorld.timestampMilis
+        } else {
+            timeWhenCurrentColorStartedBeingDisplayedMilis
+        }
+
         val lights = LightTarget(
                 currentPixelToBeDisplayed,
                 desiredPixelLightPattern,
-                actualWorld.timestampMilis
+                newTimeOfColorChangeMilis
         )
 
         /**Rumble*/
