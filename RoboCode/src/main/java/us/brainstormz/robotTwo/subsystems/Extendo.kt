@@ -11,7 +11,7 @@ import kotlin.math.absoluteValue
 
 class Extendo: Subsystem, SlideSubsystem {
 
-    enum class ExtendoPositions(override val ticks: Int): TargetPosition {
+    enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         AllTheWayInTarget(-10),
         Min(0),
         Manual(0),

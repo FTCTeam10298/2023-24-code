@@ -581,7 +581,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Extendo*/
-        val extendoState: TargetPosition = when (driverInput.extendo) {
+        val extendoState: SlideSubsystem.SlideTargetPosition = when (driverInput.extendo) {
             ExtendoInput.Extend -> {
                 Extendo.ExtendoPositions.Manual
             }

@@ -71,7 +71,7 @@ class DepoManager(
                     else -> return null
                 }
 
-        val liftTarget: TargetPosition =
+        val liftTarget: SlideSubsystem.SlideTargetPosition =
                 when (depoTargetType) {
                     DepoTargetType.GoingOut -> lift.getGetLiftTargetFromDepoTarget(depoInput, depoScoringHeightAdjust)
                     DepoTargetType.GoingHome -> Lift.LiftPositions.Down
@@ -172,7 +172,7 @@ class DepoManager(
         val armIsAtTarget = checkIfArmIsAtTarget(armTarget, actualDepo.armAngleDegrees)
         telemetry.addLine("armIsAtTarget: $armIsAtTarget")
 
-        val liftTarget: TargetPosition = when (finalDepoTarget.targetType) {
+        val liftTarget: SlideSubsystem.SlideTargetPosition = when (finalDepoTarget.targetType) {
             DepoTargetType.GoingOut -> {
                 if (clawsArentMoving) {
                     finalDepoTarget.lift.targetPosition
