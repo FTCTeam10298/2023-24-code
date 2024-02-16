@@ -809,7 +809,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 driverInput = RobotTwoTeleOp.noInput,
                 isLiftEligableForReset = false,
                 doingHandoff = false,
-                isTargetReached = { lTargetWorld, lActualWorld -> true},//autoTargetWorld.isTargetReached(lTargetWorld, lActualWorld) },
+                isTargetReached = { lTargetWorld, lActualWorld -> autoTargetWorld.isTargetReached(lTargetWorld, lActualWorld) },
                 timeTargetStartedMilis = autoTargetWorld.timeTargetStartedMilis,
                 gamepad1Rumble = null
         )
