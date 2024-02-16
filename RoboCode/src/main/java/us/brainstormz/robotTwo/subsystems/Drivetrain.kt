@@ -7,7 +7,9 @@ import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.robotTwo.RobotTwoHardware
 
 class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Telemetry): DualMovementModeSubsystem, MecanumMovement(localizer, hardware, telemetry) {
-    data class DrivetrainPower(val x: Double, val y: Double, val r: Double)
+    data class DrivetrainPower(val x: Double, val y: Double, val r: Double) {
+        constructor() : this(0.0, 0.0, 0.0)
+    }
 
     data class DrivetrainTarget(
             override val targetPosition: PositionAndRotation,
