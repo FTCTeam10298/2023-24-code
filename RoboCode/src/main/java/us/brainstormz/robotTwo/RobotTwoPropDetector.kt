@@ -1,12 +1,8 @@
 package us.brainstormz.robotTwo
 
 import org.opencv.core.*
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.imgproc.Imgproc
-import org.openftc.easyopencv.OpenCvCameraRotation
-import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 
 class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorToDetect: PropColors) {
     enum class PropPosition {
@@ -64,7 +60,7 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
             position to mat.submat(rect)
         }
 
-        val values = regions.map {(position, rect) ->
+        val colorIntensities = regions.map { (position, rect) ->
             position to Core.sumElems(rect).`val`[0]
         }.toMap()
 
@@ -72,19 +68,24 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
             rect.release()
         }
 
-        val leftValue = values[PropPosition.Left]!!
-        val centerValue = values[PropPosition.Center]!!
-        val rightValue = values[PropPosition.Right]!!
+        propPosition = colorIntensities.entries.maxBy { (position, value) ->
+            telemetry.addLine("color Intensity $position = $value")
+            value
+        }.key
 
-        propPosition = if (leftValue >= rightValue && leftValue >= centerValue) {
-            PropPosition.Left
-        } else if (rightValue >= centerValue) {
-            PropPosition.Right
-        } else {
-            PropPosition.Center
-        }
+//        val leftValue = values[PropPosition.Left]!!
+//        val centerValue = values[PropPosition.Center]!!
+//        val rightValue = values[PropPosition.Right]!!
+//
+//        propPosition = if (leftValue >= rightValue && leftValue >= centerValue) {
+//            PropPosition.Left
+//        } else if (rightValue >= centerValue) {
+//            PropPosition.Right
+//        } else {
+//            PropPosition.Center
+//        }
 
-        telemetry.addLine("propPosition: $propPosition")
+//        telemetry.addLine("propPosition: $propPosition")
 
         positionsMappedToRects.forEach {(position, rect) ->
             val borderColor = if (position == propPosition) colorToDetectAsScalar else white
