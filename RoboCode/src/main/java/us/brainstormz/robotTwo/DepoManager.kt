@@ -5,7 +5,7 @@ import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem.TargetPosition
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 
@@ -71,7 +71,7 @@ class DepoManager(
                     else -> return null
                 }
 
-        val liftTarget: SlideSubsystem.TargetPosition =
+        val liftTarget: TargetPosition =
                 when (depoTargetType) {
                     DepoTargetType.GoingOut -> lift.getGetLiftTargetFromDepoTarget(depoInput, depoScoringHeightAdjust)
                     DepoTargetType.GoingHome -> Lift.LiftPositions.Down
@@ -79,7 +79,7 @@ class DepoManager(
                 }
 
         return DepoTarget(
-                lift = Lift.TargetLift(liftTarget, movementMode = SlideSubsystem.MovementMode.Position),
+                lift = Lift.TargetLift(liftTarget, movementMode = MovementMode.Position),
                 armPosition = armTarget,
                 wristPosition = wristTarget,
                 targetType = depoTargetType
@@ -238,7 +238,7 @@ class DepoManager(
 //        }
 
         return DepoTarget(
-                lift = Lift.TargetLift(liftTarget, movementMode = SlideSubsystem.MovementMode.Position),
+                lift = Lift.TargetLift(liftTarget, movementMode = MovementMode.Position),
                 armPosition = armTarget,
                 wristPosition = wristTarget,
                 targetType = finalDepoTarget.targetType

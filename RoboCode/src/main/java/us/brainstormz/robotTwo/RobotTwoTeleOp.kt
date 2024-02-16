@@ -15,6 +15,7 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
@@ -580,7 +581,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Extendo*/
-        val extendoState: SlideSubsystem.TargetPosition = when (driverInput.extendo) {
+        val extendoState: TargetPosition = when (driverInput.extendo) {
             ExtendoInput.Extend -> {
                 Extendo.ExtendoPositions.Manual
             }
@@ -680,7 +681,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val depoTarget: DepoTarget = if ( (driverInputIsManual || (depoWasManualLastLoop && driverInput.depo == DepoInput.NoInput)) && noAutomationTakingOver) {
             val armPosition = Arm.Positions.Manual
             DepoTarget(
-                    lift = Lift.TargetLift(power = driverInput.depoScoringHeightAdjust, movementMode = SlideSubsystem.MovementMode.Power, targetPosition = previousTargetState.targetRobot.depoTarget.lift.targetPosition),
+                    lift = Lift.TargetLift(power = driverInput.depoScoringHeightAdjust, movementMode = MovementMode.Power, targetPosition = previousTargetState.targetRobot.depoTarget.lift.targetPosition),
                     armPosition = armPosition,
                     wristPosition = driverInputWrist,
                     targetType = DepoTargetType.Manual
@@ -808,7 +809,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 intakeNoodles = intakeNoodleTarget,
                                 timeOfEjectionStartMilis = timeOfEjectionStartMilis,
                                 rollers = rollerTargetState,
-                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = extendoState, movementMode = SlideSubsystem.MovementMode.Position, power = 0.0),
+                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = extendoState, movementMode = MovementMode.Position, power = 0.0),
                         ),
                         hangPowers = hangTarget,
                         launcherPosition = launcherTarget,
@@ -858,7 +859,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         rightServoCollect = Transfer.RollerPowers.Off,
                                         directorState = Transfer.DirectorState.Off
                                 ),
-                                extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, SlideSubsystem.MovementMode.Position),
+                                extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, MovementMode.Position),
                         ),
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,

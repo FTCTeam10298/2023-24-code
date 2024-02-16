@@ -1,17 +1,17 @@
 package us.brainstormz.robotTwo.subsystems
 
-import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import kotlin.math.absoluteValue
 
 class Extendo: Subsystem, SlideSubsystem {
 
-    enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.TargetPosition {
+    enum class ExtendoPositions(override val ticks: Int): TargetPosition {
         AllTheWayInTarget(-10),
         Min(0),
         Manual(0),

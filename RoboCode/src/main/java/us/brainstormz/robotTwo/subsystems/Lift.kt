@@ -11,10 +11,11 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import kotlin.math.absoluteValue
 import kotlin.math.sign
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 
 class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
-    enum class LiftPositions(override val ticks: Int): SlideSubsystem.TargetPosition {
+    enum class LiftPositions(override val ticks: Int): TargetPosition {
         PastDown(0),
         Down(0),
         BackboardBottomRow(330),
@@ -26,7 +27,7 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
         Max(2100)
     }
 
-    fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, position: Double): SlideSubsystem.TargetPosition {
+    fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, position: Double): TargetPosition {
         return when (depoInput) {
             RobotTwoTeleOp.DepoInput.SetLine1 -> LiftPositions.SetLine1
             RobotTwoTeleOp.DepoInput.SetLine2 -> LiftPositions.SetLine2
@@ -56,9 +57,9 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
                      override val ticksMovedSinceReset: Int = 0,
                      override val currentAmps: Double = 0.0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset, currentAmps)
 
-    data class TargetLift(override val targetPosition: SlideSubsystem.TargetPosition = LiftPositions.Down,
+    data class TargetLift(override val targetPosition: TargetPosition = LiftPositions.Down,
                      override val power: Double = 0.0,
-                     override val movementMode: SlideSubsystem.MovementMode = SlideSubsystem.MovementMode.Position,
+                     override val movementMode: MovementMode = MovementMode.Position,
                      override val timeOfResetMoveDirectionStartMilis: Long = 0): SlideSubsystem.TargetSlideSubsystem(targetPosition, movementMode, power, timeOfResetMoveDirectionStartMilis)
 
 

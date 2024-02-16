@@ -5,8 +5,9 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.utils.DataClassHelper
 import kotlin.math.absoluteValue
 import kotlin.math.sign
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 
-interface SlideSubsystem {
+interface SlideSubsystem: DualMovementModeSubsystem {
     open class ActualSlideSubsystem(
             open val currentPositionTicks: Int,
             open val limitSwitchIsActivated: Boolean,
@@ -85,19 +86,19 @@ interface SlideSubsystem {
         return velocityTicksPerMili
     }
 
-    enum class MovementMode {
-        Position,
-        Power
-    }
-    interface TargetPosition { val ticks: Int }
+//    enum class MovementMode {
+//        Position,
+//        Power
+//    }
+//    interface TargetPosition { val ticks: Int }
 
     class VariableTargetPosition(override val ticks: Int): TargetPosition
 
     open class TargetSlideSubsystem (
-            open val targetPosition: TargetPosition,
-            open val movementMode: MovementMode,
-            open val power: Double = 0.0,
-            open val timeOfResetMoveDirectionStartMilis: Long = 0)
+            override val targetPosition: TargetPosition,
+            override val movementMode: MovementMode,
+            override val power: Double = 0.0,
+            open val timeOfResetMoveDirectionStartMilis: Long = 0): TargetMovementSubsystem
 
     val stallCurrentAmps: Double
     val definitelyMovingVelocityTicksPerMili: Double
@@ -136,7 +137,7 @@ interface SlideSubsystem {
             }
 
             return TargetSlideSubsystem(power = power,
-                                        movementMode = MovementMode.Power,
+                                        movementMode = DualMovementModeSubsystem.MovementMode.Power,
                                         timeOfResetMoveDirectionStartMilis = timeOfResetMoveDirectionStartMilis,
                                         targetPosition = previousTargetSlideSubsystem.targetPosition)
         } else {

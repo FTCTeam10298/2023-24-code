@@ -28,6 +28,7 @@ import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
@@ -367,7 +368,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         /**Lift*/
         val liftPower: Double = when (targetState.targetRobot.depoTarget.lift.movementMode) {
-            SlideSubsystem.MovementMode.Position -> {
+            MovementMode.Position -> {
                 when (targetState.targetRobot.depoTarget.lift.targetPosition) {
 //                    Lift.LiftPositions.ScoringHeightAdjust -> {
 //                        telemetry.addLine("Adjusting lift to position ${targetState.targetRobot.depoTarget.liftVariableInput.toInt()}")
@@ -396,7 +397,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                     }
                 }
             }
-            SlideSubsystem.MovementMode.Power -> {
+            MovementMode.Power -> {
                 telemetry.addLine("Running lift in manual mode at power ${targetState.targetRobot.depoTarget.lift.power}")
                 targetState.targetRobot.depoTarget.lift.power
             }

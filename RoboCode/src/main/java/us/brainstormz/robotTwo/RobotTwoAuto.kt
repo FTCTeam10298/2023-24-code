@@ -19,6 +19,7 @@ import us.brainstormz.robotTwo.CollectorSystem.*
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
 import us.brainstormz.robotTwo.subsystems.Intake.CollectorPowers
@@ -782,7 +783,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 lift= Lift.TargetLift(
                                         targetPosition = targetRobot.depoState.liftPosition,
                                         power = 0.0,
-                                        movementMode = SlideSubsystem.MovementMode.Position
+                                        movementMode = MovementMode.Position
                                 ),
                                 wristPosition = Wrist.WristTargets(
                                         left= targetRobot.depoState.leftClawPosition,
@@ -793,7 +794,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 extendo = SlideSubsystem.TargetSlideSubsystem(
                                         targetPosition = targetRobot.collectorSystemState.extendoPosition,
                                         power = 0.0,
-                                        movementMode = SlideSubsystem.MovementMode.Position
+                                        movementMode = MovementMode.Position
                                 ),
                                 intakeNoodles = targetRobot.collectorSystemState.collectorState,
                                 rollers = targetRobot.collectorSystemState.transferRollersState,
