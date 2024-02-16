@@ -20,7 +20,7 @@ class Extendo: Subsystem, SlideSubsystem {
         FarBackboardPixelPosition(1750),
         AudiencePurpleCenterPosition(1900),
         AudiencePurpleLeftPosition(1700),
-        Max(2000),
+        Max(1990),
     }
 
     private val acceptablePositionErrorTicks = 50

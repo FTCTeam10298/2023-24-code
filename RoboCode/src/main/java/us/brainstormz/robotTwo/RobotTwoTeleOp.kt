@@ -183,8 +183,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             else -> DepoInput.NoInput
         }
 
-
-
         val dpadInput: DepoInput = depoGamepad2Input ?: depoGamepad1Input
 
         val liftControlMode = when (previousTargetState.targetRobot.depoTarget.lift.targetPosition) {
@@ -441,7 +439,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val previousIsAnyColorButtonPressed = previousGamepad2.a || previousGamepad2.b || previousGamepad2.x || previousGamepad2.y
 
         val lightColor = if (gamepad2.dpad_left) {
-            if (!previousIsAnyColorButtonPressed) {
+            if (!previousGamepad2.dpad_left) {
+                LightInput.NoColor
+            } else if (!previousIsAnyColorButtonPressed) {
                 when {
                     gamepad2.a -> {
                         LightInput.Green
@@ -456,16 +456,15 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         LightInput.Yellow
                     }
                     else -> {
-                        LightInput.NoColor
+                        LightInput.NoInput
                     }
                 }
             } else {
-                LightInput.NoColor
+                LightInput.NoInput
             }
         } else {
             LightInput.NoInput
         }
-
 
         return DriverInput(
                 driveVelocity = driveVelocity,
@@ -491,8 +490,16 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Unknown (RevBlinkinLedDriver.BlinkinPattern.BLUE),
     }
     data class BothPixelsWeWant(val leftPixel: PixelColor, val rightPixel: PixelColor) {
-        fun toList():List<PixelColor> {
-            return listOf(leftPixel, rightPixel)
+        val asList: List<PixelColor> = listOf(leftPixel, rightPixel)
+
+        override fun equals(other: Any?): Boolean {
+            return if (other is BothPixelsWeWant) {
+                asList.mapIndexed { i, it ->
+                    other.asList[i] == it
+                }.fold(true) {acc, it -> acc && it}
+            } else {
+                false
+            }
         }
     }
     data class LightTarget(val targetColor: PixelColor, val pattern: BothPixelsWeWant, val timeOfColorChangeMilis: Long)
@@ -697,39 +704,42 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val bothUnknownPattern = BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown)
         val previousPattern = previousTargetState.targetRobot.lights.pattern
         val desiredPixelLightPattern: BothPixelsWeWant = when (driverInput.lightInput) {
-            LightInput.NoColor -> {
-                if (previousTargetState.driverInput.lightInput == LightInput.NoInput) {
-                    bothUnknownPattern
-                } else {
-                    previousPattern
-                }
-            }
             LightInput.NoInput -> {
                 previousPattern
             }
+            LightInput.NoColor -> {
+                bothUnknownPattern
+            }
             else -> {
-                val color = when (driverInput.lightInput) {
-                    LightInput.White -> PixelColor.White
-                    LightInput.Yellow -> PixelColor.Yellow
-                    LightInput.Purple -> PixelColor.Purple
-                    LightInput.Green -> PixelColor.Green
-                    else -> PixelColor.Unknown
-                }
-                val thisIsTheFirstLoopAfterShift = previousTargetState.driverInput.lightInput == LightInput.NoInput
-                val thisIsTheFirstLoopAfterShiftThatAnyColorWasSelected = previousTargetState.driverInput.lightInput == LightInput.NoColor && previousPattern == bothUnknownPattern
+                val previousWasNoInput = previousTargetState.driverInput.lightInput == LightInput.NoInput
+                if (previousWasNoInput) {
 
-                if (thisIsTheFirstLoopAfterShift || thisIsTheFirstLoopAfterShiftThatAnyColorWasSelected) {
-                    previousPattern.copy(leftPixel = color)
+                    val mapToSide = mapOf(  Transfer.Side.Left to previousPattern.leftPixel,
+                            Transfer.Side.Right to previousPattern.rightPixel)
+
+                    val side = mapToSide.entries.fold(Transfer.Side.Left) {acc, (side, it) ->
+                        if (it == PixelColor.Unknown) {
+                            side
+                        } else {
+                            acc
+                        }
+                    }
+
+                    val color = when (driverInput.lightInput) {
+                        LightInput.White -> PixelColor.White
+                        LightInput.Yellow -> PixelColor.Yellow
+                        LightInput.Purple -> PixelColor.Purple
+                        LightInput.Green -> PixelColor.Green
+                        else -> PixelColor.Unknown
+                    }
+
+                    when (side) {
+                        Transfer.Side.Left -> previousPattern.copy(leftPixel = color)
+                        Transfer.Side.Right -> previousPattern.copy(rightPixel = color)
+                    }
                 } else {
-                    previousPattern.copy(rightPixel = color)
+                    previousPattern
                 }
-//                if (previousTargetState?.driverInput?.lightInput == LightInput.NoInput) {
-//                    previousPattern.copy(leftPixel = color)
-//                } else if (previousTargetState?.driverInput?.lightInput == LightInput.NoColor && previousPattern == bothUnknownPatter) {
-//                    previousPattern.copy(leftPixel = color)
-//                } else {
-//                    previousPattern.copy(rightPixel = color)
-//                }
             }
         }
 
@@ -743,7 +753,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val previousPixelToBeDisplayed = previousTargetState.targetRobot.lights.targetColor
         val currentPixelToBeDisplayed: PixelColor = when {
             isTimeToChangeColor || isCurrentColorObsolete -> {
-                desiredPixelLightPattern.toList().firstOrNull { color ->
+                desiredPixelLightPattern.asList.firstOrNull { color ->
                     color != previousPixelToBeDisplayed
                 } ?: desiredPixelLightPattern.leftPixel
             }
