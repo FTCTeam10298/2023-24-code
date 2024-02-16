@@ -711,11 +711,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 bothUnknownPattern
             }
             else -> {
-                val previousWasNoInput = previousTargetState.driverInput.lightInput == LightInput.NoInput
-                if (previousWasNoInput) {
+                val previousWasNoInput = previousTargetState.driverInput.lightInput == LightInput.NoInput || previousTargetState.driverInput.lightInput == LightInput.NoColor
+                val previousWasNotThisColor = previousTargetState.driverInput.lightInput != driverInput.lightInput
+                if (previousWasNoInput && previousWasNotThisColor) {
 
                     val mapToSide = mapOf(  Transfer.Side.Left to previousPattern.leftPixel,
-                            Transfer.Side.Right to previousPattern.rightPixel)
+                                            Transfer.Side.Right to previousPattern.rightPixel)
 
                     val side = mapToSide.entries.fold(Transfer.Side.Left) {acc, (side, it) ->
                         if (it == PixelColor.Unknown) {
