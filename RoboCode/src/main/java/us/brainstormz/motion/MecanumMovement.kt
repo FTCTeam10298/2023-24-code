@@ -13,7 +13,7 @@ import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.pid.PID
 import kotlin.math.*
 
-class MecanumMovement(override val localizer: Localizer, override val hardware: MecanumHardware, private val telemetry: Telemetry): Movement, MecanumDriveTrain(hardware) {
+open class MecanumMovement(override val localizer: Localizer, override val hardware: MecanumHardware, private val telemetry: Telemetry): Movement, MecanumDriveTrain(hardware) {
 
 //        val defaultYTranslationPID = PID(0.07, 0.0, 0.0)
 //        val defaultXTranslationPID = PID(0.25, 0.0, 0.0)
