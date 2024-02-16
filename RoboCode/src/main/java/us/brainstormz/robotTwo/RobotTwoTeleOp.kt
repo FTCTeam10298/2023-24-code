@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.hardware.Gamepad
+import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.localizer.PositionAndRotation
@@ -57,6 +58,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     }
 
+
+    enum class RumbleEffects(val effect: RumbleEffect) {
+        TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
+        OneTap(RumbleEffect.Builder().addStep(1.0, 1.0, 800).build())//.addStep(0.0, 0.0, 200),
+    }
 
     enum class LiftControlMode {
         Adjust,
@@ -776,34 +782,21 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
 
         /**Rumble*/
-//        val aClawWasPreviouslyRetracted = previousTargetState?.targetRobot?.depoTarget?.rightClawPosition == ClawTarget.Retracted ||  previousTargetState?.targetRobot?.depoTarget?.leftClawPosition == Claw.ClawTarget.Retracted
-//        val bothClawsAreGripping = rightClawPosition == ClawTarget.Retracted && leftClawPosition == ClawTarget.Retracted
-//        if (doHandoffSequence && bothClawsAreGripping && aClawWasPreviouslyRetracted) {
-////            gamepad2.rumble(1.0, 1.0, 800)
-////            gamepad1.rumble(1.0, 1.0, 800)
-//        }
-
-//        if (isLiftEligableForReset && previousTargetState?.isLiftEligableForReset != true) {
-//            hardware.liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-//            hardware.liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-//            gamepad1.rumble(1.0, 1.0, 1200)
-//        }
-
-////        val timeOfSeeing = listOf(transferSensorState.transferRightSensorState.timeOfSeeingMilis, transferSensorState.transferLeftSensorState.timeOfSeeingMilis).maxOfOrNull { time -> time } ?: 0
-////        val timeSinceSeeing = System.currentTimeMillis() - timeOfSeeing
-////        val timeToShowPixelLights = 1500
-////        val doneWithThePixelCollectedLights = timeSinceSeeing >= timeToShowPixelLights
-////        //val isTransferCollected = transferSensorState.transferRightSensorState.hasPixelBeenSeen && transferSensorState.transferLeftSensorState.hasPixelBeenSeen
-////        telemetry.addLine("doneWithThePixelCollectedLights: $doneWithThePixelCollectedLights")
-////        telemetry.addLine("timeSinceSeeing: $timeSinceSeeing")
-////        telemetry.addLine("timeOfSeeing: $timeOfSeeing")
+        //Need to only trigger on rising edge
+//        val gamepad1RumbleEffectToCondition: Map<RumbleEffects, List<()->Boolean>> = mapOf(
+//                RumbleEffects.OneTap to listOf(
+//                        { lift.isSlideSystemAllTheWayIn(actualRobot.depoState.lift) },
+//                        { areBothPixelsIn },
+//                ),
+//                RumbleEffects.TwoTap to listOf(
+//                        { handoffIsReadyCheck },
+//                )
+//        )
 //
-//        val colorToDisplay = if (areBothPixelsIn && !doneWithThePixelCollectedLights) {
-//            //gamepad1.runRumbleEffect(twoBeatRumble)
-//            RevBlinkinLedDriver.BlinkinPattern.LARSON_SCANNER_RED
-//        } else {
-//            currentPixelToBeDisplayed
-//        }
+//        val gamepad1RumbleRoutine = gamepad1RumbleEffectToCondition.toList().firstOrNull { (rumble, listOfConditions) ->
+//            listOfConditions.fold(false) { acc, it -> acc || it() }
+//        }?.first
+        val gamepad1RumbleRoutine = null
 
 
         return TargetWorld(
@@ -823,7 +816,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 isLiftEligableForReset = false,
                 doingHandoff = doHandoffSequence,
                 driverInput = spoofDriverInputForDepo,
-                isTargetReached = {_, _ -> false}
+                isTargetReached = {_, _ -> false},
+                gamepad1Rumble = gamepad1RumbleRoutine
         )
     }
 
@@ -876,7 +870,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 isLiftEligableForReset = false,
                 doingHandoff = false,
                 driverInput = noInput,
-                isTargetReached = { _, _ -> false }
+                isTargetReached = { _, _ -> false },
+                gamepad1Rumble = null
         )
     }
 
@@ -924,6 +919,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             extendoOverridePower = (gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()),
                             armOverridePower = gamepad2.right_stick_x.toDouble()
                     )
+                    if (targetState.gamepad1Rumble != null) {
+                        gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                    }
                     hardware.lights.setPattern(targetState.targetRobot.lights.targetColor.blinkinPattern)
                 }
         )

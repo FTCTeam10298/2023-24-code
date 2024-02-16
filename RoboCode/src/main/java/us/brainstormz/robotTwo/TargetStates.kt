@@ -43,7 +43,8 @@ data class TargetWorld(
         val isLiftEligableForReset: Boolean,
         val doingHandoff: Boolean,
         val isTargetReached: (previousTargetState: TargetWorld, actualState: ActualWorld) -> Boolean,
-        val timeTargetStartedMilis: Long = 0
+        val timeTargetStartedMilis: Long = 0,
+        val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
 ) {
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 
