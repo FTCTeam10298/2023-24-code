@@ -41,7 +41,7 @@ class PrintlnTelemetry: Telemetry {
     }
 
     override fun clearAll() {
-        TODO("Not yet implemented")
+        printCaption("Clearing")
     }
 
     override fun addAction(action: Runnable?): Any {
