@@ -4,6 +4,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.Gamepad
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
@@ -32,9 +33,7 @@ import us.brainstormz.robotTwo.subsystems.Transfer.TransferHalfState
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
 
-
-@Autonomous(group = "!")
-class RobotTwoAuto: OpMode() {
+class RobotTwoAuto(private val telemetry: Telemetry) {
 
     data class AutoTargetWorld(
             val targetRobot: RobotState,
@@ -663,7 +662,7 @@ class RobotTwoAuto: OpMode() {
     private var wizardWasChanged = false
     data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition)
 
-    private fun runMenuWizard(): WizardResults {
+    private fun runMenuWizard(gamepad1: Gamepad): WizardResults {
         val isWizardDone = wizard.summonWizard(gamepad1)
         return if (isWizardDone) {
             wizardWasChanged = true
@@ -682,8 +681,6 @@ class RobotTwoAuto: OpMode() {
         }
     }
 
-    private val hardware = RobotTwoHardware(telemetry, this)
-
     private lateinit var mecanumMovement: MecanumMovement
 
     private val intake = Intake()
@@ -698,11 +695,10 @@ class RobotTwoAuto: OpMode() {
 
     private var startPosition: StartPosition = StartPosition.Backboard
 
-    private val opencv: OpenCvAbstraction = OpenCvAbstraction(this)
+//    private val opencv: OpenCvAbstraction = OpenCvAbstraction(this)
     private var propDetector: PropDetector? = null
 
-    override fun init() {
-        hardware.init(hardwareMap)
+    fun init(hardware: RobotTwoHardware, opencv: OpenCvAbstraction) {
 
         val odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         mecanumMovement = MecanumMovement(odometryLocalizer, hardware, telemetry)
@@ -717,13 +713,12 @@ class RobotTwoAuto: OpMode() {
         wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"))
 
 
-        opencv.init(hardwareMap)
         opencv.internalCamera = false
         opencv.cameraName = "Webcam 1"
         opencv.cameraOrientation = OpenCvCameraRotation.UPSIDE_DOWN
     }
 
-    private fun runCamera() {
+    private fun runCamera(opencv: OpenCvAbstraction) {
         alliance = wizardResults.alliance
         startPosition = wizardResults.startPosition
 
@@ -737,15 +732,15 @@ class RobotTwoAuto: OpMode() {
 
     private var propPosition: PropPosition = PropPosition.Left
     private var wizardResults = WizardResults(RobotTwoHardware.Alliance.Red, StartPosition.Backboard)
-    override fun init_loop() {
-        wizardResults = runMenuWizard()
+    fun init_loop(hardware: RobotTwoHardware, opencv: OpenCvAbstraction, gamepad1: Gamepad) {
+        wizardResults = runMenuWizard(gamepad1)
         if (wizardWasChanged) {
-            runCamera()
+            runCamera(opencv)
             hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
         }
     }
 
-    override fun start() {
+    fun start(hardware: RobotTwoHardware, opencv: OpenCvAbstraction) {
         propPosition = propDetector?.propPosition ?: propPosition
         opencv.stop()
 
@@ -764,7 +759,7 @@ class RobotTwoAuto: OpMode() {
 
     private val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<AutoTargetWorld, ActualWorld>()
     private val loopTimeMeasurer = DeltaTimeMeasurer()
-    override fun loop() {
+    fun loop(hardware: RobotTwoHardware) {
 
         functionalReactiveAutoRunner.loop(
             actualStateGetter = { previousActualState ->
