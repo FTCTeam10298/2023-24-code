@@ -6,7 +6,9 @@ import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.RobotTwoHardware
+import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.sin
 
 class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Telemetry): DualMovementModeSubsystem, MecanumMovement(localizer, hardware, telemetry) {
@@ -63,10 +65,19 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Te
 
         val angleError: Double = tempAngleError
 
-        val speedX: Double = xTranslationPID.calcPID(sin(angleRad) * distanceErrorY + cos(angleRad) * distanceErrorX)
-        val speedY: Double = yTranslationPID.calcPID(cos(angleRad) * distanceErrorY + sin(angleRad) * -distanceErrorX)
-        val speedA: Double = rotationPID.calcPID(angleError)
+        // Find the error in distance
+        val distanceError = hypot(distanceErrorX, distanceErrorY)
 
-        return DrivetrainPower(speedX, speedY, speedA)
+        // Check to see if we've reached the desired position already
+        return if (abs(distanceError) <= precisionInches &&
+                abs(angleError) <= Math.toRadians(precisionDegrees)) {
+            DrivetrainPower(0.0, 0.0, 0.0)
+        } else {
+            val speedX: Double = xTranslationPID.calcPID(sin(angleRad) * distanceErrorY + cos(angleRad) * distanceErrorX)
+            val speedY: Double = yTranslationPID.calcPID(cos(angleRad) * distanceErrorY + sin(angleRad) * -distanceErrorX)
+            val speedA: Double = rotationPID.calcPID(angleError)
+
+            DrivetrainPower(speedX, speedY, speedA)
+        }
     }
 }
