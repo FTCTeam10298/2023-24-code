@@ -37,7 +37,7 @@ fun main() {
 }
 
 class AutoTest {
-    fun runTest(testSteps: List<ActualWorld>, numberOfTimesToRunInitLoop: Int): List<Pair<ActualWorld, RobotTwoAuto.AutoTargetWorld>> {
+    fun runTest(testSteps: List<ActualWorld>, numberOfTimesToRunInitLoop: Int): List<Pair<ActualWorld, TargetWorld>> {
         val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
         val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
         val program = RobotTwoAuto(opmode.telemetry)
@@ -49,7 +49,7 @@ class AutoTest {
             program.init_loop(hardware, openCvAbstraction, gamepad1 = Gamepad())
         }
 
-        val results:List<Pair<ActualWorld, RobotTwoAuto.AutoTargetWorld>> = testSteps.mapIndexed() { index, actualWorld ->
+        val results:List<Pair<ActualWorld, TargetWorld>> = testSteps.mapIndexed() { index, actualWorld ->
             //Set Inputs
             hardware.actualRobot = actualWorld.actualRobot
 
