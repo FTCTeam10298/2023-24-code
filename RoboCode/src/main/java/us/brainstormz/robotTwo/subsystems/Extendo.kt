@@ -63,7 +63,7 @@ class Extendo: Subsystem, SlideSubsystem {
     override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
     override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.extendoMagnetLimit.state
     override val allowedMovementBeforeResetTicks: Int = 200
-    override val allTheWayInTicks: Int = 0
+    override val allTheWayInPositionTicks: Int = 0
 
     override val pid = PID(kp = 0.0025)
     fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {

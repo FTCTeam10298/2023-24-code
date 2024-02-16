@@ -43,7 +43,7 @@ class HandoffManager(
                 previousActualWorld) <= 0
         val extendoIsReady = extendoIsMovingInOrNotAtAll && isExtendoAllTheWayIn
 
-        val liftExtensionIsAllTheWayDown = 10 >= actualWorld.actualRobot.depoState.lift.currentPositionTicks//actualWorld.actualRobot.depoState.isLiftLimitActivated
+        val liftExtensionIsAllTheWayDown = lift.isSlideSystemAllTheWayIn(actualWorld.actualRobot.depoState.lift)//10 >= actualWorld.actualRobot.depoState.lift.currentPositionTicks//actualWorld.actualRobot.depoState.isLiftLimitActivated
         telemetry.addLine("isExtendoAllTheWayIn: $isExtendoAllTheWayIn")
         telemetry.addLine("liftExtensionIsAllTheWayDown: $liftExtensionIsAllTheWayDown")
 

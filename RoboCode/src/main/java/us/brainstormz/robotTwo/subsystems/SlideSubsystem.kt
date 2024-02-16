@@ -1,7 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
 import us.brainstormz.pid.PID
-import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.utils.DataClassHelper
 import kotlin.math.absoluteValue
@@ -62,11 +61,11 @@ interface SlideSubsystem {
     }
 
     val allowedMovementBeforeResetTicks: Int
-    val allTheWayInTicks: Int
+    val allTheWayInPositionTicks: Int
     fun isSlideSystemAllTheWayIn(actualSlideSubsystem: ActualSlideSubsystem): Boolean {
         val limitIsActive = actualSlideSubsystem.limitSwitchIsActivated
         val positionIsAccurate = actualSlideSubsystem.ticksMovedSinceReset <= allowedMovementBeforeResetTicks
-        val isInAccordingToTicks = actualSlideSubsystem.currentPositionTicks <= allTheWayInTicks
+        val isInAccordingToTicks = actualSlideSubsystem.currentPositionTicks <= allTheWayInPositionTicks
         return limitIsActive || (positionIsAccurate && isInAccordingToTicks)
     }
 }
