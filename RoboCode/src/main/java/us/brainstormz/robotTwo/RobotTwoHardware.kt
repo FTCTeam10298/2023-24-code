@@ -283,6 +283,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         armServo1.direction = DcMotorSimple.Direction.REVERSE
         armServo2.direction = DcMotorSimple.Direction.FORWARD
 
+        //launcherServo
+        launcherServo.direction = Servo.Direction.REVERSE
+
         //Claw
         leftClawServo.direction = DcMotorSimple.Direction.FORWARD
         rightClawServo.direction = DcMotorSimple.Direction.FORWARD
