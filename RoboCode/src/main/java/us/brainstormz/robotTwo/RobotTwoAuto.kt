@@ -842,7 +842,6 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 telemetry.addLine("target position: ${targetState.targetRobot.positionAndRotation}")
                 telemetry.addLine("current position: ${mecanumMovement.localizer.currentPositionAndRotation()}")
 
-
                 val universalTargetWorld: TargetWorld = translateAutoTargetWorldToUniversalTargetWorld(targetState)!!
 
                 hardware.actuateRobot(
