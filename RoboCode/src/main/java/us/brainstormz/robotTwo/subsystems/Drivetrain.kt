@@ -14,7 +14,10 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Te
     data class DrivetrainTarget(
             override val targetPosition: PositionAndRotation,
             override val movementMode: DualMovementModeSubsystem.MovementMode,
-            override val power: DrivetrainPower): DualMovementModeSubsystem.TargetMovementSubsystem
+            override val power: DrivetrainPower): DualMovementModeSubsystem.TargetMovementSubsystem {
+        constructor(targetPosition: PositionAndRotation): this(targetPosition, DualMovementModeSubsystem.MovementMode.Position, DrivetrainPower())
+        constructor(power: DrivetrainPower): this(PositionAndRotation(), DualMovementModeSubsystem.MovementMode.Power, power)
+    }
 
     fun actuateDrivetrain(target: DrivetrainTarget, actualPosition: PositionAndRotation) {
         when (target.movementMode) {
