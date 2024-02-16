@@ -188,20 +188,18 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val dpadInput: DepoInput = depoGamepad2Input ?: depoGamepad1Input
 
         val liftControlMode = when (previousTargetState.targetRobot.depoTarget.lift.targetPosition) {
-//            Lift.LiftPositions.ScoringHeightAdjust -> LiftControlMode.Adjust
             Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
             Lift.LiftPositions.SetLine1 -> LiftControlMode.Adjust
             Lift.LiftPositions.SetLine2 -> LiftControlMode.Adjust
             Lift.LiftPositions.SetLine3 -> LiftControlMode.Adjust
-            else -> LiftControlMode.Override
-//            Lift.LiftPositions.PastDown -> TODO()
-//            Lift.LiftPositions.Down -> TODO()
-//            Lift.LiftPositions.ClearForArmToMove -> TODO()
-//            Lift.LiftPositions.WaitForArmToMove -> TODO()
-//            Lift.LiftPositions.Max -> TODO()
-//            Lift.LiftPositions.Manual -> TODO()
-//            Lift.LiftPositions.ResetEncoder -> TODO()
-//            Lift.LiftPositions.Nothing -> TODO()
+            else -> {
+                val isEnumTarget = Lift.LiftPositions.entries.contains(previousTargetState.targetRobot.depoTarget.lift.targetPosition)
+                if (!isEnumTarget) {
+                    LiftControlMode.Adjust
+                } else {
+                    LiftControlMode.Override
+                }
+            }
         }
         telemetry.addLine("liftControlMode: $liftControlMode")
 
