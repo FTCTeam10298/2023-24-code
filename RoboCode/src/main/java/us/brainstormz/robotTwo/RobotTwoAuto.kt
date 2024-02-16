@@ -1,8 +1,6 @@
 package us.brainstormz.robotTwo
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.openftc.easyopencv.OpenCvCameraRotation
@@ -14,9 +12,9 @@ import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.RobotTwoHardware.UnchangingRobotAttributes.alliance
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
-import us.brainstormz.threeDay.PropColors
-import us.brainstormz.threeDay.PropDetector
-import us.brainstormz.threeDay.PropPosition
+import us.brainstormz.robotTwo.RobotTwoPropDetector.PropColors
+import us.brainstormz.robotTwo.RobotTwoPropDetector
+import us.brainstormz.robotTwo.RobotTwoPropDetector.PropPosition
 import us.brainstormz.robotTwo.CollectorSystem.*
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
@@ -696,11 +694,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
     private var startPosition: StartPosition = StartPosition.Backboard
 
-//    private val opencv: OpenCvAbstraction = OpenCvAbstraction(this)
-    private var propDetector: PropDetector? = null
+    private var propDetector: RobotTwoPropDetector? = null
 
     fun init(hardware: RobotTwoHardware, opencv: OpenCvAbstraction) {
-
         val odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         mecanumMovement = MecanumMovement(odometryLocalizer, hardware, telemetry)
 
@@ -713,10 +709,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
         wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"))
 
-
         opencv.internalCamera = false
         opencv.cameraName = "Webcam 1"
-        opencv.cameraOrientation = OpenCvCameraRotation.UPSIDE_DOWN
+        opencv.cameraOrientation = OpenCvCameraRotation.UPRIGHT
     }
 
     private fun runCamera(opencv: OpenCvAbstraction) {
@@ -727,7 +722,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             RobotTwoHardware.Alliance.Blue -> PropColors.Blue
             RobotTwoHardware.Alliance.Red -> PropColors.Red
         }
-        propDetector = PropDetector(telemetry, propColor)
+        propDetector = RobotTwoPropDetector(telemetry, propColor)
         opencv.onNewFrame(propDetector!!::processFrame)
     }
 
