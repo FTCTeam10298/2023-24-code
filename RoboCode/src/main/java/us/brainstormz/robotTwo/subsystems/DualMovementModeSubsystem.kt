@@ -6,13 +6,13 @@ interface DualMovementModeSubsystem {
         Power
     }
 
-    interface TargetPosition {
-        //val ticks: Any
-    }
+//    interface TargetPosition {
+//        //val ticks: Any
+//    }
 
     interface TargetMovementSubsystem {
-        val targetPosition: TargetPosition
+        val targetPosition: Any
         val movementMode: MovementMode
-        val power: Double
+        val power: Any
     }
 }

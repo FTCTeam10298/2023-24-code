@@ -90,7 +90,7 @@ interface SlideSubsystem: DualMovementModeSubsystem {
 //        Position,
 //        Power
 //    }
-    interface SlideTargetPosition: TargetPosition { val ticks: Int }
+    interface SlideTargetPosition { val ticks: Int }
 
     class VariableTargetPosition(override val ticks: Int): SlideTargetPosition
 
