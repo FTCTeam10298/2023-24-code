@@ -65,19 +65,19 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Te
 
         val angleError: Double = tempAngleError
 
-        // Find the error in distance
-        val distanceError = hypot(distanceErrorX, distanceErrorY)
-
-        // Check to see if we've reached the desired position already
-        return if (abs(distanceError) <= precisionInches &&
-                abs(angleError) <= Math.toRadians(precisionDegrees)) {
-            DrivetrainPower(0.0, 0.0, 0.0)
-        } else {
+//        // Find the error in distance
+//        val distanceError = hypot(distanceErrorX, distanceErrorY)
+//
+//        // Check to see if we've reached the desired position already
+//        return if (abs(distanceError) <= precisionInches &&
+//                abs(angleError) <= Math.toRadians(precisionDegrees)) {
+//            DrivetrainPower(0.0, 0.0, 0.0)
+//        } else {
             val speedX: Double = xTranslationPID.calcPID(sin(angleRad) * distanceErrorY + cos(angleRad) * distanceErrorX)
             val speedY: Double = yTranslationPID.calcPID(cos(angleRad) * distanceErrorY + sin(angleRad) * -distanceErrorX)
             val speedA: Double = rotationPID.calcPID(angleError)
 
-            DrivetrainPower(speedX, speedY, speedA)
-        }
+            return DrivetrainPower(speedX, speedY, speedA)
+//        }
     }
 }
