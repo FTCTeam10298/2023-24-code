@@ -1,10 +1,10 @@
 package us.brainstormz.robotTwo.subsystems
 
 import us.brainstormz.pid.PID
-import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.utils.DataClassHelper
 import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 interface SlideSubsystem {
     open class ActualSlideSubsystem(
@@ -12,6 +12,7 @@ interface SlideSubsystem {
             open val limitSwitchIsActivated: Boolean,
             open val zeroPositionOffsetTicks: Int,
             open val ticksMovedSinceReset: Int,
+            open val currentAmps: Double
     ) {
         override fun toString() = DataClassHelper.dataClassToString(this)
     }
@@ -20,6 +21,8 @@ interface SlideSubsystem {
 
     fun getRawPositionTicks(hardware: RobotTwoHardware): Int
     fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean
+    fun getCurrentAmps(hardware: RobotTwoHardware): Double
+
     private fun getZeroPositionOffsetTicks(currentPositionTicks: Int, limitSwitchIsActivated: Boolean, previousZeroPositionOffsetTicks: Int?, previousLimitSwitchIsActivated: Boolean?): Int {
         return if (limitSwitchIsActivated) {
             if (previousLimitSwitchIsActivated == false) {
@@ -59,7 +62,8 @@ interface SlideSubsystem {
                 currentPositionTicks = currentPositionTicks,
                 zeroPositionOffsetTicks= zeroPositionOffsetTicks,
                 limitSwitchIsActivated= limitSwitchIsActivated,
-                ticksMovedSinceReset = ticksMovedSinceReset
+                ticksMovedSinceReset = ticksMovedSinceReset,
+                currentAmps = getCurrentAmps(hardware)
         )
     }
 
@@ -86,28 +90,54 @@ interface SlideSubsystem {
         Power
     }
     interface TargetPosition { val ticks: Int }
-    data class TargetSlideSubsystem(val targetPosition: TargetPosition, val power: Double, val movementMode: MovementMode)
-    fun findLimitToReset(actualSlideSubsystem: ActualSlideSubsystem, previousActualSlideSubsystem: ActualSlideSubsystem, previousTargetSlideSubsystem: TargetSlideSubsystem): TargetSlideSubsystem {
+    data class TargetSlideSubsystem(
+            val targetPosition: TargetPosition,
+            val power: Double,
+            val movementMode: MovementMode,
+            val timeOfResetMoveDirectionStartMilis: Long)
+
+    val stallCurrentAmps: Double
+    val definitelyMovingVelocityTicksPerMili: Double
+    val findResetPower: Double
+
+    fun findLimitToReset(actualSlideSubsystem: ActualSlideSubsystem, actualTimestampMilis: Long, previousSlideSubsystem: ActualSlideSubsystem, previousTimestampMilis: Long, previousTargetSlideSubsystem: TargetSlideSubsystem): TargetSlideSubsystem {
         val resetIsNeeded = actualSlideSubsystem.ticksMovedSinceReset > allowedMovementBeforeResetTicks
         return if (resetIsNeeded) {
-//            actualSlideSubsystem.zeroPositionOffsetTicks
-//
-//
-//            val slideIsMovingIn = previousTargetSlideSubsystem.targetPosition ==
-//
-//            val extendoIsAlreadyGoingIn = previousTargetSlideSubsystem.targetPosition == Extendo.ExtendoPositions.Min
-//            val extendoIsManual = previousTargetSlideSubsystem.targetPosition == Extendo.ExtendoPositions.Manual
-//            if ((extendoIsAlreadyGoingIn || extendoIsManual) && limitIsActivated) {
-//                previousTargetSlideSubsystem.targetPosition
-//            } else  {
-//                if (!limitIsActivated) {
-//                    Extendo.ExtendoPositions.AllTheWayInTarget
-//                } else {
-//                    Extendo.ExtendoPositions.Min
-//                }
-//            }
+            val velocityTicksPerMili = getVelocityTicksPerMili(actualSlideSubsystem, actualTimestampMilis, previousSlideSubsystem, actualTimestampMilis)
 
-            previousTargetSlideSubsystem
+            val slideIsStalling = actualSlideSubsystem.currentAmps > stallCurrentAmps
+            val slideIsDefinitelyMoving = velocityTicksPerMili > definitelyMovingVelocityTicksPerMili
+            val timeToSwitchMovementDirection = actualTimestampMilis - previousTargetSlideSubsystem.timeOfResetMoveDirectionStartMilis > 1500
+
+            val power: Double = if (slideIsDefinitelyMoving && timeToSwitchMovementDirection) {
+                findResetPower * -velocityTicksPerMili.sign
+            } else {
+                findResetPower * when {
+                    slideIsStalling -> {
+//                        switchPowerDirection
+                        -previousTargetSlideSubsystem.power.sign
+                    }
+                    !slideIsDefinitelyMoving -> {
+//                        startPowerInACertainDirection
+                        findResetPower * actualSlideSubsystem.zeroPositionOffsetTicks.sign
+                    }
+                    else -> {
+//                        samePowerDirection
+                        previousTargetSlideSubsystem.power.sign
+                    }
+                }
+            }
+            val timeOfResetMoveDirectionStartMilis = if (power.sign != previousTargetSlideSubsystem.power.sign) {
+                actualTimestampMilis
+            } else {
+                previousTargetSlideSubsystem.timeOfResetMoveDirectionStartMilis
+            }
+
+            return previousTargetSlideSubsystem.copy(
+                    power = power,
+                    movementMode = MovementMode.Power,
+                    timeOfResetMoveDirectionStartMilis = timeOfResetMoveDirectionStartMilis,
+            )
         } else {
             previousTargetSlideSubsystem
         }

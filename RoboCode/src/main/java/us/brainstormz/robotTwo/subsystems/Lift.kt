@@ -43,13 +43,19 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.liftMotorMaster.currentPosition
     override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.liftMagnetLimit.state
+    override fun getCurrentAmps(hardware: RobotTwoHardware): Double = hardware.liftMotorMaster.getCurrent(CurrentUnit.AMPS)
+
     override val allowedMovementBeforeResetTicks: Int = 1000
     override val allTheWayInPositionTicks: Int = 0
+    override val stallCurrentAmps: Double = 6.0
+    override val definitelyMovingVelocityTicksPerMili: Double = 0.01
+    override val findResetPower: Double = 0.2
 
     class ActualLift(override val currentPositionTicks: Int,
                      override val limitSwitchIsActivated: Boolean,
                      override val zeroPositionOffsetTicks: Int = 0,
-                     override val ticksMovedSinceReset: Int = 0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset)
+                     override val ticksMovedSinceReset: Int = 0,
+                     override val currentAmps: Double = 0.0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset, currentAmps)
 
 
     private val acceptablePositionErrorTicks = 100

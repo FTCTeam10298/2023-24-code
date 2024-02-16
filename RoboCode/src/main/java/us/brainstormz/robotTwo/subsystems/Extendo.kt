@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo.subsystems
 
 import com.qualcomm.robotcore.hardware.DcMotor
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualRobot
@@ -9,7 +10,6 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.absoluteValue
 
 class Extendo: Subsystem, SlideSubsystem {
-    val maxSafeCurrentAmps = 5.5
 
     enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.TargetPosition {
         AllTheWayInTarget(-10),
@@ -30,14 +30,6 @@ class Extendo: Subsystem, SlideSubsystem {
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
     }
 
-//    fun isExtendoAllTheWayIn(actualRobot: ActualRobot): Boolean {
-//        val limitIsActive = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
-//        val extendoPositionIsAccurate = actualRobot.collectorSystemState.extendo.ticksMovedSinceReset <= 200
-//        val extendoIsInAccordingToTicks = actualRobot.collectorSystemState.extendo.currentPositionTicks <= ExtendoPositions.Min.ticks
-//        return limitIsActive || (extendoPositionIsAccurate && extendoIsInAccordingToTicks)
-//    }
-
-//    fun getVelocityTicksPerMili(actualTicks: Int, actualTimeMilis: Long, previousActualTicks: Int, previousActualTimeMilis: Long): Double {
     fun getVelocityTicksPerMili(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Double {
         val actualExtendo = actualWorld.actualRobot.collectorSystemState.extendo
         val actualTimeMilis: Long = actualWorld.timestampMilis
@@ -59,8 +51,13 @@ class Extendo: Subsystem, SlideSubsystem {
 
     override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
     override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.extendoMagnetLimit.state
+    override fun getCurrentAmps(hardware: RobotTwoHardware): Double = hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS)
+
     override val allowedMovementBeforeResetTicks: Int = 200
     override val allTheWayInPositionTicks: Int = 0
+    override val stallCurrentAmps: Double = 6.0
+    override val definitelyMovingVelocityTicksPerMili: Double = 0.01
+    override val findResetPower: Double = 0.2
 
     override val pid = PID(kp = 0.0025)
     fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
@@ -69,7 +66,4 @@ class Extendo: Subsystem, SlideSubsystem {
         val power = pid.calcPID(positionError)
         return power
     }
-//    fun moveExtendoToPosition(targetPositionTicks: Int) {
-//        powerExtendo(calcPowerToMoveExtendo(targetPositionTicks))
-//    }
 }
