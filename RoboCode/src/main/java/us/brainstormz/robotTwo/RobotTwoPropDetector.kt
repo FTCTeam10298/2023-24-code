@@ -45,7 +45,7 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
     private var mat = Mat()
     private var redLowMat = Mat()
     private var redHighMat = Mat()
-    private var regions: List<Mat> = listOf()
+    private var regions: Map<PropPosition, Mat> = emptyMap()
 
     fun processFrame(frame: Mat): Mat {
         Imgproc.cvtColor(frame, mat, Imgproc.COLOR_RGB2HSV)
@@ -60,21 +60,21 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
                 Core.bitwise_or(redLowMat, redHighMat, mat)
             }
         }
-        regions = positionsMappedToRects.map { (position, rect) ->
-            mat.submat(rect)
+        regions = positionsMappedToRects.associate { (position, rect) ->
+            position to mat.submat(rect)
         }
 
-        val values = regions.map { it ->
-            Core.sumElems(it).`val`[0]
+        val values = regions.map {(position, rect) ->
+            position to Core.sumElems(rect).`val`[0]
+        }.toMap()
+
+        regions.forEach {(position, rect) ->
+            rect.release()
         }
 
-        regions.forEach {
-            it.release()
-        }
-
-        val leftValue = values[0]
-        val centerValue = values[1]
-        val rightValue = values[2]
+        val leftValue = values[PropPosition.Left]!!
+        val centerValue = values[PropPosition.Center]!!
+        val rightValue = values[PropPosition.Right]!!
 
         propPosition = if (leftValue >= rightValue && leftValue >= centerValue) {
             PropPosition.Left
@@ -92,7 +92,7 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
         }
 
         val sizePerColor = 10.0
-        Colors.values().forEachIndexed {i, it ->
+        Colors.entries.forEachIndexed { i, it ->
             val rect = Rect(Point(i*sizePerColor, 0.0), Point((i*sizePerColor)+sizePerColor, 10.0))
             Imgproc.rectangle(frame, rect, it.scalar, 2)
         }
@@ -102,27 +102,3 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
         return frame
     }
 }
-
-//@Autonomous
-//class JamesVisionTest/** Change Depending on robot */: LinearOpMode() {
-//
-//
-//    /** Change Depending on robot */
-//    override fun runOpMode() {
-//        val opencv = OpenCvAbstraction(this)
-//        val tseDetector = RobotTwoPropDetector(telemetry, PropColors.Blue)
-//
-//        opencv.init(hardwareMap)
-//        opencv.internalCamera = false
-//        opencv.cameraName = "Webcam 1"
-//        opencv.cameraOrientation = OpenCvCameraRotation.UPSIDE_DOWN
-//        hardwareMap.allDeviceMappings.forEach { m ->
-//            println("HW: ${m.deviceTypeClass} ${m.entrySet().map{it.key}.joinToString(",")}")
-//        }
-//        opencv.onNewFrame(tseDetector::processFrame)
-//
-//        waitForStart()
-//        /** AUTONOMOUS  PHASE */
-//    }
-//
-//}
