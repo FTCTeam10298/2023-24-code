@@ -6,9 +6,7 @@ import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.RobotTwoHardware
-import kotlin.math.abs
 import kotlin.math.cos
-import kotlin.math.hypot
 import kotlin.math.sin
 
 class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Telemetry): DualMovementModeSubsystem, MecanumMovement(localizer, hardware, telemetry) {
@@ -45,19 +43,15 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Te
         setSpeedAll(vX = power.x, vY= power.y, vA= power.r, minPower = -1.0, maxPower = 1.0)
     }
 
-
     fun calcPowerToTarget(target: PositionAndRotation,
                           actual: PositionAndRotation,
                           yTranslationPID: PID = defaultYTranslationPID,
                           xTranslationPID: PID = defaultXTranslationPID,
                           rotationPID: PID = defaultRotationPID): DrivetrainPower {
-//        localizer.recalculatePositionAndRotation()
-//        val currentPos = localizer.currentPositionAndRotation()
-        val currentPos = actual
-        val angleRad = Math.toRadians(currentPos.r)
+        val angleRad = Math.toRadians(actual.r)
 
-        val distanceErrorX = target.x - currentPos.x
-        val distanceErrorY = target.y - currentPos.y
+        val distanceErrorX = target.x - actual.x
+        val distanceErrorY = target.y - actual.y
 
         var tempAngleError = Math.toRadians(target.r) - angleRad
 
