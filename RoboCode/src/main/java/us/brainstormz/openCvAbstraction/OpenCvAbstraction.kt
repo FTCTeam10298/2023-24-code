@@ -55,9 +55,9 @@ class PipelineAbstraction: OpenCvPipeline() {
 
 }
 
-class OpenCvAbstraction(private val opmode: OpMode) {
+open class OpenCvAbstraction(private val opmode: OpMode) {
 
-    private val pipeline = PipelineAbstraction()
+    open lateinit var pipeline:PipelineAbstraction// = PipelineAbstraction()
 
     private lateinit var camera: OpenCvCamera
 
@@ -69,7 +69,8 @@ class OpenCvAbstraction(private val opmode: OpMode) {
 
 //TODO: Add blur support from this init according to blurType:String, blurRadius:Float
 
-    fun init(hardwareMap: HardwareMap) {
+    open fun init(hardwareMap: HardwareMap) {
+        pipeline = PipelineAbstraction()
         val cameraMonitorViewId: Int = opmode.hardwareMap.appContext.resources.getIdentifier(
             "cameraMonitorViewId",
             "id",
@@ -96,7 +97,7 @@ class OpenCvAbstraction(private val opmode: OpMode) {
         camera.openCameraDeviceAsync(cameraListener)
     }
 
-    fun start() {
+    open fun start() {
 //
 //        camera.startStreaming(432, 240, cameraOrientation)
 //        camera.startStreaming(1920, 1080, cameraOrientation)
@@ -110,7 +111,7 @@ class OpenCvAbstraction(private val opmode: OpMode) {
 //            camera.openCameraDeviceAsync{ camera.startStreaming(320, 240, OpenCvCameraRotation.SIDEWAYS_LEFT) }
     }
 
-    fun stop() {
+    open fun stop() {
         camera.stopStreaming()
     }
 
@@ -118,7 +119,7 @@ class OpenCvAbstraction(private val opmode: OpMode) {
         pipeline.onFirstFrame = function
     }
 
-    fun onNewFrame(function: (Mat) -> Mat) {
+    open fun onNewFrame(function: (Mat) -> Mat) {
         pipeline.userFun = function
     }
 }
