@@ -304,7 +304,8 @@ class DepoManager(
     }
 
     fun getDepoState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualDepo {
-        return ActualDepo(
+        val readStartTimeMilis = System.currentTimeMillis()
+        val actualDepo =  ActualDepo(
                 armAngleDegrees = arm.getArmAngleDegrees(hardware),
                 lift = lift.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.depoState?.lift),
 //                liftPositionTicks = lift.getCurrentPositionTicks(hardware),
@@ -312,6 +313,10 @@ class DepoManager(
 //                isLiftLimitActivated = lift.isLimitSwitchActivated(hardware),
                 wristAngles = wrist.getWristActualState(hardware)
         )
+        val readEndTimeMilis = System.currentTimeMillis()
+        val timeToRead = readEndTimeMilis-readStartTimeMilis
+        telemetry.addLine("timeToRead Depo: $timeToRead")
+        return actualDepo
     }
 
 }

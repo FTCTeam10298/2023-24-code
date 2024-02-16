@@ -267,7 +267,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         rightTransferServo.direction = DcMotorSimple.Direction.REVERSE
         leftTransferServo.direction = DcMotorSimple.Direction.FORWARD
 
-
         //Lift
         liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         liftMotorMaster.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
@@ -315,9 +314,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                 depoState = depoManager.getDepoState(this, previousActualWorld)
         )
     }
-
-    var jankTimeOfLiftResetEncoderMoveStartMilis = 0L
-    var jankLastLiftMovePower = 0.0
 
     fun actuateRobot(
             targetState: TargetWorld, actualState: ActualWorld,
