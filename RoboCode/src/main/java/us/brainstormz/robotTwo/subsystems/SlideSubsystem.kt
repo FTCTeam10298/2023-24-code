@@ -19,9 +19,11 @@ interface SlideSubsystem {
 
     fun getRawPositionTicks(hardware: RobotTwoHardware): Int
     fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean
-    private fun getZeroPositionOffsetTicks(currentPositionTicks: Int, limitSwitchIsActivated: Boolean, previousZeroPositionOffsetTicks: Int?): Int {
+    private fun getZeroPositionOffsetTicks(currentPositionTicks: Int, limitSwitchIsActivated: Boolean, previousZeroPositionOffsetTicks: Int?, previousLimitSwitchIsActivated: Boolean?): Int {
         return if (limitSwitchIsActivated) {
-            pid.reset()
+            if (previousLimitSwitchIsActivated == false) {
+                pid.reset()
+            }
             currentPositionTicks
         } else {
             previousZeroPositionOffsetTicks ?: 0
@@ -46,7 +48,7 @@ interface SlideSubsystem {
         val rawPositionTicks = getRawPositionTicks(hardware)
         val limitSwitchIsActivated = getIsLimitSwitchActivated(hardware)
 
-        val zeroPositionOffsetTicks = getZeroPositionOffsetTicks(rawPositionTicks, limitSwitchIsActivated, previousActualSlideSubsystem?.zeroPositionOffsetTicks)
+        val zeroPositionOffsetTicks = getZeroPositionOffsetTicks(rawPositionTicks, limitSwitchIsActivated, previousActualSlideSubsystem?.zeroPositionOffsetTicks, previousActualSlideSubsystem?.limitSwitchIsActivated)
 
         val currentPositionTicks = rawPositionTicks - zeroPositionOffsetTicks
 
