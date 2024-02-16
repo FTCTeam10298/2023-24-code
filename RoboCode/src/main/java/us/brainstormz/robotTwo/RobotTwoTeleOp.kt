@@ -6,9 +6,7 @@ import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.FauxLocalizer
-import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.DepoManager.*
 import us.brainstormz.utils.DeltaTimeMeasurer
@@ -49,10 +47,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, extendo, arm, telemetry)
 
 
-    lateinit var movement: Drivetrain
+    lateinit var drivetrain: Drivetrain
     val fauxLocalizer = FauxLocalizer()
     fun init(hardware: RobotTwoHardware) {
-        movement = Drivetrain(hardware, fauxLocalizer, telemetry)
+        drivetrain = Drivetrain(hardware, fauxLocalizer, telemetry)
 //        odometryLocalizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
 
         for (module in hardware.allHubs) {
@@ -915,7 +913,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     hardware.actuateRobot(
                             targetState,
                             actualState,
-                            drivetrain = movement,
+                            drivetrain = drivetrain,
                             wrist= wrist,
                             arm= arm,
                             lift= lift,
