@@ -11,7 +11,7 @@ import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
 
-class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Telemetry): DualMovementModeSubsystem, MecanumMovement(localizer, hardware, telemetry) {
+class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val telemetry: Telemetry): DualMovementModeSubsystem, MecanumMovement(localizer, hardware, telemetry) {
     data class DrivetrainPower(val x: Double, val y: Double, val r: Double) {
         constructor() : this(0.0, 0.0, 0.0)
     }
@@ -37,6 +37,15 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Te
                           rotationPID: PID = defaultRotationPID) {
         val power = when (target.movementMode) {
             DualMovementModeSubsystem.MovementMode.Position -> {
+
+                if (target != previousTarget) {
+//                    telemetry.addLine("resetting pids")
+                    println("resetting pids")
+                    yTranslationPID.reset()
+                    xTranslationPID.reset()
+                    rotationPID.reset()
+                }
+
                 calcPowerToTarget(target.targetPosition, actualPosition, yTranslationPID, xTranslationPID, rotationPID)
             }
             DualMovementModeSubsystem.MovementMode.Power -> {
