@@ -94,9 +94,9 @@ class OdometryMovementTest: OpMode() {
         drivetrain.actuateDrivetrain(
                 Drivetrain.DrivetrainTarget(currentTarget),
                 currentPosition,
-                PIDTuningValues.getYTranslationPID(),
-                PIDTuningValues.getXTranslationPID(),
-                PIDTuningValues.getRotationPID())
+                yTranslationPID = ypid,
+                xTranslationPID =  xpid,
+                rotationPID = rpid)
 
         val isAtTarget = drivetrain.isRobotAtPosition(currentPosition= currentPosition, targetPosition = currentTarget, precisionInches = 1.0, precisionDegrees = 3.0)
         if (isAtTarget) {
@@ -129,26 +129,26 @@ class OdometryMovementTest: OpMode() {
     @Config
     object PIDTuningValues {
         @JvmField
-        var timeDelayMilis: Long = 2000
+        var timeDelayMilis: Int = 2000
 
         @JvmField
         var yp = 0.1
         @JvmField
-        var yi = 0.000002
+        var yi = 0.0//00002
         fun getYTranslationPID(): PID {
             return PID(kp= yp, ki= yi)
         }
         @JvmField
         var xp = 0.3
         @JvmField
-        var xi = 0.000003
+        var xi = 0.0//00003
         fun getXTranslationPID(): PID {
             return PID(kp= xp, ki= xi)
         }
         @JvmField
-        var rp = 3.0
+        var rp = 1.2
         @JvmField
-        var ri = 0.00003
+        var ri = 1.0
         fun getRotationPID(): PID {
             return PID(kp= rp, ki= ri)
         }
