@@ -424,7 +424,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         launcherServo.position = targetState.targetRobot.launcherPosition.position
 
         /**Lights*/
-        lights.setPattern(targetState.targetRobot.lights.targetColor.blinkinPattern)
+        lights.setPattern(targetState.targetRobot.lights.targetColor)
     }
 
     fun wiggleTest(telemetry: Telemetry, gamepad: Gamepad) {

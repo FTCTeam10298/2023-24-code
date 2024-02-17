@@ -66,7 +66,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
                         lights = RobotTwoTeleOp.LightTarget(
-                                targetColor = RobotTwoTeleOp.PixelColor.Unknown,
+                                targetColor = RevBlinkinLedDriver.BlinkinPattern.BLUE,
                                 pattern = RobotTwoTeleOp.BothPixelsWeWant(RobotTwoTeleOp.PixelColor.Unknown, RobotTwoTeleOp.PixelColor.Unknown),
                                 timeOfColorChangeMilis = timeTargetStartedMilis
                         ),

@@ -770,8 +770,22 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             timeWhenCurrentColorStartedBeingDisplayedMilis
         }
 
+        val timeBeforeEndOfMatchToStartEndgameSeconds = 15.0
+        val matchTimeSeconds = 2.0 * 60.0
+        val timeSinceStartOfMatchToStartEndgameSeconds = matchTimeSeconds - timeBeforeEndOfMatchToStartEndgameSeconds
+        val timeSinceStartOfMatchMilis = System.currentTimeMillis() - timeOfMatchStartMilis
+        val timeSinceStartOfMatchSeconds = timeSinceStartOfMatchMilis / 1000
+
+        val timeToStartEndgame = timeSinceStartOfMatchSeconds >= timeSinceStartOfMatchToStartEndgameSeconds
+
+        val colorToDisplay =  if (timeToStartEndgame) {
+            RevBlinkinLedDriver.BlinkinPattern.RED
+        } else {
+            currentPixelToBeDisplayed
+        }
+
         val lights = LightTarget(
-                currentPixelToBeDisplayed,
+                colorToDisplay,
                 desiredPixelLightPattern,
                 newTimeOfColorChangeMilis
         )
@@ -882,6 +896,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         for (module in hardware.allHubs) {
             module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
         }
+    }
+
+    var timeOfMatchStartMilis = 0L
+    fun start() {
+        timeOfMatchStartMilis = System.currentTimeMillis()
     }
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()

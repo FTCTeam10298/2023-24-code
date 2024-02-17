@@ -20,6 +20,10 @@ class TeleOpMode: OpMode() {
         teleop.init(hardware)
     }
 
+    override fun start() {
+        teleop.start()
+    }
+
     override fun loop() {
         teleop.loop(gamepad1= gamepad1, gamepad2= gamepad2, hardware= hardware)
     }
