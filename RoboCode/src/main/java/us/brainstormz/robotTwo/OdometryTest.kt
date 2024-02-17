@@ -151,7 +151,7 @@ class OdometryMovementTest: OpMode() {
         @JvmField
         var rp = 1.2
         @JvmField
-        var ri = 0.1
+        var ri = 1.0
         fun getRotationPID(): PID {
             return PID(kp= rp, ki= ri)
         }
