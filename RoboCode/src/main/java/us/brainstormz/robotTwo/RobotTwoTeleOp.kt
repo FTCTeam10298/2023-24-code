@@ -524,13 +524,28 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("handoffIsReadyCheck: $handoffIsReadyCheck")
 
         /**Intake Noodles*/
-        val timeSinceEjectionStartedMilis: Long = actualWorld.timestampMilis - previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis
+        val timeSinceEjectionStartedMilis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis?:actualWorld.timestampMilis)
         val timeToStopEjecting = timeSinceEjectionStartedMilis > 1000
         val wasPreviouslyEjecting = previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.Eject
-        val intakeNoodleTarget = intake.getCollectorState(
-                driverInput = if (theRobotJustCollectedTwoPixels) {
+//        val intakeNoodleTarget = intake.getCollectorState(
+//                driverInput = if (theRobotJustCollectedTwoPixels) {
+//                    Intake.CollectorPowers.Eject
+//                } else if (timeToStopEjecting && wasPreviouslyEjecting && doHandoffSequence) {
+//                    Intake.CollectorPowers.Off
+//                } else {
+//                    when (driverInput.collector) {
+//                        CollectorInput.Intake -> Intake.CollectorPowers.Intake
+//                        CollectorInput.Eject -> Intake.CollectorPowers.Eject
+//                        CollectorInput.Off -> Intake.CollectorPowers.Off
+//                        CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
+//                    }
+//                },
+//                isPixelInLeft = transferLeftSensorState,
+//                isPixelInRight= transferRightSensorState)
+        val stopAutomaticEjection = timeToStopEjecting && wasPreviouslyEjecting && doHandoffSequence
+        val intakeNoodleTarget = if (theRobotJustCollectedTwoPixels) {
                     Intake.CollectorPowers.Eject
-                } else if (timeToStopEjecting && wasPreviouslyEjecting && doHandoffSequence) {
+                } else if (stopAutomaticEjection) {
                     Intake.CollectorPowers.Off
                 } else {
                     when (driverInput.collector) {
@@ -539,11 +554,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         CollectorInput.Off -> Intake.CollectorPowers.Off
                         CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
                     }
-                },
-                isPixelInLeft = transferLeftSensorState,
-                isPixelInRight= transferRightSensorState)
+                }
         val timeOfEjectionStartMilis = if (theRobotJustCollectedTwoPixels) {
             actualWorld.timestampMilis
+        } else if (stopAutomaticEjection) {
+            null
         } else {
             previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis
         }
