@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -7,6 +8,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.motion.MecanumMovement
+import us.brainstormz.pid.PID
+import us.brainstormz.robotTwo.OdometryMovementTest.PIDTuningValues.timeDelayMilis
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
@@ -80,8 +83,20 @@ class OdometryMovementTest: OpMode() {
         val currentPosition = drivetrain.getPosition()
         telemetry.addLine("rr current position: $currentPosition")
 
+        val ypid = PIDTuningValues.getYTranslationPID()
+        val xpid = PIDTuningValues.getXTranslationPID()
+        val rpid = PIDTuningValues.getRotationPID()
+        telemetry.addLine("ypid: $ypid")
+        telemetry.addLine("xpid: $xpid")
+        telemetry.addLine("rpid: $rpid")
+
         telemetry.addLine("currentTarget: $currentTarget")
-        drivetrain.actuateDrivetrain(Drivetrain.DrivetrainTarget(currentTarget), currentPosition)
+        drivetrain.actuateDrivetrain(
+                Drivetrain.DrivetrainTarget(currentTarget),
+                currentPosition,
+                PIDTuningValues.getYTranslationPID(),
+                PIDTuningValues.getXTranslationPID(),
+                PIDTuningValues.getRotationPID())
 
         val isAtTarget = drivetrain.isRobotAtPosition(currentPosition= currentPosition, targetPosition = currentTarget, precisionInches = 1.0, precisionDegrees = 3.0)
         if (isAtTarget) {
@@ -89,14 +104,17 @@ class OdometryMovementTest: OpMode() {
                 currentTargetEndTimeMilis = System.currentTimeMillis()
 
             val timeSinceEnd = System.currentTimeMillis() - currentTargetEndTimeMilis
-            if (timeSinceEnd > 2000) {
+            if (timeSinceEnd > timeDelayMilis) {
                 val index = positions.indexOf(currentTarget)
                 if (index != (positions.size - 1)) {
                     val timeToComplete = System.currentTimeMillis() - currentTargetStartTimeMilis
                     positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
 
-                    val distanceInches = 20
-                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+                    currentTarget = positions[index+1]
+//                    val distanceInches = 20
+//                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+                } else {
+                    currentTarget = positions.first()
                 }
             }
         } else {
@@ -106,6 +124,34 @@ class OdometryMovementTest: OpMode() {
         telemetry.addLine("\n\npositionData: \n$positionData")
 
         telemetry.update()
+    }
+
+    @Config
+    object PIDTuningValues {
+        @JvmField
+        var timeDelayMilis: Long = 2000
+
+        @JvmField
+        var yp = 0.1
+        @JvmField
+        var yi = 0.000002
+        fun getYTranslationPID(): PID {
+            return PID(kp= yp, ki= yi)
+        }
+        @JvmField
+        var xp = 0.3
+        @JvmField
+        var xi = 0.000003
+        fun getXTranslationPID(): PID {
+            return PID(kp= xp, ki= xi)
+        }
+        @JvmField
+        var rp = 3.0
+        @JvmField
+        var ri = 0.00003
+        fun getRotationPID(): PID {
+            return PID(kp= rp, ki= ri)
+        }
     }
 
 }
