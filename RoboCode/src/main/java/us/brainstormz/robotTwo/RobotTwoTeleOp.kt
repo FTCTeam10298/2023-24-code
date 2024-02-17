@@ -488,7 +488,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
     }
-    data class LightTarget(val targetColor: PixelColor, val pattern: BothPixelsWeWant, val timeOfColorChangeMilis: Long)
+    data class LightTarget(val targetColor: RevBlinkinLedDriver.BlinkinPattern, val pattern: BothPixelsWeWant, val timeOfColorChangeMilis: Long)
     fun getTargetWorld(driverInput: DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): TargetWorld {
         val actualRobot = actualWorld.actualRobot
 
@@ -753,11 +753,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val isCurrentColorObsolete = desiredPixelLightPattern != previousPattern
 
         val previousPixelToBeDisplayed = previousTargetState.targetRobot.lights.targetColor
-        val currentPixelToBeDisplayed: PixelColor = when {
+        val currentPixelToBeDisplayed: RevBlinkinLedDriver.BlinkinPattern = when {
             isTimeToChangeColor || isCurrentColorObsolete -> {
-                desiredPixelLightPattern.asList.firstOrNull { color ->
-                    color != previousPixelToBeDisplayed
-                } ?: desiredPixelLightPattern.leftPixel
+                (desiredPixelLightPattern.asList.firstOrNull { color ->
+                    color.blinkinPattern != previousPixelToBeDisplayed
+                } ?: desiredPixelLightPattern.leftPixel).blinkinPattern
             }
             else -> {
                 previousPixelToBeDisplayed
@@ -861,7 +861,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
                         lights = LightTarget(
-                                targetColor = PixelColor.Unknown,
+                                targetColor = RevBlinkinLedDriver.BlinkinPattern.BLUE,
                                 pattern = BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown),
                                 timeOfColorChangeMilis = 0L
                         ),
@@ -931,7 +931,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     if (targetState.gamepad1Rumble != null) {
                         gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
                     }
-                    hardware.lights.setPattern(targetState.targetRobot.lights.targetColor.blinkinPattern)
+                    hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
                 }
         )
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
