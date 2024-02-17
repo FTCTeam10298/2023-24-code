@@ -100,7 +100,7 @@ class OdometryMovementTest: OpMode() {
                 xTranslationPID =  xpid,
                 rotationPID = rpid)
 
-        previousTarget = currentTarget
+        previousTarget = currentTarget.copy()
         val isAtTarget = drivetrain.isRobotAtPosition(currentPosition= currentPosition, targetPosition = currentTarget, precisionInches = 1.0, precisionDegrees = 3.0)
         if (isAtTarget) {
             if (currentTargetEndTimeMilis == 0L)
@@ -113,11 +113,11 @@ class OdometryMovementTest: OpMode() {
                     val timeToComplete = System.currentTimeMillis() - currentTargetStartTimeMilis
                     positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
 
-                    currentTarget = positions[index+1]
-//                    val distanceInches = 20
-//                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+//                    currentTarget = positions[index+1]
+                    val distanceInches = 20
+                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
                 } else {
-                    currentTarget = positions.first()
+//                    currentTarget = positions.first()
                 }
             }
         } else {
@@ -151,7 +151,7 @@ class OdometryMovementTest: OpMode() {
         @JvmField
         var rp = 1.2
         @JvmField
-        var ri = 1.0
+        var ri = 0.1
         fun getRotationPID(): PID {
             return PID(kp= rp, ki= ri)
         }
