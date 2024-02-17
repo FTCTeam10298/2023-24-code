@@ -29,10 +29,14 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Te
         return localizer.currentPositionAndRotation()
     }
 
-    fun actuateDrivetrain(target: DrivetrainTarget, actualPosition: PositionAndRotation) {
+    fun actuateDrivetrain(target: DrivetrainTarget,
+                          actualPosition: PositionAndRotation,
+                          yTranslationPID: PID = defaultYTranslationPID,
+                          xTranslationPID: PID = defaultXTranslationPID,
+                          rotationPID: PID = defaultRotationPID) {
         val power = when (target.movementMode) {
             DualMovementModeSubsystem.MovementMode.Position -> {
-                calcPowerToTarget(target.targetPosition, actualPosition)
+                calcPowerToTarget(target.targetPosition, actualPosition, yTranslationPID, xTranslationPID, rotationPID)
             }
             DualMovementModeSubsystem.MovementMode.Power -> {
                 target.power
