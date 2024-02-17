@@ -15,15 +15,12 @@ import kotlin.math.*
 
 open class MecanumMovement(override val localizer: Localizer, override val hardware: MecanumHardware, private val telemetry: Telemetry): Movement, MecanumDriveTrain(hardware) {
 
-//        val defaultYTranslationPID = PID(0.07, 0.0, 0.0)
-//        val defaultXTranslationPID = PID(0.25, 0.0, 0.0)
-//        val defaultRotationPID = PID(1.0, 0.0000008, 0.0)
-//    val defaultYTranslationPID =    PID(0.078,  0.000008, 0.0)
-//    val defaultXTranslationPID =    PID(0.410,  0.000010, 0.0)
-//    val defaultRotationPID =        PID(1.000,  0.000050, 0.0)
-    val defaultYTranslationPID =    PID(0.18,  0.00001, 1.9)
-    val defaultXTranslationPID =    PID(0.5,  0.00015, 1.5)
-    val defaultRotationPID =        PID(2.0)//,  0.0015, 1.5)
+//    val defaultYTranslationPID =    PID(0.18,  0.00001, 1.9)
+//    val defaultXTranslationPID =    PID(0.5,  0.00015, 1.5)
+//    val defaultRotationPID =        PID(2.0)//,  0.0015, 1.5)
+    val defaultYTranslationPID =    PID(0.1)
+    val defaultXTranslationPID =    PID(0.3)
+    val defaultRotationPID =        PID(4.0)//,  0.0015, 1.5)
     val defaultPrecisionInches = 5.0
     val defaultPrecisionDegrees = 3.0
 

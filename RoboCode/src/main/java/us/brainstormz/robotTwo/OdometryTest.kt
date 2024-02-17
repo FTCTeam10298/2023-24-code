@@ -12,10 +12,8 @@ import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import java.lang.Thread.sleep
 
-
-//gabe this class is your example
 @Autonomous
-class OdometryTrackingTest: OpMode() {
+class PIDTuningTest: OpMode() {
     val hardware = RobotTwoHardware(opmode= this, telemetry= telemetry)
     lateinit var localizer: RRTwoWheelLocalizer
     override fun init() {
@@ -75,45 +73,35 @@ class OdometryMovementTest: OpMode() {
     var currentTargetStartTimeMilis: Long = 0
     data class PositionDataPoint(val target: PositionAndRotation, val timeToSuccessMilis: Long, val finalPosition: PositionAndRotation)
     val positionData = mutableListOf<PositionDataPoint>()
+
+    var currentTargetEndTimeMilis:Long = 0
     override fun loop() {
-//        localizer.recalculatePositionAndRotation()
 
         val currentPosition = drivetrain.getPosition()
         telemetry.addLine("rr current position: $currentPosition")
 
-//        val driveMotors = mapOf<String, DcMotor>(
-//                "left front" to hardware.lFDrive,
-//                "right front" to hardware.rFDrive,
-//                "left back" to hardware.lBDrive,
-//                "right back" to hardware.rBDrive
-//        )
-//        driveMotors.forEach{ (name, motor) ->
-//            telemetry.addLine("name: $name")
-//            telemetry.update()
-//            motor.power = 0.5
-//            sleep(2000)
-//            motor.power = 0.0
-//        }
-//
-//        movement.setSpeedAll(vY= 0.0, vX = 0.5, vA = 0.0, minPower = -1.0, maxPower = 1.0)
-
-
         telemetry.addLine("currentTarget: $currentTarget")
         drivetrain.actuateDrivetrain(Drivetrain.DrivetrainTarget(currentTarget), currentPosition)
 
-        val isAtTarget = drivetrain.isRobotAtPosition(currentPosition= currentPosition, targetPosition = currentTarget)
+        val isAtTarget = drivetrain.isRobotAtPosition(currentPosition= currentPosition, targetPosition = currentTarget, precisionInches = 1.0, precisionDegrees = 3.0)
         if (isAtTarget) {
-            val index = positions.indexOf(currentTarget)
-            if (index != (positions.size - 1)) {
+            if (currentTargetEndTimeMilis == 0L)
+                currentTargetEndTimeMilis = System.currentTimeMillis()
 
-                val timeToComplete = System.currentTimeMillis() - currentTargetStartTimeMilis
-                positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
+            val timeSinceEnd = System.currentTimeMillis() - currentTargetEndTimeMilis
+            if (timeSinceEnd > 2000) {
+                val index = positions.indexOf(currentTarget)
+                if (index != (positions.size - 1)) {
+                    val timeToComplete = System.currentTimeMillis() - currentTargetStartTimeMilis
+                    positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
 
-                val distanceInches = 20
-                currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches)//,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
-                currentTargetStartTimeMilis = System.currentTimeMillis()
+                    val distanceInches = 20
+                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches)//,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+
+                }
             }
-            sleep(500)
+        } else {
+            currentTargetEndTimeMilis = 0
         }
 
         telemetry.addLine("\n\npositionData: \n$positionData")
