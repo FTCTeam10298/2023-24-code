@@ -829,7 +829,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 isLiftEligableForReset = false,
                 doingHandoff = doHandoffSequence,
                 driverInput = spoofDriverInputForDepo,
-                isTargetReached = {_, _ -> false},
+                isTargetReached = {_, _, _-> false},
                 gamepad1Rumble = gamepad1RumbleRoutine
         )
     }
@@ -883,7 +883,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 isLiftEligableForReset = false,
                 doingHandoff = false,
                 driverInput = noInput,
-                isTargetReached = { _, _ -> false },
+                isTargetReached = { _, _, _ -> false },
                 gamepad1Rumble = null
         )
     }
