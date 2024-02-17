@@ -7,10 +7,10 @@ class FunctionalReactiveAutoRunner<TargetState, ActualState> {
         private set
     fun loop(   actualStateGetter: (previousActualState: ActualState?)->ActualState,
                 targetStateFetcher:  (previousTargetState: TargetState?, actualState: ActualState, previousActualState: ActualState?)->TargetState,
-                stateFulfiller: (targetState: TargetState, actualState: ActualState)->Unit ) {
+                stateFulfiller: (targetState: TargetState, previousTargetState: TargetState?, actualState: ActualState)->Unit ) {
         val actualState = actualStateGetter(previousActualState)
         val targetState = targetStateFetcher(previousTargetState, actualState, previousActualState)
-        stateFulfiller(targetState, actualState)
+        stateFulfiller(targetState, previousTargetState, actualState)
         previousTargetState = targetState
         previousActualState = actualState
     }

@@ -800,7 +800,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             targetStateFetcher = { previousTargetState, actualState, previousActualState ->
                 nextTargetState(previousTargetState, actualState, previousActualState)
             },
-            stateFulfiller = { targetState, actualState ->
+            stateFulfiller = { targetState, previousTargetState, actualState ->
                 telemetry.addLine("target position: ${targetState.targetRobot.drivetrainTarget.targetPosition}")
                 telemetry.addLine("current position: ${drivetrain.localizer.currentPositionAndRotation()}")
 

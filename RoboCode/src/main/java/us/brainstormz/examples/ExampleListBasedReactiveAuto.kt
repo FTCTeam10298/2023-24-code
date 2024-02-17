@@ -42,7 +42,7 @@ class ExampleListBasedReactiveAuto: OpMode() {
                     }
                 }
             },
-            stateFulfiller = { targetState, actualState ->
+            stateFulfiller = { targetState, previousTargetState, actualState ->
                 targetState.driveMotorPositions.forEachIndexed {i, it ->
                     val targetOverActual = it.toDouble() / actualState.driveMotorPositions[i]
                     hardware.driveMotors[i].power = 1 - targetOverActual

@@ -912,7 +912,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                     getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                 },
-                stateFulfiller = { targetState, actualState ->
+                stateFulfiller = { targetState, previousTargetState, actualState ->
                     telemetry.addLine("\ntargetState: $targetState")
                     hardware.actuateRobot(
                             targetState,
