@@ -5,6 +5,7 @@ import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.pid.PID
+import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.abs
 import kotlin.math.cos
@@ -84,5 +85,41 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
         val speedA: Double = rotationPID.calcPID(angleError)
 
         return DrivetrainPower(speedX, speedY, speedA)
+    }
+
+    val maxVelocityToStayAtPosition = DriveVelocity(
+            xInchesPerMili = 1 / 1000.0,
+            yInchesPerMili = 1 / 1000.0,
+            rDegreesPerMili = 3 / 1000.0
+    )
+    fun checkIfDrivetrainIsAtPosition(targetPosition: PositionAndRotation, actualWorld: ActualWorld, previousWorld: ActualWorld): Boolean {
+        val isRobotCurrentlyAtTarget = isRobotAtPosition(
+                currentPosition= actualWorld.actualRobot.positionAndRotation,
+                targetPosition= targetPosition)
+        val willRobotStayAtTarget = getVelocity(actualWorld, previousWorld).checkIfIsLessThan(maxVelocityToStayAtPosition)
+        return isRobotCurrentlyAtTarget && willRobotStayAtTarget
+    }
+
+    data class DriveVelocity(val xInchesPerMili: Double, val yInchesPerMili: Double, val rDegreesPerMili: Double) {
+        fun checkIfIsLessThan(other: DriveVelocity): Boolean {
+            val xIsLess = xInchesPerMili < other.xInchesPerMili
+            val yIsLess = yInchesPerMili < other.yInchesPerMili
+            val rIsLess = rDegreesPerMili < other.rDegreesPerMili
+            return xIsLess && yIsLess && rIsLess
+        }
+    }
+    fun getVelocity(actualPosition: PositionAndRotation, actualTimeMilis: Long, previousPosition: PositionAndRotation, previousTimeMilis: Long): DriveVelocity {
+        val deltaPosition = actualPosition - previousPosition
+        val deltaTime = actualTimeMilis - previousTimeMilis
+
+        return DriveVelocity(
+                xInchesPerMili = deltaPosition.x / deltaTime,
+                yInchesPerMili = deltaPosition.y / deltaTime,
+                rDegreesPerMili = deltaPosition.r / deltaTime
+        )
+    }
+
+    fun getVelocity(actualWorld: ActualWorld, previousWorld: ActualWorld): DriveVelocity {
+        return getVelocity(actualWorld.actualRobot.positionAndRotation, actualWorld.timestampMilis, previousWorld.actualRobot.positionAndRotation, previousWorld.timestampMilis)
     }
 }
