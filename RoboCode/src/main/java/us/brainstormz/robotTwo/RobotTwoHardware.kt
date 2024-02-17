@@ -309,7 +309,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     }
 
     fun actuateRobot(
-            targetState: TargetWorld, actualState: ActualWorld,
+            targetState: TargetWorld,
+            previousTargetState: TargetWorld,
+            actualState: ActualWorld,
             drivetrain: Drivetrain,
             extendo: Extendo,
             intake: Intake,
@@ -321,7 +323,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             armOverridePower: Double
     ) {
         /**Drive*/
-        drivetrain.actuateDrivetrain(targetState.targetRobot.drivetrainTarget, actualState.actualRobot.positionAndRotation)
+        drivetrain.actuateDrivetrain(targetState.targetRobot.drivetrainTarget, previousTargetState.targetRobot.drivetrainTarget, actualState.actualRobot.positionAndRotation)
 
         /**Extendo*/
         val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {

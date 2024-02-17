@@ -30,6 +30,7 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, telemetry: Te
     }
 
     fun actuateDrivetrain(target: DrivetrainTarget,
+                          previousTarget: DrivetrainTarget,
                           actualPosition: PositionAndRotation,
                           yTranslationPID: PID = defaultYTranslationPID,
                           xTranslationPID: PID = defaultXTranslationPID,

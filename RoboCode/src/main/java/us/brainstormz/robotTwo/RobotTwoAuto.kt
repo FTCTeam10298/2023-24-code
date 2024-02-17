@@ -808,6 +808,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
                 hardware.actuateRobot(
                         universalTargetWorld,
+                        previousTargetState?: targetState,
                         actualState,
                         drivetrain = drivetrain,
                         wrist= wrist,

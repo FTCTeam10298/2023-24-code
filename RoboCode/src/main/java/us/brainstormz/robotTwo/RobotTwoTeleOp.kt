@@ -916,6 +916,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     telemetry.addLine("\ntargetState: $targetState")
                     hardware.actuateRobot(
                             targetState,
+                            previousTargetState ?: targetState,
                             actualState,
                             drivetrain = drivetrain,
                             wrist= wrist,

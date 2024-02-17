@@ -73,6 +73,7 @@ class OdometryMovementTest: OpMode() {
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
     )
     var currentTarget: PositionAndRotation = positions.first()
+    var previousTarget = currentTarget
     var currentTargetStartTimeMilis: Long = 0
     data class PositionDataPoint(val target: PositionAndRotation, val timeToSuccessMilis: Long, val finalPosition: PositionAndRotation)
     val positionData = mutableListOf<PositionDataPoint>()
@@ -93,11 +94,13 @@ class OdometryMovementTest: OpMode() {
         telemetry.addLine("currentTarget: $currentTarget")
         drivetrain.actuateDrivetrain(
                 Drivetrain.DrivetrainTarget(currentTarget),
+                Drivetrain.DrivetrainTarget(previousTarget),
                 currentPosition,
                 yTranslationPID = ypid,
                 xTranslationPID =  xpid,
                 rotationPID = rpid)
 
+        previousTarget = currentTarget
         val isAtTarget = drivetrain.isRobotAtPosition(currentPosition= currentPosition, targetPosition = currentTarget, precisionInches = 1.0, precisionDegrees = 3.0)
         if (isAtTarget) {
             if (currentTargetEndTimeMilis == 0L)
