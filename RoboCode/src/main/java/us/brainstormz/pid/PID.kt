@@ -62,6 +62,6 @@ data class PID(val kp: Double = 0.0, val ki: Double = 0.0, val kd: Double = 0.0,
     }
 
     override fun toString(): String {
-        return "Proportional: $p\n Integral: $i\n Derivative: $d"
+        return "Proportional: $kp\n Integral: $ki\n Derivative: $kd"
     }
 }
