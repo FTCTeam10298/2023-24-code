@@ -96,8 +96,7 @@ class OdometryMovementTest: OpMode() {
                     positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
 
                     val distanceInches = 20
-                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches)//,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
-
+                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
                 }
             }
         } else {
