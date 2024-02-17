@@ -86,7 +86,11 @@ data class PositionAndRotation(var x: Double = 0.0, var y: Double = 0.0, var r: 
     }
 
     override fun equals(other: Any?): Boolean {
-        return super.equals(other)
+        return if (other is PositionAndRotation) {
+            equals(other)
+        } else {
+            false
+        }
     }
 
     fun equals(other: PositionAndRotation): Boolean {
