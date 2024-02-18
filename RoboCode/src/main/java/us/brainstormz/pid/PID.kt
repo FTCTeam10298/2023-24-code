@@ -1,6 +1,7 @@
 package us.brainstormz.pid
 
 import com.qualcomm.robotcore.util.Range
+import kotlin.math.sign
 
 
 /**
@@ -50,6 +51,7 @@ data class PID(val kp: Double = 0.0, val ki: Double = 0.0, val kd: Double = 0.0,
         p = kp * error
         i += ki * (error * deltaTimeMs.toDouble())
         d = kd * (error - lastError) / deltaTimeMs.toDouble()
+        f = kf * error.sign
 
         i = i.coerceIn(iRange)
 
