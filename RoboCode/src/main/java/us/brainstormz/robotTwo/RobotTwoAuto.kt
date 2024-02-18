@@ -389,7 +389,6 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                         isRobotAtPosition(targetState, actualState, previousActualState)
                     },).asTargetWorld,
-
             AutoTargetWorld(
                     targetRobot = RobotState(
                             collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
@@ -410,7 +409,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                     },).asTargetWorld,
     )
 
-    private val audienceSideDepositPurpleRight = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x + 1.0, r= StartPosition.Audience.redStartPosition.r-22.0)
+    private val audienceSideDepositPurpleRight = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x + 5.0, r= StartPosition.Audience.redStartPosition.r-22.0)
     private val audienceSideRightPurple: List<TargetWorld> = listOf(
             AutoTargetWorld(
                     targetRobot = RobotState(
