@@ -255,7 +255,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
     private val audienceSideNavigateUnderTrussWaypoint1 = PositionAndRotation(x= redDistanceFromCenterlineInches, y=-30.0, r= 0.0)
     private val audienceSideParkPosition = PositionAndRotation(x= -10.0, y= -47.0, r= 0.0)
 
-    private val audienceSideDepositPurpleLeft = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x+ 1.0, r= StartPosition.Audience.redStartPosition.r+18.0)
+    private val audienceSideDepositPurpleLeft = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x+ 1.0, r= StartPosition.Audience.redStartPosition.r+22.0)
     private val audienceSideNavigateBetweenTapeWaypoint1 = StartPosition.Audience.redStartPosition.copy(x= -14.0, y= StartPosition.Audience.redStartPosition.y + 1)//, r= StartPosition.Audience.redStartPosition.r+5)
     private val audienceSideNavigateBetweenTapeWaypoint2 = StartPosition.Audience.redStartPosition.copy(x= -14.0, y= StartPosition.Audience.redStartPosition.y + 1, r= 0.0)//, r= StartPosition.Audience.redStartPosition.r+5)
     private val audienceSideLeftPurple: List<TargetWorld> = listOf(
@@ -713,7 +713,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
     private val intake = Intake()
     private val transfer = Transfer(telemetry)
-    private val extendo = Extendo()
+    private val extendo = Extendo(PID(kp = 0.0018))
 
     private lateinit var collectorSystem: CollectorSystem
     private lateinit var arm: Arm
@@ -826,17 +826,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                         armOverridePower = 0.0
                 )
 
-                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)//targetState.targetRobot.lights.targetColor.blinkinPattern)
-
-//                mecanumMovement.moveTowardTarget(targetState.targetRobot.drivetrainTarget.targetPosition)
-//                extendo.powerSubsystem(extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot), hardware)
-//                intake.powerSubsystem(targetState.targetRobot.collectorSystemState.collectorState.power, hardware)
-//                lift.powerSubsystem(lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks), hardware)
-//                arm.powerSubsystem(arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees), hardware)
-//
-//
-//                hardware.rightClawServo.power = TODO()// targetState.targetRobot.depoState.rightClawPosition.position
-//                hardware.leftClawServo.power = TODO()//targetState.targetRobot.depoState.leftClawPosition.position
+                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
             }
         )
 
