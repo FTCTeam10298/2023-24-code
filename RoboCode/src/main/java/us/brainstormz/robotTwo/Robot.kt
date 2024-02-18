@@ -76,7 +76,7 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
         )
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
         telemetry.addLine("loop time: $loopTime milis")
-        telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime()} milis")
+        telemetry.addLine("peak loop time: ${loopTimeMeasurer.getPeakDeltaTime()} milis")
 
         telemetry.update()
     }
