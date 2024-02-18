@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
@@ -68,7 +69,7 @@ object PidTuningAdjuster {
     }
 }
 
-@Autonomous
+@TeleOp
 class PidTuner: OpMode() {
     private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= telemetry, opmode = this)
 
