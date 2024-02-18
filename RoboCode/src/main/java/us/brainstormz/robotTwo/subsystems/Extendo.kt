@@ -9,7 +9,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import kotlin.math.absoluteValue
 
-class Extendo: Subsystem, SlideSubsystem {
+class Extendo(override val pid: PID = PID(kp = 0.0025)): Subsystem, SlideSubsystem {
 
     enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         AllTheWayInTarget(-10),
@@ -58,7 +58,6 @@ class Extendo: Subsystem, SlideSubsystem {
     override val definitelyMovingVelocityTicksPerMili: Double = 0.01
     override val findResetPower: Double = 0.2
 
-    override val pid = PID(kp = 0.0025)
     fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
         val currentPosition = actualRobot.collectorSystemState.extendo.currentPositionTicks
         val positionError = targetPositionTicks - currentPosition.toDouble()
