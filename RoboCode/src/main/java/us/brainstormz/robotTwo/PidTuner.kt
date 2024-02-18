@@ -27,6 +27,7 @@ import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
+import us.brainstormz.utils.DeltaTimeMeasurer
 
 
 @Config
@@ -96,6 +97,7 @@ class PidTuner: OpMode() {
         depoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
     }
 
+    val loopTimeMeasurer = DeltaTimeMeasurer()
     var timeOfTargetDone = 0L
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     override fun loop() {
@@ -146,24 +148,15 @@ class PidTuner: OpMode() {
                             xTranslationPID = getXTranslationPID(),
                             yTranslationPID = getYTranslationPID(),
                             rotationPID = getRotationPID())
-//                    hardware.actuateRobot(
-//                            targetState,
-//                            previousTargetState?: targetState,
-//                            actualState,
-//                            drivetrain = drivetrain,
-//                            wrist= wrist,
-//                            arm= arm,
-//                            lift= lift,
-//                            extendo= extendo,
-//                            intake= intake,
-//                            transfer= transfer,
-//                            extendoOverridePower = 0.0,
-//                            armOverridePower = 0.0
-//                    )
 
                     hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
                 }
         )
+
+        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
+        telemetry.addLine("loopTime: $loopTime")
+
+        telemetry.addLine("average loopTime: ${loopTimeMeasurer.getAverageLoopTimeMilis()}")
 
         telemetry.update()
     }

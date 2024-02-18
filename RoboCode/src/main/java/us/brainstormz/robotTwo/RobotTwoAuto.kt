@@ -840,6 +840,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
         telemetry.addLine("loop time: $loopTime milis")
 
+        telemetry.addLine("average loop time: ${loopTimeMeasurer.getAverageLoopTimeMilis()}")
+
         telemetry.update()
     }
 }

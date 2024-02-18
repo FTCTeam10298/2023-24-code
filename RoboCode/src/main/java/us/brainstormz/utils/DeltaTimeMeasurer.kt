@@ -5,8 +5,14 @@ class DeltaTimeMeasurer {
     var peakDeltaTime = 0L
     var deltaTime = 0L
 
+    var loopTimeAverageStorage = mutableListOf<Long>()
+    fun getAverageLoopTimeMilis(): Long {
+        return loopTimeAverageStorage.sum()/loopTimeAverageStorage.size
+    }
+
     fun measureTimeSinceLastCallMilis(): Long {
         val deltaTime = endMeasureDT()
+        loopTimeAverageStorage.add(deltaTime)
         beginMeasureDT()
         return deltaTime
     }
