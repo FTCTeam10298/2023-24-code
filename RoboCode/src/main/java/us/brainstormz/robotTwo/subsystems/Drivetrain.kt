@@ -88,8 +88,8 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
     }
 
     val maxVelocityToStayAtPosition = DriveVelocity(
-            xInchesPerMili = 1 / 1000.0,
-            yInchesPerMili = 1 / 1000.0,
+            xInchesPerMili = 0.25 / 1000.0,
+            yInchesPerMili = 0.25 / 1000.0,
             rDegreesPerMili = 3 / 1000.0
     )
     fun checkIfDrivetrainIsAtPosition(targetPosition: PositionAndRotation, actualWorld: ActualWorld, previousWorld: ActualWorld): Boolean {
