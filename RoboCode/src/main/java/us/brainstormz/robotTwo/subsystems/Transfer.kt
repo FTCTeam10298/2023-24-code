@@ -110,8 +110,8 @@ class Transfer(private val telemetry: Telemetry) {
 
         val directorState = when {
             !isCollecting -> DirectorState.Off
-            !leftTransferState.hasPixelBeenSeen -> DirectorState.Left
-            !rightTransferState.hasPixelBeenSeen -> DirectorState.Right
+            shouldRightServoCollect == RollerPowers.Intake -> DirectorState.Right
+            shouldLeftServoCollect == RollerPowers.Intake-> DirectorState.Left
             else -> DirectorState.Off
         }
 
