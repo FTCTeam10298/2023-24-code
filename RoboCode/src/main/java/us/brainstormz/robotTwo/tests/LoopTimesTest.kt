@@ -55,7 +55,7 @@ fun main() {
         val timeSinceStartMillis = System.currentTimeMillis() - timeStarted
 
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
-        val peakTime = loopTimeMeasurer.peakDeltaTime()
+        val peakTime = loopTimeMeasurer.getPeakDeltaTime()
 
         val memoryData = getHeapInfoAsString(env)
         if (loopTime == peakTime) {
@@ -75,5 +75,5 @@ fun main() {
     println("peaks: ${peaks.fold("") {acc, it ->
         acc + "\n\n" + it.toString()
     }}")
-    println("highest peak time: ${loopTimeMeasurer.peakDeltaTime()}")
+    println("highest peak time: ${loopTimeMeasurer.getPeakDeltaTime()}")
 }

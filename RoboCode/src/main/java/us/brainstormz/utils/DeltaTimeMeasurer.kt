@@ -38,22 +38,23 @@ class DeltaTimeMeasurer {
 
     fun getNumMeasurements() = avg.getNumMeasurements()
 
-    fun peakDeltaTime() = this.peakDeltaTime
+    fun getLastMeasuredDT() = deltaTime
+
+    fun getPeakDeltaTime() = this.peakDeltaTime
 
     fun getAverageLoopTimeMillis() = avg.getAverage()
 
     fun measureTimeSinceLastCallMillis(): Long {
         val deltaTime = endMeasureDT()
-        avg.addMeasurment(deltaTime)
         beginMeasureDT()
         return deltaTime
     }
 
-    private fun beginMeasureDT() {
+    fun beginMeasureDT() {
         timeBegin = System.currentTimeMillis()
     }
 
-    private fun endMeasureDT(): Long {
+    fun endMeasureDT(): Long {
         val timeEnd = System.currentTimeMillis()
 
         deltaTime = timeEnd - (timeBegin ?: timeEnd)
@@ -61,6 +62,8 @@ class DeltaTimeMeasurer {
         if (deltaTime > peakDeltaTime) {
             peakDeltaTime = deltaTime
         }
+
+        avg.addMeasurment(deltaTime)
 
         return deltaTime
     }

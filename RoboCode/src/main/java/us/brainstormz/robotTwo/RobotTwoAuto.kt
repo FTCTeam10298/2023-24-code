@@ -776,7 +776,9 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     private val loopTimeMeasurer = DeltaTimeMeasurer()
+    val timeBetweenloopMeasurer = DeltaTimeMeasurer()
     fun loop(hardware: RobotTwoHardware, gamepad1: Gamepad) {
+        timeBetweenloopMeasurer.endMeasureDT()
         functionalReactiveAutoRunner.loop(
             actualStateGetter = { previousActualState ->
                 val currentGamepad1 = Gamepad()
@@ -818,10 +820,14 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
         )
 
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
-        telemetry.addLine("loop time: $loopTime milis")
-        println("loopTime: ${loopTimeMeasurer.peakDeltaTime()}")
+        telemetry.addLine("Loop time: $loopTime millis")
+        telemetry.addLine("Average total loop time: ${loopTimeMeasurer.getAverageLoopTimeMillis()} millis")
+        telemetry.addLine("Peak loop time: ${loopTimeMeasurer.getPeakDeltaTime()} millis")
+        telemetry.addLine("Time between loops: ${timeBetweenloopMeasurer.getLastMeasuredDT()} millis")
 
-        telemetry.addLine("average loop time: ${loopTimeMeasurer.getAverageLoopTimeMillis()}")
+        println("loopTime: ${loopTimeMeasurer.getPeakDeltaTime()}")
+
+        timeBetweenloopMeasurer.beginMeasureDT()
 
         telemetry.update()
     }
