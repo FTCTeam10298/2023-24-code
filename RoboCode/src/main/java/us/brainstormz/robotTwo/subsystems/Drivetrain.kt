@@ -26,7 +26,14 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
     }
 
     fun getPosition(): PositionAndRotation {
+        val readStartTimeMilis = System.currentTimeMillis()
+
         localizer.recalculatePositionAndRotation()
+
+        val readEndTimeMilis = System.currentTimeMillis()
+        val timeToRead = readEndTimeMilis-readStartTimeMilis
+        telemetry.addLine("timeToRead Drivetrain: $timeToRead")
+
         return localizer.currentPositionAndRotation()
     }
 

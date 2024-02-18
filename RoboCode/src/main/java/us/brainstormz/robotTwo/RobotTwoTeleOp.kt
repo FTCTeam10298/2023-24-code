@@ -133,10 +133,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     fun getDriverInput(actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): DriverInput {
         val gamepad1 = actualWorld.actualGamepad1
         val gamepad2 = actualWorld.actualGamepad2
-        val robot = actualWorld.actualRobot
+//        val robot = actualWorld.actualRobot
         val previousGamepad1 = previousActualWorld.actualGamepad1
         val previousGamepad2 = previousActualWorld.actualGamepad2
-        val previousRobot = previousActualWorld.actualRobot
+//        val previousRobot = previousActualWorld.actualRobot
         val previousRobotTarget = previousTargetState.targetRobot
 
         /**Depo*/
@@ -905,7 +905,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
+    val timeBetweenloopMeasurer = DeltaTimeMeasurer()
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) {
+
+        timeBetweenloopMeasurer.endMeasureDT()
 
         for (hub in hardware.allHubs) {
             hub.clearBulkCache()
@@ -954,8 +957,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 }
         )
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
-        telemetry.addLine("loop time: $loopTime milis")
-        telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
+        telemetry.addLine("Loop time: $loopTime milis")
+        telemetry.addLine("Average total loop time: ${loopTimeMeasurer.getAverageLoopTimeMilis()} milis")
+        telemetry.addLine("Peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
+        telemetry.addLine("Time between loops: ${timeBetweenloopMeasurer.getLastMeasuredDT()} milis")
+
+        timeBetweenloopMeasurer.beginMeasureDT()
 
         telemetry.update()
     }

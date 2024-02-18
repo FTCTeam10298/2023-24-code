@@ -302,7 +302,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     }
     open fun getActualState(drivetrain: Drivetrain, collectorSystem: CollectorSystem, depoManager: DepoManager, previousActualWorld: ActualWorld?): ActualRobot {
         telemetry.addLine("getting state")
-        telemetry.addLine("extendo current position: ${extendoMotorMaster.currentPosition}")
+//        telemetry.addLine("extendo current position: ${extendoMotorMaster.currentPosition}")
         return ActualRobot(
                 positionAndRotation = drivetrain.getPosition(),
                 collectorSystemState = collectorSystem.getCurrentState(this, previousActualWorld),
