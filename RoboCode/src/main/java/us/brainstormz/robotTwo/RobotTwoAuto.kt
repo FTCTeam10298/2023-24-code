@@ -410,7 +410,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                     },).asTargetWorld,
     )
 
-    private val audienceSideDepositPurpleRight = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x + 1.0, r= StartPosition.Audience.redStartPosition.r-18.0)
+    private val audienceSideDepositPurpleRight = StartPosition.Audience.redStartPosition.copy(x= StartPosition.Audience.redStartPosition.x + 1.0, r= StartPosition.Audience.redStartPosition.r-22.0)
     private val audienceSideRightPurple: List<TargetWorld> = listOf(
             AutoTargetWorld(
                     targetRobot = RobotState(
