@@ -100,29 +100,29 @@ class OdometryMovementTest: OpMode() {
                 xTranslationPID =  xpid,
                 rotationPID = rpid)
 
-        previousTarget = currentTarget.copy()
-        val isAtTarget = drivetrain.isRobotAtPosition(currentPosition= currentPosition, targetPosition = currentTarget, precisionInches = 1.0, precisionDegrees = 3.0)
-        if (isAtTarget) {
-            if (currentTargetEndTimeMilis == 0L)
-                currentTargetEndTimeMilis = System.currentTimeMillis()
-
-            val timeSinceEnd = System.currentTimeMillis() - currentTargetEndTimeMilis
-            if (timeSinceEnd > timeDelayMilis) {
-                val index = positions.indexOf(currentTarget)
-                if (index != (positions.size - 1)) {
-                    val timeToComplete = System.currentTimeMillis() - currentTargetStartTimeMilis
-                    positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
-
-//                    currentTarget = positions[index+1]
-                    val distanceInches = 20
-                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
-                } else {
-//                    currentTarget = positions.first()
-                }
-            }
-        } else {
-            currentTargetEndTimeMilis = 0
-        }
+//        previousTarget = currentTarget.copy()
+//        val isAtTarget = drivetrain.checkIfDrivetrainIsAtPosition(currentPosition, targetPosition = currentTarget, precisionInches = 1.0, precisionDegrees = 3.0)
+//        if (isAtTarget) {
+//            if (currentTargetEndTimeMilis == 0L)
+//                currentTargetEndTimeMilis = System.currentTimeMillis()
+//
+//            val timeSinceEnd = System.currentTimeMillis() - currentTargetEndTimeMilis
+//            if (timeSinceEnd > timeDelayMilis) {
+//                val index = positions.indexOf(currentTarget)
+//                if (index != (positions.size - 1)) {
+//                    val timeToComplete = System.currentTimeMillis() - currentTargetStartTimeMilis
+//                    positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
+//
+////                    currentTarget = positions[index+1]
+//                    val distanceInches = 20
+//                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+//                } else {
+////                    currentTarget = positions.first()
+//                }
+//            }
+//        } else {
+//            currentTargetEndTimeMilis = 0
+//        }
 
         telemetry.addLine("\n\npositionData: \n$positionData")
 
