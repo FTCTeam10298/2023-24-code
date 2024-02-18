@@ -249,7 +249,6 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                     },).asTargetWorld
     )
 
-
     /** Audience side */
     val redDistanceFromCenterlineInches = -((RobotTwoHardware.robotWidthInches/2)+0.5)
     private val audienceSideNavigateUnderTrussWaypoint1 = PositionAndRotation(x= redDistanceFromCenterlineInches, y=-30.0, r= 0.0)
@@ -741,6 +740,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         opencv.internalCamera = false
         opencv.cameraName = "Webcam 1"
         opencv.cameraOrientation = OpenCvCameraRotation.UPRIGHT
+        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
     }
 
     private fun runCamera(opencv: OpenCvAbstraction, wizardResults: WizardResults) {
@@ -763,7 +763,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 startPosition = wizardResults!!.startPosition
 
                 runCamera(opencv, wizardResults!!)
-                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
+                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
             }
         } else {
             telemetry.addLine("propPosition? = ${propDetector?.propPosition}")
@@ -785,7 +785,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         autoStateList = calcAutoTargetStateList(alliance, startPosition, propPosition)
         autoListIterator = autoStateList.listIterator()
 
-        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
+        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
     }
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
@@ -826,7 +826,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                         armOverridePower = 0.0
                 )
 
-                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
+                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
             }
         )
 
