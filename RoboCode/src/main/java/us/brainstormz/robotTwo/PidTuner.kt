@@ -7,6 +7,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
+import us.brainstormz.motion.MecanumMovement.Companion.defaultRotationPID
+import us.brainstormz.motion.MecanumMovement.Companion.defaultXTranslationPID
+import us.brainstormz.motion.MecanumMovement.Companion.defaultYTranslationPID
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.PidTuningAdjuster.getRotationPID
@@ -28,38 +31,38 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 @Config
 object PidTuningAdjuster {
     @JvmField
-    var timeDelayMilis: Int = 2000
+    var timeDelayMilis: Int = 500
 
     @JvmField
-    var yBoxSizeInches = 20
+    var yBoxSizeInches = 40
 
     @JvmField
     var xBoxSizeInches = 20
 
     @JvmField
-    var yp = 0.1
+    var yp = defaultYTranslationPID.kp
     @JvmField
-    var yi = 0.0//00002
+    var yi = defaultYTranslationPID.ki
     @JvmField
-    var yd = 0.0
+    var yd = defaultYTranslationPID.kd
     fun getYTranslationPID(): PID {
         return PID(kp= yp, ki= yi, kd= yd)
     }
     @JvmField
-    var xp = 0.3
+    var xp = defaultXTranslationPID.kp
     @JvmField
-    var xi = 0.0//00003
+    var xi = defaultXTranslationPID.ki
     @JvmField
-    var xd = 0.0
+    var xd = defaultXTranslationPID.kd
     fun getXTranslationPID(): PID {
         return PID(kp= xp, ki= xi, kd= xd)
     }
     @JvmField
-    var rp = 1.2
+    var rp = defaultRotationPID.kp
     @JvmField
-    var ri = 1.0
+    var ri = defaultRotationPID.ki
     @JvmField
-    var rd = 0.0
+    var rd = defaultRotationPID.kd
     fun getRotationPID(): PID {
         return PID(kp= rp, ki= ri, kd= rd)
     }
