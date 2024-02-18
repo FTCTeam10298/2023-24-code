@@ -211,17 +211,47 @@ class Transfer(private val telemetry: Telemetry) {
         Blue
     }
 
-    data class SensorReading(val red: Int, val green: Int, val blue: Int, val alpha: Int) {
+    data class SensorReading(var red: Int, var green: Int, var blue: Int, var alpha: Int) {
         val asList = listOf(red, green, blue, alpha)
         val rgbAsMap = mapOf(RGB.Red to red, RGB.Green to green, RGB.Blue to blue)
     }
-    fun getSensorReading(sensor: ColorSensor): SensorReading {
-        return SensorReading(
-                red= sensor.red(),
-                green= sensor.green(),
-                blue= sensor.blue(),
+
+    // I'm sorry James, I made the code more ugly.  On the plus side, about 40ms knocked off every loop cycle!
+    // EDIT: Cleaner and not bugged version, thanks to AI
+    val sensorReadings = mutableMapOf<ColorSensor, SensorReading>()
+    val sensorReadCounter = mutableMapOf<ColorSensor, Int>()
+
+    fun getSensorReading(sensor: ColorSensor, updateSlot: Int, totalUpdateSlots: Int): SensorReading {
+        var callcounter = sensorReadCounter[sensor]
+        if (callcounter == null)
+            callcounter = 0
+        else
+            callcounter += 1
+        // Store the updated callcounter back into the map
+        sensorReadCounter[sensor] = callcounter
+
+        var reading = sensorReadings[sensor]
+        if (reading == null) {
+            reading = SensorReading(
+                red = sensor.red(),
+                green = sensor.green(),
+                blue = sensor.blue(),
                 alpha = sensor.alpha()
-        )
+            )
+            sensorReadings[sensor] = reading
+        }
+//        else if (true || callcounter % totalUpdateSlots == updateSlot) { // FIXME: needs rethink
+            if (callcounter % 4 == 1) {
+                reading.red = sensor.red()
+            } else if (callcounter % 4 == 2) {
+                reading.green = sensor.green()
+            } else if (callcounter % 4 == 3) {
+                reading.blue = sensor.blue()
+            } else if (callcounter % 4 == 0) {
+                reading.alpha = sensor.alpha()
+            }
+//        }
+        return reading
     }
 //
 //    data class RGBValue(val red: Double, val green: Double, val blue: Double) {
