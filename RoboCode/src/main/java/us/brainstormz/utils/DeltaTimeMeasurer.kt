@@ -10,6 +10,9 @@ class AverageAccumulator(
     }
 
     fun getAverage(): Long {
+        if (numMeasurements == 0L) {
+            return 0
+        }
         return total/numMeasurements
     }
 
@@ -38,29 +41,32 @@ class DeltaTimeMeasurer {
 
     fun getNumMeasurements() = avg.getNumMeasurements()
 
-    fun peakDeltaTime() = this.peakDeltaTime
+    fun getLastMeasuredDT() = deltaTime
+
+    fun getPeakDeltaTime() = this.peakDeltaTime
 
     fun getAverageLoopTimeMillis() = avg.getAverage()
 
     fun measureTimeSinceLastCallMillis(): Long {
         val deltaTime = endMeasureDT()
-        avg.addMeasurment(deltaTime)
         beginMeasureDT()
         return deltaTime
     }
 
-    private fun beginMeasureDT() {
+    fun beginMeasureDT() {
         timeBegin = System.currentTimeMillis()
     }
 
-    private fun endMeasureDT(): Long {
+    fun endMeasureDT(): Long {
         val timeEnd = System.currentTimeMillis()
 
         deltaTime = timeEnd - (timeBegin ?: timeEnd)
 
-        if (deltaTime > peakDeltaTime) {
+        if (deltaTime > peakDeltaTime && avg.getNumMeasurements() > 1) {
             peakDeltaTime = deltaTime
         }
+
+        avg.addMeasurment(deltaTime)
 
         return deltaTime
     }

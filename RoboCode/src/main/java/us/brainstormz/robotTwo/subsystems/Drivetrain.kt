@@ -7,6 +7,7 @@ import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.utils.DeltaTimeMeasurer
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -24,6 +25,8 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
         }
     }
 
+    val drivetrainLoopTimeMeasurer = DeltaTimeMeasurer()
+
     data class DrivetrainTarget(
             override val targetPosition: PositionAndRotation,
             override val movementMode: DualMovementModeSubsystem.MovementMode,
@@ -33,7 +36,11 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
     }
 
     fun getPosition(): PositionAndRotation {
+        drivetrainLoopTimeMeasurer.beginMeasureDT()
+
         localizer.recalculatePositionAndRotation()
+
+        drivetrainLoopTimeMeasurer.endMeasureDT()
         return localizer.currentPositionAndRotation()
     }
 

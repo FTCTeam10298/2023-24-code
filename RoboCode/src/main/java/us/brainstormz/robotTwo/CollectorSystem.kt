@@ -6,6 +6,7 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.utils.DeltaTimeMeasurer
 
 class CollectorSystem(
 //        private val intake: Intake,
@@ -13,6 +14,7 @@ class CollectorSystem(
         private val extendo: Extendo,
         private val telemetry: Telemetry) {
 
+    val collectorLoopTimeMeasurer = DeltaTimeMeasurer()
 
     data class ActualCollector(
             val extendo: SlideSubsystem.ActualSlideSubsystem,
@@ -22,7 +24,7 @@ class CollectorSystem(
     )
 
     fun getCurrentState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualCollector {
-        val collectorReadStartTimeMilis = System.currentTimeMillis()
+        collectorLoopTimeMeasurer.beginMeasureDT()
 
         val actualCollector = ActualCollector(
                 extendo= extendo.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.collectorSystemState?.extendo),
@@ -31,9 +33,7 @@ class CollectorSystem(
                 transferState= transfer.getActualTransfer(hardware),
         )
 
-        val collectorReadEndTimeMilis = System.currentTimeMillis()
-        val timeToReadCollector = collectorReadEndTimeMilis-collectorReadStartTimeMilis
-        telemetry.addLine("timeToReadCollector: $timeToReadCollector")
+        collectorLoopTimeMeasurer.endMeasureDT()
         return actualCollector
     }
 }

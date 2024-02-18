@@ -8,6 +8,7 @@ import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
+import us.brainstormz.utils.DeltaTimeMeasurer
 
 class DepoManager(
         private val arm: Arm,
@@ -17,6 +18,8 @@ class DepoManager(
 ) {
 
 //    private val claws: List<Claw> = listOf(leftClaw, rightClaw)
+
+    val depoLoopTimeMeasurer = DeltaTimeMeasurer()
 
     data class ActualDepo(
             val armAngleDegrees: Double,
@@ -316,7 +319,8 @@ class DepoManager(
     }
 
     fun getDepoState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualDepo {
-        val readStartTimeMilis = System.currentTimeMillis()
+        depoLoopTimeMeasurer.beginMeasureDT()
+
         val actualDepo =  ActualDepo(
                 armAngleDegrees = arm.getArmAngleDegrees(hardware),
                 lift = lift.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.depoState?.lift),
@@ -325,9 +329,8 @@ class DepoManager(
 //                isLiftLimitActivated = lift.isLimitSwitchActivated(hardware),
                 wristAngles = wrist.getWristActualState(hardware)
         )
-        val readEndTimeMilis = System.currentTimeMillis()
-        val timeToRead = readEndTimeMilis-readStartTimeMilis
-        telemetry.addLine("timeToRead Depo: $timeToRead")
+
+        depoLoopTimeMeasurer.endMeasureDT()
         return actualDepo
     }
 

@@ -142,10 +142,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     fun getDriverInput(actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): DriverInput {
         val gamepad1 = actualWorld.actualGamepad1
         val gamepad2 = actualWorld.actualGamepad2
-        val robot = actualWorld.actualRobot
+//        val robot = actualWorld.actualRobot
         val previousGamepad1 = previousActualWorld.actualGamepad1
         val previousGamepad2 = previousActualWorld.actualGamepad2
-        val previousRobot = previousActualWorld.actualRobot
+//        val previousRobot = previousActualWorld.actualRobot
         val previousRobotTarget = previousTargetState.targetRobot
 
         /**Depo*/
@@ -1024,7 +1024,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
+    val timeBetweenloopMeasurer = DeltaTimeMeasurer()
+    val actualStateGetterMeasurer = DeltaTimeMeasurer()
+    val targetStateGetterMeasurer = DeltaTimeMeasurer()
+    val stateFulfillerMeasurer = DeltaTimeMeasurer()
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) {
+
+        timeBetweenloopMeasurer.endMeasureDT()
 
         for (hub in hardware.allHubs) {
             hub.clearBulkCache()
@@ -1032,6 +1038,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = { previousActualState ->
+                    actualStateGetterMeasurer.beginMeasureDT()
                     val currentGamepad1 = Gamepad()
                     currentGamepad1.copy(gamepad1)
                     val currentGamepad2 = Gamepad()
@@ -1044,6 +1051,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     )
                 },
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
+                    actualStateGetterMeasurer.endMeasureDT()
+                    targetStateGetterMeasurer.beginMeasureDT()
+
                     telemetry.addLine("actualState: $actualState\n")
                     val previousActualState = previousActualState ?: actualState
                     val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
@@ -1051,6 +1061,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState ->
+                    targetStateGetterMeasurer.endMeasureDT()
+                    stateFulfillerMeasurer.beginMeasureDT()
                     telemetry.addLine("\ntargetState: $targetState")
                     hardware.actuateRobot(
                             targetState,
@@ -1067,12 +1079,52 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
                         gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
                     }
+                    actualStateGetterMeasurer.endMeasureDT()
 //                    hardware.lights.setPattern(targetState.targetRobot.lights.stripTarget)
                 }
         )
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
-        telemetry.addLine("loop time: $loopTime milis")
-        telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime()} milis")
+        telemetry.addLine("\nOverall loop times:")
+        telemetry.addLine("Loop time: $loopTime millis")
+        telemetry.addLine("Average total loop time: ${loopTimeMeasurer.getAverageLoopTimeMillis()} millis")
+        telemetry.addLine("Peak loop time: ${loopTimeMeasurer.getPeakDeltaTime()} millis")
+
+        telemetry.addLine("\nactualStateGetter loop times:")
+        telemetry.addLine("Loop time: ${actualStateGetterMeasurer.getLastMeasuredDT()} millis")
+        telemetry.addLine("Average total loop time: ${actualStateGetterMeasurer.getAverageLoopTimeMillis()} millis")
+        telemetry.addLine("Peak loop time: ${actualStateGetterMeasurer.getPeakDeltaTime()} millis")
+
+        telemetry.addLine("\ntargetStateFetcher loop times:")
+        telemetry.addLine("Loop time: ${targetStateGetterMeasurer.getLastMeasuredDT()} millis")
+        telemetry.addLine("Average total loop time: ${targetStateGetterMeasurer.getAverageLoopTimeMillis()} millis")
+        telemetry.addLine("Peak loop time: ${targetStateGetterMeasurer.getPeakDeltaTime()} millis")
+
+        telemetry.addLine("\nstateFulfiller loop times:")
+        telemetry.addLine("Loop time: ${stateFulfillerMeasurer.getLastMeasuredDT()} millis")
+        telemetry.addLine("Average total loop time: ${stateFulfillerMeasurer.getAverageLoopTimeMillis()} millis")
+        telemetry.addLine("Peak loop time: ${stateFulfillerMeasurer.getPeakDeltaTime()} millis")
+
+        telemetry.addLine("\ntimeToReadCollector:")
+        telemetry.addLine("Loop time: ${collectorSystem.collectorLoopTimeMeasurer.getLastMeasuredDT()} millis")
+        telemetry.addLine("Average total loop time: ${collectorSystem.collectorLoopTimeMeasurer.getAverageLoopTimeMillis()} millis")
+        telemetry.addLine("Peak loop time: ${collectorSystem.collectorLoopTimeMeasurer.getPeakDeltaTime()} millis")
+
+        telemetry.addLine("\ntimeToReadDrivetrain:")
+        telemetry.addLine("Loop time: ${drivetrain.drivetrainLoopTimeMeasurer.getLastMeasuredDT()} millis")
+        telemetry.addLine("Average total loop time: ${drivetrain.drivetrainLoopTimeMeasurer.getAverageLoopTimeMillis()} millis")
+        telemetry.addLine("Peak loop time: ${drivetrain.drivetrainLoopTimeMeasurer.getPeakDeltaTime()} millis")
+
+        telemetry.addLine("\ntimeToReadDepo:")
+        telemetry.addLine("Loop time: ${depoManager.depoLoopTimeMeasurer.getLastMeasuredDT()} millis")
+        telemetry.addLine("Average total loop time: ${depoManager.depoLoopTimeMeasurer.getAverageLoopTimeMillis()} millis")
+        telemetry.addLine("Peak loop time: ${depoManager.depoLoopTimeMeasurer.getPeakDeltaTime()} millis")
+
+        telemetry.addLine("\nTime between loops:")
+        telemetry.addLine("Loop time: ${timeBetweenloopMeasurer.getLastMeasuredDT()} millis")
+        telemetry.addLine("Average total loop time: ${timeBetweenloopMeasurer.getAverageLoopTimeMillis()} millis")
+        telemetry.addLine("Peak loop time: ${timeBetweenloopMeasurer.getPeakDeltaTime()} millis")
+
+        timeBetweenloopMeasurer.beginMeasureDT()
 
         telemetry.update()
     }
