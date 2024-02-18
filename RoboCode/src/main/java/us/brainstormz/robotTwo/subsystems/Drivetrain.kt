@@ -39,7 +39,7 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
         val power = when (target.movementMode) {
             DualMovementModeSubsystem.MovementMode.Position -> {
 
-                if (target != previousTarget) {
+                if (target.targetPosition != previousTarget.targetPosition) {
 //                    telemetry.addLine("resetting pids")
                     println("resetting pids")
                     yTranslationPID.reset()
