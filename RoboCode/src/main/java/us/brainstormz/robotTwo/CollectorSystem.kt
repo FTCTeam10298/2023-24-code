@@ -34,8 +34,8 @@ class CollectorSystem(
                 extendo= extendo.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.collectorSystemState?.extendo),
                 leftRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Left, hardware),
                 rightRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Right, hardware),
-                leftTransferState= transfer.getSensorReading(hardware.leftTransferSensor),
-                rightTransferState= transfer.getSensorReading(hardware.rightTransferSensor),
+                leftTransferState= transfer.getSensorReading(hardware.leftTransferSensor, 0, 2),
+                rightTransferState= transfer.getSensorReading(hardware.rightTransferSensor, 1, 2),
         )
         val collectorReadEndTimeMilis = System.currentTimeMillis()
         val timeToReadCollector = collectorReadEndTimeMilis-collectorReadStartTimeMilis
