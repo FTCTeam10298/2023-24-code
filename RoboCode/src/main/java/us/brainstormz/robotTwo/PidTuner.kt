@@ -122,7 +122,13 @@ class PidTuner: OpMode() {
                         previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition
                     }
 
-                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(drivetrainTarget = Drivetrain.DrivetrainTarget(targetPosition = newTargetPosition?: PositionAndRotation())))
+                    val ligths = if (isAtTarget) {
+                        RevBlinkinLedDriver.BlinkinPattern.BLUE
+                    } else {
+                        RevBlinkinLedDriver.BlinkinPattern.RED
+                    }
+
+                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(drivetrainTarget = Drivetrain.DrivetrainTarget(targetPosition = newTargetPosition?: PositionAndRotation()), lights = previousTargetState.targetRobot.lights.copy(targetColor = ligths)))
                             ?: RobotTwoTeleOp.initialPreviousTargetState
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState ->
@@ -151,7 +157,7 @@ class PidTuner: OpMode() {
 //                            armOverridePower = 0.0
 //                    )
 
-                    hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE)
+                    hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
                 }
         )
 
