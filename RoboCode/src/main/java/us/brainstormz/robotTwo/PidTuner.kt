@@ -92,9 +92,9 @@ class PidTuner: OpMode() {
         depoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
     }
 
+    var timeOfTargetDone = 0L
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     override fun loop() {
-        var timeOfTargetDone = 0L
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = { previousActualState ->
                     val currentGamepad1 = Gamepad()
