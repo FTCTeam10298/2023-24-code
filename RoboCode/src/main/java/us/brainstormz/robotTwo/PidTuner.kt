@@ -48,8 +48,10 @@ object PidTuningAdjuster {
     var yi = defaultYTranslationPID.ki
     @JvmField
     var yd = defaultYTranslationPID.kd
+    @JvmField
+    var yf = defaultYTranslationPID.kf
     fun getYTranslationPID(): PID {
-        return PID(kp= yp, ki= yi, kd= yd)
+        return PID(kp= yp, ki= yi, kd= yd, kf= yf)
     }
     @JvmField
     var xp = defaultXTranslationPID.kp
@@ -57,8 +59,10 @@ object PidTuningAdjuster {
     var xi = defaultXTranslationPID.ki
     @JvmField
     var xd = defaultXTranslationPID.kd
+    @JvmField
+    var xf = defaultXTranslationPID.kf
     fun getXTranslationPID(): PID {
-        return PID(kp= xp, ki= xi, kd= xd)
+        return PID(kp= xp, ki= xi, kd= xd, kf= xf)
     }
     @JvmField
     var rp = defaultRotationPID.kp
@@ -66,8 +70,10 @@ object PidTuningAdjuster {
     var ri = defaultRotationPID.ki
     @JvmField
     var rd = defaultRotationPID.kd
+    @JvmField
+    var rf = defaultRotationPID.kf
     fun getRotationPID(): PID {
-        return PID(kp= rp, ki= ri, kd= rd)
+        return PID(kp= rp, ki= ri, kd= rd, kf= rf)
     }
 }
 
@@ -155,6 +161,11 @@ class PidTuner: OpMode() {
         )
 
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
+
+//        telemetry.addLine("xpid: \n${getXTranslationPID()}")
+//        telemetry.addLine("ypid: \n${getYTranslationPID()}")
+//        telemetry.addLine("rpid: \n${getRotationPID()}")
+
         telemetry.addLine("loopTime: $loopTime")
 
         telemetry.addLine("average loopTime: ${loopTimeMeasurer.getAverageLoopTimeMilis()}")
