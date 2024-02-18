@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import com.acmerobotics.dashboard.config.Config
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
 //import com.outoftheboxrobotics.photoncore.hardware.motor.PhotonDcMotor
@@ -26,6 +27,7 @@ import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.localizer.Localizer
+import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Drivetrain
@@ -323,7 +325,13 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             armOverridePower: Double
     ) {
         /**Drive*/
-        drivetrain.actuateDrivetrain(targetState.targetRobot.drivetrainTarget, previousTargetState.targetRobot.drivetrainTarget, actualState.actualRobot.positionAndRotation)
+        drivetrain.actuateDrivetrain(
+                targetState.targetRobot.drivetrainTarget,
+                previousTargetState.targetRobot.drivetrainTarget,
+                actualState.actualRobot.positionAndRotation,
+                yTranslationPID = AutoPidDashboard.getYTranslationPID(),
+                xTranslationPID = AutoPidDashboard.getXTranslationPID(),
+                rotationPID = AutoPidDashboard.getRotationPID())
 
         /**Extendo*/
         val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {
@@ -538,5 +546,37 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         exHubCRServos.forEach{it ->
             testCRServos(it.first, it.second, "exHub")
         }
+    }
+}
+
+
+@Config
+object AutoPidDashboard {
+    @JvmField
+    var yp = MecanumMovement.defaultYTranslationPID.kp
+    @JvmField
+    var yi = MecanumMovement.defaultYTranslationPID.ki
+    @JvmField
+    var yd = MecanumMovement.defaultYTranslationPID.kd
+    fun getYTranslationPID(): PID {
+        return PID(kp= yp, ki= yi, kd= yd)
+    }
+    @JvmField
+    var xp = MecanumMovement.defaultXTranslationPID.kp
+    @JvmField
+    var xi = MecanumMovement.defaultXTranslationPID.ki
+    @JvmField
+    var xd = MecanumMovement.defaultXTranslationPID.kd
+    fun getXTranslationPID(): PID {
+        return PID(kp= xp, ki= xi, kd= xd)
+    }
+    @JvmField
+    var rp = MecanumMovement.defaultRotationPID.kp
+    @JvmField
+    var ri = MecanumMovement.defaultRotationPID.ki
+    @JvmField
+    var rd = MecanumMovement.defaultRotationPID.kd
+    fun getRotationPID(): PID {
+        return PID(kp= rp, ki= ri, kd= rd)
     }
 }
