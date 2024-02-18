@@ -85,6 +85,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             val depoState: DepoState,
             val collectorSystemState: CollectorState
     )
+
     data class DepoState(
             val armPos: Arm.Positions,
             val liftPosition: Lift.LiftPositions,

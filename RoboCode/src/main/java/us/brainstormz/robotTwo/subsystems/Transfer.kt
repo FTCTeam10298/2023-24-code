@@ -31,12 +31,6 @@ class Transfer(private val telemetry: Telemetry) {
         Left,
         Right
     }
-//    data class CollectorTargetState(
-//            val collectorState: CollectorPowers,
-//            val extendoPosition: RobotTwoHardware.ExtendoPositions,
-//            val transferRollersState: TransferState
-//    )
-
 
     private val leftFlapTransferReadyAngleDegrees = 20.0
     private val rightFlapTransferReadyAngleDegrees = 305.0
