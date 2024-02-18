@@ -28,6 +28,7 @@ import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
+import java.lang.Thread.sleep
 
 
 @Config
@@ -157,6 +158,8 @@ class PidTuner: OpMode() {
         telemetry.addLine("loopTime: $loopTime")
 
         telemetry.addLine("average loopTime: ${loopTimeMeasurer.getAverageLoopTimeMilis()}")
+
+        sleep(104-84)
 
         telemetry.update()
     }
