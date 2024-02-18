@@ -18,7 +18,7 @@ class Extendo: Subsystem, SlideSubsystem {
         CloserBackboardPixelPosition(500),
         MidBackboardPixelPosition(1000),
         FarBackboardPixelPosition(1750),
-        AudiencePurpleCenterPosition(1900),
+        AudiencePurpleCenterPosition(1500),
         AudiencePurpleLeftPosition(1700),
         Max(1990),
     }
