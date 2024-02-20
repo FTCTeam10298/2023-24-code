@@ -3,6 +3,9 @@ package us.brainstormz.utils
 import fi.iki.elonen.NanoHTTPD
 import java.io.ByteArrayOutputStream
 
+/**
+ * Potential future improvement ... make this start-up automatically somehow
+ */
 class ConfigServer(val port:Int, private val get:()->String, private val update:(String)->Unit) : NanoHTTPD(port) {
 
     init {
