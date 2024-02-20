@@ -2,7 +2,6 @@ package us.brainstormz.robotTwo
 
 import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
@@ -23,7 +22,6 @@ import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.Extendo
-import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
@@ -154,10 +152,10 @@ class PidTuner: OpMode() {
                 }
         )
 
-        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
+        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
         telemetry.addLine("loopTime: $loopTime")
 
-        telemetry.addLine("average loopTime: ${loopTimeMeasurer.getAverageLoopTimeMilis()}")
+        telemetry.addLine("average loopTime: ${loopTimeMeasurer.getAverageLoopTimeMillis()}")
 
         sleep(104-84)
 

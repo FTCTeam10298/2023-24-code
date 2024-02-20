@@ -2,26 +2,29 @@ package us.brainstormz.utils
 
 class DeltaTimeMeasurer {
     private var timeBegin: Long? = null
-    var peakDeltaTime = 0L
-    var deltaTime = 0L
+    private var peakDeltaTime = 0L
+    private var deltaTime = 0L
 
-    var loopTimeAverageStorage = mutableListOf<Long>()
-    fun getAverageLoopTimeMilis(): Long {
+    private val loopTimeAverageStorage = mutableListOf<Long>()
+
+    fun peakDeltaTime() = this.peakDeltaTime
+
+    fun getAverageLoopTimeMillis(): Long {
         return loopTimeAverageStorage.sum()/loopTimeAverageStorage.size
     }
 
-    fun measureTimeSinceLastCallMilis(): Long {
+    fun measureTimeSinceLastCallMillis(): Long {
         val deltaTime = endMeasureDT()
         loopTimeAverageStorage.add(deltaTime)
         beginMeasureDT()
         return deltaTime
     }
 
-    fun beginMeasureDT() {
+    private fun beginMeasureDT() {
         timeBegin = System.currentTimeMillis()
     }
 
-    fun endMeasureDT(): Long {
+    private fun endMeasureDT(): Long {
         val timeEnd = System.currentTimeMillis()
 
         deltaTime = timeEnd - (timeBegin ?: timeEnd)
@@ -33,7 +36,4 @@ class DeltaTimeMeasurer {
         return deltaTime
     }
 
-    fun getLastMeasuredDT(): Long {
-        return deltaTime
-    }
 }

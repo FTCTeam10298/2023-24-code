@@ -953,9 +953,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
                 }
         )
-        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
+        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
         telemetry.addLine("loop time: $loopTime milis")
-        telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime} milis")
+        telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime()} milis")
 
         telemetry.update()
     }

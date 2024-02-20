@@ -1,13 +1,11 @@
 package us.brainstormz.robotTwo
 
-import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
-import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.pid.PID
@@ -1008,10 +1006,10 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             }
         )
 
-        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMilis()
+        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
         telemetry.addLine("loop time: $loopTime milis")
 
-        telemetry.addLine("average loop time: ${loopTimeMeasurer.getAverageLoopTimeMilis()}")
+        telemetry.addLine("average loop time: ${loopTimeMeasurer.getAverageLoopTimeMillis()}")
 
         telemetry.update()
     }
