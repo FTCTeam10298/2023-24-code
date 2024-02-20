@@ -1,8 +1,5 @@
 package us.brainstormz.pid
 
-import com.qualcomm.robotcore.util.Range
-
-
 /**
  * Sets pidf coefficients/multipliers.
  * @param p proportional coefficient
