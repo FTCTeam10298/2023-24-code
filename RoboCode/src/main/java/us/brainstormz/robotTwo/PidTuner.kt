@@ -1,23 +1,15 @@
 package us.brainstormz.robotTwo
 
-import com.acmerobotics.dashboard.config.Config
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
-import us.brainstormz.motion.MecanumMovement.Companion.defaultRotationPID
-import us.brainstormz.motion.MecanumMovement.Companion.defaultXTranslationPID
-import us.brainstormz.motion.MecanumMovement.Companion.defaultYTranslationPID
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.pid.PID
-import us.brainstormz.robotTwo.PidTuningAdjuster.getRotationPID
-import us.brainstormz.robotTwo.PidTuningAdjuster.getXTranslationPID
-import us.brainstormz.robotTwo.PidTuningAdjuster.getYTranslationPID
-import us.brainstormz.robotTwo.PidTuningAdjuster.timeDelayMilis
-import us.brainstormz.robotTwo.PidTuningAdjuster.xBoxSizeInches
-import us.brainstormz.robotTwo.PidTuningAdjuster.yBoxSizeInches
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Drivetrain
@@ -25,49 +17,38 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
+import us.brainstormz.utils.ConfigServer
 import us.brainstormz.utils.DeltaTimeMeasurer
 import java.lang.Thread.sleep
 
 
-@Config
-object PidTuningAdjuster {
-    @JvmField
-    var timeDelayMilis: Int = 500
-
-    @JvmField
-    var yBoxSizeInches = 40
-
-    @JvmField
-    var xBoxSizeInches = 20
-
-    @JvmField
-    var yp = defaultYTranslationPID.kp
-    @JvmField
-    var yi = defaultYTranslationPID.ki
-    @JvmField
-    var yd = defaultYTranslationPID.kd
-    fun getYTranslationPID(): PID {
-        return PID(kp= yp, ki= yi, kd= yd)
-    }
-    @JvmField
-    var xp = defaultXTranslationPID.kp
-    @JvmField
-    var xi = defaultXTranslationPID.ki
-    @JvmField
-    var xd = defaultXTranslationPID.kd
-    fun getXTranslationPID(): PID {
-        return PID(kp= xp, ki= xi, kd= xd)
-    }
-    @JvmField
-    var rp = defaultRotationPID.kp
-    @JvmField
-    var ri = defaultRotationPID.ki
-    @JvmField
-    var rd = defaultRotationPID.kd
-    fun getRotationPID(): PID {
-        return PID(kp= rp, ki= ri, kd= rd)
-    }
+fun main() {
+    var v = PidConfig(1.0, 1.0, 1.0)
+    ConfigServer(
+            port = 8083,
+            get = { jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v) },
+            update = {v = jacksonObjectMapper().readValue(it) },)
 }
+
+data class PidConfig(
+        val kp:Double,
+        val ki:Double,
+        val kd:Double,
+){
+    constructor(p:PID):this(kp = p.kp, ki = p.ki, kd = p.kd)
+
+    fun toPID() = PID(kp = kp, ki = ki, kd = kd)
+}
+
+
+data class PidTuningAdjusterConfig (
+        val timeDelayMillis:Int,
+        val boxSizeInchesY:Int,
+        val boxSizeInchesX:Int,
+        val x:PidConfig,
+        val y:PidConfig,
+        val r:PidConfig,
+)
 
 @TeleOp
 class PidTuner: OpMode() {
@@ -83,6 +64,7 @@ class PidTuner: OpMode() {
     private lateinit var lift: Lift
     private lateinit var wrist: Wrist
     private lateinit var depoManager: DepoManager
+    private lateinit var config: PidTuningAdjusterConfig
 
     override fun init() {
         hardware.init(hardwareMap)
@@ -94,6 +76,25 @@ class PidTuner: OpMode() {
         arm = Arm()
         wrist = Wrist(left = Claw(telemetry), right = Claw(telemetry), telemetry= telemetry)
         depoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
+
+
+        config = PidTuningAdjusterConfig(
+            timeDelayMillis = 500,
+            boxSizeInchesY = 40,
+            boxSizeInchesX =  20,
+            x = PidConfig(drivetrain.xTranslationPID),
+            y = PidConfig(drivetrain.yTranslationPID),
+            r = PidConfig(drivetrain.rotationPID)
+        )
+        ConfigServer(
+                port = 8083,
+                get = { jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(config) },
+                update = {
+                    config = jacksonObjectMapper().readValue(it)
+                    drivetrain.xTranslationPID = config.x.toPID()
+                    drivetrain.yTranslationPID = config.y.toPID()
+                    drivetrain.rotationPID = config.r.toPID()
+         },)
     }
 
     val loopTimeMeasurer = DeltaTimeMeasurer()
@@ -117,8 +118,8 @@ class PidTuner: OpMode() {
                     telemetry.addLine("isAtTarget: $isAtTarget")
                     val newTargetPosition = if (isAtTarget) {
                         val timeSinceEnd = actualState.timestampMilis - timeOfTargetDone
-                        if (timeSinceEnd > timeDelayMilis) {
-                            PositionAndRotation(Math.random() * xBoxSizeInches, Math.random() * yBoxSizeInches,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+                        if (timeSinceEnd > config.timeDelayMillis) {
+                            PositionAndRotation(Math.random() * config.boxSizeInchesX, Math.random() * config.boxSizeInchesY,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
                         } else {
                             previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition
                         }
@@ -144,9 +145,7 @@ class PidTuner: OpMode() {
                             target = targetState.targetRobot.drivetrainTarget,
                             previousTarget = previousTargetState?.targetRobot?.drivetrainTarget ?: targetState.targetRobot.drivetrainTarget,
                             actualPosition = actualState.actualRobot.positionAndRotation,
-                            xTranslationPID = getXTranslationPID(),
-                            yTranslationPID = getYTranslationPID(),
-                            rotationPID = getRotationPID())
+                    )
 
                     hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
                 }

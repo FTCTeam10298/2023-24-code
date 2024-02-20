@@ -33,9 +33,7 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
     fun actuateDrivetrain(target: DrivetrainTarget,
                           previousTarget: DrivetrainTarget,
                           actualPosition: PositionAndRotation,
-                          yTranslationPID: PID = defaultYTranslationPID,
-                          xTranslationPID: PID = defaultXTranslationPID,
-                          rotationPID: PID = defaultRotationPID) {
+                          ) {
         val power = when (target.movementMode) {
             DualMovementModeSubsystem.MovementMode.Position -> {
 
@@ -47,7 +45,7 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
                     rotationPID.reset()
                 }
 
-                calcPowerToTarget(target.targetPosition, actualPosition, yTranslationPID, xTranslationPID, rotationPID)
+                calcPowerToTarget(target.targetPosition, actualPosition)
             }
             DualMovementModeSubsystem.MovementMode.Power -> {
                 target.power
@@ -63,9 +61,7 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
 
     fun calcPowerToTarget(target: PositionAndRotation,
                           actual: PositionAndRotation,
-                          yTranslationPID: PID = defaultYTranslationPID,
-                          xTranslationPID: PID = defaultXTranslationPID,
-                          rotationPID: PID = defaultRotationPID): DrivetrainPower {
+                          ): DrivetrainPower {
         val angleRad = Math.toRadians(actual.r)
 
         val distanceErrorX = target.x - actual.x

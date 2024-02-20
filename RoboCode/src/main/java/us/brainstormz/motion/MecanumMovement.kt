@@ -15,20 +15,12 @@ import kotlin.math.*
 
 open class MecanumMovement(override val localizer: Localizer, override val hardware: MecanumHardware, private val telemetry: Telemetry): Movement, MecanumDriveTrain(hardware) {
 
-//    val defaultYTranslationPID =    PID(0.18,  0.00001, 1.9)
-//    val defaultXTranslationPID =    PID(0.5,  0.00015, 1.5)
-//    val defaultRotationPID =        PID(2.0)//,  0.0015, 1.5)
-    companion object {
-        val defaultYTranslationPID = PID(kp = 0.06, ki = 0.0)
-        val defaultXTranslationPID = PID(kp = 0.1, ki = 0.01)
-        val defaultRotationPID = PID(kp = 1.5, ki = 0.003)
-    }
     val defaultPrecisionInches = 5.0
     val defaultPrecisionDegrees = 3.0
 
-    var yTranslationPID = defaultYTranslationPID
-    var xTranslationPID = defaultXTranslationPID
-    var rotationPID = defaultRotationPID
+    var yTranslationPID = PID(kp = 0.06, ki = 0.0)
+    var xTranslationPID = PID(kp = 0.1, ki = 0.01)
+    var rotationPID = PID(kp = 1.5, ki = 0.003)
     override var precisionInches: Double = defaultPrecisionInches
     override var precisionDegrees: Double = 3.0
 
@@ -42,31 +34,6 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
                 break
         }
     }
-
-    fun goToPosition(target: PositionAndRotation, linearOpMode: LinearOpMode, powerRange: ClosedRange<Double>, asyncTask: ()->Unit = {}) {
-        yTranslationPID = defaultYTranslationPID
-        xTranslationPID = defaultXTranslationPID
-        rotationPID = defaultRotationPID
-        precisionInches = defaultPrecisionInches
-        while (linearOpMode.opModeIsActive()) {
-            val targetReached = moveTowardTarget(target, powerRange)
-            asyncTask()
-            if (targetReached)
-                break
-        }
-    }
-
-//    fun goToPositionThreeAxis(target: PositionAndRotation, linearOpMode: LinearOpMode, powerRange: ClosedRange<Double>, asyncTask: ()->Unit = {}) {
-//        yTranslationPID = multiDirectionYTranslationPID
-//        xTranslationPID = multiDirectionXTranslationPID
-//        rotationPID = multiDirectionRotationPID
-//        precisionInches = 1.0
-//        goToPosition(target, linearOpMode, powerRange, asyncTask)
-//    }
-
-//    yTranslationPID: PID = defaultYTranslationPID,
-//                                  xTranslationPID: PID = defaultXTranslationPID,
-//                                  rotationPID: PID = defaultRotationPID
 
     override fun moveTowardTarget(target: PositionAndRotation, powerRange: ClosedRange<Double>): Boolean {
         localizer.recalculatePositionAndRotation()

@@ -96,9 +96,7 @@ class OdometryMovementTest: OpMode() {
                 Drivetrain.DrivetrainTarget(currentTarget),
                 Drivetrain.DrivetrainTarget(previousTarget),
                 currentPosition,
-                yTranslationPID = ypid,
-                xTranslationPID =  xpid,
-                rotationPID = rpid)
+        )
 
 //        previousTarget = currentTarget.copy()
 //        val isAtTarget = drivetrain.checkIfDrivetrainIsAtPosition(currentPosition, targetPosition = currentTarget, precisionInches = 1.0, precisionDegrees = 3.0)
