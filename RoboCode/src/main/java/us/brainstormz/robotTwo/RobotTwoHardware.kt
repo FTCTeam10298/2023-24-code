@@ -99,8 +99,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var leftClawEncoderReader: AxonEncoderReader
     lateinit var rightClawEncoderReader: AxonEncoderReader
 
-    val extendoOperationRange = Extendo.ExtendoPositions.Min.ticks..Extendo.ExtendoPositions.Max.ticks
-    val extendoPositionPID = PID(kp = 1.0)
     lateinit var extendoMotorMaster: DcMotorEx
     lateinit var extendoMotorSlave: DcMotor
     lateinit var extendoMagnetLimit: DigitalChannel

@@ -1,19 +1,11 @@
 package us.brainstormz.robotTwo
 
-import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
-import us.brainstormz.motion.MecanumMovement
-import us.brainstormz.pid.PID
-import us.brainstormz.robotTwo.OdometryMovementTest.PIDTuningValues.timeDelayMilis
 import us.brainstormz.robotTwo.subsystems.Drivetrain
-import us.brainstormz.telemetryWizard.TelemetryConsole
-import us.brainstormz.telemetryWizard.TelemetryWizard
-import java.lang.Thread.sleep
 
 @Autonomous
 class PIDTuningTest: OpMode() {
@@ -84,12 +76,6 @@ class OdometryMovementTest: OpMode() {
         val currentPosition = drivetrain.getPosition()
         telemetry.addLine("rr current position: $currentPosition")
 
-        val ypid = PIDTuningValues.getYTranslationPID()
-        val xpid = PIDTuningValues.getXTranslationPID()
-        val rpid = PIDTuningValues.getRotationPID()
-        telemetry.addLine("ypid: $ypid")
-        telemetry.addLine("xpid: $xpid")
-        telemetry.addLine("rpid: $rpid")
 
         telemetry.addLine("currentTarget: $currentTarget")
         drivetrain.actuateDrivetrain(
@@ -125,34 +111,6 @@ class OdometryMovementTest: OpMode() {
         telemetry.addLine("\n\npositionData: \n$positionData")
 
         telemetry.update()
-    }
-
-    @Config
-    object PIDTuningValues {
-        @JvmField
-        var timeDelayMilis: Int = 2000
-
-        @JvmField
-        var yp = 0.1
-        @JvmField
-        var yi = 0.0//00002
-        fun getYTranslationPID(): PID {
-            return PID(kp= yp, ki= yi)
-        }
-        @JvmField
-        var xp = 0.3
-        @JvmField
-        var xi = 0.0//00003
-        fun getXTranslationPID(): PID {
-            return PID(kp= xp, ki= xi)
-        }
-        @JvmField
-        var rp = 1.2
-        @JvmField
-        var ri = 1.0
-        fun getRotationPID(): PID {
-            return PID(kp= rp, ki= ri)
-        }
     }
 
 }
