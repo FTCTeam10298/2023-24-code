@@ -23,9 +23,9 @@ class Arm: Subsystem {
     }
 
 
-    private val outPid = PID(kp= 0.0026, kd = 0.01)
+    private val outPid = PID("arm/outPid", kp= 0.0026, kd = 0.01)
     private val outHoldingConstant = 0.08
-    private val inPid = PID(kp= 0.0017, ki = 0.00000018)//, kd = 0.000055)
+    private val inPid = PID("arm/inPid", kp= 0.0017, ki = 0.00000018)//, kd = 0.000055)
     private val inHoldingConstant = 0.035
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180
@@ -62,7 +62,6 @@ class Arm: Subsystem {
         return  encoderReader.getPositionDegrees()
     }
 
-    private var previousArmTargetDegrees = 0.0
     private val armAngleMidpointDegrees = 150.0
     fun calcPowerToReachTarget(targetDegrees: Double, currentDegrees: Double): Double {
 //        val currentDegrees = getArmAngleDegrees()
@@ -78,14 +77,7 @@ class Arm: Subsystem {
             false -> outHoldingConstant
         }
 
-        if (targetDegrees != previousArmTargetDegrees) {
-            //Target just changed
-            inPid.reset()
-            outPid.reset()
-        }
-        previousArmTargetDegrees = targetDegrees
-
-        val pidPower = pid.calcPID(errorDegrees)
+        val pidPower = pid.calcPID(target = targetDegrees, error = errorDegrees)
         val gravityCompPower = (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
         val power = pidPower + gravityCompPower
 //        telemetry.addLine("Arm currentDegrees: $currentDegrees")

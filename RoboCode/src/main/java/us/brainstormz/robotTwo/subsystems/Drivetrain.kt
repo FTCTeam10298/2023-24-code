@@ -37,14 +37,6 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
         val power = when (target.movementMode) {
             DualMovementModeSubsystem.MovementMode.Position -> {
 
-                if (target.targetPosition != previousTarget.targetPosition) {
-//                    telemetry.addLine("resetting pids")
-                    println("resetting pids")
-                    yTranslationPID.reset()
-                    xTranslationPID.reset()
-                    rotationPID.reset()
-                }
-
                 calcPowerToTarget(target.targetPosition, actualPosition)
             }
             DualMovementModeSubsystem.MovementMode.Power -> {
@@ -77,9 +69,15 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
 
         val angleError: Double = tempAngleError
 
-        val speedX: Double = xTranslationPID.calcPID(sin(angleRad) * distanceErrorY + cos(angleRad) * distanceErrorX)
-        val speedY: Double = yTranslationPID.calcPID(cos(angleRad) * distanceErrorY + sin(angleRad) * -distanceErrorX)
-        val speedA: Double = rotationPID.calcPID(angleError)
+        val speedX: Double = xTranslationPID.calcPID(
+                target = target,
+                error = sin(angleRad) * distanceErrorY + cos(angleRad) * distanceErrorX)
+        val speedY: Double = yTranslationPID.calcPID(
+                target = target,
+                error = cos(angleRad) * distanceErrorY + sin(angleRad) * -distanceErrorX)
+        val speedA: Double = rotationPID.calcPID(
+                target = target,
+                error = angleError)
 
         return DrivetrainPower(speedX, speedY, speedA)
     }

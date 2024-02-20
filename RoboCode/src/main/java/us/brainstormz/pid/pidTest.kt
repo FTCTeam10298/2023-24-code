@@ -1,7 +1,7 @@
 package us.brainstormz.pid
 
 fun main() {
-    val pid: PID = PID()
+    val pid: PID = PID("yo")
     var plant: Double = 0.0
 
     val MotorWithPID= MotorWithPID()

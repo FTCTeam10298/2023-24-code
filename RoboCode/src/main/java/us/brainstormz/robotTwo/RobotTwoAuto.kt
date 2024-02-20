@@ -888,7 +888,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
     private val intake = Intake()
     private val transfer = Transfer(telemetry)
-    private val extendo = Extendo(PID(kp = 0.0018))
+    private val extendo = Extendo(PID("extendo auto", kp = 0.0018))
 
     private lateinit var collectorSystem: CollectorSystem
     private lateinit var arm: Arm

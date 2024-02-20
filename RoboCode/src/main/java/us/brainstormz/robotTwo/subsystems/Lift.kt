@@ -93,7 +93,7 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
         hardware.liftMotorSlave.power = allowedPower
     }
 
-    override val pid = PID(kp = 0.0015)
+    override val pid = PID("lift", kp = 0.0015)
     fun calculatePowerToMoveToPosition(targetPositionTicks: Int, currentPosition: Int): Double {
         val positionError = targetPositionTicks - currentPosition
         val gravityConstant = if (positionError.sign > 0) {
@@ -101,7 +101,9 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
         } else {
             0.0
         }
-        val power = pid.calcPID(positionError.toDouble()) + gravityConstant
+        val power = pid.calcPID(
+                target = targetPositionTicks,
+                error = positionError.toDouble()) + gravityConstant
         return power
     }
 }

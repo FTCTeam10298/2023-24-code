@@ -18,9 +18,9 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
     val defaultPrecisionInches = 5.0
     val defaultPrecisionDegrees = 3.0
 
-    var yTranslationPID = PID(kp = 0.06, ki = 0.0)
-    var xTranslationPID = PID(kp = 0.1, ki = 0.01)
-    var rotationPID = PID(kp = 1.5, ki = 0.003)
+    var yTranslationPID = PID("y", kp = 0.06, ki = 0.0)
+    var xTranslationPID = PID("x", kp = 0.1, ki = 0.01)
+    var rotationPID = PID("r", kp = 1.5, ki = 0.003)
     override var precisionInches: Double = defaultPrecisionInches
     override var precisionDegrees: Double = 3.0
 
@@ -71,9 +71,15 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
         }
 
         // Calculate the error in x and y and use the PID to find the error in angle
-        val speedX: Double = xTranslationPID.calcPID(sin(angleRad) * distanceErrorY + cos(angleRad) * distanceErrorX)
-        val speedY: Double = yTranslationPID.calcPID(cos(angleRad) * distanceErrorY + sin(angleRad) * -distanceErrorX)
-        val speedA: Double = rotationPID.calcPID(angleError)
+        val speedX: Double = xTranslationPID.calcPID(
+                target = target,
+                error = sin(angleRad) * distanceErrorY + cos(angleRad) * distanceErrorX)
+        val speedY: Double = yTranslationPID.calcPID(
+                target = target,
+                error = cos(angleRad) * distanceErrorY + sin(angleRad) * -distanceErrorX)
+        val speedA: Double = rotationPID.calcPID(
+                target = target,
+                error = angleError)
 
 //        telemetry.addLine("\ndistance error: $distanceError, \nangle error degrees: ${Math.toDegrees(angleError)}\n")
 //        telemetry.addData("total distance error: ", distanceError)

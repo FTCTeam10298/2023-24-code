@@ -23,7 +23,7 @@ import java.lang.Thread.sleep
 
 
 fun main() {
-    var v = PidConfig(1.0, 1.0, 1.0)
+    var v = PidConfig("yo", 1.0, 1.0, 1.0)
     ConfigServer(
             port = 8083,
             get = { jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v) },
@@ -31,13 +31,14 @@ fun main() {
 }
 
 data class PidConfig(
+        val name:String,
         val kp:Double,
         val ki:Double,
         val kd:Double,
 ){
-    constructor(p:PID):this(kp = p.kp, ki = p.ki, kd = p.kd)
+    constructor(p:PID):this(name = p.name, kp = p.kp, ki = p.ki, kd = p.kd)
 
-    fun toPID() = PID(kp = kp, ki = ki, kd = kd)
+    fun toPID() = PID("adjusted $name", kp = kp, ki = ki, kd = kd)
 }
 
 

@@ -10,40 +10,40 @@ import com.qualcomm.robotcore.util.Range
  * @param d derivative coefficient
  * @param f feed-forward coefficient
  * */
-data class PID(val kp: Double = 0.0, val ki: Double = 0.0, val kd: Double = 0.0, val kf: Double = 0.0) {
+class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: Double = 0.0,
+          val limits:ClosedFloatingPointRange<Double> = -1.0..1.0,
+          now:Long = System.currentTimeMillis()) {
 
     var p: Double = 0.0
     var i: Double = 0.0
     var d: Double = 0.0
-    var f: Double = 0.0
 
-    var iRange = -1.0..1.0
-
-    fun reset() {
+    private fun reset(now:Long = System.currentTimeMillis()) {
         deltaTimeMs = 0
-        lastTimeMs = System.currentTimeMillis()
+        lastTimeMs = now
         lastError = 0.0
         i = 0.0
     }
     private var deltaTimeMs: Long = 1
-    private var lastTimeMs: Long = System.currentTimeMillis()
+    private var lastTimeMs: Long = now
     private var lastError: Double = 0.0
 
-    fun pidVals(): Double = p + i + d + f
+    private var lastTarget:Any? = null
+    private fun log(m:String) = println("[PID/$name] $m")
+    fun calcPID(target:Any, error: Double, now:Long = System.currentTimeMillis()): Double {
 
-    /**
-     * Calculates pidf in a loop.
-     * @param target the target value for the controller
-     * @param feedback the current value
-     * @return the calculated value for the us.us.brainstormz.pid
-     */
-    fun calcPID(target: Double, feedback: Double): Double {
-        val error: Double = target - feedback
+        if(lastTarget==null){
+            log("setting initial target: $target")
+            lastTarget = target
+        } else if(lastTarget!=target){
+            log("resetting due to target change (changed from $lastTarget to $target)")
+            lastTarget = target
+            reset(now)
+        }
 
-        return calcPID(error)
-    }
-
-    fun calcPID(error: Double): Double {
+        if(lastTimeMs>now){
+            throw Exception("No time travel allowed")
+        }
         if (deltaTimeMs < 1)
             deltaTimeMs = 1
 
@@ -51,14 +51,14 @@ data class PID(val kp: Double = 0.0, val ki: Double = 0.0, val kd: Double = 0.0,
         i += ki * (error * deltaTimeMs.toDouble())
         d = kd * (error - lastError) / deltaTimeMs.toDouble()
 
-        i = i.coerceIn(iRange)
+        i = i.coerceIn(limits)
 
         lastError = error
 
-        deltaTimeMs = System.currentTimeMillis() - lastTimeMs
-        lastTimeMs = System.currentTimeMillis()
+        deltaTimeMs = now - lastTimeMs
+        lastTimeMs = now
 
-        return pidVals()
+        return p + i + d
     }
 
     override fun toString(): String {

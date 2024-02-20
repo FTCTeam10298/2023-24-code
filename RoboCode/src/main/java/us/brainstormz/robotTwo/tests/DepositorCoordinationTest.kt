@@ -18,7 +18,10 @@ class DepoTest {
 
     data class FullyManageDepoTestInputs(val target: RobotTwoTeleOp.DriverInput, val previousDepoTarget: DepoTarget, val actualDepo: DepoManager.ActualDepo, val handoffIsReady: Boolean)
 
-    data class AllDataForTest(val testName: String, val input: FullyManageDepoTestInputs, val expectedOutput: DepoTarget)
+    data class AllDataForTest(
+            val testName: String,
+            val input: FullyManageDepoTestInputs,
+            val expectedOutput: DepoTarget)
 
     fun testDepo(dataForTest: AllDataForTest): Pair<Boolean, DepoTarget> {
         val output = depoManager.fullyManageDepo(dataForTest.input.target, dataForTest.input.previousDepoTarget, dataForTest.input.actualDepo)

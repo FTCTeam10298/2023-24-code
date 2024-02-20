@@ -20,7 +20,7 @@ class JamesEncoderMovement (private val hardware: MecanumHardware, private val c
     val countsPerInch = countsPerMotorRev * gearboxRatio * driveGearReduction / (wheelDiameterInches * PI) / drivetrainError
     val countsPerDegree: Double = countsPerInch * 0.268 * 2/3 // Found by testing
 
-    var pid = PID(0.01, 0.00000001, 0.0)
+    var pid = PID(name = "all-direction-movement", 0.01, 0.00000001, 0.0)
     val precision = -0.1..0.1
 
     private var opModeStop = false
@@ -66,7 +66,7 @@ class JamesEncoderMovement (private val hardware: MecanumHardware, private val c
                 break
             }
 
-            val pidValue: Double = pid.calcPID(posDiffTotal).coerceIn(-power, power)
+            val pidValue: Double = pid.calcPID(targetPos, posDiffTotal).coerceIn(-power, power)
 
             val lfDirection = (targetPos.y + targetPos.x - targetPos.r).toInt()
             val rfDirection = (targetPos.y - targetPos.x + targetPos.r).toInt()

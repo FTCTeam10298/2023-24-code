@@ -26,9 +26,6 @@ interface SlideSubsystem: DualMovementModeSubsystem {
 
     private fun getZeroPositionOffsetTicks(currentPositionTicks: Int, limitSwitchIsActivated: Boolean, previousZeroPositionOffsetTicks: Int?, previousLimitSwitchIsActivated: Boolean?): Int {
         return if (limitSwitchIsActivated) {
-            if (previousLimitSwitchIsActivated == false) {
-                pid.reset()
-            }
             currentPositionTicks
         } else {
             previousZeroPositionOffsetTicks ?: 0
