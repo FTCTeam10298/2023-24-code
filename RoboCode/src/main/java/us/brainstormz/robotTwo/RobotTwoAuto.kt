@@ -96,8 +96,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             val rightClawPosition: ClawTarget,
     )
 
-    private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
-        val taskStartedTimeMilis = targetWorld.timeTargetStartedMilis
+    private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: ActualWorld): Boolean {
+        val taskStartedTimeMilis = targetWorld.timestampMilis
         val timeSinceTargetStarted = System.currentTimeMillis() - taskStartedTimeMilis
         return timeSinceTargetStarted >= timeToElapseMilis
     }
@@ -145,7 +145,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        hasTimeElapsed(timeToElapseMilis = 300, targetState)
+                        hasTimeElapsed(timeToElapseMilis = 300, actualState)
                     },).asTargetWorld,
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -154,7 +154,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        hasTimeElapsed(timeToElapseMilis = 200, targetState)
+                        hasTimeElapsed(timeToElapseMilis = 200, actualState)
                     },).asTargetWorld,
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -174,7 +174,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                          hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                          hasTimeElapsed(timeToElapseMilis = 1000, actualState)
                     },).asTargetWorld,
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -192,7 +192,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 3000, targetState)
+                        arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 3000, actualState)
                     },).asTargetWorld,
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -201,7 +201,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        hasTimeElapsed(timeToElapseMilis = 500, targetState)
+                        hasTimeElapsed(timeToElapseMilis = 500, actualState)
                     },).asTargetWorld,
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -251,9 +251,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
 
 
-    private val backboardSideDepositPurpleLeft = StartPosition.Backboard.redStartPosition.copy(x= StartPosition.Backboard.redStartPosition.x + 5.0, r= StartPosition.Backboard.redStartPosition.r+20.0)
+    private val backboardSideDepositPurpleLeft = StartPosition.Backboard.redStartPosition.copy(x= StartPosition.Backboard.redStartPosition.x + 7.0, r= StartPosition.Backboard.redStartPosition.r + 20.0)
     private val backboardSideDepositPurpleCenter = StartPosition.Backboard.redStartPosition.copy(x= StartPosition.Backboard.redStartPosition.x + 5.0, r= StartPosition.Backboard.redStartPosition.r)
-    private val backboardSideDepositPurpleRight = StartPosition.Backboard.redStartPosition.copy(x= StartPosition.Backboard.redStartPosition.x + 5.0, r= StartPosition.Backboard.redStartPosition.r-22.0)
+    private val backboardSideDepositPurpleRight = StartPosition.Backboard.redStartPosition.copy(x= StartPosition.Backboard.redStartPosition.x + 5.0, r= StartPosition.Backboard.redStartPosition.r - 22.0)
 
     private fun backboardSidePurple(depositingPosition: PositionAndRotation): List<TargetWorld> {
         return listOf(
@@ -264,8 +264,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            telemetry.addLine("Waiting for extendo")
                             val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
-                            isExtendoAtPosition && isRobotAtPosition(targetState, actualState, previousActualState)
+                            (isExtendoAtPosition && isRobotAtPosition(targetState, actualState, previousActualState)) || hasTimeElapsed(1000, actualState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -274,7 +275,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            hasTimeElapsed(200, targetState)
+                            telemetry.addLine("Waiting for eject")
+                            hasTimeElapsed(200, actualState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -283,8 +285,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            telemetry.addLine("Waiting for extendo to retract")
                             val isExtendoABitAwayFromThePurple = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks - 80)
-                            isExtendoABitAwayFromThePurple || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            isExtendoABitAwayFromThePurple || hasTimeElapsed(timeToElapseMilis = 1000, actualState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -293,8 +296,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            telemetry.addLine("Waiting for extendo to retract 2")
                             val isExtendoHalfwayIn = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks / 2)
-                            isExtendoHalfwayIn || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            isExtendoHalfwayIn || hasTimeElapsed(timeToElapseMilis = 1000, actualState)
                         },).asTargetWorld,
         )
     }
@@ -315,9 +319,10 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            telemetry.addLine("Waiting for go to board")
                             val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
                             val isCollectorRetracted = extendo.isExtendoAtPosition(ExtendoPositions.Min.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
-                            isRobotAtPosition && isCollectorRetracted
+                            (isRobotAtPosition && isCollectorRetracted) || hasTimeElapsed(3000, actualState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -326,7 +331,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            hasTimeElapsed(timeToElapseMilis = 1000, actualState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -335,7 +340,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            lift.isLiftAtPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
+                            lift.isLiftAtPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks) || hasTimeElapsed(1000, actualState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -344,7 +349,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 3000, targetState)
+                            arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, actualState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -353,7 +358,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            actualState.actualRobot.depoState.wristAngles == Wrist.ActualWrist(ClawTarget.Retracted.angleDegrees, ClawTarget.Retracted.angleDegrees)//hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            actualState.actualRobot.depoState.wristAngles == Wrist.ActualWrist(ClawTarget.Retracted.angleDegrees, ClawTarget.Retracted.angleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, actualState)
                         },).asTargetWorld,
 //                AutoTargetWorld(
 //                        targetRobot = RobotState(
@@ -379,6 +384,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             PropPosition.Left to backboardSideYellow(placingOnBackboardLeft),
             PropPosition.Center to backboardSideYellow(placingOnBackboardCenter),
             PropPosition.Right to backboardSideYellow(placingOnBackboardRight)
+    )
+    private val FAKEBackboardSideYellowMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
+            PropPosition.Left to emptyList(),
+            PropPosition.Center to emptyList(),
+            PropPosition.Right to emptyList()
     )
 
     private val backboardSidePark: List<TargetWorld> = listOf(
@@ -420,7 +430,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        hasTimeElapsed(200, targetState)
+                        hasTimeElapsed(200, actualState)
                     },).asTargetWorld,
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -458,7 +468,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 //                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
 //                    ),
 //                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-//                        isRobotAtPosition(targetState, actualState, previousActualState) && hasTimeElapsed(500, targetState)
+//                        isRobotAtPosition(targetState, actualState, previousActualState) && hasTimeElapsed(500, actualState)
 //                    },).asTargetWorld,
             )
 
@@ -485,7 +495,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        hasTimeElapsed(200, targetState)
+                        hasTimeElapsed(200, actualState)
                     },).asTargetWorld,
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -550,7 +560,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 //                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
 //                    ),
 //                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-//                        isRobotAtPosition(targetState, actualState, previousActualState) && hasTimeElapsed(500, targetState)
+//                        isRobotAtPosition(targetState, actualState, previousActualState) && hasTimeElapsed(500, actualState)
 //                    },).asTargetWorld,
     )
 
@@ -573,7 +583,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        hasTimeElapsed(200, targetState)
+                        hasTimeElapsed(200, actualState)
                     },).asTargetWorld,
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -620,7 +630,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 //                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
 //                    ),
 //                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-//                        isRobotAtPosition(targetState, actualState, previousActualState) && hasTimeElapsed(500, targetState)
+//                        isRobotAtPosition(targetState, actualState, previousActualState) && hasTimeElapsed(500, actualState)
 //                    },).asTargetWorld,
     )
 
@@ -672,7 +682,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.DroppingWithHighPrecision, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        hasTimeElapsed(500, targetState)
+                        hasTimeElapsed(500, actualState)
                     },).asTargetWorld,
     )
 
@@ -693,7 +703,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.DroppingWithHighPrecision, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        hasTimeElapsed(1000, targetState)
+                        hasTimeElapsed(1000, actualState)
                     },).asTargetWorld,
     )
     private val audienceSideDepositRight = listOf(
@@ -713,7 +723,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             depoState = DepoState(Arm.Positions.DroppingWithHighPrecision, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        hasTimeElapsed(500, targetState)
+                        hasTimeElapsed(500, actualState)
                     },).asTargetWorld,
     )
 
@@ -748,7 +758,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         fun assemblePath(propPosition: PropPosition): List<TargetWorld> {
             val purplePath = purplePlacementPath[propPosition] ?: emptyList()
             val yellowPath = yellowDepositPath[propPosition] ?: emptyList()
-            return purplePath + driveToBoardPath + yellowPath + parkPath
+            return purplePath //+ driveToBoardPath + yellowPath + parkPath
         }
     }
     private fun calcAutoTargetStateList(
