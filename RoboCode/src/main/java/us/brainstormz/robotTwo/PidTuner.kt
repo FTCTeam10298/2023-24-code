@@ -98,6 +98,21 @@ class PidTuner: OpMode() {
          },)
     }
 
+
+    val routine = listOf<PositionAndRotation>(
+            PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 10.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+    )
+
+
     val loopTimeMeasurer = DeltaTimeMeasurer()
     var timeOfTargetDone = 0L
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
@@ -120,7 +135,14 @@ class PidTuner: OpMode() {
                     val newTargetPosition = if (isAtTarget) {
                         val timeSinceEnd = actualState.timestampMilis - timeOfTargetDone
                         if (timeSinceEnd > config.timeDelayMillis) {
-                            PositionAndRotation(Math.random() * config.boxSizeInchesX, Math.random() * config.boxSizeInchesY,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+//                            PositionAndRotation(Math.random() * config.boxSizeInchesX, Math.random() * config.boxSizeInchesY,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+                            val currentTask = previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition
+                            val nextTaskIndex = routine.indexOf(currentTask) + 1
+                            if (nextTaskIndex < routine.size-1) {
+                                routine[nextTaskIndex]
+                            } else {
+                                currentTask
+                            }
                         } else {
                             previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition
                         }
@@ -162,3 +184,78 @@ class PidTuner: OpMode() {
         telemetry.update()
     }
 }
+
+
+//@Autonomous
+//class OdometryMovementTest: OpMode() {
+//    val hardware = RobotTwoHardware(opmode= this, telemetry= telemetry)
+//    //    lateinit var localizer: RRTwoWheelLocalizer
+////    lateinit var movement: MecanumMovement
+//    lateinit var drivetrain: Drivetrain
+//
+////    val console = TelemetryConsole(telemetry)
+////    val wizard = TelemetryWizard(console, null)
+//
+//
+//    override fun init() {
+////        wizard.newMenu("testType", "What test to run?", listOf("Drive motor", "Movement directions", "Full odom movement"), firstMenu = true)
+////        wizard.summonWizardBlocking(gamepad1)
+//
+//        hardware.init(hardwareMap)
+//        drivetrain = Drivetrain(hardware, RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick), telemetry)
+//    }
+//
+//    var currentTarget: PositionAndRotation = positions.first()
+//    var previousTarget = currentTarget
+//    var currentTargetStartTimeMilis: Long = 0
+//    data class PositionDataPoint(val target: PositionAndRotation, val timeToSuccessMilis: Long, val finalPosition: PositionAndRotation)
+//    val positionData = mutableListOf<PositionDataPoint>()
+//
+//    var currentTargetEndTimeMilis:Long = 0
+//    override fun loop() {
+//
+//        val currentPosition = drivetrain.getPosition()
+//        telemetry.addLine("rr current position: $currentPosition")
+//
+//        telemetry.addLine("ypid: $ypid")
+//        telemetry.addLine("xpid: $xpid")
+//        telemetry.addLine("rpid: $rpid")
+//
+//        telemetry.addLine("currentTarget: $currentTarget")
+//        drivetrain.actuateDrivetrain(
+//                Drivetrain.DrivetrainTarget(currentTarget),
+//                Drivetrain.DrivetrainTarget(previousTarget),
+//                currentPosition,
+//                yTranslationPID = ypid,
+//                xTranslationPID =  xpid,
+//                rotationPID = rpid)
+//
+////        previousTarget = currentTarget.copy()
+////        val isAtTarget = drivetrain.checkIfDrivetrainIsAtPosition(currentPosition, targetPosition = currentTarget, precisionInches = 1.0, precisionDegrees = 3.0)
+////        if (isAtTarget) {
+////            if (currentTargetEndTimeMilis == 0L)
+////                currentTargetEndTimeMilis = System.currentTimeMillis()
+////
+////            val timeSinceEnd = System.currentTimeMillis() - currentTargetEndTimeMilis
+////            if (timeSinceEnd > timeDelayMilis) {
+////                val index = positions.indexOf(currentTarget)
+////                if (index != (positions.size - 1)) {
+////                    val timeToComplete = System.currentTimeMillis() - currentTargetStartTimeMilis
+////                    positionData.add(PositionDataPoint(currentTarget, timeToComplete, currentPosition))
+////
+//////                    currentTarget = positions[index+1]
+////                    val distanceInches = 20
+////                    currentTarget = PositionAndRotation(Math.random() * distanceInches, Math.random() * distanceInches,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
+////                } else {
+//////                    currentTarget = positions.first()
+////                }
+////            }
+////        } else {
+////            currentTargetEndTimeMilis = 0
+////        }
+//
+//        telemetry.addLine("\n\npositionData: \n$positionData")
+//
+//        telemetry.update()
+//    }
+//}
