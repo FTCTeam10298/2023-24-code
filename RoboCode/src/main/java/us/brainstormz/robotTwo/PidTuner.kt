@@ -94,7 +94,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
     fun init() {
         config = PidTuningAdjusterConfig(
                 timeDelayMillis = 500,
-                boxSizeInchesY = 40,
+                boxSizeInchesY = 20,
                 boxSizeInchesX =  20,
                 x = PidConfig(drivetrain.xTranslationPID),
                 y = PidConfig(drivetrain.yTranslationPID),
@@ -132,7 +132,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
             PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
-    )   
+    )
 
     val loopTimeMeasurer = DeltaTimeMeasurer()
     var timeOfTargetDone = 0L
@@ -167,7 +167,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                             if (nextTaskIndex < routine.size-1) {
                                 routine[nextTaskIndex] to nextTaskIndex
                             } else {
-                                currentTask to currentIndex
+                                routine.first() to 0
                             }
                         } else {
                             currentTask to currentIndex
