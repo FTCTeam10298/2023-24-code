@@ -121,9 +121,9 @@ fun main() {
     val gamepad = teleopTester.getChangedGamepad { it.dpad_down = true}
     println("gamepad: $gamepad")
     val test = listOf(
-            teleopTester.emptyWorld.copy(actualGamepad2 = gamepad),
-            teleopTester.emptyWorld.copy(actualGamepad2 = Gamepad()),
-            teleopTester.emptyWorld.copy(actualGamepad2 = Gamepad()),
+            TeleopTest.emptyWorld.copy(actualGamepad2 = gamepad),
+            TeleopTest.emptyWorld.copy(actualGamepad2 = Gamepad()),
+            TeleopTest.emptyWorld.copy(actualGamepad2 = Gamepad()),
     )
 //    val expectedOutput = RobotTwoTeleOp.initialPreviousTargetState.copy(driverInput = RobotTwoTeleOp.initialPreviousTargetState.driverInput.)
 
@@ -164,34 +164,36 @@ class TeleopTest {
     fun didTestPass(result: List<Pair<ActualWorld, TargetWorld>>, passCondition: (TargetWorld)->Boolean): Boolean {// List<Pair<Boolean, Pair<ActualWorld, TargetWorld>>> {
         return passCondition(result.last().second)
     }
-    val emptySensorReading = Transfer.SensorReading(0, 0, 0 ,0)
-    val emptyWorld = ActualWorld(
-            actualGamepad1= Gamepad(),
-            actualGamepad2 = Gamepad(),
-            actualRobot = ActualRobot(
-                    positionAndRotation = PositionAndRotation(),
-                    depoState = DepoManager.ActualDepo(
-                            armAngleDegrees = 0.0,
-                            lift = Lift.ActualLift(
-                                            currentPositionTicks =  0,
-                                            limitSwitchIsActivated =  false),
-                            wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
-                    ),
-                    collectorSystemState = CollectorSystem.ActualCollector(
-                            extendo = SlideSubsystem.ActualSlideSubsystem(
-                                    currentPositionTicks = 0,
-                                    ticksMovedSinceReset = 0,
-                                    limitSwitchIsActivated = false,
-                                    zeroPositionOffsetTicks = 0,
-                                    currentAmps = 0.0),
-                            leftRollerAngleDegrees = 0.0,
-                            rightRollerAngleDegrees = 0.0,
-                            leftTransferState = emptySensorReading,
-                            rightTransferState = emptySensorReading,
-                    ),
-            ),
-            timestampMilis = 0,
-    )
+    companion object {
+        val emptySensorReading = Transfer.SensorReading(0, 0, 0, 0)
+        val emptyWorld = ActualWorld(
+                actualGamepad1 = Gamepad(),
+                actualGamepad2 = Gamepad(),
+                actualRobot = ActualRobot(
+                        positionAndRotation = PositionAndRotation(),
+                        depoState = DepoManager.ActualDepo(
+                                armAngleDegrees = 0.0,
+                                lift = Lift.ActualLift(
+                                        currentPositionTicks = 0,
+                                        limitSwitchIsActivated = false),
+                                wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
+                        ),
+                        collectorSystemState = CollectorSystem.ActualCollector(
+                                extendo = SlideSubsystem.ActualSlideSubsystem(
+                                        currentPositionTicks = 0,
+                                        ticksMovedSinceReset = 0,
+                                        limitSwitchIsActivated = false,
+                                        zeroPositionOffsetTicks = 0,
+                                        currentAmps = 0.0),
+                                leftRollerAngleDegrees = 0.0,
+                                rightRollerAngleDegrees = 0.0,
+                                leftTransferState = emptySensorReading,
+                                rightTransferState = emptySensorReading,
+                        ),
+                ),
+                timestampMilis = 0,
+        )
+    }
     fun getChangedGamepad(originalGamepad: Gamepad = Gamepad(), gamepadChange: (gamepad: Gamepad)->Unit): Gamepad {
         gamepadChange(originalGamepad)
         return originalGamepad

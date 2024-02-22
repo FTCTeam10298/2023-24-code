@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.faux.FauxOpMode
+import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
@@ -19,20 +21,12 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
+import us.brainstormz.robotTwo.tests.FauxRobotTwoHardware
+import us.brainstormz.robotTwo.tests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.utils.ConfigServer
 import us.brainstormz.utils.ConfigServerTelemetry
 import us.brainstormz.utils.DeltaTimeMeasurer
 import java.lang.Thread.sleep
-
-
-fun main() {
-    var v = PidConfig("yo", 1.0, 1.0, 1.0)
-    ConfigServer(
-            port = 8083,
-            get = { jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v) },
-            update = {v = jacksonObjectMapper().readValue(it) },
-            { "Nothing here\nkjh" })
-}
 
 data class PidConfig(
         val name:String,
@@ -45,7 +39,6 @@ data class PidConfig(
     fun toPID() = PID("adjusted $name", kp = kp, ki = ki, kd = kd)
 }
 
-
 data class PidTuningAdjusterConfig (
         val timeDelayMillis:Int,
         val boxSizeInchesY:Int,
@@ -54,6 +47,29 @@ data class PidTuningAdjusterConfig (
         val y:PidConfig,
         val r:PidConfig,
 )
+
+fun main() {
+
+    val fauxTelemetry = PrintlnTelemetry()
+    val hardware = FauxRobotTwoHardware(FauxOpMode(fauxTelemetry), fauxTelemetry);
+    val pidTuner = PidTuner(hardware, fauxTelemetry)
+
+    hardware.actualRobot = emptyWorld.actualRobot
+    pidTuner.init()
+
+
+    val loopStartTime = System.currentTimeMillis()
+    println("loopStartTime: $loopStartTime")
+    for (i in 0..10) {
+        pidTuner.loop(Gamepad())
+        hardware.actualRobot = emptyWorld.actualRobot.copy(positionAndRotation = pidTuner.functionalReactiveAutoRunner.previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition!!)
+    }
+    val loopEndTime = System.currentTimeMillis()
+    println("loopEndTime: $loopEndTime")
+    val timeSpendTotal = loopEndTime-loopStartTime
+    println("timeSpendTotal: $timeSpendTotal")
+}
+
 
 class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
 
@@ -139,8 +155,12 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                     multipleTelemetry.addLine("isAtTarget: $isAtTarget")
                     val newTargetPosition = if (isAtTarget) {
                         val timeSinceEnd = actualState.timestampMilis - timeOfTargetDone
+                        println("timeSinceEnd: $timeSinceEnd")
                         val currentTask = previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition
-                        if (timeSinceEnd > config.timeDelayMillis) {
+                        val isTimeToGetNextTask = timeSinceEnd > config.timeDelayMillis
+                        println("config.timeDelayMillis: ${config.timeDelayMillis}")
+                        if (isTimeToGetNextTask) {
+                            println("next task")
 //                            PositionAndRotation(Math.random() * config.boxSizeInchesX, Math.random() * config.boxSizeInchesY,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
                             val nextTaskIndex = routine.indexOf(currentTask) + 1
                             if (nextTaskIndex < routine.size-1) {
@@ -155,6 +175,8 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                         timeOfTargetDone = actualState.timestampMilis
                         previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition
                     }
+
+                    println("newTargetPosition: $newTargetPosition")
 
                     val ligths = if (isAtTarget) {
                         RevBlinkinLedDriver.BlinkinPattern.BLUE

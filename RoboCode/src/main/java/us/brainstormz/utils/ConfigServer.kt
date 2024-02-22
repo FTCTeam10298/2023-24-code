@@ -1,10 +1,23 @@
 package us.brainstormz.utils
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import fi.iki.elonen.NanoHTTPD
 import org.firstinspires.ftc.robotcore.external.Func
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.PrintlnTelemetry
+import us.brainstormz.robotTwo.PidConfig
 import java.io.ByteArrayOutputStream
+
+
+fun main() {
+    var v = PidConfig("yo", 1.0, 1.0, 1.0)
+    ConfigServer(
+            port = 8083,
+            get = { jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v) },
+            update = {v = jacksonObjectMapper().readValue(it) },
+            { "Nothing here\nkjh" })
+}
 
 /**
  * Potential future improvement ... make this start-up automatically somehow

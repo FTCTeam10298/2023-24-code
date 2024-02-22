@@ -116,7 +116,7 @@ class PrintlnTelemetry: Telemetry {
     }
 
     override fun log(): Telemetry.Log {
-        TODO("Not yet implemented")
+        return PrintlnTelemetry.FauxLog()
     }
 
 
