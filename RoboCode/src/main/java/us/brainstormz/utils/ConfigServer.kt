@@ -175,7 +175,7 @@ class ConfigServerTelemetry: Telemetry {
     }
 
     override fun update(): Boolean {
-        screenOfLines = linesQueue.toList()
+        screenOfLines = linesQueue.map{it}
         linesQueue.clear()
         return true
     }
