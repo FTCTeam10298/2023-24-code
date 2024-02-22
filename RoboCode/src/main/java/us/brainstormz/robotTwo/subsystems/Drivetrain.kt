@@ -90,7 +90,9 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
     fun checkIfDrivetrainIsAtPosition(targetPosition: PositionAndRotation, actualWorld: ActualWorld, previousWorld: ActualWorld): Boolean {
         val isRobotCurrentlyAtTarget = isRobotAtPosition(
                 currentPosition= actualWorld.actualRobot.positionAndRotation,
-                targetPosition= targetPosition)
+                targetPosition= targetPosition,
+                precisionInches= 2.0,
+                precisionDegrees= 2.0)
         val willRobotStayAtTarget = getVelocity(actualWorld, previousWorld).checkIfIsLessThan(maxVelocityToStayAtPosition)
         return isRobotCurrentlyAtTarget && willRobotStayAtTarget
     }
