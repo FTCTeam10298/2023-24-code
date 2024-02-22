@@ -9,27 +9,27 @@ class PrintlnTelemetry: Telemetry {
     private fun printCaption(caption: String?) {
         println(telemetryPrintSignature + caption)
     }
-    private val phoItem = PhoItem()
-    private val phoLine = PhoLine()
+    private val fauxItem = FauxItem()
+    private val fauxLine = FauxLine()
 
     override fun addData(caption: String?, format: String?, vararg args: Any?): Telemetry.Item {
         printCaption(caption)
-        return phoItem
+        return fauxItem
     }
 
     override fun addData(caption: String?, value: Any?): Telemetry.Item {
         printCaption(caption)
-        return phoItem
+        return fauxItem
     }
 
     override fun <T : Any?> addData(caption: String?, valueProducer: Func<T>?): Telemetry.Item {
         printCaption(caption)
-        return phoItem
+        return fauxItem
     }
 
     override fun <T : Any?> addData(caption: String?, format: String?, valueProducer: Func<T>?): Telemetry.Item {
         printCaption(caption)
-        return phoItem
+        return fauxItem
     }
 
     override fun removeItem(item: Telemetry.Item?): Boolean {
@@ -67,12 +67,12 @@ class PrintlnTelemetry: Telemetry {
 
     override fun addLine(): Telemetry.Line {
         printCaption("")
-        return phoLine
+        return fauxLine
     }
 
     override fun addLine(lineCaption: String?): Telemetry.Line {
         printCaption(lineCaption)
-        return phoLine
+        return fauxLine
     }
 
     override fun removeLine(line: Telemetry.Line?): Boolean {
@@ -121,7 +121,7 @@ class PrintlnTelemetry: Telemetry {
 
 
 
-    class PhoItem: Telemetry.Item {
+    class FauxItem: Telemetry.Item {
         override fun getCaption(): String {
             TODO("Not yet implemented")
         }
@@ -172,7 +172,7 @@ class PrintlnTelemetry: Telemetry {
 
     }
 
-    class PhoLine: Telemetry.Line {
+    class FauxLine: Telemetry.Line {
         override fun addData(caption: String?, format: String?, vararg args: Any?): Telemetry.Item {
             TODO("Not yet implemented")
         }

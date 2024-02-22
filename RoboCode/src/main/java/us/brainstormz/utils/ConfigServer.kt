@@ -116,7 +116,7 @@ class ConfigServerTelemetry: Telemetry {
     var screenOfLines: List<String> = mutableListOf()
     override fun addData(caption: String?, format: String?, vararg args: Any?): Telemetry.Item {
         addLine(caption)
-        return PrintlnTelemetry.PhoItem()
+        return PrintlnTelemetry.FauxItem()
     }
 
     override fun addData(caption: String?, value: Any?): Telemetry.Item {
@@ -130,7 +130,7 @@ class ConfigServerTelemetry: Telemetry {
 
     override fun <T : Any?> addData(caption: String?, format: String?, valueProducer: Func<T>?): Telemetry.Item {
         addLine(caption)
-        return PrintlnTelemetry.PhoItem()
+        return PrintlnTelemetry.FauxItem()
     }
 
     override fun removeItem(item: Telemetry.Item?): Boolean {
@@ -173,7 +173,7 @@ class ConfigServerTelemetry: Telemetry {
 
     override fun addLine(lineCaption: String?): Telemetry.Line {
         linesQueue.add(lineCaption + "\n")
-        return PrintlnTelemetry.PhoLine()
+        return PrintlnTelemetry.FauxLine()
     }
 
     override fun removeLine(line: Telemetry.Line?): Boolean {

@@ -30,7 +30,7 @@ import java.io.FileOutputStream
 import java.io.InputStream
 
 
-class PhoContext: Context() {
+class FauxContext: Context() {
 
     override fun getAssets(): AssetManager {
         TODO("Not yet implemented")
