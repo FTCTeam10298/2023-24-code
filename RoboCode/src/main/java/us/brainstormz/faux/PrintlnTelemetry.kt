@@ -190,4 +190,33 @@ class PrintlnTelemetry: Telemetry {
         }
 
     }
+
+    class FauxLog: Telemetry.Log {
+        override fun getCapacity(): Int {
+            return 0
+        }
+
+        override fun setCapacity(capacity: Int) {
+        }
+
+        override fun getDisplayOrder(): Telemetry.Log.DisplayOrder {
+            return Telemetry.Log.DisplayOrder.NEWEST_FIRST
+        }
+
+        override fun setDisplayOrder(displayOrder: Telemetry.Log.DisplayOrder?) {
+        }
+
+        override fun add(entry: String?) {
+
+        }
+
+        override fun add(format: String?, vararg args: Any?) {
+
+        }
+
+        override fun clear() {
+
+        }
+
+    }
 }
