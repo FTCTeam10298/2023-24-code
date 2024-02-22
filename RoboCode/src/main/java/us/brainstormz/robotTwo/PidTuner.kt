@@ -17,6 +17,7 @@ import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Drivetrain
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
@@ -35,7 +36,6 @@ data class PidConfig(
         val kd:Double,
 ){
     constructor(p:PID):this(name = p.name, kp = p.kp, ki = p.ki, kd = p.kd)
-
     fun toPID() = PID("adjusted $name", kp = kp, ki = ki, kd = kd)
 }
 
@@ -132,7 +132,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
             PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
-    )
+    )   
 
     val loopTimeMeasurer = DeltaTimeMeasurer()
     var timeOfTargetDone = 0L
@@ -143,7 +143,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                     val currentGamepad1 = Gamepad()
                     currentGamepad1.copy(gamepad1)
                     ActualWorld(
-                            actualRobot = hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState),
+                            actualRobot =    hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState),
                             actualGamepad1 = currentGamepad1,
                             actualGamepad2 = currentGamepad1,
                             timestampMilis = System.currentTimeMillis()
@@ -157,23 +157,24 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                         val timeSinceEnd = actualState.timestampMilis - timeOfTargetDone
                         println("timeSinceEnd: $timeSinceEnd")
                         val currentTask = previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition
+                        val currentIndex = previousTargetState?.targetRobot?.drivetrainTarget?.power?.y ?: 0.0
                         val isTimeToGetNextTask = timeSinceEnd > config.timeDelayMillis
                         println("config.timeDelayMillis: ${config.timeDelayMillis}")
                         if (isTimeToGetNextTask) {
                             println("next task")
 //                            PositionAndRotation(Math.random() * config.boxSizeInchesX, Math.random() * config.boxSizeInchesY,(Math.random() * 360*2)-360)//positions[positions.indexOf(currentTarget) + 1]
-                            val nextTaskIndex = routine.indexOf(currentTask) + 1
+                            val nextTaskIndex = currentIndex.toInt() + 1
                             if (nextTaskIndex < routine.size-1) {
-                                routine[nextTaskIndex]
+                                routine[nextTaskIndex] to nextTaskIndex
                             } else {
-                                currentTask
+                                currentTask to currentIndex
                             }
                         } else {
-                            currentTask
+                            currentTask to currentIndex
                         }
                     } else {
                         timeOfTargetDone = actualState.timestampMilis
-                        previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition
+                        previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition to previousTargetState?.targetRobot?.drivetrainTarget?.power?.y
                     }
 
                     println("newTargetPosition: $newTargetPosition")
@@ -184,18 +185,18 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                         RevBlinkinLedDriver.BlinkinPattern.RED
                     }
 
-                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(drivetrainTarget = Drivetrain.DrivetrainTarget(targetPosition = newTargetPosition?: PositionAndRotation()), lights = previousTargetState.targetRobot.lights.copy(targetColor = ligths)))
+                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(drivetrainTarget = Drivetrain.DrivetrainTarget(targetPosition = newTargetPosition.first ?: PositionAndRotation(), power = Drivetrain.DrivetrainPower(y=newTargetPosition.second?.toDouble()?:0.0,x= 0.0, r=0.0), movementMode = DualMovementModeSubsystem.MovementMode.Position), lights = previousTargetState.targetRobot.lights.copy(targetColor = ligths)))
                             ?: RobotTwoTeleOp.initialPreviousTargetState
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState ->
                     multipleTelemetry.addLine("target position: ${targetState.targetRobot.drivetrainTarget.targetPosition}")
                     multipleTelemetry.addLine("current position: ${drivetrain.localizer.currentPositionAndRotation()}")
 
-//                    drivetrain.actuateDrivetrain(
-//                            target = targetState.targetRobot.drivetrainTarget,
-//                            previousTarget = previousTargetState?.targetRobot?.drivetrainTarget ?: targetState.targetRobot.drivetrainTarget,
-//                            actualPosition = actualState.actualRobot.positionAndRotation,
-//                    )
+                    drivetrain.actuateDrivetrain(
+                            target = targetState.targetRobot.drivetrainTarget,
+                            previousTarget = previousTargetState?.targetRobot?.drivetrainTarget ?: targetState.targetRobot.drivetrainTarget,
+                            actualPosition = actualState.actualRobot.positionAndRotation,
+                    )
 
                     hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
                 }
