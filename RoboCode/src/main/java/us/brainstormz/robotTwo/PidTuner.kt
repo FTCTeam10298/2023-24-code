@@ -8,8 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import us.brainstormz.faux.FauxOpMode
-import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
@@ -22,12 +20,37 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
-import us.brainstormz.robotTwo.tests.FauxRobotTwoHardware
-import us.brainstormz.robotTwo.tests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.utils.ConfigServer
 import us.brainstormz.utils.ConfigServerTelemetry
 import us.brainstormz.utils.DeltaTimeMeasurer
 
+fun exponentialIncrements(from:Long) = generateSequence(from){ x -> Math.max(1, x) * 2}
+fun exponentialIncrements(from:Long, to:Long) = exponentialIncrements(from).takeWhile { it <= to }
+fun incrementSequence():List<PositionAndRotation>{
+
+    return exponentialIncrements(-360, 360).flatMap{ r->
+            exponentialIncrements(from = 0, to = 30).flatMap{ y->
+            exponentialIncrements(from = 0, to = 60).map{ x ->
+
+
+                //Random.nextDouble(-360.0, 360.0)
+                PositionAndRotation(
+                        y= y.toDouble(),
+                        x= x.toDouble(),
+                        r= r.toDouble())
+            }
+        }
+    }.toList()
+}
+fun main() {
+
+    val s = incrementSequence().toList()
+
+    println("${s.size} steps:")
+    s.forEach{
+        println("  ${it}")
+    }
+}
 data class PidConfig(
         val name:String,
         val kp:Double,
@@ -48,27 +71,27 @@ data class PidTuningAdjusterConfig (
         val r:PidConfig,
 )
 
-fun main() {
-
-    val fauxTelemetry = PrintlnTelemetry()
-    val hardware = FauxRobotTwoHardware(FauxOpMode(fauxTelemetry), fauxTelemetry);
-    val pidTuner = PidTuner(hardware, fauxTelemetry)
-
-    hardware.actualRobot = emptyWorld.actualRobot
-    pidTuner.init()
-
-
-    val loopStartTime = System.currentTimeMillis()
-    println("loopStartTime: $loopStartTime")
-    for (i in 0..10) {
-        pidTuner.loop(Gamepad())
-        hardware.actualRobot = emptyWorld.actualRobot.copy(positionAndRotation = pidTuner.functionalReactiveAutoRunner.previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition!!)
-    }
-    val loopEndTime = System.currentTimeMillis()
-    println("loopEndTime: $loopEndTime")
-    val timeSpendTotal = loopEndTime-loopStartTime
-    println("timeSpendTotal: $timeSpendTotal")
-}
+//fun main() {
+//
+//    val fauxTelemetry = PrintlnTelemetry()
+//    val hardware = FauxRobotTwoHardware(FauxOpMode(fauxTelemetry), fauxTelemetry);
+//    val pidTuner = PidTuner(hardware, fauxTelemetry)
+//
+//    hardware.actualRobot = emptyWorld.actualRobot
+//    pidTuner.init()
+//
+//
+//    val loopStartTime = System.currentTimeMillis()
+//    println("loopStartTime: $loopStartTime")
+//    for (i in 0..10) {
+//        pidTuner.loop(Gamepad())
+//        hardware.actualRobot = emptyWorld.actualRobot.copy(positionAndRotation = pidTuner.functionalReactiveAutoRunner.previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition!!)
+//    }
+//    val loopEndTime = System.currentTimeMillis()
+//    println("loopEndTime: $loopEndTime")
+//    val timeSpendTotal = loopEndTime-loopStartTime
+//    println("timeSpendTotal: $timeSpendTotal")
+//}
 
 
 class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
@@ -121,7 +144,8 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                 })
     }
 
-    val routine = listOf<PositionAndRotation>(
+    val routine = incrementSequence()
+    val routine2 = listOf<PositionAndRotation>(
             // X Test
 //            PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
 //            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
@@ -141,21 +165,27 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
 
             // Full Test
             PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 5.0, r= 0.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
             PositionAndRotation(y= 10.0, x= 0.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 5.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 120.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 180.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 5.0, x= 5.0, r= 180.0),
             PositionAndRotation(y= 10.0, x= 10.0, r= 180.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
     )
+
+
 
     val loopTimeMeasurer = DeltaTimeMeasurer()
     var timeOfTargetDone = 0L
