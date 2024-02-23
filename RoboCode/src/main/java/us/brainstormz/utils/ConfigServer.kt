@@ -11,7 +11,7 @@ import java.io.ByteArrayOutputStream
 
 
 fun main() {
-    var v = PidConfig("yo", 1.0, 1.0, 1.0)
+    var v = PidConfig("yo", 1.0, 1.0, 1.0, 0.0)
     ConfigServer(
             port = 8083,
             get = { jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(v) },

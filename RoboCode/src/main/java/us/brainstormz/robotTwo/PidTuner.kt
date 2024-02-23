@@ -33,9 +33,10 @@ data class PidConfig(
         val kp:Double,
         val ki:Double,
         val kd:Double,
+        val min:Double,
 ){
-    constructor(p:PID):this(name = p.name, kp = p.kp, ki = p.ki, kd = p.kd)
-    fun toPID() = PID("adjusted $name", kp = kp, ki = ki, kd = kd)
+    constructor(p:PID):this(name = p.name, kp = p.kp, ki = p.ki, kd = p.kd, min = p.min)
+    fun toPID() = PID("adjusted $name", kp = kp, ki = ki, kd = kd, min = min)
 }
 
 data class PidTuningAdjusterConfig (
@@ -208,6 +209,8 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                     multipleTelemetry.addLine("current position: ${drivetrain.localizer.currentPositionAndRotation()}")
 
                     printPID(drivetrain.rotationPID)
+
+//                    multipleTelemetry.addLine("")
 //                    printPID(drivetrain.yTranslationPID)
 //                    printPID(drivetrain.xTranslationPID)
 
@@ -235,6 +238,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
         fun format(d: Double) = String.format("%.5f", d)
         multipleTelemetry.addLine("""
                             "${pid.name}" pid powers, 
+                             vm: ${format(pid.vMin)}
                               v: ${format(pid.v)}
                              dt: ${pid.deltaTimeMs}
                               p: ${format(pid.p)} 

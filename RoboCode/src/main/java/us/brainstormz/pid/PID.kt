@@ -1,5 +1,8 @@
 package us.brainstormz.pid
 
+import kotlin.math.absoluteValue
+import kotlin.math.sign
+
 /**
  * Sets pidf coefficients/multipliers.
  * @param p proportional coefficient
@@ -9,6 +12,7 @@ package us.brainstormz.pid
  * */
 class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: Double = 0.0,
           val limits:ClosedFloatingPointRange<Double> = -1.0..1.0,
+          val min:Double = 0.0,
           now:Long = System.currentTimeMillis()) {
 
     var p: Double = 0.0
@@ -21,6 +25,7 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
     var ad: Double = 0.0
 
     var v:Double = 0.0
+    var vMin = 0.0
 
     var deltaTimeMs:Long = 0
 
@@ -36,6 +41,10 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
 
     private var lastTarget:Any? = null
     private fun log(m:String) = println("[PID/$name] $m")
+
+
+    fun applyMin(v:Double):Double = v.sign  * (min + (v.absoluteValue * (1.0 -min)))
+
     fun calcPID(target:Any, error: Double, now:Long = System.currentTimeMillis()): Double {
 
         if(lastTarget==null){
@@ -68,8 +77,9 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
 
         v = ap + ai + ad
 
+        vMin = applyMin(v)
 
-        return v
+        return vMin
     }
 
     override fun toString(): String {
