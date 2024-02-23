@@ -27,7 +27,6 @@ import us.brainstormz.robotTwo.tests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.utils.ConfigServer
 import us.brainstormz.utils.ConfigServerTelemetry
 import us.brainstormz.utils.DeltaTimeMeasurer
-import java.lang.Thread.sleep
 
 data class PidConfig(
         val name:String,
@@ -122,16 +121,32 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
     }
 
     val routine = listOf<PositionAndRotation>(
-            PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
-            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
+            // X Test
+//            PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
+
+            // Y Test
+//            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
+
+            // R Test
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 10.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 180.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
+
+//            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 10.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+
     )
 
     val loopTimeMeasurer = DeltaTimeMeasurer()
@@ -192,6 +207,10 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                     multipleTelemetry.addLine("target position: ${targetState.targetRobot.drivetrainTarget.targetPosition}")
                     multipleTelemetry.addLine("current position: ${drivetrain.localizer.currentPositionAndRotation()}")
 
+                    printPID(drivetrain.rotationPID)
+//                    printPID(drivetrain.yTranslationPID)
+//                    printPID(drivetrain.xTranslationPID)
+
                     drivetrain.actuateDrivetrain(
                             target = targetState.targetRobot.drivetrainTarget,
                             previousTarget = previousTargetState?.targetRobot?.drivetrainTarget ?: targetState.targetRobot.drivetrainTarget,
@@ -210,6 +229,24 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
 //        sleep(104-84)
 
         multipleTelemetry.update()
+    }
+
+    private fun printPID(pid: PID) {
+        fun format(d: Double) = String.format("%.5f", d)
+        multipleTelemetry.addLine("""
+                            "${pid.name}" pid powers, 
+                              v: ${format(pid.v)}
+                             dt: ${pid.deltaTimeMs}
+                              p: ${format(pid.p)} 
+                                 * ${format(pid.kp)} 
+                                 = ${format(pid.ap)}
+                              i: ${format(pid.i)} 
+                                 * ${format(pid.ki)} 
+                                 = ${format(pid.ai)}
+                              d: ${format(pid.d)} 
+                                 * ${format(pid.kd)} 
+                                 = ${format(pid.ad)}
+                              e: ${format(Math.toDegrees(pid.lastError))}""")
     }
 
     fun stop() {

@@ -18,9 +18,27 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
     val defaultPrecisionInches = 5.0
     val defaultPrecisionDegrees = 3.0
 
-    var yTranslationPID = PID("y", kp = 0.06, ki = 0.0)
-    var xTranslationPID = PID("x", kp = 0.1, ki = 0.0)
-    var rotationPID = PID("r", kp = 0.7, ki = 0.00002, kd = 0.0001)
+    var yTranslationPID = PID(
+        name = "y",
+        kp = 0.06,
+        ki = 1.0E-5,
+        kd = 8.0,
+    )
+
+    var xTranslationPID = PID(
+        name = "x",
+        kp = 0.1,
+        ki = 1.0E-5,
+        kd = 8.0,
+    )
+
+    var rotationPID = PID(
+        name = "r",
+        kp = 1.0,
+        ki = 5.0E-5,
+        kd = 600.0,
+    )
+
     override var precisionInches: Double = defaultPrecisionInches
     override var precisionDegrees: Double = 3.0
 
@@ -97,8 +115,17 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
         return false
     }
 
+    fun rotationalErrorToCompassError(radians:Double):Double {
+        var tempAngleError = radians
+        while (tempAngleError > Math.PI)
+            tempAngleError -= Math.PI * 2
+
+        while (tempAngleError < -Math.PI)
+            tempAngleError += Math.PI * 2
+        return tempAngleError
+    }
+
     fun isRobotAtPosition(currentPosition: PositionAndRotation, targetPosition: PositionAndRotation, precisionInches: Double = defaultPrecisionInches, precisionDegrees: Double = defaultPrecisionDegrees): Boolean {
-        val angleRad = Math.toRadians(currentPosition.r)
 
         // Find the error in distance for X
         val distanceErrorX = targetPosition.x - currentPosition.x
@@ -106,15 +133,9 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
         val distanceErrorY = targetPosition.y - currentPosition.y
 
         // Find the error in angle
-        var tempAngleError = Math.toRadians(targetPosition.r) - angleRad
-
-        while (tempAngleError > Math.PI)
-            tempAngleError -= Math.PI * 2
-
-        while (tempAngleError < -Math.PI)
-            tempAngleError += Math.PI * 2
-
-        val angleError: Double = tempAngleError
+        val angleError = rotationalErrorToCompassError(
+    Math.toRadians(targetPosition.r) - Math.toRadians(currentPosition.r)
+        )
 
         // Find the error in distance
         val distanceError = hypot(distanceErrorX, distanceErrorY)

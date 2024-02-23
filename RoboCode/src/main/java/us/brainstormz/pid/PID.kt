@@ -15,15 +15,24 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
     var i: Double = 0.0
     var d: Double = 0.0
 
+
+    var ap: Double = 0.0
+    var ai: Double = 0.0
+    var ad: Double = 0.0
+
+    var v:Double = 0.0
+
+    var deltaTimeMs:Long = 0
+
     private fun reset(now:Long = System.currentTimeMillis()) {
-        deltaTimeMs = 0
+//        deltaTimeMs = 0
         lastTimeMs = now
         lastError = 0.0
         i = 0.0
     }
-    private var deltaTimeMs: Long = 1
+//    private var deltaTimeMs: Long = 1
     private var lastTimeMs: Long = now
-    private var lastError: Double = 0.0
+    var lastError: Double = 0.0
 
     private var lastTarget:Any? = null
     private fun log(m:String) = println("[PID/$name] $m")
@@ -41,21 +50,26 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
         if(lastTimeMs>now){
             throw Exception("No time travel allowed")
         }
-        if (deltaTimeMs < 1)
-            deltaTimeMs = 1
 
-        p = kp * error
-        i += ki * (error * deltaTimeMs.toDouble())
-        d = kd * (error - lastError) / deltaTimeMs.toDouble()
+        val deltaTimeMs = now - lastTimeMs
+        val dt = deltaTimeMs.toDouble()
 
-        i = i.coerceIn(limits)
+        p =  error
+        i += error * dt
+        d = (error - lastError) / dt
 
-        lastError = error
+        this.lastError = error
+        this.lastTimeMs = now
+        this.deltaTimeMs = deltaTimeMs
 
-        deltaTimeMs = now - lastTimeMs
-        lastTimeMs = now
+        ap = (kp * p)
+        ai = (ki * i)
+        ad = (kd * d)
 
-        return p + i + d
+        v = ap + ai + ad
+
+
+        return v
     }
 
     override fun toString(): String {
