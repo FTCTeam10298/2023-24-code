@@ -1,8 +1,5 @@
 package us.brainstormz.motion
 
-//import com.acmerobotics.dashboard.FtcDashboard
-//import com.acmerobotics.dashboard.config.Config
-//import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.hardwareClasses.MecanumDriveTrain
@@ -34,9 +31,9 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
 
     var rotationPID = PID(
         name = "r",
-        kp = 0.5,
-        ki = 2.0E-4,
-        kd = 30.0,
+        kp = 1.25,
+        ki =7.0E-5,
+        kd = 200.0,
     )
 
     override var precisionInches: Double = defaultPrecisionInches

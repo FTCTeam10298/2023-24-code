@@ -132,22 +132,29 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
 //            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
 //            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
 
-            // R Test
+//            // R Test
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 180.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
+
+            // Full Test
+            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 10.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 180.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+            PositionAndRotation(y= 10.0, x= 10.0, r= 180.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
-
-//            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
-//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
-//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-//            PositionAndRotation(y= 10.0, x= 0.0, r= 90.0),
-//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-//            PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
-//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
-
     )
 
     val loopTimeMeasurer = DeltaTimeMeasurer()
