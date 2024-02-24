@@ -976,8 +976,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             extendoOverridePower = (gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()),
                             armOverridePower = gamepad2.right_stick_x.toDouble()
                     )
-                    if (targetState.gamepad1Rumble != null) {
-                        gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                    if (targetState.gamepad1Rumble != previousTargetState?.gamepad1Rumble) {
+                        if (targetState.gamepad1Rumble != null) {
+                            gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                        }
                     }
                     hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
                 }
