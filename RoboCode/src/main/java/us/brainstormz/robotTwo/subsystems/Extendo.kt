@@ -6,7 +6,6 @@ import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import kotlin.math.absoluteValue
 
 class Extendo(override val pid: PID = PID("extendo default", kp = 0.0025)): Subsystem, SlideSubsystem {
@@ -15,12 +14,9 @@ class Extendo(override val pid: PID = PID("extendo default", kp = 0.0025)): Subs
         AllTheWayInTarget(-10),
         Min(0),
         Manual(0),
-        CloserBackboardPixelPosition(500),
-        MidBackboardPixelPosition(1000),
-        FarBackboardPixelPosition(1750),
-        AudiencePurpleCenterPosition(1500),
-        AudiencePurpleLeftPosition(1700),
-        Max(1990),
+        PurpleSidePosition(1200),
+        PurpleCenterPosition(2000),
+        Max(2000),
     }
 
     private val acceptablePositionErrorTicks = 50
