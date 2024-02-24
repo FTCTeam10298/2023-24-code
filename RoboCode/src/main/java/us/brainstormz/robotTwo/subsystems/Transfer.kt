@@ -93,6 +93,7 @@ class Transfer(private val telemetry: Telemetry) {
         val timeSinceLeftSeen = System.currentTimeMillis() - leftTransferState.timeOfSeeingMilis
         val shouldLeftServoCollect = when {
             (!leftTransferState.hasPixelBeenSeen && isCollecting) || timeSinceLeftSeen < extraTransferRollingTimeMilis -> RollerPowers.Intake
+            rightTransferState.hasPixelBeenSeen -> RollerPowers.Intake
             else -> RollerPowers.Off
         }
         val timeSinceRightSeen = System.currentTimeMillis() - rightTransferState.timeOfSeeingMilis
@@ -105,7 +106,7 @@ class Transfer(private val telemetry: Telemetry) {
         val directorState = when {
             !isCollecting -> DirectorState.Off
             shouldRightServoCollect == RollerPowers.Intake -> DirectorState.Right
-            shouldLeftServoCollect == RollerPowers.Intake-> DirectorState.Left
+            shouldLeftServoCollect == RollerPowers.Intake -> DirectorState.Left
             else -> DirectorState.Off
         }
 
@@ -131,12 +132,13 @@ class Transfer(private val telemetry: Telemetry) {
             Side.Left -> actualRobot.collectorSystemState.leftRollerAngleDegrees
             Side.Right -> actualRobot.collectorSystemState.rightRollerAngleDegrees
         }
-        return if (rollerState == RollerPowers.Off) {
-            getPowerToMoveFlapToAngle(side, flapTransferReadyAngleDegrees, actualFlapAngle)
-//            0.0
-        } else {
-            rollerState.power
-        }
+//        return if (rollerState == RollerPowers.Off) {
+//            getPowerToMoveFlapToAngle(side, flapTransferReadyAngleDegrees, actualFlapAngle)
+////            0.0
+//        } else {
+//            rollerState.power
+//        }
+        return rollerState.power
     }
 
     val leftNothingReading = SensorReading(red= 73, green= 115, blue= 158, alpha= 324)
