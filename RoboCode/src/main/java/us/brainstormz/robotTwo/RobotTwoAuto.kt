@@ -756,7 +756,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         fun assemblePath(propPosition: PropPosition): List<TargetWorld> {
             val purplePath = purplePlacementPath[propPosition] ?: emptyList()
             val yellowPath = yellowDepositPath[propPosition] ?: emptyList()
-            return purplePath //+ driveToBoardPath + yellowPath + parkPath
+            return purplePath + driveToBoardPath + yellowPath + parkPath
         }
     }
     private fun calcAutoTargetStateList(
