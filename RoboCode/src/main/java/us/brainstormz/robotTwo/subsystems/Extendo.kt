@@ -14,8 +14,8 @@ class Extendo: Subsystem, SlideSubsystem {
                         PID(
                                 name= "extendo auto",
                                 kp= 0.0014,
-                                ki= 3.0E-7,
-                                kd= 0.01,
+                                ki= 2.0E-7,
+                                kd= 0.1,
                         )
 
     enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
