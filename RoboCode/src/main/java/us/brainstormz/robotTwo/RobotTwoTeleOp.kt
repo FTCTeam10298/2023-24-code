@@ -42,7 +42,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
-        Throb(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 400).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
+        Throb(RumbleEffect.Builder().addStep(1.0, 1.0, 250).addStep(0.0, 0.0, 250).addStep(1.0, 1.0, 250).addStep(0.0, 0.0, 250).build()),//.addStep(0.0, 0.0, 0)
         OneTap(RumbleEffect.Builder().addStep(1.0, 1.0, 800).build())//.addStep(0.0, 0.0, 200),
     }
 
@@ -955,7 +955,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             armOverridePower = gamepad2.right_stick_x.toDouble()
                     )
                     if (targetState.gamepad1Rumble != previousTargetState?.gamepad1Rumble) {
-                        if (targetState.gamepad1Rumble != null) {
+                        if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
                             gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
                         }
                     }
