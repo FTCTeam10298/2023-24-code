@@ -792,28 +792,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 desiredPixelLightPattern,
                 newTimeOfColorChangeMilis
         )
-//        fun foo(l:Long, u:UUID, s:Float):String{
-//            return "hi"
-//        }
-        val baz:()->String = {
-            "hi"
-        }
-
-        val numbers:List<Int> = listOf<Int>(1, 4, 3)
-
-        fun greaterThan3(i:Int):Boolean {
-            return i > 3
-        }
-        numbers.filter(::greaterThan3)
-        numbers.filter({ i:Int -> i > 3 })
-        numbers.filter({ i -> i > 3 })
-        numbers.filter({ it > 3 })
-        numbers.map{ it > 3 }
-//        val foo:String = "larry"
-//        val baz:String = foo
-
-//        foo("yo")
-//        myFunction("yo")
 
         /**Rumble*/
         //Need to only trigger on rising edge
