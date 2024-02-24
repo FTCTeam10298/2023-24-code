@@ -26,10 +26,19 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 
 fun exponentialIncrements(from:Long) = generateSequence(from){ x -> Math.max(1, x) * 2}
 fun exponentialIncrements(from:Long, to:Long) = exponentialIncrements(from).takeWhile { it <= to }
+fun xIncrementSequence():List<PositionAndRotation>{
+    return  exponentialIncrements(from = 0, to = 100).map{ x ->
+                PositionAndRotation(
+                        y= 0.0,
+                        x= x.toDouble(),
+                        r= 0.0)
+
+    }.toList()
+}
 fun incrementSequence():List<PositionAndRotation>{
 
     return exponentialIncrements(-360, 360).flatMap{ r->
-            exponentialIncrements(from = 0, to = 30).flatMap{ y->
+        exponentialIncrements(from = 0, to = 30).flatMap{ y->
             exponentialIncrements(from = 0, to = 60).map{ x ->
 
 
@@ -144,14 +153,15 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                 })
     }
 
-    val routine = incrementSequence()
+//    val routine = incrementSequence()
+    val routine = xIncrementSequence()
     val routine2 = listOf<PositionAndRotation>(
             // X Test
-//            PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
-//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
-//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
+            PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
 
-            // Y Test
+//             Y Test
 //            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
 //            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
 //            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
@@ -163,26 +173,26 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
 //            PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
 //            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
 
-            // Full Test
-            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
-            PositionAndRotation(y= 0.0, x= 5.0, r= 0.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 10.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 5.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 120.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 180.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
-            PositionAndRotation(y= 5.0, x= 5.0, r= 180.0),
-            PositionAndRotation(y= 10.0, x= 10.0, r= 180.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
-            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
+//            // Full Test
+//            PositionAndRotation(y= 0.0, x= 10.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 5.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 10.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 5.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 10.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 120.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 180.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 90.0),
+//            PositionAndRotation(y= 5.0, x= 5.0, r= 180.0),
+//            PositionAndRotation(y= 10.0, x= 10.0, r= 180.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 270.0),
+//            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
     )
 
 
