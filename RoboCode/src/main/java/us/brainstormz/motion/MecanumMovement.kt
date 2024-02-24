@@ -32,9 +32,14 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
     var rotationPID = PID(
         name = "r",
         kp = 1.25,
-        ki =7.0E-5,
-        kd = 200.0,
+        ki = 0.001,
+        kd = 300.0,
     )
+    /*
+        "kp" : 1.3,
+    "ki" : 0.001,
+    "kd" : 300.0,
+     */
 
     override var precisionInches: Double = defaultPrecisionInches
     override var precisionDegrees: Double = 3.0

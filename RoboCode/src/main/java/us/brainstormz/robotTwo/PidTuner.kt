@@ -35,6 +35,15 @@ fun xIncrementSequence():List<PositionAndRotation>{
 
     }.toList()
 }
+fun rIncrementSequence():List<PositionAndRotation>{
+    return  exponentialIncrements(from = 0, to = 300).map{ x ->
+        PositionAndRotation(
+                y= 0.0,
+                x= 0.0,
+                r= x.toDouble())
+
+    }.toList()
+}
 fun incrementSequence():List<PositionAndRotation>{
 
     return exponentialIncrements(-360, 360).flatMap{ r->
@@ -153,8 +162,9 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                 })
     }
 
-//    val routine = incrementSequence()
-    val routine = xIncrementSequence()
+    val routine = incrementSequence()
+//    val routine = xIncrementSequence()
+//    val routine = rIncrementSequence()
     val routine2 = listOf<PositionAndRotation>(
             // X Test
             PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
@@ -256,10 +266,10 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                     multipleTelemetry.addLine("current position: ${drivetrain.localizer.currentPositionAndRotation()}")
 
                     printPID(drivetrain.rotationPID)
+                    printPID(drivetrain.yTranslationPID)
+                    printPID(drivetrain.xTranslationPID)
 
 //                    multipleTelemetry.addLine("")
-//                    printPID(drivetrain.yTranslationPID)
-//                    printPID(drivetrain.xTranslationPID)
 
                     drivetrain.actuateDrivetrain(
                             target = targetState.targetRobot.drivetrainTarget,
