@@ -32,6 +32,7 @@ import us.brainstormz.robotTwo.subsystems.Transfer.DirectorState
 import us.brainstormz.robotTwo.subsystems.Transfer.RollerPowers
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
+import java.io.File
 
 class RobotTwoAuto(private val telemetry: Telemetry) {
 
@@ -81,8 +82,10 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         )
     }
 
+    data class MovementPIDSet(val x: PID, val y: PID, val r: PID)
     data class RobotState(
             val positionAndRotation: PositionAndRotation,
+            val movementPIDs: MovementPIDSet? = null,
             val depoState: DepoState,
             val collectorSystemState: CollectorState
     )
@@ -105,8 +108,15 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState)
     }
 
+    private val rotationWithExtendoOutPID = PID(
+            name = "r with extendo",
+            kp = 1.0,
+            ki = 0.00002,
+            kd = 300.0,
+            )
+
     private fun purplePlacement(startPosition: StartPosition, propPosition: PropPosition): List<TargetWorld> {
-        fun sidePropPosition(rotationPolarity: Int) = startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 5.0, r= startPosition.redStartPosition.r - (20.0*rotationPolarity))
+        fun sidePropPosition(rotationPolarity: Int) = startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 8.0, r= startPosition.redStartPosition.r + (30.0*rotationPolarity))
         val depositingPosition = when (propPosition) {
             PropPosition.Left -> sidePropPosition(+1)
             PropPosition.Center -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 2.0)
@@ -124,11 +134,13 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
-                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            drivetrain.rotationPID = rotationWithExtendoOutPID
                             telemetry.addLine("Waiting for extendo")
                             val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
                             (isExtendoAtPosition && isRobotAtPosition(targetState, actualState, previousActualState))// || hasTimeElapsed(2000, targetState)
-                        },).asTargetWorld,
+                        },
+                ).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
                                 collectorSystemState = CollectorState(CollectorPowers.EjectDraggedPixelPower, extendoPosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
@@ -588,7 +600,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
     private val intake = Intake()
     private val transfer = Transfer(telemetry)
-    private val extendo = Extendo(PID("extendo auto", kp = 0.0013, ki = 0.00000001))
+    private val extendo = Extendo()
 
     private lateinit var collectorSystem: CollectorSystem
     private lateinit var arm: Arm
@@ -664,6 +676,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
     }
 
+
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     private val loopTimeMeasurer = DeltaTimeMeasurer()
     fun loop(hardware: RobotTwoHardware, gamepad1: Gamepad) {
@@ -708,6 +721,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
         telemetry.addLine("loop time: $loopTime milis")
+        println("loopTime: ${loopTimeMeasurer.peakDeltaTime()}")
 
         telemetry.addLine("average loop time: ${loopTimeMeasurer.getAverageLoopTimeMillis()}")
 

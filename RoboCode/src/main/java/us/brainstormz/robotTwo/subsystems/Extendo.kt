@@ -8,7 +8,15 @@ import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.absoluteValue
 
-class Extendo(override val pid: PID = PID("extendo default", kp = 0.0025)): Subsystem, SlideSubsystem {
+class Extendo: Subsystem, SlideSubsystem {
+    override var pid: PID =
+//                        PID("extendo default", kp = 0.0025)
+                        PID(
+                                name= "extendo auto",
+                                kp= 0.0014,
+                                ki= 3.0E-7,
+                                kd= 0.01,
+                        )
 
     enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         AllTheWayInTarget(-10),
