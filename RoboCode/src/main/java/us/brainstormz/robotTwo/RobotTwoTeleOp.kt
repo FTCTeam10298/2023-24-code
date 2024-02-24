@@ -42,6 +42,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
+        Throb(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 400).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
         OneTap(RumbleEffect.Builder().addStep(1.0, 1.0, 800).build())//.addStep(0.0, 0.0, 200),
     }
 
@@ -818,7 +819,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         //Need to only trigger on rising edge
 //        handoffIsReadyCheck
         val gamepad1RumbleEffectToCondition: Map<RumbleEffects, List<()->Boolean>> = mapOf(
-                RumbleEffects.TwoTap to listOf(
+                RumbleEffects.Throb to listOf(
                         {handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)}
                 )
 //                RumbleEffects.OneTap to listOf(
