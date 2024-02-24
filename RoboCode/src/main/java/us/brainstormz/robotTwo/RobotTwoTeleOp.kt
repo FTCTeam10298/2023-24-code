@@ -23,6 +23,7 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 import us.brainstormz.utils.DataClassHelper
+import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -519,6 +520,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 previousTargetState.doingHandoff
             }
         }
+        // tell humans
         val handoffIsReadyCheck = handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)
         telemetry.addLine("doHandoffSequence: $doHandoffSequence")
         telemetry.addLine("handoffIsReadyCheck: $handoffIsReadyCheck")
@@ -789,10 +791,36 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 desiredPixelLightPattern,
                 newTimeOfColorChangeMilis
         )
+//        fun foo(l:Long, u:UUID, s:Float):String{
+//            return "hi"
+//        }
+        val baz:()->String = {
+            "hi"
+        }
+
+        val numbers:List<Int> = listOf<Int>(1, 4, 3)
+
+        fun greaterThan3(i:Int):Boolean {
+            return i > 3
+        }
+        numbers.filter(::greaterThan3)
+        numbers.filter({ i:Int -> i > 3 })
+        numbers.filter({ i -> i > 3 })
+        numbers.filter({ it > 3 })
+        numbers.map{ it > 3 }
+//        val foo:String = "larry"
+//        val baz:String = foo
+
+//        foo("yo")
+//        myFunction("yo")
 
         /**Rumble*/
         //Need to only trigger on rising edge
-//        val gamepad1RumbleEffectToCondition: Map<RumbleEffects, List<()->Boolean>> = mapOf(
+//        handoffIsReadyCheck
+        val gamepad1RumbleEffectToCondition: Map<RumbleEffects, List<()->Boolean>> = mapOf(
+                RumbleEffects.TwoTap to listOf(
+                        {handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)}
+                )
 //                RumbleEffects.OneTap to listOf(
 //                        { lift.isSlideSystemAllTheWayIn(actualRobot.depoState.lift) && lift.isSlideSystemAllTheWayIn(previousActualWorld.actualRobot.depoState.lift)},
 //                        { theRobotJustCollectedTwoPixels },
@@ -800,12 +828,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 //                RumbleEffects.TwoTap to listOf(
 //                        { handoffIsReadyCheck && !previousTargetState.doingHandoff },
 //                )
-//        )
+        )
 //
-//        val gamepad1RumbleRoutine = gamepad1RumbleEffectToCondition.toList().firstOrNull { (rumble, listOfConditions) ->
-//            listOfConditions.fold(false) { acc, it -> acc || it() }
-//        }?.first
-        val gamepad1RumbleRoutine = null
+        val gamepad1RumbleRoutine = gamepad1RumbleEffectToCondition.toList().firstOrNull { (rumble, listOfConditions) ->
+            listOfConditions.fold(false) { acc, it -> acc || it() }
+        }?.first
+//        val gamepad1RumbleRoutine = null
 
 
         return TargetWorld(

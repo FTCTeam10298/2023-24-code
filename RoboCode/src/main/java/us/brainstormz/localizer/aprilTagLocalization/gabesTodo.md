@@ -16,3 +16,9 @@
 6. note the diff
 7. line up robot to new uncovered tag
 
+Non-AprilTag Todo:
+
+Set off some notification (light, vibration) when pixels are engaged. (heartbeat?)
+
+Rumble code: RobotTwoTeleOp.kt lines 42-45, 793-808, 953-955
+

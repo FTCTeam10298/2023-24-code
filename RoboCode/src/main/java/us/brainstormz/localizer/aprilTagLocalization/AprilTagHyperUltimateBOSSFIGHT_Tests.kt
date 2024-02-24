@@ -155,7 +155,7 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
             val detection: AprilTagDetection = tagWithLeastYawDistortion ?: currentDetections.first();
 //                if (detection == tagWithLeastYawDistortion) {
 //                else {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection?.id, detection.metadata.name))
+            telemetry.addLine(String.format("\n==== (ID %d) %s", detection?.id, detection.metadata.name))
 //                    }}
 
             val theTag: AprilTagDetection = detection
