@@ -42,7 +42,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
-        Throb(RumbleEffect.Builder().addStep(1.0, 1.0, 250).addStep(0.0, 0.0, 250).addStep(1.0, 1.0, 250).addStep(0.0, 0.0, 250).build()),//.addStep(0.0, 0.0, 0)
+        Throb(RumbleEffect.Builder().addStep(1.0, 1.0, 250).addStep(0.0, 0.0, 250).build()),//.addStep(0.0, 0.0, 0)
         OneTap(RumbleEffect.Builder().addStep(1.0, 1.0, 800).build())//.addStep(0.0, 0.0, 200),
     }
 
