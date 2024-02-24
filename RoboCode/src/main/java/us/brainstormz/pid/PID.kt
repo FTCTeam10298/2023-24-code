@@ -56,7 +56,7 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
             reset(now)
         }
 
-        if(lastTimeMs>now){
+        if (lastTimeMs>now) {
             throw Exception("No time travel allowed")
         }
 
@@ -65,7 +65,11 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
 
         p =  error
         i += error * dt
-        d = (error - lastError) / dt
+        d = if (dt == 0.0) {
+            0.0
+        } else {
+            (error - lastError) / dt
+        }
 
         this.lastError = error
         this.lastTimeMs = now

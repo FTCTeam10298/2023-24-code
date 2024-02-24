@@ -64,7 +64,6 @@ class Arm: Subsystem {
 
     private val armAngleMidpointDegrees = 150.0
     fun calcPowerToReachTarget(targetDegrees: Double, currentDegrees: Double): Double {
-//        val currentDegrees = getArmAngleDegrees()
         val errorDegrees = (targetDegrees - currentDegrees) % 360
 
         val isArmTargetInOfMidpoint = targetDegrees > armAngleMidpointDegrees
@@ -77,7 +76,12 @@ class Arm: Subsystem {
             false -> outHoldingConstant
         }
 
+        println("arm pid name: ${pid.name}")
+        println("arm target: ${targetDegrees}")
+        println("arm error: ${errorDegrees}")
+        println("arm pid v: ${pid.v}")
         val pidPower = pid.calcPID(target = targetDegrees, error = errorDegrees)
+        println("arm pidPower: $pidPower")
         val gravityCompPower = (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
         val power = pidPower + gravityCompPower
 //        telemetry.addLine("Arm currentDegrees: $currentDegrees")
