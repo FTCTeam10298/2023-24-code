@@ -12,7 +12,7 @@ class Extendo: Subsystem, SlideSubsystem {
     override var pid: PID =
 //                        PID("extendo default", kp = 0.0025)
                         PID(
-                                name= "extendo auto",
+                                name= "extendo",
                                 kp= 0.002,
                                 ki= 2.0E-7,
                                 kd= 0.13,
