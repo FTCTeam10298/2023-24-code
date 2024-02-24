@@ -23,6 +23,7 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.ConfigServer
 import us.brainstormz.utils.ConfigServerTelemetry
 import us.brainstormz.utils.DeltaTimeMeasurer
+import java.lang.Thread.sleep
 
 fun exponentialIncrements(from:Long) = generateSequence(from){ x -> Math.max(1, x) * 2}
 fun exponentialIncrements(from:Long, to:Long) = exponentialIncrements(from).takeWhile { it <= to }
@@ -47,8 +48,8 @@ fun rIncrementSequence():List<PositionAndRotation>{
 fun incrementSequence():List<PositionAndRotation>{
 
     return exponentialIncrements(-360, 360).flatMap{ r->
-        exponentialIncrements(from = 0, to = 30).flatMap{ y->
-            exponentialIncrements(from = 0, to = 60).map{ x ->
+            exponentialIncrements(from = 0, to = 60).flatMap{ x ->
+                exponentialIncrements(from = 0, to = 30).map{ y->
 
 
                 //Random.nextDouble(-360.0, 360.0)
@@ -205,8 +206,6 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
 //            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0), // burner
     )
 
-
-
     val loopTimeMeasurer = DeltaTimeMeasurer()
     var timeOfTargetDone = 0L
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
@@ -286,7 +285,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
 
         multipleTelemetry.addLine("average loopTime: ${loopTimeMeasurer.getAverageLoopTimeMillis()}")
 
-//        sleep(104-84)
+        sleep(104-84)
 
         multipleTelemetry.update()
     }
