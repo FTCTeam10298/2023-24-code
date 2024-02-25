@@ -1,9 +1,8 @@
 package us.brainstormz.robotTwo
 
-import com.acmerobotics.dashboard.config.Config
+//import com.outoftheboxrobotics.photoncore.hardware.motor.PhotonDcMotor
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
-//import com.outoftheboxrobotics.photoncore.hardware.motor.PhotonDcMotor
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
@@ -22,22 +21,18 @@ import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import posePlanner.Point2D
-import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
-import us.brainstormz.localizer.Localizer
-import us.brainstormz.motion.MecanumMovement
-import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Drivetrain
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.MovementMode
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
+import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
 import java.lang.Thread.sleep
 import kotlin.math.PI
 
@@ -130,6 +125,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var launcherServo: Servo
 
     lateinit var lights: RevBlinkinLedDriver
+    lateinit var neopixelDriver: AdafruitNeopixelSeesaw
+
+    //Neopixel Stuff
+    var neo: AdafruitNeopixelSeesaw? = null
+
 
 //
 //    data class HardwareHalves (
@@ -231,6 +231,18 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
         lights = hwMap["lights"] as RevBlinkinLedDriver
+
+        //neopixel support
+        try {
+            neopixelDriver = hwMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
+            neopixelDriver!!.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB) //I don't get this.
+            neopixelDriver!!.init_neopixels()
+        }
+        catch(l: Throwable) {
+            kotlin.io.println("HAHA NEOPIXEL DED LOL JK TLDR")
+        }
+
+
 
         // Drivetrain
         parallelEncoder.direction = DcMotorSimple.Direction.REVERSE
@@ -429,6 +441,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         /**Lights*/
         lights.setPattern(targetState.targetRobot.lights.targetColor)
+
+        neopixelDriver!!.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB)
+        neopixelDriver!!.init_neopixels()
+
+
     }
 
     fun wiggleTest(telemetry: Telemetry, gamepad: Gamepad) {
