@@ -47,16 +47,17 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
 
     fun calcPID(target:Any, error: Double, now:Long = System.currentTimeMillis()): Double {
 
-        if(lastTarget==null){
+        if (lastTarget == null) {
             log("setting initial target: $target")
+            reset(now)
             lastTarget = target
-        } else if(lastTarget!=target){
+        } else if (lastTarget != target) {
             log("resetting due to target change (changed from $lastTarget to $target)")
             lastTarget = target
             reset(now)
         }
 
-        if (lastTimeMs>now) {
+        if (lastTimeMs > now) {
             throw Exception("No time travel allowed")
         }
 
