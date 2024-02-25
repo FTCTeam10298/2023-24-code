@@ -91,3 +91,78 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
         return "Proportional: $kp\n Integral: $ki\n Derivative: $kd"
     }
 }
+
+data class PIConfig (
+        val kp: Double,
+        val ki: Double,
+        val kd: Double,
+)
+data class PIDState(
+        val timeMs:Long,
+        val p:Double,
+        val i:Double,
+        val d:Double,
+        val error:Double,
+        val v:Double,
+)
+
+data class TargetedPIDState(
+    val target:Any,
+    val state:PIDState,
+)
+
+fun doTargetedPid(now:Long, target: Any, error:Double, config:PIConfig, prev:TargetedPIDState?, default:Double = 0.0):PIDState{
+
+    val stateToUse = prev?.let{
+        if(it.target!=target){
+            null
+        }else{
+            it
+        }
+    }
+
+    return doPid(
+            now = now,
+            error = error,
+            config = config,
+            prev = stateToUse?.state,
+            default = default)
+}
+
+fun doPid(now:Long, error:Double, config:PIConfig, prev:PIDState?, default:Double = 0.0):PIDState{
+    return prev?.let{prev ->
+        val deltaTimeMs = now - prev.timeMs
+        val dt = deltaTimeMs.toDouble()
+
+        val p =  error
+        val i = prev.i + (error * dt)
+        val d = if (dt == 0.0) {
+            0.0
+        } else {
+            (error - prev.error) / dt
+        }
+
+
+        val ap = (config.kp * p)
+        val ai = (config.ki * i)
+        val ad = (config.kd * d)
+
+        val v = ap + ai + ad
+
+        PIDState(
+                timeMs = now,
+                p = p,
+                i = i,
+                d = d,
+                error = error,
+                v = v
+        )
+    } ?: PIDState(
+            timeMs = now,
+            p = 0.0,
+            i = 0.0,
+            d = 0.0,
+            error = error,
+            v = default,
+    )
+}
