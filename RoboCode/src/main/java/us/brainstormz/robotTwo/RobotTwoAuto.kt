@@ -164,7 +164,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
-                                collectorSystemState = CollectorState(CollectorPowers.Eject, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
@@ -468,9 +468,10 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         fun assemblePath(propPosition: PropPosition): List<TargetWorld> {
             val purplePath = purplePlacementPath(propPosition)
             val yellowPath = yellowDepositPath[propPosition] ?: emptyList()
-            return purplePath //+ driveToBoardPath + yellowPath + parkPath
+            return purplePath + driveToBoardPath + yellowPath + parkPath
         }
     }
+
     private fun calcAutoTargetStateList(
             alliance: RobotTwoHardware.Alliance,
             startPosition: StartPosition,
@@ -628,7 +629,6 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         opencv.internalCamera = false
         opencv.cameraName = "Webcam 1"
         opencv.cameraOrientation = OpenCvCameraRotation.UPRIGHT
-        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
     }
 
     private fun runCamera(opencv: OpenCvAbstraction, wizardResults: WizardResults) {

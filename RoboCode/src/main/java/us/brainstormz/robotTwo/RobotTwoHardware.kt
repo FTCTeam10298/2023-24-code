@@ -359,14 +359,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                 }
             }
             else -> {
-                telemetry.clearAll()
-                telemetry.addLine("Extendo target ${targetState.targetRobot.collectorTarget.extendo.targetPosition} ticks: ${targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks}")
-                telemetry.addLine("Extendo actual ${actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks}")
-
                 extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
             }
         }
-        telemetry.addLine("Extendo power ${extendoPower}")
         extendo.powerSubsystem(extendoPower, this)
 
         /**Collector*/
