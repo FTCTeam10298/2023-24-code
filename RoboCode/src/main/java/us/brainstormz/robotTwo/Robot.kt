@@ -18,7 +18,7 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHardware) {
     val intake = Intake()
     val transfer = Transfer(telemetry)
-    val extendo = Extendo()
+    val extendo = Extendo(telemetry)
     val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
     val leftClaw: Claw = Claw(telemetry)
     val rightClaw: Claw = Claw(telemetry)
@@ -66,8 +66,8 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
                             extendo= extendo,
                             intake= intake,
                             transfer= transfer,
-                            extendoOverridePower = (gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()),
-                            armOverridePower = gamepad2.right_stick_x.toDouble()
+                            extendoOverridePower = 0.0,
+                            armOverridePower = 0.0
                     )
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
                         gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)

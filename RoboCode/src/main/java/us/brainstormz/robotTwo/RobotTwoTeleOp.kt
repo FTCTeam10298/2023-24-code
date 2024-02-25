@@ -30,7 +30,7 @@ import kotlin.math.absoluteValue
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val intake = Intake()
     val transfer = Transfer(telemetry)
-    val extendo = Extendo()
+    val extendo = Extendo(telemetry)
     val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
     val leftClaw: Claw = Claw(telemetry)
     val rightClaw: Claw = Claw(telemetry)

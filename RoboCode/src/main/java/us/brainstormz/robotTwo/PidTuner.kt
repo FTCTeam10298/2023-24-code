@@ -122,7 +122,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
     private val drivetrain = Drivetrain(hardware, odometryLocalizer, multipleTelemetry)
 
     private val transfer = Transfer(multipleTelemetry)
-    private val extendo = Extendo()
+    private val extendo = Extendo(multipleTelemetry)
 
     private val collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= multipleTelemetry)
     private val arm = Arm()

@@ -600,7 +600,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
     private val intake = Intake()
     private val transfer = Transfer(telemetry)
-    private val extendo = Extendo()
+    private val extendo = Extendo(telemetry)
 
     private lateinit var collectorSystem: CollectorSystem
     private lateinit var arm: Arm
