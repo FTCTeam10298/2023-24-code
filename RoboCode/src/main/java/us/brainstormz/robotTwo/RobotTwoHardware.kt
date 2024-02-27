@@ -133,6 +133,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var launcherServo: Servo
 
     lateinit var lights: RevBlinkinLedDriver
+    public lateinit var neopixelDriver: AdafruitNeopixelSeesaw
+
+    //Neopixel Stuff
 
 //
 //    data class HardwareHalves (
@@ -239,6 +242,15 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
         lights = hwMap["lights"] as RevBlinkinLedDriver
+
+        //neopixel support
+        var neopixelDriver: AdafruitNeopixelSeesaw?
+
+        neopixelDriver = hwMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
+        neopixelDriver.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB) //I don't get this.
+        neopixelDriver.init_neopixels()
+
+
 
         // Drivetrain
         parallelEncoder.direction = DcMotorSimple.Direction.REVERSE
@@ -411,6 +423,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         /**Lights*/
         lights.setPattern(targetState.targetRobot.lights.targetColor)
+
+        neopixelDriver.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB)
+        neopixelDriver!!.init_neopixels()
+
+
     }
 
     fun wiggleTest(telemetry: Telemetry, gamepad: Gamepad) {

@@ -18,7 +18,17 @@
 
 Non-AprilTag Todo:
 
-Set off some notification (light, vibration) when pixels are engaged. (heartbeat?)
+Set off some notification (light, vibration) when pixels are engaged. (heartbeat?) - DONE!
 
 Rumble code: RobotTwoTeleOp.kt lines 42-45, 793-808, 953-955
+
+LIGHTING 
+
+Implement init — done!
+data representation of pixels - done
+Create actualizer - use 1 draw command, experimentation 
+Implement flood pixels
+Implement draw half
+Connect to bot
+Complete
 
