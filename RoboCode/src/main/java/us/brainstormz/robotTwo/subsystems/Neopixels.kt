@@ -14,25 +14,54 @@ class Neopixels: Subsystem {
 
     val strandLength: Int = 60
     //represents light current status
-    var lightStrandStatus = mutableListOf<MutableList<Double>>()
+    var lightStrandTarget = mutableListOf<MutableList<Double>>()
 
     fun prepareNeopixels() {
         //Create a list of pixel values we can change... the function to do it is not good right now.
         var prototypeLightStatus: MutableList<Double> = mutableListOf(0.0, 0.0, 0.0, 0.0) //R, G, B, W
 
         for (n in 1..strandLength) {
-            lightStrandStatus += prototypeLightStatus
+            lightStrandTarget += prototypeLightStatus
         }
-        println("Initial Status String: $lightStrandStatus")
+        println("Initial Status String: $lightStrandTarget")
         }
 
     override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {
         println("Not yet implemented")
     }
 
+    data class ColorInRGBW(val red: Double, val green: Double, val blue: Double, val white: Double)
 
-    fun flood(color: Int=0x333333)
+
+    fun flood(targetColor: ColorInRGBW)
     {
+        for (n in 1..strandLength) {
+            lightStrandTarget[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
+        }
+        println("Result of flooding with $targetColor: \r $lightStrandTarget")
+
+    }
+
+    //I should make a data class
+
+    fun showHalf(firstTargetColor: ColorInRGBW, secondTargetColor: ColorInRGBW) {
+
+        val halfOfStrand: Int
+        if (strandLength % 2 == 0) {
+            halfOfStrand = (strandLength/2).toInt()
+        }
+        else {
+            halfOfStrand =  (strandLength/2 - 0.5).toInt()
+        }
+
+        for (n in 1..halfOfStrand) {
+            lightStrandTarget[n] = mutableListOf(firstTargetColor.red, firstTargetColor.green, firstTargetColor.blue, firstTargetColor.white)
+        }
+
+        for (n in halfOfStrand + 1..strandLength) {
+            lightStrandTarget[n] = mutableListOf(firstTargetColor.red, firstTargetColor.green, firstTargetColor.blue, firstTargetColor.white)
+        }
+
 
     }
     fun writeTargetStateToLights(pixelStrandController: AdafruitNeopixelSeesaw){
@@ -40,7 +69,7 @@ class Neopixels: Subsystem {
 
         var indexOfThisPixelTarget: Int = 0
         //what is this color format? I don't get it.
-        for (pixelStatus in lightStrandStatus) {
+        for (pixelStatus in lightStrandTarget) {
             indexOfThisPixelTarget += 1
             val targetRed = pixelStatus[0].toInt().toByte()
             val targetGreen = pixelStatus[1].toInt().toByte()
