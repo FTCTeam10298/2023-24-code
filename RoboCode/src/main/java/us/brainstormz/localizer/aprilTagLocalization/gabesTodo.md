@@ -25,6 +25,10 @@ Rumble code: RobotTwoTeleOp.kt lines 42-45, 793-808, 953-955
 LIGHTING 
 
 Implement init — done!
-Create actualizer 
+data representation of pixels - done
+Create actualizer - use 1 draw command, experimentation 
 Implement flood pixels
 Implement draw half
+Connect to bot
+Complete
+

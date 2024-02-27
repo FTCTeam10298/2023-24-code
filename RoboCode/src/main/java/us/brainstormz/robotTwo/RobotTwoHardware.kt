@@ -133,11 +133,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var launcherServo: Servo
 
     lateinit var lights: RevBlinkinLedDriver
-    lateinit var neopixelDriver: AdafruitNeopixelSeesaw
+    public lateinit var neopixelDriver: AdafruitNeopixelSeesaw
 
     //Neopixel Stuff
-    var neo: AdafruitNeopixelSeesaw? = null
-
 
 //
 //    data class HardwareHalves (
@@ -246,14 +244,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         lights = hwMap["lights"] as RevBlinkinLedDriver
 
         //neopixel support
-        try {
-            neopixelDriver = hwMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
-            neopixelDriver!!.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB) //I don't get this.
-            neopixelDriver!!.init_neopixels()
-        }
-        catch(l: Throwable) {
-            kotlin.io.println("HAHA NEOPIXEL DED LOL JK TLDR")
-        }
+        var neopixelDriver: AdafruitNeopixelSeesaw?
+
+        neopixelDriver = hwMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
+        neopixelDriver.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB) //I don't get this.
+        neopixelDriver.init_neopixels()
 
 
 
@@ -429,7 +424,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         /**Lights*/
         lights.setPattern(targetState.targetRobot.lights.targetColor)
 
-        neopixelDriver!!.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB)
+        neopixelDriver.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB)
         neopixelDriver!!.init_neopixels()
 
 

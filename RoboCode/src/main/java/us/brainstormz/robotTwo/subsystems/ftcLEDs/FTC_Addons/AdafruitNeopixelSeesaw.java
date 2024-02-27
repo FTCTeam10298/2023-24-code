@@ -114,6 +114,28 @@ public class AdafruitNeopixelSeesaw extends I2cDeviceSynchDevice<I2cDeviceSynch>
         write(show_command);
 
     }
+
+    public void setColorRGBW(byte red, byte green, byte blue, byte white, short location){
+
+        byte[] data = new byte[wOffset == rOffset ? 3 : 4];
+        data[rOffset] = red;
+        data[bOffset] = blue;
+        data[gOffset] = green;
+        data[wOffset] = rOffset == wOffset ? red : white;
+
+        short mem_location = (short) (location * (wOffset == rOffset ? 3 : 4));
+
+        writeToNeopixelBuffer(
+                Util.concatenateByteArrays(
+                        TypeConversion.shortToByteArray(mem_location),
+                        data
+                )
+        );
+        byte[] show_command = {0x0e, 0x05};
+        write(show_command);
+
+    }
+
     public void writeToNeopixelBuffer(byte[] data){
 
 
