@@ -103,20 +103,14 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         return timeSinceTargetStarted >= timeToElapseMilis
     }
 
-    private fun isRobotAtPosition(targetWorld: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld, precisionInches: Double = drivetrain.precisionInches): Boolean {
+    private fun isRobotAtPosition(targetWorld: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld, precisionInches: Double = drivetrain.precisionInches, precisionDegrees: Double = drivetrain.precisionDegrees): Boolean {
 //        return drivetrain.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetWorld.targetRobot.drivetrainTarget.targetPosition)
-        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches= precisionInches)
+        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = precisionInches, precisionDegrees = precisionDegrees)
     }
 
-    private val rotationWithExtendoOutPID = PID(
-            name = "r with extendo",
-            kp = 1.0,
-            ki = 0.00002,
-            kd = 300.0,
-            )
 
     private fun purplePlacement(startPosition: StartPosition, propPosition: PropPosition): List<TargetWorld> {
-        fun sidePropPosition(rotationPolarity: Int) = startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 15.0, r= startPosition.redStartPosition.r + (30.0*rotationPolarity))
+        fun sidePropPosition(rotationPolarity: Int) = startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 18.0, r= startPosition.redStartPosition.r + (35.0*rotationPolarity))
         val depositingPosition = when (propPosition) {
             PropPosition.Left -> sidePropPosition(+1)
             PropPosition.Center -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 5.0)
@@ -127,7 +121,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             PropPosition.Center -> ExtendoPositions.PurpleCenterPosition
             PropPosition.Right -> ExtendoPositions.PurpleSidePosition
         }
+
         val depositingMoveAroundTrussWaypoint = depositingPosition.copy(r= startPosition.redStartPosition.r)
+        val extendoMidpointForTurn = ExtendoPositions.PurpleSideHalf
 
         val lineUpForDeposit = when (propPosition) {
             PropPosition.Center -> listOf(
@@ -155,7 +151,19 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                                 telemetry.addLine("Waiting for drivetrain to go around truss")
                                 val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 1.0)
-                                isRobotAtPosition || hasTimeElapsed(2000, targetState)
+                                isRobotAtPosition || hasTimeElapsed(4000, targetState)
+                            },
+                    ).asTargetWorld,
+                    AutoTargetWorld(
+                            targetRobot = RobotState(
+                                    collectorSystemState = CollectorState(CollectorPowers.Off, extendoMidpointForTurn, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                    positionAndRotation = depositingPosition,
+                                    depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
+                            ),
+                            isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                telemetry.addLine("Waiting for extendo")
+                                val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 1.0, precisionDegrees = 2.0)
+                                isRobotAtPosition || hasTimeElapsed(4000, targetState)
                             },
                     ).asTargetWorld,
                     AutoTargetWorld(
@@ -165,11 +173,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                     depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                             ),
                             isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                                drivetrain.rotationPID = rotationWithExtendoOutPID
                                 telemetry.addLine("Waiting for extendo")
-                                val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 1.0)
                                 val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
-                                (isExtendoAtPosition && isRobotAtPosition) || hasTimeElapsed(4000, targetState)
+                                isExtendoAtPosition || hasTimeElapsed(4000, targetState)
                             },
                     ).asTargetWorld,
             )
