@@ -87,11 +87,11 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
             yInchesPerMili = 0.25 / 1000.0,
             rDegreesPerMili = 3 / 1000.0
     )
-    fun checkIfDrivetrainIsAtPosition(targetPosition: PositionAndRotation, actualWorld: ActualWorld, previousWorld: ActualWorld): Boolean {
+    fun checkIfDrivetrainIsAtPosition(targetPosition: PositionAndRotation, actualWorld: ActualWorld, previousWorld: ActualWorld, precisionInches: Double): Boolean {
         val isRobotCurrentlyAtTarget = isRobotAtPosition(
                 currentPosition= actualWorld.actualRobot.positionAndRotation,
                 targetPosition= targetPosition,
-                precisionInches= 3.0,
+                precisionInches= precisionInches,
                 precisionDegrees= 5.0)
         val willRobotStayAtTarget = getVelocity(actualWorld, previousWorld).checkIfIsLessThan(maxVelocityToStayAtPosition)
         return isRobotCurrentlyAtTarget && willRobotStayAtTarget

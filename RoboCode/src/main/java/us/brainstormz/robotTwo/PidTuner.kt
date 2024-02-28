@@ -223,7 +223,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                 },
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
                     multipleTelemetry.addLine("previousTargetState: $previousTargetState")
-                    val isAtTarget = drivetrain.checkIfDrivetrainIsAtPosition(targetPosition = previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition ?: PositionAndRotation(), actualWorld = actualState, previousWorld = previousActualState?:actualState)
+                    val isAtTarget = drivetrain.checkIfDrivetrainIsAtPosition(targetPosition = previousTargetState?.targetRobot?.drivetrainTarget?.targetPosition ?: PositionAndRotation(), actualWorld = actualState, previousWorld = previousActualState?:actualState, precisionInches= drivetrain.precisionInches)
                     multipleTelemetry.addLine("isAtTarget: $isAtTarget")
                     val newTargetPosition = if (isAtTarget) {
                         val timeSinceEnd = actualState.timestampMilis - timeOfTargetDone

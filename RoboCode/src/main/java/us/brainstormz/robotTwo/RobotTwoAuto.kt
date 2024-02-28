@@ -103,9 +103,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         return timeSinceTargetStarted >= timeToElapseMilis
     }
 
-    private fun isRobotAtPosition(targetWorld: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld): Boolean {
+    private fun isRobotAtPosition(targetWorld: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld, precisionInches: Double = drivetrain.precisionInches): Boolean {
 //        return drivetrain.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetWorld.targetRobot.drivetrainTarget.targetPosition)
-        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState)
+        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches= precisionInches)
     }
 
     private val rotationWithExtendoOutPID = PID(
@@ -137,10 +137,10 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                         isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                             drivetrain.rotationPID = rotationWithExtendoOutPID
                             telemetry.addLine("Waiting for extendo")
+                            val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 1.0)
                             val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
-                            (isExtendoAtPosition && isRobotAtPosition(targetState, actualState, previousActualState))// || hasTimeElapsed(2000, targetState)
-                        },
-                ).asTargetWorld,
+                            (isExtendoAtPosition && isRobotAtPosition) || hasTimeElapsed(4000, targetState)
+                        },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
                                 collectorSystemState = CollectorState(CollectorPowers.EjectDraggedPixelPower, extendoPosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
