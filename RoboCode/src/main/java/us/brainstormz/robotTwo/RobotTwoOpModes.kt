@@ -1,5 +1,8 @@
 package us.brainstormz.robotTwo
 
+import com.acmerobotics.dashboard.DashboardCore
+import com.acmerobotics.dashboard.FtcDashboard
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.outoftheboxrobotics.photoncore.Photon
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -33,14 +36,16 @@ class TeleOpMode: OpMode() {
 @Photon
 @Autonomous(name = "RobotTwoAuto", group = "!")
 class Autonomous: OpMode() {
-    private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= telemetry, opmode = this)
+
+    private val multiTelemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
+    private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= multiTelemetry, opmode = this)
 
     private lateinit var auto: RobotTwoAuto
     private val opencv: OpenCvAbstraction = OpenCvAbstraction(this)
     override fun init() {
         hardware.init(hardwareMap)
 
-        auto = RobotTwoAuto(telemetry)
+        auto = RobotTwoAuto(multiTelemetry)
 
         opencv.init(hardwareMap)
         auto.init(hardware, opencv)
