@@ -163,9 +163,15 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                 })
     }
 
-    val routine = incrementSequence()
-//    val routine = xIncrementSequence()
-//    val routine = rIncrementSequence()
+    val sequence = incrementSequence()
+    val allThreeDimensionsOver20InchesTest = listOf(
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),
+            PositionAndRotation(y= 20.0, x= 20.0, r= 90.0),
+            PositionAndRotation(y= 0.0, x= 20.0, r= 0.0),
+            PositionAndRotation(y= 20.0, x= 0.0, r= -90.0),
+            PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),//dummy
+    )
+    val routine = allThreeDimensionsOver20InchesTest
     val routine2 = listOf<PositionAndRotation>(
             // X Test
             PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
