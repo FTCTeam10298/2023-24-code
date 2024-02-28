@@ -123,7 +123,6 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         }
 
         val depositingMoveAroundTrussWaypoint = depositingPosition.copy(r= startPosition.redStartPosition.r)
-        val extendoMidpointForTurn = ExtendoPositions.PurpleSideHalf
 
         val lineUpForDeposit = when (propPosition) {
             PropPosition.Center -> listOf(
@@ -156,7 +155,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                     ).asTargetWorld,
                     AutoTargetWorld(
                             targetRobot = RobotState(
-                                    collectorSystemState = CollectorState(CollectorPowers.Off, extendoMidpointForTurn, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                    collectorSystemState = CollectorState(CollectorPowers.Off, extendoPosition, RollerState(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
                                     positionAndRotation = depositingPosition,
                                     depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                             ),

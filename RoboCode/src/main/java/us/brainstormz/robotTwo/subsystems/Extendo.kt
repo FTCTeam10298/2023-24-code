@@ -25,8 +25,8 @@ class Extendo(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
         AllTheWayInTarget(-10),
         Min(0),
         Manual(0),
-        PurpleSideHalf(500),
-        PurpleSidePosition(1000),
+//        PurpleSideHalf(500),
+        PurpleSidePosition(750),
         PurpleCenterPosition(2000),
         Max(2000),
     }
