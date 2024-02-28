@@ -104,13 +104,12 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
     }
 
     private fun isRobotAtPosition(targetWorld: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld, precisionInches: Double = drivetrain.precisionInches, precisionDegrees: Double = drivetrain.precisionDegrees): Boolean {
-//        return drivetrain.isRobotAtPosition(currentPosition = actualState.actualRobot.positionAndRotation, targetPosition = targetWorld.targetRobot.drivetrainTarget.targetPosition)
         return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = precisionInches, precisionDegrees = precisionDegrees)
     }
 
 
     private fun purplePlacement(startPosition: StartPosition, propPosition: PropPosition): List<TargetWorld> {
-        fun sidePropPosition(rotationPolarity: Int) = startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 18.0, r= startPosition.redStartPosition.r + (35.0*rotationPolarity))
+        fun sidePropPosition(rotationPolarity: Int) = startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 18.0, r= startPosition.redStartPosition.r + (40.0*rotationPolarity))
         val depositingPosition = when (propPosition) {
             PropPosition.Left -> sidePropPosition(+1)
             PropPosition.Center -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 5.0)
@@ -223,6 +222,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
     private val parkingPosition = PositionAndRotation(x= -58.0, y= -48.0, r= 0.0)
 
     private fun backboardSideYellow(depositingPosition: PositionAndRotation): List<TargetWorld> {
+
+//        PropPosition.Left to backboardSideYellow(placingOnBackboardLeft),
+//        PropPosition.Center to backboardSideYellow(placingOnBackboardCenter),
+//        PropPosition.Right to backboardSideYellow(placingOnBackboardRight)
+
         return listOf(
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -507,7 +511,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         fun assemblePath(propPosition: PropPosition): List<TargetWorld> {
             val purplePath = purplePlacementPath(propPosition)
             val yellowPath = yellowDepositPath[propPosition] ?: emptyList()
-            return purplePath //+ driveToBoardPath + yellowPath + parkPath
+            return purplePath + driveToBoardPath + yellowPath + parkPath
         }
     }
 
