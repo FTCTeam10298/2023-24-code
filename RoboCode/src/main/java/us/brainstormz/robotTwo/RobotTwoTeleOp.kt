@@ -8,12 +8,13 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
-import us.brainstormz.robotTwo.DepoManager.DepoTargetType
+import us.brainstormz.robotTwo.DepoManager.*
+import us.brainstormz.utils.DeltaTimeMeasurer
+import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
-import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Drivetrain
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.MovementMode
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
@@ -21,9 +22,8 @@ import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
-import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
 import us.brainstormz.utils.DataClassHelper
-import us.brainstormz.utils.DeltaTimeMeasurer
+import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -39,9 +39,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val lift: Lift = Lift(telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, extendo, arm, telemetry)
-    var neopixelDriver: AdafruitNeopixelSeesaw? = null
-    var neo: AdafruitNeopixelSeesaw? = null
-
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
@@ -906,7 +903,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         for (module in hardware.allHubs) {
             module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
         }
-
     }
 
     var timeOfMatchStartMilis = 0L
