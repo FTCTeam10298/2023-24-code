@@ -109,6 +109,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
 
     private fun purplePlacement(startPosition: StartPosition, propPosition: PropPosition): List<TargetWorld> {
+
+//        Y pid overshoots on purple forward
+//        R pid overshoots on purple turn
+//        R pid overshoots and takes a long time to correct on rotate pid
+
         fun sidePropPosition(rotationPolarity: Int) = startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 18.0, r= startPosition.redStartPosition.r + (40.0*rotationPolarity))
         val depositingPosition = when (propPosition) {
             PropPosition.Left -> sidePropPosition(+1)
