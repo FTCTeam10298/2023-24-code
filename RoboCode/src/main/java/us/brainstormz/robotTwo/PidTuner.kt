@@ -25,34 +25,16 @@ import us.brainstormz.utils.ConfigServerTelemetry
 import us.brainstormz.utils.DeltaTimeMeasurer
 import java.lang.Thread.sleep
 
-fun exponentialIncrements(from:Long) = generateSequence(from){ x -> Math.max(1, x) * 2}
-fun exponentialIncrements(from:Long, to:Long) = exponentialIncrements(from).takeWhile { it <= to }
-fun xIncrementSequence():List<PositionAndRotation>{
-    return  exponentialIncrements(from = 0, to = 100).map{ x ->
-                PositionAndRotation(
-                        y= 0.0,
-                        x= x.toDouble(),
-                        r= 0.0)
+fun exponentialIncrements(from:Long, init: Long) = generateSequence(from){ x -> Math.max(init, x) * 2}
+fun exponentialIncrements(from:Long, to:Long, init: Long = 1) = exponentialIncrements(from, init).takeWhile { it <= to }
 
-    }.toList()
-}
-fun rIncrementSequence():List<PositionAndRotation>{
-    return  exponentialIncrements(from = 0, to = 300).map{ x ->
-        PositionAndRotation(
-                y= 0.0,
-                x= 0.0,
-                r= x.toDouble())
+val rIncrements: Sequence<Long> = Sequence { listOf<Long>(0, 40, 90, 40, 0).listIterator() }
 
-    }.toList()
-}
 fun incrementSequence():List<PositionAndRotation>{
 
-    return exponentialIncrements(-360, 360).flatMap{ r->
-                exponentialIncrements(from = 0, to = 30).flatMap{ x->
-                    exponentialIncrements(from = 0, to = 60).map{ y ->
-
-
-                //Random.nextDouble(-360.0, 360.0)
+    return exponentialIncrements(from = 0, to = 30).flatMap{ y->
+            exponentialIncrements(from = 0, to = 60).flatMap{ x ->
+                rIncrements.map{ r->
                 PositionAndRotation(
                         y= y.toDouble(),
                         x= x.toDouble(),
@@ -171,7 +153,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
             PositionAndRotation(y= 20.0, x= 0.0, r= -90.0),
             PositionAndRotation(y= 0.0, x= 0.0, r= 0.0),//dummy
     )
-    val routine = allThreeDimensionsOver20InchesTest
+    val routine = sequence//allThreeDimensionsOver20InchesTest
     val routine2 = listOf<PositionAndRotation>(
             // X Test
             PositionAndRotation(y= 10.0, x= 0.0, r= 0.0),
