@@ -15,6 +15,7 @@ class Neopixels: Subsystem {
     val strandLength: Int = 60
     //represents light current status
     var lightStrandTarget = mutableListOf<MutableList<Double>>()
+    var mondrianStatusBarTarget = mutableListOf<mondrianStatusBarMessages>()
 
     fun prepareNeopixels() {
         //Create a list of pixel values we can change... the function to do it is not good right now.
@@ -32,6 +33,9 @@ class Neopixels: Subsystem {
 
     data class ColorInRGBW(val red: Double, val green: Double, val blue: Double, val white: Double)
 
+    fun changeOnePixel(targetColor: ColorInRGBW, targetPixel: Int) {
+        lightStrandTarget[targetPixel] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
+    }
 
     fun flood(targetColor: ColorInRGBW)
     {
@@ -62,6 +66,62 @@ class Neopixels: Subsystem {
             lightStrandTarget[n] = mutableListOf(firstTargetColor.red, firstTargetColor.green, firstTargetColor.blue, firstTargetColor.white)
         }
 
+    }
+
+    //where the status bar starts.
+    val mondrianStatusBarStart: Int = 40
+    val mondrianStatusBarEnd: Int = 60
+
+
+    fun mondrianStatusBarAdd() {
+
+    }
+
+    enum class mondrianStatusBarMessages {
+        BarLive,
+        Problem
+    }
+
+    data class positionAndRGBWColor(val position: List<Int>, val targetColor: ColorInRGBW)
+
+    fun updateMondrianStatusBar(){
+        //black out status bar area
+
+        //can't change color. --
+        //iterate through and map each?
+//        val targetStatusRegions = mapOf<mondrianStatusBarMessages, MutableList<Int>>() {
+//            mondrianStatusBarMessages.BarLive to mutableListOf<Int>(0, 3)
+//
+//        }
+        val problemStart = 42
+        val problemEnd = 48
+
+        for (n in mondrianStatusBarStart..mondrianStatusBarStart) {
+            lightStrandTarget[n] = mutableListOf(0.0, 0.0, 0.0, 0.0)
+        }
+
+        for (status in mondrianStatusBarTarget) {
+            if (status == mondrianStatusBarMessages.Problem) {
+                for (n in mondrianStatusBarStart..mondrianStatusBarStart) {
+                    lightStrandTarget[n] = kotlin.collections.mutableListOf(150.0, 0.0, 0.0, 0.0)
+                }
+
+            }
+        }
+
+
+    }
+
+    //now for the fun stuff—animations!
+
+    fun showOneByOne(targetColor: ColorInRGBW, startPixel: Int, endPixel: Int, frameNumber: Int) {
+        //not very necessary. Maybe someday?
+        if (frameNumber > endPixel - startPixel) {
+
+                }
+        for (n in 1..strandLength) {
+            lightStrandTarget[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
+        }
 
     }
     fun writeTargetStateToLights(pixelStrandController: AdafruitNeopixelSeesaw){
@@ -82,11 +142,7 @@ class Neopixels: Subsystem {
 
     }
 
-//
 
-fun showHalves(color1: Int, color2: Int) {
-
-    }
 }
 @TeleOp
 class NeopixelTest : LinearOpMode() {

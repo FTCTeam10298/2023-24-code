@@ -27,8 +27,8 @@ LIGHTING
 Implement init — done!
 data representation of pixels - done
 Create actualizer - use 1 draw command, experimentation 
-Implement flood pixels
-Implement draw half
-Connect to bot
-Complete
+Implement flood pixels - Done!
+Implement draw half - Done!
+Connect to bot 
+Complete 
 
