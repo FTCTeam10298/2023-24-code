@@ -9,9 +9,7 @@ class Intake: Subsystem {
         Off(0.0),
         Intake(1.0),
         Eject(-1.0),
-        DropPurple(0.2),
-        ReverseDropPurple(-0.2),
-        EjectDraggedPixelPower(-0.2)
+        EjectDraggedPixelPower(-0.1)
     }
 
     fun getCollectorState(driverInput: CollectorPowers, isPixelInLeft: Boolean, isPixelInRight: Boolean): CollectorPowers {
