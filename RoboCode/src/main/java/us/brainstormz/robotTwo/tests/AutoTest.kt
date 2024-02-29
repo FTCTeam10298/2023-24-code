@@ -27,7 +27,7 @@ fun main() {
     println("gamepadDpad_down: $gamepadDpad_down")
 
     val test = listOf(
-            AutoTest.emptyWorld.copy(actualGamepad2 = gamepadDpad_down),
+            TeleopTest.emptyWorld.copy(actualGamepad2 = gamepadDpad_down),
 //            tester.emptyWorld.copy(actualGamepad2 = Gamepad()),
 //            tester.emptyWorld.copy(actualGamepad2 = Gamepad()),
     )
@@ -70,36 +70,6 @@ class AutoTest {
     }
     fun didTestPass(result: List<Pair<ActualWorld, TargetWorld>>, passCondition: (TargetWorld)->Boolean): Boolean {// List<Pair<Boolean, Pair<ActualWorld, TargetWorld>>> {
         return passCondition(result.last().second)
-    }
-    companion object {
-        val emptySensorReading = Transfer.SensorReading(0, 0, 0, 0)
-        val emptyWorld = ActualWorld(
-                actualGamepad1 = Gamepad(),
-                actualGamepad2 = Gamepad(),
-                actualRobot = ActualRobot(
-                        positionAndRotation = PositionAndRotation(),
-                        depoState = DepoManager.ActualDepo(
-                                armAngleDegrees = 0.0,
-                                lift = Lift.ActualLift(
-                                        currentPositionTicks = 0,
-                                        limitSwitchIsActivated = false),
-                                wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
-                        ),
-                        collectorSystemState = CollectorSystem.ActualCollector(
-                                extendo = SlideSubsystem.ActualSlideSubsystem(
-                                        currentPositionTicks = 0,
-                                        ticksMovedSinceReset = 0,
-                                        limitSwitchIsActivated = false,
-                                        zeroPositionOffsetTicks = 0,
-                                        currentAmps = 0.0),
-                                leftRollerAngleDegrees = 0.0,
-                                rightRollerAngleDegrees = 0.0,
-                                leftTransferState = emptySensorReading,
-                                rightTransferState = emptySensorReading,
-                        ),
-                ),
-                timestampMilis = 0,
-        )
     }
     fun getChangedGamepad(originalGamepad: Gamepad = Gamepad(), gamepadChange: (gamepad: Gamepad)->Unit): Gamepad {
         gamepadChange(originalGamepad)

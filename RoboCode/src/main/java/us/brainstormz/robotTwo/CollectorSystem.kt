@@ -16,16 +16,15 @@ class CollectorSystem(
     data class CollectorState(
             val collectorState: Intake.CollectorPowers,
             val extendoPosition: Extendo.ExtendoPositions,
-            val transferRollersState: Transfer.RollerState,
+            val transferRollersState: Transfer.TransferTarget,
     )
 
 
     data class ActualCollector(
             val extendo: SlideSubsystem.ActualSlideSubsystem,
+            val transferState: Transfer.ActualTransfer,
             val leftRollerAngleDegrees: Double,
             val rightRollerAngleDegrees: Double,
-            val leftTransferState: Transfer.SensorReading,
-            val rightTransferState: Transfer.SensorReading,
     )
 
     fun getCurrentState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualCollector {
@@ -34,8 +33,7 @@ class CollectorSystem(
                 extendo= extendo.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.collectorSystemState?.extendo),
                 leftRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Left, hardware),
                 rightRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Right, hardware),
-                leftTransferState= transfer.getSensorReading(hardware.leftTransferSensor),
-                rightTransferState= transfer.getSensorReading(hardware.rightTransferSensor),
+                transferState= transfer.getActualTransfer(hardware),
         )
         val collectorReadEndTimeMilis = System.currentTimeMillis()
         val timeToReadCollector = collectorReadEndTimeMilis-collectorReadStartTimeMilis

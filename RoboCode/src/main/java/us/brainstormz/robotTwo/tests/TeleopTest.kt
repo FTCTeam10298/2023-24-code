@@ -166,6 +166,10 @@ class TeleopTest {
     }
     companion object {
         val emptySensorReading = Transfer.SensorReading(0, 0, 0, 0)
+        val emptyActualTransferHalf = Transfer.ActualTransferHalf(
+                upperSensor = emptySensorReading,
+                lowerSensor = emptySensorReading
+        )
         val emptyWorld = ActualWorld(
                 actualGamepad1 = Gamepad(),
                 actualGamepad2 = Gamepad(),
@@ -187,8 +191,10 @@ class TeleopTest {
                                         currentAmps = 0.0),
                                 leftRollerAngleDegrees = 0.0,
                                 rightRollerAngleDegrees = 0.0,
-                                leftTransferState = emptySensorReading,
-                                rightTransferState = emptySensorReading,
+                                transferState = Transfer.ActualTransfer(
+                                        left = emptyActualTransferHalf,
+                                        right = emptyActualTransferHalf
+                                ),
                         ),
                 ),
                 timestampMilis = 0,

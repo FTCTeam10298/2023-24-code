@@ -495,12 +495,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val actualRobot = actualWorld.actualRobot
 
         /**Handoff*/
-        val transferLeftSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
-        val transferRightSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
+        val transferLeftSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.transferState.left.upperSensor)
+        val transferRightSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.transferState.right.upperSensor)
         val areBothPixelsIn = transferLeftSensorState && transferRightSensorState
 
-        val previousTransferLeftSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.leftTransferState, Transfer.Side.Left)
-        val previousTransferRightSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.rightTransferState, Transfer.Side.Right)
+        val previousTransferLeftSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.transferState.left.upperSensor)
+        val previousTransferRightSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.transferState.right.upperSensor)
         val wereBothPixelsInPreviously = previousTransferLeftSensorState && previousTransferRightSensorState
 
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
@@ -567,7 +567,16 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Rollers */
-        val autoRollerState = transfer.getAutoPixelSortState(isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake, actualRobot)
+        val transferState = transfer.getTransferState(
+                actualWorld = actualWorld,
+                previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
+                )
+        val autoRollerState = transfer.getTransferSortingTarget(
+                isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake,
+                actualTransferState = transferState,
+//                previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
+                previousTransferTarget = previousTargetState.targetRobot.collectorTarget.rollers,
+                )
         val rollerTargetState = when (driverInput.rollers) {
             RollerInput.BothIn -> autoRollerState.copy(leftServoCollect = Transfer.RollerPowers.Intake, rightServoCollect = Transfer.RollerPowers.Intake)
             RollerInput.BothOut -> autoRollerState.copy(leftServoCollect = Transfer.RollerPowers.Eject, rightServoCollect = Transfer.RollerPowers.Eject)
@@ -619,10 +628,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         fun isPixelInSide(side: Transfer.Side): Boolean {
             val reading = when (side) {
-                Transfer.Side.Left -> actualWorld.actualRobot.collectorSystemState.leftTransferState
-                Transfer.Side.Right -> actualWorld.actualRobot.collectorSystemState.rightTransferState
+                Transfer.Side.Left -> actualWorld.actualRobot.collectorSystemState.transferState.left.upperSensor
+                Transfer.Side.Right -> actualWorld.actualRobot.collectorSystemState.transferState.right.upperSensor
             }
-            return transfer.isPixelIn(reading, side)
+            return transfer.isPixelIn(reading)
         }
         val doingHandoff = doHandoffSequence && previousTargetState.targetRobot.depoTarget.targetType != DepoTargetType.GoingOut
         val collectorIsMovingOut = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) > 0.1
@@ -826,6 +835,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = intakeNoodleTarget,
                                 timeOfEjectionStartMilis = timeOfEjectionStartMilis,
+                                transferState = transferState,
                                 rollers = rollerTargetState,
                                 extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = extendoState, movementMode = MovementMode.Position, power = 0.0),
                         ),
@@ -865,6 +875,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 targetType = DepoTargetType.GoingHome
         )
 
+        val initSensorState = Transfer.SensorState(
+                hasPixelBeenSeen = false,
+                timeOfSeeingMilis = 0L,
+        )
+
+        val initTransferHalfState = Transfer.TransferHalfState(initSensorState, initSensorState)
+
         val initialPreviousTargetState = TargetWorld(
                 targetRobot = TargetRobot(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(), MovementMode.Power, Drivetrain.DrivetrainPower()),
@@ -872,7 +889,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = Intake.CollectorPowers.Off,
                                 timeOfEjectionStartMilis = 0,
-                                rollers = Transfer.RollerState(
+                                transferState = Transfer.TransferState(
+                                        left = initTransferHalfState,
+                                        right = initTransferHalfState
+                                ),
+                                rollers = Transfer.TransferTarget(
                                         leftServoCollect = Transfer.RollerPowers.Off,
                                         rightServoCollect = Transfer.RollerPowers.Off,
                                         directorState = Transfer.DirectorState.Off
