@@ -99,7 +99,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
     )
     data class TransferTarget(val left: RollerPowers, val right: RollerPowers, val directorState: DirectorState) {
         fun toRealTransferTarget(): Transfer.TransferTarget {
-            return Transfer.TransferTarget(
+            return TransferTarget(
                     leftServoCollect = Transfer.RollerTarget(
                             left,
                             0L
@@ -132,11 +132,6 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
 
     private fun purplePlacement(startPosition: StartPosition, propPosition: PropPosition): List<TargetWorld> {
-
-//        Y pid overshoots on purple forward
-//        R pid overshoots on purple turn
-//        R pid overshoots and takes a long time to correct on rotate pid
-
         fun sidePropPosition(rotationPolarity: Int) = startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 18.0, r= startPosition.redStartPosition.r + (40.0*rotationPolarity))
         val depositingPosition = when (propPosition) {
             PropPosition.Left -> sidePropPosition(+1)
@@ -266,8 +261,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
     }
 
 
-    private val placingOnBackboardLeft = PositionAndRotation(x= -28.0, y= -55.0, r= 0.0)
-    private val placingOnBackboardCenter = PositionAndRotation(x= -36.0, y= -55.0, r= 0.0)
+    private val placingOnBackboardLeft = PositionAndRotation(x= -29.0, y= -55.0, r= 0.0)
+    private val placingOnBackboardCenter = PositionAndRotation(x= -37.0, y= -55.0, r= 0.0)
     private val placingOnBackboardRight = PositionAndRotation(x= -42.0, y= -55.0, r= 0.0)
 
     /** Backboard side */
@@ -329,36 +324,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                             actualState.actualRobot.depoState.wristAngles == Wrist.ActualWrist(ClawTarget.Retracted.angleDegrees, ClawTarget.Retracted.angleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
                         },).asTargetWorld,
-//                AutoTargetWorld(
-//                        targetRobot = RobotState(
-//                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
-//                                positionAndRotation = depositingPosition,
-//                                depoState = DepoState(Arm.Positions.ClearLiftMovement, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
-//                        ),
-//                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-//                            arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
-//                        },).asTargetWorld,
-//                AutoTargetWorld(
-//                        targetRobot = RobotState(
-//                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
-//                                positionAndRotation = depositingPosition,
-//                                depoState = DepoState(Arm.Positions.ClearLiftMovement, Lift.LiftPositions.Down, ClawTarget.Retracted, ClawTarget.Retracted)
-//                        ),
-//                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-//                            lift.isLiftAtPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
-//                        },).asTargetWorld,
         )
     }
-//    private val backboardSideYellowMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
-//            PropPosition.Left to backboardSideYellow(placingOnBackboardLeft),
-//            PropPosition.Center to backboardSideYellow(placingOnBackboardCenter),
-//            PropPosition.Right to backboardSideYellow(placingOnBackboardRight)
-//    )
-//    private val FAKEBackboardSideYellowMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
-//            PropPosition.Left to emptyList(),
-//            PropPosition.Center to emptyList(),
-//            PropPosition.Right to emptyList()
-//    )
 
     private val backboardSidePark: List<TargetWorld> = listOf(
             AutoTargetWorld(
