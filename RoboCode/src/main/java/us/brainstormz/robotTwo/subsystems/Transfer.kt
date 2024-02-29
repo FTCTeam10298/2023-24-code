@@ -111,7 +111,7 @@ class Transfer(private val telemetry: Telemetry) {
     data class TransferTarget(val leftServoCollect: RollerTarget, val rightServoCollect: RollerTarget, val directorState: DirectorState)
 
     fun getTransferHalfSortingTarget(
-            isCollecting: Boolean,
+            shouldFinishTransfer: Boolean,
             timestampMillis: Long,
             actualTransferHalfState: TransferHalfState,
             previousTransferHalfState: TransferHalfState,
@@ -120,29 +120,27 @@ class Transfer(private val telemetry: Telemetry) {
 
         val lowerSensorHasBeenSeen = actualTransferHalfState.lowerSensor.hasPixelBeenSeen
 
-        val targetPower = if (isCollecting) {
-//            if (upperSensorHasBeenSeen) {
-//                RollerPowers.Off
-//            } else {
-                if (lowerSensorHasBeenSeen) {
+        val targetPower = if (shouldFinishTransfer) {
+            val timeToRunRollerToGetPixelAllTheWayUpMillis = 800
+            if (lowerSensorHasBeenSeen) {
+                if (previousRollerTarget.timeStartedIntakingMillis > timeToRunRollerToGetPixelAllTheWayUpMillis) {
                     RollerPowers.Off
                 } else {
                     RollerPowers.Intake
                 }
-//            }
-        } else {
-            val timeToRunRollerToGetPixelAllTheWayUpMillis = 800
-            when {
-                lowerSensorHasBeenSeen -> {
-                    RollerPowers.Intake
-                }
-                previousRollerTarget.timeStartedIntakingMillis > timeToRunRollerToGetPixelAllTheWayUpMillis -> {
-                    RollerPowers.Off
-                }
-                else -> {
-                    previousRollerTarget.target
-                }
+            } else {
+                RollerPowers.Off
             }
+        } else {
+//            if (upperSensorHasBeenSeen) {
+//                RollerPowers.Off
+//            } else {
+            if (lowerSensorHasBeenSeen) {
+                RollerPowers.Off
+            } else {
+                RollerPowers.Intake
+            }
+//            }
         }
         val timeStartedIntakingMillis = if (targetPower == RollerPowers.Intake && previousRollerTarget.target != RollerPowers.Intake) {
             timestampMillis
@@ -158,17 +156,20 @@ class Transfer(private val telemetry: Telemetry) {
             actualTransferState: TransferState,
             previousTransferState: TransferState,
             previousTransferTarget: TransferTarget): TransferTarget {
-
         val timestampMillis = actualWorld.timestampMilis
+        val isPixelInLeft = actualTransferState.left.lowerSensor.hasPixelBeenSeen
+        val isPixelInRight = actualTransferState.right.lowerSensor.hasPixelBeenSeen
+        val isPixelInBothSides = isPixelInLeft && isPixelInRight
+
         val leftServoTarget = getTransferHalfSortingTarget(
-                isCollecting= isCollecting,
+                shouldFinishTransfer = !isCollecting || isPixelInBothSides,
                 timestampMillis = timestampMillis,
                 actualTransferHalfState = actualTransferState.left,
                 previousTransferHalfState = previousTransferState.left,
                 previousRollerTarget = previousTransferTarget.leftServoCollect,
         )
         val rightServoTarget = getTransferHalfSortingTarget(
-                isCollecting= isCollecting,
+                shouldFinishTransfer = !isCollecting || isPixelInBothSides,
                 timestampMillis = timestampMillis,
                 actualTransferHalfState = actualTransferState.right,
                 previousTransferHalfState = previousTransferState.right,
@@ -179,10 +180,12 @@ class Transfer(private val telemetry: Telemetry) {
                 leftServoCollect = leftServoTarget,
                 rightServoCollect = rightServoTarget,
                 directorState =
-                if (leftServoTarget.target == RollerPowers.Intake) {
-                    DirectorState.Left
-                } else {
+                if (isPixelInBothSides){
+                    DirectorState.Off
+                } else if (isPixelInLeft) {
                     DirectorState.Right
+                } else {
+                    DirectorState.Left
                 },
         )
     }
