@@ -214,11 +214,11 @@ class Transfer(private val telemetry: Telemetry) {
         return rollerState.power
     }
 
-    val upperNothingReading = SensorReading(red= 73, green= 115, blue= 158, alpha= 324)
+    val upperNothingReading = SensorReading(red= 207, green= 336, blue= 473, alpha= 990)
     val lowerNothingReading = SensorReading(red= 41, green= 69, blue= 106, alpha= 219)
     fun isPixelIn(reading: SensorReading): Boolean {
         val doesEachColorChannelPass = reading.asList.mapIndexed {i, it ->
-            it > (lowerNothingReading.asList[i] * 2)
+            it > (upperNothingReading.asList[i] * 2)
         }
 
         val numberOfPassingChannels = doesEachColorChannelPass.fold(0) {acc, it ->
