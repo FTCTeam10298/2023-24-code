@@ -273,11 +273,12 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
     /** Backboard side */
     private val parkingPosition = PositionAndRotation(x= -58.0, y= -48.0, r= 0.0)
 
-    private fun backboardSideYellow(depositingPosition: PositionAndRotation): List<TargetWorld> {
-
-//        PropPosition.Left to backboardSideYellow(placingOnBackboardLeft),
-//        PropPosition.Center to backboardSideYellow(placingOnBackboardCenter),
-//        PropPosition.Right to backboardSideYellow(placingOnBackboardRight)
+    private fun backboardSideYellow(startPosition: StartPosition, propPosition: PropPosition): List<TargetWorld> {
+        val depositingPosition: PositionAndRotation = when (propPosition) {
+            PropPosition.Left -> placingOnBackboardLeft
+            PropPosition.Center -> placingOnBackboardCenter
+            PropPosition.Right -> placingOnBackboardRight
+        }
 
         return listOf(
                 AutoTargetWorld(
@@ -348,16 +349,16 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 //                        },).asTargetWorld,
         )
     }
-    private val backboardSideYellowMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
-            PropPosition.Left to backboardSideYellow(placingOnBackboardLeft),
-            PropPosition.Center to backboardSideYellow(placingOnBackboardCenter),
-            PropPosition.Right to backboardSideYellow(placingOnBackboardRight)
-    )
-    private val FAKEBackboardSideYellowMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
-            PropPosition.Left to emptyList(),
-            PropPosition.Center to emptyList(),
-            PropPosition.Right to emptyList()
-    )
+//    private val backboardSideYellowMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
+//            PropPosition.Left to backboardSideYellow(placingOnBackboardLeft),
+//            PropPosition.Center to backboardSideYellow(placingOnBackboardCenter),
+//            PropPosition.Right to backboardSideYellow(placingOnBackboardRight)
+//    )
+//    private val FAKEBackboardSideYellowMapToProp: Map<PropPosition, List<TargetWorld>> = mapOf(
+//            PropPosition.Left to emptyList(),
+//            PropPosition.Center to emptyList(),
+//            PropPosition.Right to emptyList()
+//    )
 
     private val backboardSidePark: List<TargetWorld> = listOf(
             AutoTargetWorld(
@@ -559,10 +560,10 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                     },).asTargetWorld,
     )
 
-    data class PathPreAssembled(val purplePlacementPath: (PropPosition)->List<TargetWorld>, val driveToBoardPath: List<TargetWorld>, val yellowDepositPath: Map<PropPosition, List<TargetWorld>>, val parkPath: List<TargetWorld>) {
+    data class PathPreAssembled(val purplePlacementPath: (PropPosition)->List<TargetWorld>, val driveToBoardPath: List<TargetWorld>, val yellowDepositPath: (PropPosition)->List<TargetWorld>, val parkPath: List<TargetWorld>) {
         fun assemblePath(propPosition: PropPosition): List<TargetWorld> {
             val purplePath = purplePlacementPath(propPosition)
-            val yellowPath = yellowDepositPath[propPosition] ?: emptyList()
+            val yellowPath = yellowDepositPath(propPosition)
             return purplePath + driveToBoardPath + yellowPath + parkPath
         }
     }
@@ -581,7 +582,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 PathPreAssembled(
                         purplePlacementPath = { purplePlacement(StartPosition.Backboard, it) },
                         driveToBoardPath = emptyList(),
-                        yellowDepositPath = backboardSideYellowMapToProp,
+                        yellowDepositPath = { backboardSideYellow(StartPosition.Backboard, it) },
                         parkPath = backboardSidePark
                 )
             }
@@ -589,11 +590,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 PathPreAssembled(
                         purplePlacementPath = { purplePlacement(StartPosition.Audience, it) },
                         driveToBoardPath = emptyList(),
-                        yellowDepositPath = mapOf(
-                                PropPosition.Left to emptyList(),
-                                PropPosition.Center to emptyList(),
-                                PropPosition.Right to emptyList()
-                        ),
+                        yellowDepositPath = { listOf() },
                         parkPath = emptyList()
                 )
             }
