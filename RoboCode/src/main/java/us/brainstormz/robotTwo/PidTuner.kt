@@ -48,8 +48,8 @@ fun rIncrementSequence():List<PositionAndRotation>{
 fun incrementSequence():List<PositionAndRotation>{
 
     return exponentialIncrements(-360, 360).flatMap{ r->
-            exponentialIncrements(from = 0, to = 60).flatMap{ x ->
-                exponentialIncrements(from = 0, to = 30).map{ y->
+                exponentialIncrements(from = 0, to = 30).flatMap{ x->
+                    exponentialIncrements(from = 0, to = 60).map{ y ->
 
 
                 //Random.nextDouble(-360.0, 360.0)
