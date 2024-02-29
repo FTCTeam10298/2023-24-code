@@ -2,22 +2,21 @@ package us.brainstormz.robotTwo.subsystems
 
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
-import printPID
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
-//import us.brainstormz.robotTwo.printPID
+import us.brainstormz.robotTwo.printPID
 import kotlin.math.absoluteValue
 
 class Extendo(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
-    override val pid: PID =
+    override var pid: PID =
 //                        PID("extendo default", kp = 0.0025)
                         PID(
                                 name= "extendo",
-                                kp= 0.0018,
-                                ki= 2.0E-7,
+                                kp= 0.0017,
+                                ki= 1.5E-7,
                                 kd= 0.13,
                         )
 
