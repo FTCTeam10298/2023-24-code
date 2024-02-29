@@ -1,6 +1,5 @@
 package us.brainstormz.robotTwo
 
-import com.acmerobotics.dashboard.config.Config
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
 //import com.outoftheboxrobotics.photoncore.hardware.motor.PhotonDcMotor
@@ -22,20 +21,15 @@ import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import posePlanner.Point2D
-import us.brainstormz.hardwareClasses.MecanumDriveTrain
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
-import us.brainstormz.localizer.Localizer
-import us.brainstormz.motion.MecanumMovement
-import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import java.lang.Thread.sleep
@@ -105,15 +99,20 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
     lateinit var collectorServo1: CRServo
     lateinit var collectorServo2: CRServo
-//    lateinit var leftCollectorPixelSensor: ColorSensor
-//    lateinit var rightCollectorPixelSensor: ColorSensor
+
 
     lateinit var leftTransferServo: CRServo
     lateinit var rightTransferServo: CRServo
-    lateinit var leftTransferSensor: ColorSensor
-    lateinit var rightTransferSensor: ColorSensor
+
+    lateinit var leftTransferUpperSensor: ColorSensor
+    lateinit var rightTransferUpperSensor: ColorSensor
+
+    lateinit var leftTransferLowerSensor: ColorSensor
+    lateinit var rightTransferLowerSensor: ColorSensor
+
     lateinit var leftRollerEncoder: AnalogInput
     lateinit var rightRollerEncoder: AnalogInput
+
     //Aka throbber
     lateinit var transferDirectorServo: CRServo
 
@@ -209,8 +208,12 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)
 
-        leftTransferSensor = hwMap["rightSensor"] as ColorSensor
-        rightTransferSensor = hwMap["leftSensor"] as ColorSensor
+        leftTransferUpperSensor = hwMap["rightSensor"] as ColorSensor
+        rightTransferUpperSensor = hwMap["leftSensor"] as ColorSensor
+
+        leftTransferLowerSensor = hwMap["rightLowSensor"] as ColorSensor
+        rightTransferLowerSensor = hwMap["leftLowSensor"] as ColorSensor
+
         leftRollerEncoder = exHub.getAnalogInput(1)
         rightRollerEncoder = ctrlHub.getAnalogInput(0)
 

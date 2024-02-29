@@ -13,12 +13,6 @@ class CollectorSystem(
         private val extendo: Extendo,
         private val telemetry: Telemetry) {
 
-    data class CollectorState(
-            val collectorState: Intake.CollectorPowers,
-            val extendoPosition: Extendo.ExtendoPositions,
-            val transferRollersState: Transfer.TransferTarget,
-    )
-
 
     data class ActualCollector(
             val extendo: SlideSubsystem.ActualSlideSubsystem,

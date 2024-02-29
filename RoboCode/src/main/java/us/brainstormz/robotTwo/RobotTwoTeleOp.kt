@@ -573,17 +573,24 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 )
         val autoRollerState = transfer.getTransferSortingTarget(
                 isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake,
+                actualWorld = actualWorld,
                 actualTransferState = transferState,
-//                previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
+                previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
                 previousTransferTarget = previousTargetState.targetRobot.collectorTarget.rollers,
                 )
-        val rollerTargetState = when (driverInput.rollers) {
-            RollerInput.BothIn -> autoRollerState.copy(leftServoCollect = Transfer.RollerPowers.Intake, rightServoCollect = Transfer.RollerPowers.Intake)
-            RollerInput.BothOut -> autoRollerState.copy(leftServoCollect = Transfer.RollerPowers.Eject, rightServoCollect = Transfer.RollerPowers.Eject)
-            RollerInput.LeftOut -> autoRollerState.copy(leftServoCollect = Transfer.RollerPowers.Eject)
-            RollerInput.RightOut -> autoRollerState.copy(rightServoCollect = Transfer.RollerPowers.Eject)
-            RollerInput.NoInput -> autoRollerState
+        val overrideRollerState: Pair<Transfer.RollerPowers?, Transfer.RollerPowers?> = when (driverInput.rollers) {
+            RollerInput.BothIn -> Transfer.RollerPowers.Intake to Transfer.RollerPowers.Intake
+            RollerInput.BothOut -> Transfer.RollerPowers.Eject to Transfer.RollerPowers.Eject
+            RollerInput.LeftOut -> Transfer.RollerPowers.Eject to null
+            RollerInput.RightOut -> null to Transfer.RollerPowers.Eject
+            RollerInput.NoInput -> null to null
         }
+        val rollerTargetState = autoRollerState.copy(
+                leftServoCollect = autoRollerState.leftServoCollect.copy(
+                        target = overrideRollerState.first ?: autoRollerState.leftServoCollect.target),
+                rightServoCollect = autoRollerState.rightServoCollect.copy(
+                        target = overrideRollerState.second ?: autoRollerState.rightServoCollect.target)
+        )
 
         /**Extendo*/
         val extendoState: SlideSubsystem.SlideTargetPosition = when (driverInput.extendo) {
@@ -894,8 +901,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         right = initTransferHalfState
                                 ),
                                 rollers = Transfer.TransferTarget(
-                                        leftServoCollect = Transfer.RollerPowers.Off,
-                                        rightServoCollect = Transfer.RollerPowers.Off,
+                                        leftServoCollect = Transfer.RollerTarget(Transfer.RollerPowers.Off, 0L),
+                                        rightServoCollect = Transfer.RollerTarget(Transfer.RollerPowers.Off, 0L),
                                         directorState = Transfer.DirectorState.Off
                                 ),
                                 extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, MovementMode.Position),

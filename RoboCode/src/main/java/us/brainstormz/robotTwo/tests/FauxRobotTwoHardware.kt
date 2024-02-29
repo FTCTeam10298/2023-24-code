@@ -13,7 +13,6 @@ import us.brainstormz.faux.hardware.FauxColorSensor
 import us.brainstormz.faux.hardware.FauxDigitalChannel
 import us.brainstormz.faux.hardware.FauxImu
 import us.brainstormz.faux.hardware.FauxServo
-import us.brainstormz.localizer.Localizer
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorSystem
@@ -53,8 +52,8 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
         leftRollerEncoder = AnalogInput(FauxAnalogInputController(), 0)
         rightRollerEncoder = AnalogInput(FauxAnalogInputController(), 0)
 
-        leftTransferSensor = FauxColorSensor()
-        rightTransferSensor = FauxColorSensor()
+        leftTransferUpperSensor = FauxColorSensor()
+        rightTransferUpperSensor = FauxColorSensor()
 
         liftMagnetLimit = FauxDigitalChannel()
 

@@ -62,7 +62,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                         movementMode = MovementMode.Position
                                 ),
                                 intakeNoodles = targetRobot.collectorSystemState.collectorState,
-                                rollers = targetRobot.collectorSystemState.transferRollersState,
+                                rollers = targetRobot.collectorSystemState.transferRollersState.toRealTransferTarget(),
                                 transferState = Transfer.TransferState(
                                         left = RobotTwoTeleOp.initTransferHalfState,
                                         right = RobotTwoTeleOp.initTransferHalfState
@@ -92,6 +92,26 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             val depoState: DepoState,
             val collectorSystemState: CollectorState
     )
+    data class CollectorState(
+            val collectorState: CollectorPowers,
+            val extendoPosition: ExtendoPositions,
+            val transferRollersState: TransferTarget,
+    )
+    data class TransferTarget(val left: RollerPowers, val right: RollerPowers, val directorState: DirectorState) {
+        fun toRealTransferTarget(): Transfer.TransferTarget {
+            return Transfer.TransferTarget(
+                    leftServoCollect = Transfer.RollerTarget(
+                            left,
+                            0L
+                    ),
+                    rightServoCollect = Transfer.RollerTarget(
+                            right,
+                            0L
+                    ),
+                    directorState
+            )
+        }
+    }
 
     data class DepoState(
             val armPos: Arm.Positions,
