@@ -6,6 +6,8 @@ import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.AxonEncoderReader
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.tests.TeleopTest
+import us.brainstormz.utils.CleanToStringPrint
 import kotlin.math.abs
 
 class Transfer(private val telemetry: Telemetry) {
@@ -60,26 +62,26 @@ class Transfer(private val telemetry: Telemetry) {
         return power
     }
 
-    data class ActualTransferHalf(val upperSensor: SensorReading, val lowerSensor: SensorReading)
-    data class ActualTransfer(val left: ActualTransferHalf, val right: ActualTransferHalf)
+    data class ActualTransferHalf(val upperSensor: SensorReading, val lowerSensor: SensorReading): CleanToStringPrint()
+    data class ActualTransfer(val left: ActualTransferHalf, val right: ActualTransferHalf): CleanToStringPrint()
 
     fun getActualTransfer(hardware: RobotTwoHardware): ActualTransfer {
         return ActualTransfer(
                 left = ActualTransferHalf(
-                        upperSensor = getSensorReading(hardware.leftTransferUpperSensor),
+                        upperSensor = TeleopTest.emptySensorReading,
                         lowerSensor = getSensorReading(hardware.leftTransferLowerSensor),
                 ),
                 right = ActualTransferHalf(
-                        upperSensor = getSensorReading(hardware.rightTransferUpperSensor),
+                        upperSensor = TeleopTest.emptySensorReading,
                         lowerSensor = getSensorReading(hardware.rightTransferLowerSensor),
                 )
         )
     }
 
 
-    data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
-    data class TransferHalfState(val upperSensor: SensorState, val lowerSensor: SensorState)
-    data class TransferState(val left: TransferHalfState, val right: TransferHalfState)
+    data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long): CleanToStringPrint()
+    data class TransferHalfState(val upperSensor: SensorState, val lowerSensor: SensorState): CleanToStringPrint()
+    data class TransferState(val left: TransferHalfState, val right: TransferHalfState): CleanToStringPrint()
 
     fun getTransferState(actualWorld: ActualWorld, previousTransferState: TransferState): TransferState {
 
@@ -107,8 +109,11 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
 
-    data class RollerTarget(val target: RollerPowers, val timeStartedIntakingMillis: Long)
-    data class TransferTarget(val leftServoCollect: RollerTarget, val rightServoCollect: RollerTarget, val directorState: DirectorState)
+    data class RollerTarget(val target: RollerPowers, val timeStartedIntakingMillis: Long): CleanToStringPrint()
+    data class TransferTarget(
+            val leftServoCollect: RollerTarget,
+            val rightServoCollect: RollerTarget,
+            val directorState: DirectorState): CleanToStringPrint()
 
     fun getTransferHalfSortingTarget(
             shouldFinishTransfer: Boolean,
@@ -118,36 +123,37 @@ class Transfer(private val telemetry: Telemetry) {
             previousRollerTarget: RollerTarget
             ): RollerTarget {
 
-        val lowerSensorHasBeenSeen = actualTransferHalfState.lowerSensor.hasPixelBeenSeen
+        val lowerSensorIsSeeingPixel = actualTransferHalfState.lowerSensor.hasPixelBeenSeen
 
-        val targetPower = if (shouldFinishTransfer) {
+
+        val targetPower: Pair<RollerPowers, Long?> = if (shouldFinishTransfer) {
             val timeToRunRollerToGetPixelAllTheWayUpMillis = 800
-            if (lowerSensorHasBeenSeen) {
-                if (previousRollerTarget.timeStartedIntakingMillis > timeToRunRollerToGetPixelAllTheWayUpMillis) {
-                    RollerPowers.Off
+            val previousTimeStartedMovingPixelToNextStageMillis = previousRollerTarget.timeStartedIntakingMillis
+            val timeSinceRollerStartedMillis = timestampMillis - previousTimeStartedMovingPixelToNextStageMillis
+            if (lowerSensorIsSeeingPixel) {
+                if (0L == previousTimeStartedMovingPixelToNextStageMillis) {
+                    RollerPowers.Intake to timestampMillis
+                } else if (timeSinceRollerStartedMillis < timeToRunRollerToGetPixelAllTheWayUpMillis) {
+                    RollerPowers.Intake to previousTimeStartedMovingPixelToNextStageMillis
                 } else {
-                    RollerPowers.Intake
+                    RollerPowers.Off to previousTimeStartedMovingPixelToNextStageMillis
                 }
             } else {
-                RollerPowers.Off
+                RollerPowers.Off to null
             }
         } else {
 //            if (upperSensorHasBeenSeen) {
 //                RollerPowers.Off
 //            } else {
-            if (lowerSensorHasBeenSeen) {
-                RollerPowers.Off
+            if (lowerSensorIsSeeingPixel) {
+                RollerPowers.Off to null
             } else {
-                RollerPowers.Intake
+                RollerPowers.Intake to null
             }
 //            }
         }
-        val timeStartedIntakingMillis = if (targetPower == RollerPowers.Intake && previousRollerTarget.target != RollerPowers.Intake) {
-            timestampMillis
-        } else {
-            previousRollerTarget.timeStartedIntakingMillis
-        }
-        return RollerTarget(targetPower, timeStartedIntakingMillis)
+
+        return RollerTarget(targetPower.first, targetPower.second ?: 0L)
     }
 
     fun getTransferSortingTarget(
@@ -159,17 +165,18 @@ class Transfer(private val telemetry: Telemetry) {
         val timestampMillis = actualWorld.timestampMilis
         val isPixelInLeft = actualTransferState.left.lowerSensor.hasPixelBeenSeen
         val isPixelInRight = actualTransferState.right.lowerSensor.hasPixelBeenSeen
-        val isPixelInBothSides = isPixelInLeft && isPixelInRight
+
+        val shouldFinishTransfer = !isCollecting || (isPixelInLeft && isPixelInRight)
 
         val leftServoTarget = getTransferHalfSortingTarget(
-                shouldFinishTransfer = !isCollecting || isPixelInBothSides,
+                shouldFinishTransfer = shouldFinishTransfer,
                 timestampMillis = timestampMillis,
                 actualTransferHalfState = actualTransferState.left,
                 previousTransferHalfState = previousTransferState.left,
                 previousRollerTarget = previousTransferTarget.leftServoCollect,
         )
         val rightServoTarget = getTransferHalfSortingTarget(
-                shouldFinishTransfer = !isCollecting || isPixelInBothSides,
+                shouldFinishTransfer = shouldFinishTransfer,
                 timestampMillis = timestampMillis,
                 actualTransferHalfState = actualTransferState.right,
                 previousTransferHalfState = previousTransferState.right,
@@ -180,7 +187,7 @@ class Transfer(private val telemetry: Telemetry) {
                 leftServoCollect = leftServoTarget,
                 rightServoCollect = rightServoTarget,
                 directorState =
-                if (isPixelInBothSides){
+                if (shouldFinishTransfer){
                     DirectorState.Off
                 } else if (isPixelInLeft) {
                     DirectorState.Right
@@ -278,7 +285,7 @@ class Transfer(private val telemetry: Telemetry) {
         Blue
     }
 
-    data class SensorReading(val red: Int, val green: Int, val blue: Int, val alpha: Int) {
+    data class SensorReading(val red: Int, val green: Int, val blue: Int, val alpha: Int): CleanToStringPrint() {
         val asList = listOf(red, green, blue, alpha)
         val rgbAsMap = mapOf(RGB.Red to red, RGB.Green to green, RGB.Blue to blue)
     }

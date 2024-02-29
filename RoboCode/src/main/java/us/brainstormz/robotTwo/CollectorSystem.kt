@@ -23,12 +23,14 @@ class CollectorSystem(
 
     fun getCurrentState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualCollector {
         val collectorReadStartTimeMilis = System.currentTimeMillis()
-        val actualCollector= ActualCollector(
+
+        val actualCollector = ActualCollector(
                 extendo= extendo.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.collectorSystemState?.extendo),
                 leftRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Left, hardware),
                 rightRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Right, hardware),
                 transferState= transfer.getActualTransfer(hardware),
         )
+
         val collectorReadEndTimeMilis = System.currentTimeMillis()
         val timeToReadCollector = collectorReadEndTimeMilis-collectorReadStartTimeMilis
         telemetry.addLine("timeToReadCollector: $timeToReadCollector")

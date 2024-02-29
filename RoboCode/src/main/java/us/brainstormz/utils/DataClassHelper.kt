@@ -18,3 +18,7 @@ object DataClassHelper {
         return className + "(" + argumentString + ")"
     }
 }
+
+open class CleanToStringPrint {
+    override fun toString(): String = DataClassHelper.dataClassToString(this)
+}
