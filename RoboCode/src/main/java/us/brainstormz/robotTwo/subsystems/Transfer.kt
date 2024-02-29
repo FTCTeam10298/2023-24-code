@@ -82,15 +82,15 @@ class Transfer(private val telemetry: Telemetry) {
     data class TransferState(val left: TransferHalfState, val right: TransferHalfState)
 
     fun getTransferState(actualWorld: ActualWorld, previousTransferState: TransferState): TransferState {
-        val timestampMilis = actualWorld.timestampMilis
 
         fun getSensorState(actualReading: SensorReading, previousSensorState: SensorState): SensorState {
             val isSeeingPixel = isPixelIn(actualReading)
-            return if (isSeeingPixel) {
-                SensorState(hasPixelBeenSeen = isSeeingPixel, timeOfSeeingMilis = timestampMilis)
-            } else {
-                previousSensorState
+            val timeOfSeeingRightPixelMilis = when {
+                !previousSensorState.hasPixelBeenSeen && isSeeingPixel -> System.currentTimeMillis()
+                !isSeeingPixel -> 0
+                else -> previousSensorState.timeOfSeeingMilis
             }
+            return SensorState(isSeeingPixel, timeOfSeeingRightPixelMilis)
         }
 
         fun getTransferHalfState(actualTransferHalfState: ActualTransferHalf, previousTransferHalfState: TransferHalfState): TransferHalfState {
