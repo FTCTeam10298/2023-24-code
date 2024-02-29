@@ -147,7 +147,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
         val depositingMoveAroundTrussWaypoint = depositingPosition.copy(r= startPosition.redStartPosition.r)
 
-        val moveAroundRightPixelPosition = depositingPosition.copy(x= depositingPosition.x - 5.0, r= startPosition.redStartPosition.r)
+        val moveAroundRightPixelPosition = depositingPosition.copy(x= depositingPosition.x - 10.0, r= startPosition.redStartPosition.r)
 
         val lineUpForDeposit = when (propPosition) {
             PropPosition.Center -> listOf(
