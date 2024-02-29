@@ -17,7 +17,7 @@ class Neopixels: Subsystem {
     var lightStrandTarget = mutableListOf<MutableList<Double>>()
     var mondrianStatusBarTarget = mutableListOf<mondrianStatusBarMessages>()
 
-    fun prepareNeopixels() {
+    fun makeEmptyLightState() {
         //Create a list of pixel values we can change... the function to do it is not good right now.
         var prototypeLightStatus: MutableList<Double> = mutableListOf(0.0, 0.0, 0.0, 0.0) //R, G, B, W
 
@@ -26,6 +26,13 @@ class Neopixels: Subsystem {
         }
         println("Initial Status String: $lightStrandTarget")
         }
+    fun initialize(seesawController: AdafruitNeopixelSeesaw) {
+        seesawController.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_WRGB)
+        seesawController.setBufferLength(60.toShort())
+        for (i in 0..100) {
+            seesawController.setColorRGBW((0).toByte(), (0).toByte(), (0).toByte(), (0).toByte(), i.toShort())
+        }
+    }
 
     override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {
         println("Not yet implemented")
@@ -48,6 +55,9 @@ class Neopixels: Subsystem {
 
     //I should make a data class
 
+    //make this more efficient to only do 5 lights at a time, expanding from center... less data-sucking.
+    //requires targetstate, previous targetstate
+    //iterate through for both sides... wherever there isn't a pixel of the right color, paint the next x that color... should be easy.
     fun showHalf(firstTargetColor: ColorInRGBW, secondTargetColor: ColorInRGBW) {
 
         val halfOfStrand: Int
@@ -114,7 +124,7 @@ class Neopixels: Subsystem {
 
     //now for the fun stuff—animations!
 
-    fun showOneByOne(targetColor: ColorInRGBW, startPixel: Int, endPixel: Int, frameNumber: Int) {
+    fun showOneByOne(targetColor: ColorInRGBW, startPixel: Int, endPixel: Int, frameNumber: Int):  MutableList<MutableList<Double>> {
         //not very necessary. Maybe someday?
         if (frameNumber > endPixel - startPixel) {
 
@@ -122,14 +132,18 @@ class Neopixels: Subsystem {
         for (n in 1..strandLength) {
             lightStrandTarget[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
         }
+        return lightStrandTarget
 
     }
-    fun writeTargetStateToLights(pixelStrandController: AdafruitNeopixelSeesaw){
+
+    //take in targetState and previousTargetState, iterate 1-by-1, and only change a light if it needs to be changed.
+    //output the final target state.
+    fun writeTargetStateToLights(targetState:  MutableList<MutableList<Double>>, pixelStrandController: AdafruitNeopixelSeesaw){
         var pixelsController = pixelStrandController
 
         var indexOfThisPixelTarget: Int = 0
         //what is this color format? I don't get it.
-        for (pixelStatus in lightStrandTarget) {
+        for (pixelStatus in targetState) {
             indexOfThisPixelTarget += 1
             val targetRed = pixelStatus[0].toInt().toByte()
             val targetGreen = pixelStatus[1].toInt().toByte()
@@ -145,8 +159,12 @@ class Neopixels: Subsystem {
 
 }
 @TeleOp
-class NeopixelTest : LinearOpMode() {
-    var neo: AdafruitNeopixelSeesaw? = null
+class NeopixelPlayground : LinearOpMode() {
+//    var neo: AdafruitNeopixelSeesaw? = null
+    var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
+    val neopixelSystem = Neopixels()
+    var state = neopixelSystem.makeEmptyLightState()
+
 
     @Throws(InterruptedException::class)
     override fun runOpMode() {
@@ -154,10 +172,49 @@ class NeopixelTest : LinearOpMode() {
         waitForStart()
         if (opModeIsActive()) {
             while (opModeIsActive() && !isStopRequested) {
+                val redDouble = 0.0 //-> red
+                val greenDouble = 255.0 //-> blue
+                val blueDouble = 0.0 //-> white
+                val whiteDouble = 0.0 //-> green
+
+                ///IS THAT THE BYTE OF '87??
+                val redInt = redDouble.toInt()
+                val greenInt = greenDouble.toInt()
+                val blueInt = blueDouble.toInt()
+                val whiteInt = whiteDouble.toInt()
+                val redByte = redInt.toByte()
+                val greenByte = greenInt.toByte()
+                val blueByte = blueInt.toByte()
+                val whiteByte = whiteInt.toByte()
+                val redPUKEDouble = 0.0
+                val greenPUKEDouble = 0.0
+                val bluePUKEDouble = 255.0
+                val whitePUKEDouble = 0.0
+
+                ///IS THAT THE BYTE OF '87??
+                val redPUKEInt = redPUKEDouble.toInt()
+                val greenPUKEInt = greenPUKEDouble.toInt()
+                val bluePUKEInt = bluePUKEDouble.toInt()
+                val whitePUKEInt = whitePUKEDouble.toInt()
+                val redPUKEByte = redPUKEInt.toByte()
+                val greenPUKEByte = greenPUKEInt.toByte()
+                val bluePUKEByte = bluePUKEInt.toByte()
+                val whitePUKEByte = whitePUKEInt.toByte()
                 val WRGB = 0x333333
-                for (i in 0..11) {
-                    neo!!.setColor(WRGB, i.toShort())
+                //                for (int i = 0; i < 30; i++){
+//                    neo.setColor(WRGB, (short) i);
+//                }
+                for (i in 0..29) {
+                    neo!!.setColorRGBW(redByte, greenByte, blueByte, whiteByte, i.toShort())
+//                    state = neopixelSystem.changeOnePixel(neopixelSystem. 0.0)
+
                 }
+                for (i in 30..59) {
+                    neo!!.setColorRGBW(redPUKEByte, greenPUKEByte, bluePUKEByte, whitePUKEByte, i.toShort())
+                }
+
+//                    neo.setColorRGBW(redPUKEByte, greenPUKEByte, bluePUKEByte, whitePUKEByte, ((short) 0));
+//                    neo.setColorRGBW(redByte, greenByte, blueByte, whiteByte, ((short) 1));
                 val red = WRGB shr 8 * 2 and 0xfe
                 val green = WRGB shr 8 * 1 and 0xfe
                 val blue = WRGB shr 8 * 0 and 0xfe
@@ -172,6 +229,27 @@ class NeopixelTest : LinearOpMode() {
     }
 
     fun initialize_opmode() {
+        val redZERODouble = 0.0
+        val greenZERODouble = 0.0
+        val blueZERODouble = 0.0
+        val whiteZERODouble = 0.0
 
+        ///IS THAT THE BYTE OF '87??
+        val redZEROInt = redZERODouble.toInt()
+        val greenZEROInt = greenZERODouble.toInt()
+        val blueZEROInt = blueZERODouble.toInt()
+        val whiteZEROInt = whiteZERODouble.toInt()
+        val redZEROByte = redZEROInt.toByte()
+        val greenZEROByte = greenZEROInt.toByte()
+        val blueZEROByte = blueZEROInt.toByte()
+        val whiteZEROByte = whiteZEROInt.toByte()
+        neopixelSystem.initialize(neo)
+        //think I wrote an equivalent function... init()
+//        neo!!.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_WRGB)
+//        neo!!.setBufferLength(60.toShort())
+//        for (i in 0..100) {
+//            neo!!.setColorRGBW(redZEROByte, greenZEROByte, blueZEROByte, whiteZEROByte, i.toShort())
+//        }
+//        neo!!.init_neopixels()
     }
 }

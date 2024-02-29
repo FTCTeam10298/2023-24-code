@@ -32,3 +32,6 @@ Implement draw half - Done!
 Connect to bot 
 Complete 
 
+(James wants draw half to take >= 5ms per loop - update in groups of pixels from the center & if color changed overwrite)
+if called again, do another 5 on each side.
+
