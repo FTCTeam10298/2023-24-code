@@ -340,7 +340,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                     targetRobot = RobotState(
                             collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
                             positionAndRotation = parkingPosition,
-                            depoState = DepoState(Arm.Positions.ClearLiftMovement, Lift.LiftPositions.Down, ClawTarget.Retracted, ClawTarget.Retracted)
+                            depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Retracted, ClawTarget.Retracted)
                     ),
                     isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                         isRobotAtPosition(targetState, actualState, previousActualState)
