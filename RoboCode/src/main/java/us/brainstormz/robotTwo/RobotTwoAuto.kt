@@ -185,7 +185,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                     depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                             ),
                             isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                                telemetry.addLine("Waiting for extendo")
+                                telemetry.addLine("Waiting for extendo and rotation")
+                                drivetrain.rotationPID = drivetrain.rotationOnlyPID
                                 val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 1.0, precisionDegrees = 2.0)
                                 isRobotAtPosition || hasTimeElapsed(4000, targetState)
                             },
@@ -250,6 +251,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             ),
                             isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                                 telemetry.addLine("Waiting for robot to navigate around purple pixel")
+                                drivetrain.rotationPID = drivetrain.rotationOnlyPID
                                 val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
                                 isRobotAtPosition || hasTimeElapsed(4000, targetState)
                             },).asTargetWorld
@@ -266,6 +268,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
     private val placingOnBackboardRight = PositionAndRotation(x= -42.0, y= -55.0, r= 0.0)
 
     /** Backboard side */
+
+
     private val parkingPosition = PositionAndRotation(x= -58.0, y= -48.0, r= 0.0)
 
     private fun backboardSideYellow(startPosition: StartPosition, propPosition: PropPosition): List<TargetWorld> {
@@ -285,6 +289,10 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                             telemetry.addLine("Waiting for go to board")
                             val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
+                            drivetrain.rotationPID = if (isRobotAtPosition)
+                                drivetrain.rotationOnlyPID
+                            else
+                                drivetrain.rotationWithOtherAxisPID
                             val isCollectorRetracted = extendo.isExtendoAtPosition(ExtendoPositions.Min.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
                             (isRobotAtPosition && isCollectorRetracted) || hasTimeElapsed(3000, targetState)
                         },).asTargetWorld,

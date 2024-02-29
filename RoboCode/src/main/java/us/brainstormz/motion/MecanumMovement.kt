@@ -29,17 +29,30 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
         kd = 12.0,
     )
 
-    //Too much I
-    var rotationPID = PID(
-        name = "r",
-        kp= 0.9,
-        ki= 4.0E-4,
-        kd= 130.0,
+    val rotationOnlyPID = PID(
+            name = "r only",
+            kp= 0.9,
+            ki= 4.0E-4,
+            kd= 150.0,
+    )
+    val rotationWithOtherAxisPID = PID(
+            name = "r multi-axis",
+            kp= 2.0,
+            ki= 1.0E-4,
+            kd= 200.0,
     )
 
+    var rotationPID = rotationOnlyPID
+
+    //Works good for turn only
 //    "kp" : 0.9,
 //    "ki" : 4.0E-4,
 //    "kd" : 150.0,
+
+    //Works good for 3 axis
+//    "kp" : 2.0,
+//    "ki" : 1.0E-4,
+//    "kd" : 200.0,
 
 
     override var precisionInches: Double = defaultPrecisionInches
