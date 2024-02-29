@@ -143,6 +143,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             PropPosition.Center -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 5.0)
             PropPosition.Right -> sidePropPosition(-1)
         }
+
         val extendoPosition = when (propPosition) {
             PropPosition.Left -> ExtendoPositions.PurpleSidePosition
             PropPosition.Center -> ExtendoPositions.PurpleCenterPosition
@@ -150,6 +151,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         }
 
         val depositingMoveAroundTrussWaypoint = depositingPosition.copy(r= startPosition.redStartPosition.r)
+
+        val moveAroundRightPixelPosition = depositingPosition.copy(x= depositingPosition.x - 5.0, r= startPosition.redStartPosition.r)
 
         val lineUpForDeposit = when (propPosition) {
             PropPosition.Center -> listOf(
@@ -206,7 +209,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                     ).asTargetWorld,
             )
         }
-        return lineUpForDeposit + listOf(
+
+        val depositPixel = listOf(
                 AutoTargetWorld(
                         targetRobot = RobotState(
                                 collectorSystemState = CollectorState(CollectorPowers.EjectDraggedPixelPower, extendoPosition, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
@@ -235,12 +239,32 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            telemetry.addLine("Waiting for extendo to retract 2")
+                            telemetry.addLine("Waiting for extendo to retract 2 electric boogaloo")
                             val isExtendoHalfwayIn = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks / 2)
                             isExtendoHalfwayIn || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
                         },).asTargetWorld,
         )
+
+        val moveAroundDepositedPixel = when (propPosition) {
+            PropPosition.Right -> listOf(
+                    AutoTargetWorld(
+                            targetRobot = RobotState(
+                                    collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                    positionAndRotation = moveAroundRightPixelPosition,
+                                    depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
+                            ),
+                            isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                telemetry.addLine("Waiting for robot to navigate around purple pixel")
+                                val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
+                                isRobotAtPosition || hasTimeElapsed(4000, targetState)
+                            },).asTargetWorld
+            )
+            else -> listOf()
+        }
+
+        return lineUpForDeposit + depositPixel + moveAroundDepositedPixel
     }
+
 
     private val placingOnBackboardLeft = PositionAndRotation(x= -28.0, y= -55.0, r= 0.0)
     private val placingOnBackboardCenter = PositionAndRotation(x= -36.0, y= -55.0, r= 0.0)
