@@ -12,24 +12,27 @@ import kotlin.math.absoluteValue
 
 class Extendo(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override var pid: PID =
-//                        PID("extendo default", kp = 0.0025)
                         PID(
                                 name= "extendo",
-                                kp= 0.0017,
-                                ki= 1.5E-7,
-                                kd= 0.13,
+                                kp= 0.0018,
+                                ki= 2.0E-7,
+                                kd= 0.08,
                         )
+    /*
+    "kp" : 0.0018,
+    "ki" : 2.0E-7,
+    "kd" : 0.08,*/
 
     enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         AllTheWayInTarget(-10),
         Min(0),
         Manual(0),
-        PurpleSidePosition(600),
+        PurpleSidePosition(700),
         PurpleCenterPosition(2000),
         Max(2000),
     }
 
-    private val acceptablePositionErrorTicks = 50
+    private val acceptablePositionErrorTicks = 80
     fun isExtendoAtPosition(targetPositionTicks: Int, currentPositionTicks: Int): Boolean {
         val positionErrorTicks = targetPositionTicks - currentPositionTicks
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
