@@ -26,7 +26,7 @@ LIGHTING
 
 Implement init — done!
 data representation of pixels - done
-Create actualizer - use 1 draw command, experimentation 
+Create actualizer - use 1 draw command, experimentation - done!
 Implement flood pixels - Done!
 Implement draw half - Done!
 Connect to bot 
@@ -38,7 +38,7 @@ if called again, do another 5 on each side.
 
 Objective: 5 ms per run (/loop)  show2Colors
 
-Pt. 1—refactor existing light code to use my library
+Pt. 1—refactor existing light code to use my library - Done!
 Pt. 2—rewrite lighting updater to be lazy—compare past and present state – return past
 Pt. 3—rewrite show 2Colors to update x lights at a time… find first wrong light, fill x lights on both sides with target colors (lazy rewriter will handle overwrites
 Pt. 4—Test with just continuous rewrites and then do switchback—repeat
