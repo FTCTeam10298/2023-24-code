@@ -21,7 +21,7 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
         BackboardBottomRow(330),
         ClearForArmToMove(547),
         WaitForArmToMove(800),
-        SetLine1(600),
+        SetLine1(500),
         SetLine2(1000),
         SetLine3(1800),
         Max(2100)

@@ -83,13 +83,20 @@ interface SlideSubsystem: DualMovementModeSubsystem {
         return velocityTicksPerMili
     }
 
-//    enum class MovementMode {
-//        Position,
-//        Power
-//    }
+
     interface SlideTargetPosition { val ticks: Int }
 
-    class VariableTargetPosition(override val ticks: Int): SlideTargetPosition
+    class VariableTargetPosition(override val ticks: Int): SlideTargetPosition {
+        override fun equals(other: Any?): Boolean {
+            return if (other is SlideTargetPosition) {
+                this.ticks == other.ticks
+            } else {
+                false
+            }
+        }
+
+        override fun toString(): String = DataClassHelper.dataClassToString(this)
+    }
 
     open class TargetSlideSubsystem (
             override val targetPosition: SlideTargetPosition,

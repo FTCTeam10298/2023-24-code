@@ -134,7 +134,8 @@ class DepoManager(
                 false -> {
                     val liftIsAtOrAboveClear = actualDepo.lift.currentPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
                     val depoTargetIsOut = finalDepoTarget.targetType == DepoTargetType.GoingOut
-                    if (depoTargetIsOut && liftIsAtOrAboveClear) {
+                    val armIsOut = actualDepo.armAngleDegrees < Arm.Positions.InsideTheBatteryBox.angleDegrees
+                    if (depoTargetIsOut && (liftIsAtOrAboveClear || armIsOut)) {
                         finalDepoTarget.armPosition
                     } else {
                         telemetry.addLine("arm is clearing lift because depo is either going in and aren't there or are going out and aren't past the wiring box")

@@ -7,6 +7,7 @@ import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Wrist
 
 class DepoTest {
@@ -615,7 +616,7 @@ class DepoTest {
                     testName= "Testing whether the claws will drop when the depo is out",
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.NoInput, wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.Drop, RobotTwoTeleOp.ClawInput.Drop)),
-                            previousDepoTarget = DepoTarget( 
+                            previousDepoTarget = DepoTarget(
                                     lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
@@ -627,7 +628,7 @@ class DepoTest {
                                     wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping))),
                             handoffIsReady = false
                     ),
-                    expectedOutput= DepoTarget( 
+                    expectedOutput= DepoTarget(
                             lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
                             armPosition = Arm.Positions.Out,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
@@ -638,7 +639,7 @@ class DepoTest {
                     testName= "Testing whether the claws will open when the depo is moving in",
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.Down, wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.Hold, RobotTwoTeleOp.ClawInput.Hold)),
-                            previousDepoTarget = DepoTarget( 
+                            previousDepoTarget = DepoTarget(
                                     lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
                                     armPosition = Arm.Positions.Out,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
@@ -650,7 +651,7 @@ class DepoTest {
                                     wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Retracted))),
                             handoffIsReady = false
                     ),
-                    expectedOutput= DepoTarget( 
+                    expectedOutput= DepoTarget(
                             lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                             armPosition = Arm.Positions.ClearLiftMovement,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
@@ -661,7 +662,7 @@ class DepoTest {
                     testName= "Testing whether the claws will open when the depo is down after being up",
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.Hold, RobotTwoTeleOp.ClawInput.Hold)),
-                            previousDepoTarget = DepoTarget( 
+                            previousDepoTarget = DepoTarget(
                                     lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                     armPosition = Arm.Positions.In,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
@@ -673,7 +674,7 @@ class DepoTest {
                                     wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Retracted))),
                             handoffIsReady = false
                     ),
-                    expectedOutput= DepoTarget( 
+                    expectedOutput= DepoTarget(
                             lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.In,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
@@ -684,7 +685,7 @@ class DepoTest {
                     testName= "Testing whether the claws will open when the depo is down and handoff is ready",
                     input= FullyManageDepoTestInputs(
                             target = RobotTwoTeleOp.noInput.copy(wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.Hold, RobotTwoTeleOp.ClawInput.Hold)),
-                            previousDepoTarget = DepoTarget( 
+                            previousDepoTarget = DepoTarget(
                                     lift = Lift.TargetLift(Lift.LiftPositions.Down),
                                     armPosition = Arm.Positions.In,
                                     wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Retracted),
@@ -696,11 +697,85 @@ class DepoTest {
                                     wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Retracted))),
                             handoffIsReady = true
                     ),
-                    expectedOutput= DepoTarget( 
+                    expectedOutput= DepoTarget(
                             lift = Lift.TargetLift(Lift.LiftPositions.Down),
                             armPosition = Arm.Positions.In,
                             wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
                             targetType = DepoManager.DepoTargetType.GoingHome
+                    )
+            ),
+    )
+
+
+    private val variableLiftTarget = SlideSubsystem.VariableTargetPosition(ticks = 10)
+    val operationBelowTheClearanceTest: List<AllDataForTest> = listOf(
+            AllDataForTest(
+                    testName= "Testing whether the arm will act weird when it's at a low position",
+                    input= FullyManageDepoTestInputs(
+                            target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.NoInput, wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.NoInput, RobotTwoTeleOp.ClawInput.NoInput)),
+                            previousDepoTarget = DepoTarget(
+                                    lift = Lift.TargetLift(variableLiftTarget),
+                                    armPosition = Arm.Positions.Out,
+                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                                    targetType = DepoManager.DepoTargetType.GoingOut
+                            ),
+                            actualDepo = DepoManager.ActualDepo(
+                                    armAngleDegrees = Arm.Positions.Out.angleDegrees,
+                                    lift = Lift.ActualLift(currentPositionTicks = 10, limitSwitchIsActivated = false),
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping))),
+                            handoffIsReady = false
+                    ),
+                    expectedOutput= DepoTarget(
+                            lift = Lift.TargetLift(variableLiftTarget),
+                            armPosition = Arm.Positions.Out,
+                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                            targetType = DepoManager.DepoTargetType.GoingOut
+                    )
+            ),
+            AllDataForTest(
+                    testName= "Testing whether the arm will act weird when it's at a low position",
+                    input= FullyManageDepoTestInputs(
+                            target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.NoInput, wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.NoInput, RobotTwoTeleOp.ClawInput.NoInput)),
+                            previousDepoTarget = DepoTarget(
+                                    lift = Lift.TargetLift(variableLiftTarget),
+                                    armPosition = Arm.Positions.Out,
+                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                                    targetType = DepoManager.DepoTargetType.GoingOut
+                            ),
+                            actualDepo = DepoManager.ActualDepo(
+                                    armAngleDegrees = Arm.Positions.Out.angleDegrees,
+                                    lift = Lift.ActualLift(currentPositionTicks = 10, limitSwitchIsActivated = false),
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping))),
+                            handoffIsReady = false
+                    ),
+                    expectedOutput= DepoTarget(
+                            lift = Lift.TargetLift(variableLiftTarget),
+                            armPosition = Arm.Positions.Out,
+                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                            targetType = DepoManager.DepoTargetType.GoingOut
+                    )
+            ),
+            AllDataForTest(
+                    testName= "Testing whether the arm will act weird when it's at a low position",
+                    input= FullyManageDepoTestInputs(
+                            target = RobotTwoTeleOp.noInput.copy(depo = RobotTwoTeleOp.DepoInput.NoInput, wrist = RobotTwoTeleOp.WristInput(RobotTwoTeleOp.ClawInput.NoInput, RobotTwoTeleOp.ClawInput.NoInput)),
+                            previousDepoTarget = DepoTarget(
+                                    lift = Lift.TargetLift(variableLiftTarget),
+                                    armPosition = Arm.Positions.Out,
+                                    wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                                    targetType = DepoManager.DepoTargetType.GoingOut
+                            ),
+                            actualDepo = DepoManager.ActualDepo(
+                                    armAngleDegrees = Arm.Positions.Out.angleDegrees,
+                                    lift = Lift.ActualLift(currentPositionTicks = 100, limitSwitchIsActivated = false),
+                                    wristAngles = wrist.getActualWristFromWristTargets(Wrist.WristTargets(Claw.ClawTarget.Gripping))),
+                            handoffIsReady = false
+                    ),
+                    expectedOutput= DepoTarget(
+                            lift = Lift.TargetLift(variableLiftTarget),
+                            armPosition = Arm.Positions.Out,
+                            wristPosition = Wrist.WristTargets(both = Claw.ClawTarget.Gripping),
+                            targetType = DepoManager.DepoTargetType.GoingOut
                     )
             ),
     )
@@ -757,7 +832,7 @@ fun main() {
 
     val depoTest = DepoTest()
     val allMovingOutTests = listOf(RobotTwoTeleOp.DepoInput.SetLine1, RobotTwoTeleOp.DepoInput.SetLine2,RobotTwoTeleOp.DepoInput.SetLine3).fold(listOf<DepoTest.AllDataForTest>()) { acc, it -> acc + depoTest.movingOutTests(it) }
-    val tests = /*depoTest.liftResetTest +*/ depoTest.noInputOnStartTest + depoTest.clawInputsTests + depoTest.specificTest + allMovingOutTests + depoTest.movingInTests + depoTest.staticTests + depoTest.specificTest
+    val tests = depoTest.operationBelowTheClearanceTest //+ /*depoTest.liftResetTest +*/ depoTest.noInputOnStartTest + depoTest.clawInputsTests + depoTest.specificTest + allMovingOutTests + depoTest.movingInTests + depoTest.staticTests + depoTest.specificTest
 
     fun boolToPassFail(result: Boolean): String {
         return when (result) {
