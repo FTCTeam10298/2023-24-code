@@ -5,13 +5,30 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
-data class ColorInRGBW(val red: Double, val green: Double, val blue: Double, val white: Double)
+
+//R -> R, G -> B, B -> W, W -> G
+data class ColorInRGBWInUnknownOrder(val red: Double, val green: Double, val blue: Double, val white: Double)
 
 class Neopixels: Subsystem {
+
+    //color corrects for weird channel mapping.  TODO god its frustrating.
+//    fun colorInNeopixel(wrongColor: ColorInRGBW): ColorInRGBW {
+//        val correctColor = ColorInRGBW(wrongColor.red, wrongColor.white, wrongColor.green, wrongColor.blue)
+//        return correctColor
+//    }
 
     enum class LightTypes {
         RGBW,
         RGB //todo, we don't care
+    }
+
+    enum class NeoPixelColors(ColorInRGBWInUnknownOrder : ColorInRGBWInUnknownOrder) {
+        Red(ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 0.0)),
+        Green(ColorInRGBWInUnknownOrder(0.0, 0.0, 10.0, 255.0)),
+        Blue(ColorInRGBWInUnknownOrder(0.0, 255.0, 0.0, 0.0)),
+        White(ColorInRGBWInUnknownOrder(0.0, 0.0, 255.0, 0.0)),
+        Purple(ColorInRGBWInUnknownOrder(255.0, 255.0, 0.0, 0.0)),
+        Yellow(ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 165.0))
     }
 
     val strandLength: Int = 60
@@ -45,11 +62,11 @@ class Neopixels: Subsystem {
 
 
 
-    fun changeOnePixel(targetColor: ColorInRGBW, targetPixel: Int) {
+    fun changeOnePixel(targetColor: ColorInRGBWInUnknownOrder, targetPixel: Int) {
         lightStrandTarget[targetPixel] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
     }
 
-    fun flood(targetColor: ColorInRGBW)
+    fun flood(targetColor: ColorInRGBWInUnknownOrder)
     {
         for (n in 1..strandLength) {
             lightStrandTarget[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
@@ -58,7 +75,7 @@ class Neopixels: Subsystem {
 
     }
 
-    fun showOneByOne(previousTargetState:  MutableList<MutableList<Double>>, targetColor: ColorInRGBW, startPixel: Int, endPixel: Int):  MutableList<MutableList<Double>> {
+    fun showOneByOne(previousTargetState:  MutableList<MutableList<Double>>, targetColor: ColorInRGBWInUnknownOrder, startPixel: Int, endPixel: Int):  MutableList<MutableList<Double>> {
         //not very necessary. Maybe someday?
         for (n in startPixel..endPixel) {
             previousTargetState[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
@@ -73,7 +90,7 @@ class Neopixels: Subsystem {
     //make this more efficient to only do 5 lights at a time, expanding from center... less data-sucking.
     //requires targetstate, previous targetstate
     //iterate through for both sides... wherever there isn't a pixel of the right color, paint the next x that color... should be easy.
-    fun showHalf(firstTargetColor: ColorInRGBW, secondTargetColor: ColorInRGBW) {
+    fun showHalf(firstTargetColor: ColorInRGBWInUnknownOrder, secondTargetColor: ColorInRGBWInUnknownOrder) {
 
         val halfOfStrand: Int
         if (strandLength % 2 == 0) {
@@ -107,7 +124,7 @@ class Neopixels: Subsystem {
         Problem
     }
 
-    data class positionAndRGBWColor(val position: List<Int>, val targetColor: ColorInRGBW)
+    data class positionAndRGBWColor(val position: List<Int>, val targetColor: ColorInRGBWInUnknownOrder)
 
     fun updateMondrianStatusBar(){
         //black out status bar area
@@ -177,10 +194,10 @@ class NeopixelPlayground : LinearOpMode() {
         waitForStart()
         if (opModeIsActive()) {
             while (opModeIsActive() && !isStopRequested) {
-                val redDouble = 0.0 //-> red
-                val greenDouble = 255.0 //-> blue
-                val blueDouble = 0.0 //-> white
-                val whiteDouble = 0.0 //-> green
+                val redDouble = 0.0
+                val greenDouble = 255.0
+                val blueDouble = 0.0
+                val whiteDouble = 0.0
 
                 ///IS THAT THE BYTE OF '87??
                 val redInt = redDouble.toInt()
@@ -250,12 +267,40 @@ class NeopixelPlayground : LinearOpMode() {
         val blueZEROByte = blueZEROInt.toByte()
         val whiteZEROByte = whiteZEROInt.toByte()
 
-        val noir = ColorInRGBW(255.0, 0.0, 0.0, 0.0)
-        val verde = ColorInRGBW(0.0, 0.0, 199.0, 6.0)
+        //test all colors
+
+//
+//        }
+        val red = ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 0.0)
+        val green = ColorInRGBWInUnknownOrder(0.0, 0.0, 10.0, 255.0)//not high contrast
+        val blue = ColorInRGBWInUnknownOrder(0.0, 255.0, 0.0, 0.0)
+        val white = ColorInRGBWInUnknownOrder(0.0, 0.0, 255.0, 0.0)
+        val purple = ColorInRGBWInUnknownOrder(255.0, 255.0, 0.0, 0.0 )
+        val yellow = ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 165.0)
+
+//        enum class PixelColors
+
+
+
+//        val alpha = neopixelSystem.colorInNeopixel(red) //should be red
+//        val beta = neopixelSystem.colorInNeopixel(blue)  //should be green
+//        val gamma = neopixelSystem.colorInNeopixel(white)  //should be blue
+//        val delta = neopixelSystem.colorInNeopixel(green)  //should be white
+        println("green = ")
+
+
         var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
         neopixelSystem.initialize(neo)
-        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, noir, 0, 30)
-        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, verde, 30, 60)
+
+//         previousTargetState = neopixelSystem.showOneByOne(previousTargetState, orange, 0, 60)
+
+        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
+        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, purple, 16, 30)
+        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, yellow, 31, 46)
+        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, green, 47, 60)
+//        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, purple, 51, 60)
+
+
         neopixelSystem.writeTargetStateToLights(previousTargetState, neo)
 //        neopixelSystem.showOneByOne(state)
         //think I wrote an equivalent function... init()
