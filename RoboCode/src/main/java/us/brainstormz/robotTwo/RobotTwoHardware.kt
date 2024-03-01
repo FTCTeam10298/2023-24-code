@@ -365,33 +365,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         /**Lift*/
         val liftPower: Double = when (targetState.targetRobot.depoTarget.lift.movementMode) {
             MovementMode.Position -> {
-                when (targetState.targetRobot.depoTarget.lift.targetPosition) {
-//                    Lift.LiftPositions.ScoringHeightAdjust -> {
-//                        telemetry.addLine("Adjusting lift to position ${targetState.targetRobot.depoTarget.liftVariableInput.toInt()}")
-//                        lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.liftVariableInput.toInt(), actualState.actualRobot.depoState.lift.currentPositionTicks)
-//                    }
-                    Lift.LiftPositions.PastDown -> {
-//                val atZeroPosition = actualState.actualRobot.depoState.liftPositionTicks <= Lift.LiftPositions.Down.ticks
-//                if (!atZeroPosition || actualState.actualRobot.depoState.isLiftLimitActivated) {
-                        lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
-//                } else {
-//                    val currentTimeMilis = System.currentTimeMillis()
-//                    val timeSincePowerStart = currentTimeMilis - jankTimeOfLiftResetEncoderMoveStartMilis
-//                    if (timeSincePowerStart > 500) {
-//                        jankTimeOfLiftResetEncoderMoveStartMilis = currentTimeMilis
-//                        jankLastLiftMovePower = if (jankLastLiftMovePower > 0) {
-//                            -0.15
-//                        } else {
-//                            0.3
-//                        }
-//                    }
-//                    jankLastLiftMovePower
-//                }
-                    }
-                    else -> {
-                        lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
-                    }
-                }
+                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
             }
             MovementMode.Power -> {
                 telemetry.addLine("Running lift in manual mode at power ${targetState.targetRobot.depoTarget.lift.power}")

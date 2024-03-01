@@ -697,7 +697,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             depoManager.fullyManageDepo(
                     target= spoofDriverInputForDepo,
                     previousDepoTarget= previousTargetState.targetRobot.depoTarget,
-                    actualDepo= actualRobot.depoState)
+                    actualWorld= actualWorld,
+                    previousActualWorld= previousActualWorld)
         }
 
         /**Drive*/

@@ -13,7 +13,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.sign
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 
-class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
+class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         PastDown(0),
@@ -47,9 +47,9 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
     /** Note: Lift limit switch is about 98 ticks above bottom */
     override val allowedMovementBeforeResetTicks: Int = 1000
     override val allTheWayInPositionTicks: Int = 0
-    override val stallCurrentAmps: Double = 6.0
-    override val definitelyMovingVelocityTicksPerMili: Double = 0.01
-    override val findResetPower: Double = 0.2
+    override val stallCurrentAmps: Double = 5.0
+    override val definitelyMovingVelocityTicksPerMili: Double = 0.005
+    override val findResetPower: Double = 0.7
 
     data class ActualLift(override val currentPositionTicks: Int,
                      override val limitSwitchIsActivated: Boolean,
@@ -60,7 +60,13 @@ class Lift(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
     data class TargetLift(override val targetPosition: SlideSubsystem.SlideTargetPosition = LiftPositions.Down,
                           override val power: Double = 0.0,
                           override val movementMode: MovementMode = MovementMode.Position,
-                          override val timeOfResetMoveDirectionStartMilis: Long = 0): SlideSubsystem.TargetSlideSubsystem(targetPosition, movementMode, power, timeOfResetMoveDirectionStartMilis)
+                          override val timeOfResetMoveDirectionStartMilis: Long = 0): SlideSubsystem.TargetSlideSubsystem(targetPosition, movementMode, power, timeOfResetMoveDirectionStartMilis) {
+                              constructor(targetSlideSubsystem: SlideSubsystem.TargetSlideSubsystem):
+                                    this(   targetPosition= targetSlideSubsystem.targetPosition,
+                                            power= targetSlideSubsystem.power,
+                                            movementMode= targetSlideSubsystem.movementMode,
+                                            timeOfResetMoveDirectionStartMilis= targetSlideSubsystem.timeOfResetMoveDirectionStartMilis,)
+    }
 
 
     private val acceptablePositionErrorTicks = 100

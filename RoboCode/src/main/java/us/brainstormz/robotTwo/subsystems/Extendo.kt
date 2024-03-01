@@ -10,7 +10,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.printPID
 import kotlin.math.absoluteValue
 
-class Extendo(private val telemetry: Telemetry): Subsystem, SlideSubsystem {
+class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override var pid: PID =
                         PID(
                                 name= "extendo",

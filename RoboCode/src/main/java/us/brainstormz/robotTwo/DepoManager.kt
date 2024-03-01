@@ -246,7 +246,8 @@ class DepoManager(
         )
     }
 
-    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualDepo: ActualDepo): DepoTarget {
+    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualWorld: ActualWorld, previousActualWorld: ActualWorld): DepoTarget {
+        val actualDepo: ActualDepo = actualWorld.actualRobot.depoState
         telemetry.addLine("\nDepo manager: ")
 
         val depoInput = target.depo
@@ -279,6 +280,16 @@ class DepoManager(
                     else -> previousDepoTarget.wristPosition
                 }
 
+        val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
+            Lift.TargetLift(lift.findLimitToReset(
+                    actualSlideSubsystem = actualDepo.lift,
+                    actualTimestampMilis = actualWorld.timestampMilis,
+                    previousSlideSubsystem = previousActualWorld.actualRobot.depoState.lift,
+                    previousTimestampMilis = previousActualWorld.timestampMilis,
+                    previousTargetSlideSubsystem = previousDepoTarget.lift))
+        } else {
+            movingArmAndLiftTarget.lift
+        }
 //        val targetHasNotChanged = movingArmAndLiftTarget == previousDepoTarget
 //        val inputIsDownOrNone = depoInput == RobotTwoTeleOp.DepoInput.NoInput || depoInput == RobotTwoTeleOp.DepoInput.Down
 //        val previousLiftTargetWasReset = previousDepoTarget.liftPosition == Lift.LiftPositions.ResetEncoder
@@ -295,7 +306,7 @@ class DepoManager(
 //                    movingArmAndLiftTarget
 //                }
 
-        return movingArmAndLiftTarget.copy(wristPosition = wristPosition)
+        return movingArmAndLiftTarget.copy(wristPosition = wristPosition, lift = liftWithFindReset)
     }
 
     fun checkIfArmAndLiftAreAtTarget(target: DepoTarget, actualDepo: ActualDepo): Boolean {
