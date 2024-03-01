@@ -13,7 +13,6 @@ import kotlin.math.abs
 class Transfer(private val telemetry: Telemetry) {
     enum class RollerPowers(val power: Double) {
         Off(0.0),
-        GoToHoldingPosition(0.0),
         Intake(1.0),
         Eject(-1.0),
     }
@@ -27,6 +26,10 @@ class Transfer(private val telemetry: Telemetry) {
     enum class Side {
         Left,
         Right
+    }
+
+    fun checkIfPixelIsTransferred(actualWorld: ActualWorld, transferHalfState: TransferHalfState, previousRollerTarget: RollerTarget): Boolean {
+        return transferHalfState.lowerSensor.hasPixelBeenSeen && checkIfRollerIsDoneTransferring(actualWorld.timestampMilis, previousRollerTarget.timeStartedIntakingMillis)
     }
 
     private val leftFlapTransferReadyAngleDegrees = 20.0
@@ -115,6 +118,11 @@ class Transfer(private val telemetry: Telemetry) {
             val rightServoCollect: RollerTarget,
             val directorState: DirectorState): CleanToStringPrint()
 
+    private val timeToRunRollerToGetPixelAllTheWayUpMillis = 800
+    private fun checkIfRollerIsDoneTransferring(timestampMillis: Long, previousTimeStartedMovingPixelToNextStageMillis: Long): Boolean {
+        val timeSinceRollerStartedMillis = timestampMillis - previousTimeStartedMovingPixelToNextStageMillis
+        return timeSinceRollerStartedMillis < timeToRunRollerToGetPixelAllTheWayUpMillis
+    }
     fun getTransferHalfSortingTarget(
             shouldFinishTransfer: Boolean,
             timestampMillis: Long,
@@ -127,13 +135,11 @@ class Transfer(private val telemetry: Telemetry) {
 
 
         val targetPower: Pair<RollerPowers, Long?> = if (shouldFinishTransfer) {
-            val timeToRunRollerToGetPixelAllTheWayUpMillis = 800
             val previousTimeStartedMovingPixelToNextStageMillis = previousRollerTarget.timeStartedIntakingMillis
-            val timeSinceRollerStartedMillis = timestampMillis - previousTimeStartedMovingPixelToNextStageMillis
             if (lowerSensorIsSeeingPixel) {
                 if (0L == previousTimeStartedMovingPixelToNextStageMillis) {
                     RollerPowers.Intake to timestampMillis
-                } else if (timeSinceRollerStartedMillis < timeToRunRollerToGetPixelAllTheWayUpMillis) {
+                } else if (checkIfRollerIsDoneTransferring(timestampMillis, previousTimeStartedMovingPixelToNextStageMillis)) {
                     RollerPowers.Intake to previousTimeStartedMovingPixelToNextStageMillis
                 } else {
                     RollerPowers.Off to previousTimeStartedMovingPixelToNextStageMillis
@@ -223,7 +229,7 @@ class Transfer(private val telemetry: Telemetry) {
 
     val upperNothingReading = SensorReading(red= 207, green= 336, blue= 473, alpha= 990)
     val lowerNothingReading = SensorReading(red= 41, green= 69, blue= 106, alpha= 219)
-    fun isPixelIn(reading: SensorReading): Boolean {
+    private fun isPixelIn(reading: SensorReading): Boolean {
         val doesEachColorChannelPass = reading.asList.mapIndexed {i, it ->
             it > (upperNothingReading.asList[i] * 2)
         }

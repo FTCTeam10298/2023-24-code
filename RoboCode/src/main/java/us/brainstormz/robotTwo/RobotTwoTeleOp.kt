@@ -495,12 +495,17 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val actualRobot = actualWorld.actualRobot
 
         /**Handoff*/
-        val transferLeftSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.transferState.left.upperSensor)
-        val transferRightSensorState = transfer.isPixelIn(actualWorld.actualRobot.collectorSystemState.transferState.right.upperSensor)
+        val transferState = transfer.getTransferState(
+                actualWorld = actualWorld,
+                previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
+        )
+
+        val transferLeftSensorState = transfer.checkIfPixelIsTransferred(actualWorld, transferState.left, previousTargetState.targetRobot.collectorTarget.rollers.leftServoCollect)
+        val transferRightSensorState = transfer.checkIfPixelIsTransferred(actualWorld, transferState.right, previousTargetState.targetRobot.collectorTarget.rollers.rightServoCollect)
         val areBothPixelsIn = transferLeftSensorState && transferRightSensorState
 
-        val previousTransferLeftSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.transferState.left.upperSensor)
-        val previousTransferRightSensorState = transfer.isPixelIn(previousActualWorld.actualRobot.collectorSystemState.transferState.right.upperSensor)
+        val previousTransferLeftSensorState = transfer.checkIfPixelIsTransferred(actualWorld, previousTargetState.targetRobot.collectorTarget.transferState.left, previousTargetState.targetRobot.collectorTarget.rollers.leftServoCollect)
+        val previousTransferRightSensorState = transfer.checkIfPixelIsTransferred(actualWorld, previousTargetState.targetRobot.collectorTarget.transferState.right, previousTargetState.targetRobot.collectorTarget.rollers.rightServoCollect)
         val wereBothPixelsInPreviously = previousTransferLeftSensorState && previousTransferRightSensorState
 
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
@@ -567,10 +572,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Rollers*/
-        val transferState = transfer.getTransferState(
-                actualWorld = actualWorld,
-                previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
-                )
         val autoRollerState = transfer.getTransferSortingTarget(
                 isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake,
                 actualWorld = actualWorld,
@@ -621,12 +622,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("ticksSinceLastExtendoReset: $ticksSinceLastExtendoReset")
 
         /**Depo*/
-        fun boolToClawInput(bool: Boolean): ClawInput {
-            return when (bool) {
-                true -> ClawInput.Hold
-                false -> ClawInput.Drop
-            }
-        }
         val driverInputWrist = WristTargets(
                 left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
@@ -634,12 +629,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val areDepositing = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.GoingOut
 
         fun isPixelInSide(side: Transfer.Side): Boolean {
-            val reading = when (side) {
-                Transfer.Side.Left -> actualWorld.actualRobot.collectorSystemState.transferState.left.upperSensor
-                Transfer.Side.Right -> actualWorld.actualRobot.collectorSystemState.transferState.right.upperSensor
+            return when (side) {
+                Transfer.Side.Left -> transferState.left.lowerSensor.hasPixelBeenSeen
+                Transfer.Side.Right -> transferState.right.lowerSensor.hasPixelBeenSeen
             }
-            return transfer.isPixelIn(reading)
         }
+
         val doingHandoff = doHandoffSequence && previousTargetState.targetRobot.depoTarget.targetType != DepoTargetType.GoingOut
         val collectorIsMovingOut = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) > 0.1
         val mapOfClawInputsToConditions: Map<ClawInput, (Transfer.Side) -> List<Boolean>> = mapOf(
