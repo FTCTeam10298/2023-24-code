@@ -28,8 +28,10 @@ class Transfer(private val telemetry: Telemetry) {
         Right
     }
 
-    fun checkIfPixelIsTransferred(actualWorld: ActualWorld, transferHalfState: TransferHalfState, previousRollerTarget: RollerTarget): Boolean {
-        return transferHalfState.lowerSensor.hasPixelBeenSeen && checkIfRollerIsDoneTransferring(actualWorld.timestampMilis, previousRollerTarget.timeStartedIntakingMillis)
+//    fun checkIfPixelIsTransferred(actualWorld: ActualWorld, transferHalfState: TransferHalfState, previousRollerTarget: RollerTarget): Boolean {
+    fun checkIfPixelIsTransferred(transferHalfState: TransferHalfState): Boolean {
+        return transferHalfState.lowerSensor.hasPixelBeenSeen
+//        return transferHalfState.lowerSensor.hasPixelBeenSeen && checkIfRollerIsDoneTransferring(actualWorld.timestampMilis, previousRollerTarget.timeStartedIntakingMillis)
     }
 
     private val leftFlapTransferReadyAngleDegrees = 20.0

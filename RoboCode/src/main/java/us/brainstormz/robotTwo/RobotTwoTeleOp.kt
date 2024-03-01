@@ -500,12 +500,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
         )
 
-        val transferLeftSensorState = transfer.checkIfPixelIsTransferred(actualWorld, transferState.left, previousTargetState.targetRobot.collectorTarget.rollers.leftServoCollect)
-        val transferRightSensorState = transfer.checkIfPixelIsTransferred(actualWorld, transferState.right, previousTargetState.targetRobot.collectorTarget.rollers.rightServoCollect)
+        val transferLeftSensorState = transfer.checkIfPixelIsTransferred(transferState.left)
+        val transferRightSensorState = transfer.checkIfPixelIsTransferred(transferState.right)
         val areBothPixelsIn = transferLeftSensorState && transferRightSensorState
 
-        val previousTransferLeftSensorState = transfer.checkIfPixelIsTransferred(actualWorld, previousTargetState.targetRobot.collectorTarget.transferState.left, previousTargetState.targetRobot.collectorTarget.rollers.leftServoCollect)
-        val previousTransferRightSensorState = transfer.checkIfPixelIsTransferred(actualWorld, previousTargetState.targetRobot.collectorTarget.transferState.right, previousTargetState.targetRobot.collectorTarget.rollers.rightServoCollect)
+        val previousTransferLeftSensorState = transfer.checkIfPixelIsTransferred(previousTargetState.targetRobot.collectorTarget.transferState.left)
+        val previousTransferRightSensorState = transfer.checkIfPixelIsTransferred(previousTargetState.targetRobot.collectorTarget.transferState.right)
         val wereBothPixelsInPreviously = previousTransferLeftSensorState && previousTransferRightSensorState
 
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
@@ -630,8 +630,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         fun isPixelInSide(side: Transfer.Side): Boolean {
             return when (side) {
-                Transfer.Side.Left -> transferState.left.lowerSensor.hasPixelBeenSeen
-                Transfer.Side.Right -> transferState.right.lowerSensor.hasPixelBeenSeen
+                Transfer.Side.Left -> transfer.checkIfPixelIsTransferred(transferState.left)
+                Transfer.Side.Right -> transfer.checkIfPixelIsTransferred(transferState.right)
             }
         }
 
