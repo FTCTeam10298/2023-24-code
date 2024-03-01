@@ -199,8 +199,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         leftTransferServo = exHub.getCRServo(3)
         transferDirectorServo = exHub.getCRServo(2)
 
-        leftClawServo =     exHub.getCRServo(0)   // left/right from driver 2 perspective when depositing
-        rightClawServo =    exHub.getCRServo(1)
+        leftClawServo =     exHub.getCRServo(1)   // left/right from driver 2 perspective when depositing
+        rightClawServo =    exHub.getCRServo(0)
+
         hangReleaseServo = exHub.getCRServo(5)
 
         launcherServo = ctrlHub.getServo(0)
@@ -217,8 +218,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         leftRollerEncoder = exHub.getAnalogInput(1)
         rightRollerEncoder = ctrlHub.getAnalogInput(0)
 
-        leftClawEncoder = exHub.getAnalogInput(2)
-        rightClawEncoder = exHub.getAnalogInput(3)
+        leftClawEncoder = exHub.getAnalogInput(3)
+        rightClawEncoder = exHub.getAnalogInput(2)
         leftClawEncoderReader =     AxonEncoderReader(leftClawEncoder, angleOffsetDegrees = -80.0,  AxonEncoderReader.Direction.Reverse)//260.0)
         rightClawEncoderReader =    AxonEncoderReader(rightClawEncoder, angleOffsetDegrees = -80.0, AxonEncoderReader.Direction.Reverse)
 
