@@ -248,14 +248,14 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         return lineUpForDeposit + depositPixel
     }
 
-    private fun getDepositingPosition(propPosition: PropPosition): PositionAndRotation = when (propPosition) {
+    private fun getYellowDepositingPosition(propPosition: PropPosition): PositionAndRotation = when (propPosition) {
         PropPosition.Left -> PositionAndRotation(x= -29.0, y= -55.0, r= 0.0)
         PropPosition.Center -> PositionAndRotation(x= -37.0, y= -55.0, r= 0.0)
         PropPosition.Right -> PositionAndRotation(x= -42.0, y= -55.0, r= 0.0)
     }
 
     private fun yellowPlacement(propPosition: PropPosition): List<TargetWorld> {
-        val depositingPosition = getDepositingPosition(propPosition)
+        val depositingPosition = getYellowDepositingPosition(propPosition)
 
         return listOf(
                 AutoTargetWorld(
@@ -309,6 +309,20 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         )
     }
 
+    fun navigatingTargetSetup(
+            targetPosition: PositionAndRotation,
+            isTargetReached: (targetState: TargetWorld,
+                              actualState: ActualWorld,
+                              previousActualState: ActualWorld)->Boolean): TargetWorld =
+            AutoTargetWorld(
+                    targetRobot = RobotState(
+                            collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                            positionAndRotation = targetPosition,
+                            depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
+                    ),
+                    isTargetReached = isTargetReached,).asTargetWorld
+
+
     /** Backboard side */
     private fun backboardSideNavigateToBackboard(propPosition: PropPosition): List<TargetWorld> {
         val startPosition: StartPosition = StartPosition.Backboard
@@ -332,7 +346,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             else -> listOf()
         }
 
-        val depositingPosition = getDepositingPosition(propPosition)
+        val depositingPosition = getYellowDepositingPosition(propPosition)
         val moveToBackboard = listOf(
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -376,36 +390,23 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
         val readyToGoAroundTrussWaypoint = PositionAndRotation(x= redDistanceFromCenterlineInches, y= 40.0, r= 0.0)
 
-        fun navigatingTargetSetup(
-                targetPosition: PositionAndRotation,
-                isTargetReached: (targetState: TargetWorld,
-                                  actualState: ActualWorld,
-                                  previousActualState: ActualWorld)->Boolean): TargetWorld =
-                AutoTargetWorld(
-                        targetRobot = RobotState(
-                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
-                                positionAndRotation = targetPosition,
-                                depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
-                        ),
-                        isTargetReached = isTargetReached,).asTargetWorld
-
         val navigateAroundSpike = when (propPosition) {
             PropPosition.Center -> listOf(
-                    navigatingTargetSetup(targetPosition =
-                        startPosition.copy(x= startPosition.x+ 15.0, y=50.0)
-                    ) { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        isRobotAtPosition(targetState, actualState, previousActualState)
-                    },
-                    navigatingTargetSetup(targetPosition =
-                        startPosition.copy(x= redDistanceFromCenterlineInches-10, y=50.0)
-                    ) { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        isRobotAtPosition(targetState, actualState, previousActualState)
-                    },
-                    navigatingTargetSetup(targetPosition =
-                        PositionAndRotation(x= redDistanceFromCenterlineInches, y= 50.0, r= 0.0)
-                    ) { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        isRobotAtAngle(targetState, actualState, previousActualState)
-                    },
+                    navigatingTargetSetup(
+                            targetPosition =
+                                startPosition.copy(x= startPosition.x + 20.0, y= 50.0),
+                            isTargetReached = ::isRobotAtPosition
+                    ),
+                    navigatingTargetSetup(
+                            targetPosition =
+                                startPosition.copy(x= redDistanceFromCenterlineInches - 8, y= 50.0),
+                            isTargetReached = ::isRobotAtPosition
+                    ),
+                    navigatingTargetSetup(
+                            targetPosition =
+                                startPosition.copy(x= redDistanceFromCenterlineInches - 5, y = 52.0, r = 0.0),
+                            isTargetReached = ::isRobotAtAngle
+                    ),
             )
             else -> {
                 val travelingAroundSidePixelsYPosition = startPosition.y + if (propPosition == PropPosition.Right) {
@@ -417,22 +418,19 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 listOf(
                         navigatingTargetSetup(
                                 targetPosition =
-                                    startPosition.copy(x = startPosition.x + 5.0, y = travelingAroundSidePixelsYPosition),
+                                    startPosition.copy(x = startPosition.x + 18.0, y = travelingAroundSidePixelsYPosition),
                                 isTargetReached = ::isRobotAtPosition
                         ),
                         navigatingTargetSetup(
                                 targetPosition =
-                                    startPosition.copy(x = -14.0, y = travelingAroundSidePixelsYPosition),
+                                    startPosition.copy(x = redDistanceFromCenterlineInches - 8, y = travelingAroundSidePixelsYPosition),
                                 isTargetReached = ::isRobotAtPosition
-                        ),
-                        navigatingTargetSetup(
-                                targetPosition =
-                                    startPosition.copy(x = -14.0, y = travelingAroundSidePixelsYPosition, r = 0.0),
-                                isTargetReached = ::isRobotAtAngle
                         ),
                 )
             }
-        } + listOf(navigatingTargetSetup(targetPosition = readyToGoAroundTrussWaypoint) { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld -> isRobotAtPosition(targetState, actualState, previousActualState) })
+        } + listOf(navigatingTargetSetup(
+                targetPosition = readyToGoAroundTrussWaypoint,
+                isTargetReached = ::isRobotAtPosition))
 
         val driveToBackboard = listOf(
                 navigatingTargetSetup(targetPosition =
@@ -440,11 +438,10 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 ) { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                     actualState.actualRobot.positionAndRotation.y <= targetState.targetRobot.drivetrainTarget.targetPosition.y
                 },
-                navigatingTargetSetup(targetPosition =
-                    getDepositingPosition(propPosition)
-                ) { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                    isRobotAtPosition(targetState, actualState, previousActualState)
-                },
+                navigatingTargetSetup(
+                        targetPosition = getYellowDepositingPosition(propPosition),
+                        isTargetReached = ::isRobotAtPosition
+                ),
         )
 
         return navigateAroundSpike + driveToBackboard
