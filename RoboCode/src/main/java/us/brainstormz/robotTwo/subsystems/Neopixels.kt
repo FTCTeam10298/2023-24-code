@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
+data class ColorInRGBW(val red: Double, val green: Double, val blue: Double, val white: Double)
 
 class Neopixels: Subsystem {
+
     enum class LightTypes {
         RGBW,
         RGB //todo, we don't care
@@ -17,19 +19,22 @@ class Neopixels: Subsystem {
     var lightStrandTarget = mutableListOf<MutableList<Double>>()
     var mondrianStatusBarTarget = mutableListOf<mondrianStatusBarMessages>()
 
-    fun makeEmptyLightState() {
+    fun makeEmptyLightState(): MutableList<MutableList<Double>> {
+        var currentTargetState: MutableList<MutableList<Double>> = mutableListOf()
         //Create a list of pixel values we can change... the function to do it is not good right now.
-        var prototypeLightStatus: MutableList<Double> = mutableListOf(0.0, 0.0, 0.0, 0.0) //R, G, B, W
+        val prototypeLightStatus: MutableList<Double> = mutableListOf(0.0, 0.0, 0.0, 0.0) //R, G, B, W
 
-        for (n in 1..strandLength) {
-            lightStrandTarget += prototypeLightStatus
+        for (n in 0..strandLength) {
+            currentTargetState += prototypeLightStatus
         }
+
+        return currentTargetState
         println("Initial Status String: $lightStrandTarget")
         }
     fun initialize(seesawController: AdafruitNeopixelSeesaw) {
         seesawController.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_WRGB)
         seesawController.setBufferLength(60.toShort())
-        for (i in 0..100) {
+        for (i in 0..60) {
             seesawController.setColorRGBW((0).toByte(), (0).toByte(), (0).toByte(), (0).toByte(), i.toShort())
         }
     }
@@ -38,7 +43,7 @@ class Neopixels: Subsystem {
         println("Not yet implemented")
     }
 
-    data class ColorInRGBW(val red: Double, val green: Double, val blue: Double, val white: Double)
+
 
     fun changeOnePixel(targetColor: ColorInRGBW, targetPixel: Int) {
         lightStrandTarget[targetPixel] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
@@ -50,6 +55,16 @@ class Neopixels: Subsystem {
             lightStrandTarget[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
         }
         println("Result of flooding with $targetColor: \r $lightStrandTarget")
+
+    }
+
+    fun showOneByOne(previousTargetState:  MutableList<MutableList<Double>>, targetColor: ColorInRGBW, startPixel: Int, endPixel: Int):  MutableList<MutableList<Double>> {
+        //not very necessary. Maybe someday?
+        for (n in startPixel..endPixel) {
+            previousTargetState[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
+        }
+        val currentTargetState = previousTargetState
+        return currentTargetState
 
     }
 
@@ -124,17 +139,7 @@ class Neopixels: Subsystem {
 
     //now for the fun stuff—animations!
 
-    fun showOneByOne(targetColor: ColorInRGBW, startPixel: Int, endPixel: Int, frameNumber: Int):  MutableList<MutableList<Double>> {
-        //not very necessary. Maybe someday?
-        if (frameNumber > endPixel - startPixel) {
 
-                }
-        for (n in 1..strandLength) {
-            lightStrandTarget[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
-        }
-        return lightStrandTarget
-
-    }
 
     //take in targetState and previousTargetState, iterate 1-by-1, and only change a light if it needs to be changed.
     //output the final target state.
@@ -161,9 +166,9 @@ class Neopixels: Subsystem {
 @TeleOp
 class NeopixelPlayground : LinearOpMode() {
 //    var neo: AdafruitNeopixelSeesaw? = null
-    var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
     val neopixelSystem = Neopixels()
-    var state = neopixelSystem.makeEmptyLightState()
+    var previousTargetState = neopixelSystem.makeEmptyLightState()
+    lateinit var neo: AdafruitNeopixelSeesaw
 
 
     @Throws(InterruptedException::class)
@@ -206,6 +211,7 @@ class NeopixelPlayground : LinearOpMode() {
 //                }
                 for (i in 0..29) {
                     neo!!.setColorRGBW(redByte, greenByte, blueByte, whiteByte, i.toShort())
+
 //                    state = neopixelSystem.changeOnePixel(neopixelSystem. 0.0)
 
                 }
@@ -243,7 +249,15 @@ class NeopixelPlayground : LinearOpMode() {
         val greenZEROByte = greenZEROInt.toByte()
         val blueZEROByte = blueZEROInt.toByte()
         val whiteZEROByte = whiteZEROInt.toByte()
+
+        val noir = ColorInRGBW(255.0, 0.0, 0.0, 0.0)
+        val verde = ColorInRGBW(0.0, 0.0, 199.0, 6.0)
+        var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
         neopixelSystem.initialize(neo)
+        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, noir, 0, 30)
+        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, verde, 30, 60)
+        neopixelSystem.writeTargetStateToLights(previousTargetState, neo)
+//        neopixelSystem.showOneByOne(state)
         //think I wrote an equivalent function... init()
 //        neo!!.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_WRGB)
 //        neo!!.setBufferLength(60.toShort())
@@ -251,5 +265,6 @@ class NeopixelPlayground : LinearOpMode() {
 //            neo!!.setColorRGBW(redZEROByte, greenZEROByte, blueZEROByte, whiteZEROByte, i.toShort())
 //        }
 //        neo!!.init_neopixels()
+
     }
 }
