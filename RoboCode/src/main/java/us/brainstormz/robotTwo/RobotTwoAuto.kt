@@ -137,24 +137,50 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
 
     /** Generic functions */
-    private fun purplePlacement(startPosition: StartPosition, propPosition: PropPosition): List<TargetWorld> {
-        fun sidePropPosition(rotationPolarity: Int) = startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 18.0, r= startPosition.redStartPosition.r + (40.0*rotationPolarity))
+    enum class RelativePropPosition {
+        NextToTruss,
+        Center,
+        AwayFromTruss,
+    }
+
+    private fun getRelativePropPosition(startPosition: StartPosition, propPosition: PropPosition): RelativePropPosition =
+            when (startPosition) {
+                StartPosition.Backboard -> when (propPosition) {
+                    PropPosition.Left -> RelativePropPosition.NextToTruss
+                    PropPosition.Center -> RelativePropPosition.Center
+                    PropPosition.Right -> RelativePropPosition.AwayFromTruss
+                }
+                StartPosition.Audience -> when (propPosition) {
+                    PropPosition.Left -> RelativePropPosition.AwayFromTruss
+                    PropPosition.Center -> RelativePropPosition.Center
+                    PropPosition.Right -> RelativePropPosition.NextToTruss
+                }
+            }
+
+    private fun purplePlacement(startPosition: StartPosition, absolutePropPosition: PropPosition): List<TargetWorld> {
+        val propPosition = getRelativePropPosition(startPosition, absolutePropPosition)
+
+        val rotationPolarity = when (absolutePropPosition) {
+            PropPosition.Left -> +1
+            else -> -1
+        }
+        val sideRotation: Double = startPosition.redStartPosition.r + (40.0 * rotationPolarity)
+
         val depositingPosition = when (propPosition) {
-            PropPosition.Left -> sidePropPosition(+1)
-            PropPosition.Center -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 5.0)
-            PropPosition.Right -> sidePropPosition(-1)
+            RelativePropPosition.NextToTruss    -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 18, r= sideRotation)
+            RelativePropPosition.Center         -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 5.0)
+            RelativePropPosition.AwayFromTruss  -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 13, r= sideRotation)
         }
 
         val extendoPosition = when (propPosition) {
-            PropPosition.Left -> ExtendoPositions.PurpleSidePosition
-            PropPosition.Center -> ExtendoPositions.PurpleCenterPosition
-            PropPosition.Right -> ExtendoPositions.PurpleSidePosition
+            RelativePropPosition.Center -> ExtendoPositions.PurpleCenterPosition
+            else -> ExtendoPositions.PurpleSidePosition
         }
 
         val depositingMoveAroundTrussWaypoint = depositingPosition.copy(r= startPosition.redStartPosition.r)
 
         val lineUpForDeposit = when (propPosition) {
-            PropPosition.Center -> listOf(
+            RelativePropPosition.Center -> listOf(
                     AutoTargetWorld(
                             targetRobot = RobotState(
                                     collectorSystemState = CollectorState(CollectorPowers.Off, extendoPosition, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
@@ -190,7 +216,6 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             ),
                             isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                                 telemetry.addLine("Waiting for extendo and rotation")
-                                drivetrain.rotationPID = drivetrain.rotationOnlyPID
                                 val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 1.0, precisionDegrees = 2.0)
                                 isRobotAtPosition || hasTimeElapsed(4000, targetState)
                             },
