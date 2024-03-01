@@ -35,3 +35,12 @@ Complete
 (James wants draw half to take >= 5ms per loop - update in groups of pixels from the center & if color changed overwrite)
 if called again, do another 5 on each side.
 
+
+Objective: 5 ms per run (/loop)  show2Colors
+
+Pt. 1—refactor existing light code to use my library
+Pt. 2—rewrite lighting updater to be lazy—compare past and present state – return past
+Pt. 3—rewrite show 2Colors to update x lights at a time… find first wrong light, fill x lights on both sides with target colors (lazy rewriter will handle overwrites
+Pt. 4—Test with just continuous rewrites and then do switchback—repeat
+
+
