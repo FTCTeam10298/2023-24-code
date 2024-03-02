@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
+import java.lang.Thread.sleep
 
 //R -> R, G -> B, B -> W, W -> G
 data class ColorInRGBWInUnknownOrder(val red: Double, val green: Double, val blue: Double, val white: Double)
@@ -43,7 +44,7 @@ class Neopixels: Subsystem {
     var lightStrandTarget = mutableListOf<MutableList<Double>>()
     var mondrianStatusBarTarget = mutableListOf<mondrianStatusBarMessages>()
 
-    fun makeEmptyLightState(): MutableList<MutableList<Double>> {
+    fun makeEmptyLightState(): List<List<Double>> {
         var currentTargetState: MutableList<MutableList<Double>> = mutableListOf()
         //Create a list of pixel values we can change... the function to do it is not good right now.
         val prototypeLightStatus: MutableList<Double> = mutableListOf(0.0, 0.0, 0.0, 0.0) //R, G, B, W
@@ -82,14 +83,14 @@ class Neopixels: Subsystem {
 
     }
 
-    fun showOneByOne(previousTargetState:  MutableList<MutableList<Double>>, targetColor: ColorInRGBWInUnknownOrder, startPixel: Int, endPixel: Int):  MutableList<MutableList<Double>> {
+    fun showOneByOne(previousTargetState:  List<List<Double>>, targetColor: ColorInRGBWInUnknownOrder, startPixel: Int, endPixel: Int):  List<List<Double>> {
+        val mutated = previousTargetState.toMutableList()
         //not very necessary. Maybe someday?
         for (n in startPixel..endPixel) {
-            previousTargetState[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
+            mutated[n] = mutableListOf(targetColor.red, targetColor.green, targetColor.blue, targetColor.white)
         }
-        val currentTargetState = previousTargetState
+        val currentTargetState = mutated
         return currentTargetState
-
     }
 
     //I should make a data class
@@ -167,7 +168,8 @@ class Neopixels: Subsystem {
 
     //take in targetState and previousTargetState, iterate 1-by-1, and only change a light if it needs to be changed.
     //output the final target state.
-    fun writeTargetStateToLights(targetState:  MutableList<MutableList<Double>>, pastTargetState:  MutableList<MutableList<Double>>, pixelStrandController: AdafruitNeopixelSeesaw): MutableList<MutableList<Double>>{
+    fun writeTargetStateToLights(targetState:  List<List<Double>>, pastTargetState:  List<List<Double>>, pixelStrandController: AdafruitNeopixelSeesaw): List<List<Double>>{
+
         var pixelsController = pixelStrandController
 
         targetState.mapIndexed { index, pixelStatus ->
@@ -178,7 +180,10 @@ class Neopixels: Subsystem {
                 val targetGreen = pixelStatus[1].toInt().toByte()
                 val targetBlue = pixelStatus[2].toInt().toByte()
                 val targetWhite = pixelStatus[3].toInt().toByte()
+//                println("targetstate: $targetState, \n past target state $pastTargetState")
+                println("pixelStatus: $pixelStatus, \n past pixel status $pastPixelStatus")
                 pixelsController!!.setColorRGBW(debugWhite.red.toInt().toByte(), debugWhite.green.toInt().toByte(), debugWhite.blue.toInt().toByte(), debugWhite.white.toInt().toByte(), index.toShort()) //debugging
+                sleep(128) //250 is also quite good.
                 pixelsController!!.setColorRGBW(targetRed, targetGreen, targetBlue, targetWhite, index.toShort())
             } else {
                 false
@@ -186,32 +191,32 @@ class Neopixels: Subsystem {
         }
 
         /** example of indexed map operation on a list */
-        val listOfBooleansNoProblem: List<Boolean> = targetState.mapIndexed { index, pixelStatus ->
-            val pastPixelStatus = pastTargetState[index]
-
-            if (pixelStatus == pastPixelStatus) {
-                true
-            } else {
-                false
-            }
-        }
-
-        /** example of map operation on a list */
-        val listOfBooleans: List<Boolean> = targetState.map { pixelStatus ->
-            if (pixelStatus[0] == 2.0) {
-                true
-            } else {
-                false
-            }
-        }
-
-        /** example of indexed for loop on a list */
-        targetState.forEachIndexed { index, pixelStatus ->
-            println("pixelStatus: $pixelStatus, index of pixel: $index")
-
-            val pastPixelStatus = pastTargetState[index]
-            println("pastPixelStatus: $pastPixelStatus, index of pixel: $index")
-        }
+//        val listOfBooleansNoProblem: List<Boolean> = targetState.mapIndexed { index, pixelStatus ->
+//            val pastPixelStatus = pastTargetState[index]
+//
+//            if (pixelStatus == pastPixelStatus) {
+//                true
+//            } else {
+//                false
+//            }
+//        }
+//
+//        /** example of map operation on a list */
+//        val listOfBooleans: List<Boolean> = targetState.map { pixelStatus ->
+//            if (pixelStatus[0] == 2.0) {
+//                true
+//            } else {
+//                false
+//            }
+//        }
+//
+//        /** example of indexed for loop on a list */
+//        targetState.forEachIndexed { index, pixelStatus ->
+//            println("pixelStatus: $pixelStatus, index of pixel: $index")
+//
+//            val pastPixelStatus = pastTargetState[index]
+//            println("pastPixelStatus: $pastPixelStatus, index of pixel: $index")
+//        }
 
 //        var indexOfThisPixelTarget: Int = 0
 //        //what is this color format? I don't get it.
@@ -238,7 +243,6 @@ class NeopixelPlayground : LinearOpMode() {
 //    var neo: AdafruitNeopixelSeesaw? = null
     val neopixelSystem = Neopixels()
     var previousTargetState = neopixelSystem.makeEmptyLightState()
-    var targetState = neopixelSystem.makeEmptyLightState()
     lateinit var neo: AdafruitNeopixelSeesaw
 
 
@@ -267,9 +271,11 @@ class NeopixelPlayground : LinearOpMode() {
                 val black = Neopixels.NeoPixelColors.Black.ColorInRGBWInUnknownOrder
 
 
-                targetState = neopixelSystem.showOneByOne(targetState, purple, 0, 60)
+                var targetState = neopixelSystem.showOneByOne(previousTargetState, purple, 0, 60)
 
                 previousTargetState = neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
+
+                sleep(1000)
 
                 targetState = neopixelSystem.showOneByOne(targetState, white, 0, 15)
                 targetState = neopixelSystem.showOneByOne(targetState, purple, 16, 30)
@@ -387,7 +393,7 @@ class NeopixelPlayground : LinearOpMode() {
 
 //         previousTargetState = neopixelSystem.showOneByOne(previousTargetState, orange, 0, 60)
 
-        targetState = neopixelSystem.showOneByOne(targetState, white, 0, 15)
+        var targetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
         targetState = neopixelSystem.showOneByOne(targetState, purple, 16, 30)
         targetState = neopixelSystem.showOneByOne(targetState, yellow, 31, 46)
         targetState = neopixelSystem.showOneByOne(targetState, green, 47, 60)
@@ -405,4 +411,26 @@ class NeopixelPlayground : LinearOpMode() {
 //        neo!!.init_neopixels()
 
     }
+}
+
+
+
+fun main() {
+    /** Nevermind, it's pass by value */
+    var A: List<List<Int>> = listOf(listOf(0))
+    println("A is: $A")
+
+    var B: List<List<Int>> = listOf(listOf(420))
+    println("B is: $B")
+
+    println("B is still : $B") //it's 420
+    B = A
+    println("B is now: $B") //it's 0
+
+    A = listOf(listOf(0), listOf(1), listOf(69))
+    println("A is now: $A") //it's 0, 1, 69
+    println("B is still: $B") //it's 0
+
+    val aIsEqualToB = A==B
+    println("aIsEqualToB: $aIsEqualToB")
 }
