@@ -267,14 +267,14 @@ class NeopixelPlayground : LinearOpMode() {
                 val black = Neopixels.NeoPixelColors.Black.ColorInRGBWInUnknownOrder
 
 
-                targetState = neopixelSystem.showOneByOne(previousTargetState, purple, 0, 60)
+                targetState = neopixelSystem.showOneByOne(targetState, purple, 0, 60)
 
                 previousTargetState = neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
 
-                targetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
-                targetState = neopixelSystem.showOneByOne(previousTargetState, purple, 16, 30)
-                targetState = neopixelSystem.showOneByOne(previousTargetState, yellow, 31, 46)
-                targetState = neopixelSystem.showOneByOne(previousTargetState, green, 47, 60)
+                targetState = neopixelSystem.showOneByOne(targetState, white, 0, 15)
+                targetState = neopixelSystem.showOneByOne(targetState, purple, 16, 30)
+                targetState = neopixelSystem.showOneByOne(targetState, yellow, 31, 46)
+                targetState = neopixelSystem.showOneByOne(targetState, green, 47, 60)
 
                 previousTargetState = neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
 
@@ -387,10 +387,10 @@ class NeopixelPlayground : LinearOpMode() {
 
 //         previousTargetState = neopixelSystem.showOneByOne(previousTargetState, orange, 0, 60)
 
-        targetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
-        targetState = neopixelSystem.showOneByOne(previousTargetState, purple, 16, 30)
-        targetState = neopixelSystem.showOneByOne(previousTargetState, yellow, 31, 46)
-        targetState = neopixelSystem.showOneByOne(previousTargetState, green, 47, 60)
+        targetState = neopixelSystem.showOneByOne(targetState, white, 0, 15)
+        targetState = neopixelSystem.showOneByOne(targetState, purple, 16, 30)
+        targetState = neopixelSystem.showOneByOne(targetState, yellow, 31, 46)
+        targetState = neopixelSystem.showOneByOne(targetState, green, 47, 60)
 //        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, purple, 51, 60)
 
 
