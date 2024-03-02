@@ -18,6 +18,7 @@ import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
@@ -108,12 +109,12 @@ class ExtendoPIDTuner(private val hardware: RobotTwoHardware, telemetry: Telemet
                     println("newTargetPosition: $newTargetPosition")
 
                     val ligths = if (isAtTarget) {
-                        RevBlinkinLedDriver.BlinkinPattern.BLUE
+                        Neopixels.NeoPixelColors.Blue
                     } else {
-                        RevBlinkinLedDriver.BlinkinPattern.RED
+                        Neopixels.NeoPixelColors.Red
                     }
 
-                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(collectorTarget = previousTargetState.targetRobot.collectorTarget.copy(extendo= SlideSubsystem.TargetSlideSubsystem(targetPosition = newTargetPosition.first ?: Extendo.ExtendoPositions.Min , power = newTargetPosition.second.toDouble(), movementMode = DualMovementModeSubsystem.MovementMode.Position)), lights = previousTargetState.targetRobot.lights.copy(targetColor = ligths)))
+                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(collectorTarget = previousTargetState.targetRobot.collectorTarget.copy(extendo= SlideSubsystem.TargetSlideSubsystem(targetPosition = newTargetPosition.first ?: Extendo.ExtendoPositions.Min , power = newTargetPosition.second.toDouble(), movementMode = DualMovementModeSubsystem.MovementMode.Position)), lights = RobotTwoTeleOp.LightTarget(RobotTwoTeleOp.BothPixelsWeWant(), Neopixels.HalfAndHalfTarget().compileStripState())))
                             ?: RobotTwoTeleOp.initialPreviousTargetState
                 }
         )

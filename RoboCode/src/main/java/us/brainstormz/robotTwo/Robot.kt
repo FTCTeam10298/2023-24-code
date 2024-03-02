@@ -72,7 +72,6 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
                         gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
                     }
-                    hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
                 }
         )
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()

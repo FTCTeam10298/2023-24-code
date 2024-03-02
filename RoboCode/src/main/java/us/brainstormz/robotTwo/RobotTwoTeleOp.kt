@@ -18,6 +18,7 @@ import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
@@ -469,14 +470,31 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
     }
 
-    enum class PixelColor(val blinkinPattern: RevBlinkinLedDriver.BlinkinPattern) {
-        White   (RevBlinkinLedDriver.BlinkinPattern.WHITE),
-        Green   (RevBlinkinLedDriver.BlinkinPattern.GREEN),
-        Purple  (RevBlinkinLedDriver.BlinkinPattern.BLUE_VIOLET),
-        Yellow  (RevBlinkinLedDriver.BlinkinPattern.YELLOW),
-        Unknown (RevBlinkinLedDriver.BlinkinPattern.BLUE),
+    enum class PixelColor(val neoPixelColor: Neopixels.NeoPixelColors) {
+        White   (Neopixels.NeoPixelColors.White),
+        Green   (Neopixels.NeoPixelColors.Green),
+        Purple  (Neopixels.NeoPixelColors.Purple),
+        Yellow  (Neopixels.NeoPixelColors.Yellow),
+        Unknown (Neopixels.NeoPixelColors.Off);
+
     }
+//    fun Neopixels.NeoPixelColors.toPixelColor(): PixelColor {
+//        return when (this) {
+//            Neopixels.NeoPixelColors.White -> White
+//               (),
+//            Green   (Neopixels.NeoPixelColors.Green),
+//            Purple  (Neopixels.NeoPixelColors.Purple),
+//            Yellow  (Neopixels.NeoPixelColors.Yellow),
+//            Unknown (Neopixels.NeoPixelColors.Off);
+//        }
+//    }
     data class BothPixelsWeWant(val leftPixel: PixelColor, val rightPixel: PixelColor) {
+        constructor(): this(leftPixel = PixelColor.Unknown, rightPixel = PixelColor.Unknown)
+
+        fun toStripState(): Neopixels.StripState {
+            return Neopixels.HalfAndHalfTarget(leftPixel.neoPixelColor, rightPixel.neoPixelColor).compileStripState()
+        }
+
         val asList: List<PixelColor> = listOf(leftPixel, rightPixel)
 
         override fun equals(other: Any?): Boolean {
@@ -489,7 +507,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
     }
-    data class LightTarget(val targetColor: RevBlinkinLedDriver.BlinkinPattern, val pattern: BothPixelsWeWant, val timeOfColorChangeMilis: Long)
+    data class LightTarget(val pattern: BothPixelsWeWant, val stripTarget: Neopixels.StripState) {
+        constructor(pattern: BothPixelsWeWant): this(pattern = pattern, stripTarget = pattern.toStripState())
+        constructor(stripTarget: Neopixels.StripState): this(pattern = BothPixelsWeWant(), stripTarget = stripTarget)
+        constructor(): this(pattern = BothPixelsWeWant(), stripTarget = Neopixels.HalfAndHalfTarget().compileStripState())
+    }
     fun getTargetWorld(driverInput: DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): TargetWorld {
         val actualRobot = actualWorld.actualRobot
 
@@ -716,6 +738,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Lights*/
+//        fun neoPixelsToBothPixelsWeWant(halfTarget: Neopixels.HalfAndHalfTarget): BothPixelsWeWant {
+//            return BothPixelsWeWant(
+//                    leftPixel = halfTarget.left,
+//                    rightPixel = halfTarget.right)
+//        }
+
         val bothUnknownPattern = BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown)
         val previousPattern = previousTargetState.targetRobot.lights.pattern
         val desiredPixelLightPattern: BothPixelsWeWant = when (driverInput.lightInput) {
@@ -759,30 +787,24 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
 
-        val timeToDisplayColorMilis = 1000
-        val timeWhenCurrentColorStartedBeingDisplayedMilis = previousTargetState.targetRobot.lights.timeOfColorChangeMilis
-        val timeSinceCurrentColorWasDisplayedMilis = actualWorld.timestampMilis - timeWhenCurrentColorStartedBeingDisplayedMilis
-        val isTimeToChangeColor = timeSinceCurrentColorWasDisplayedMilis >= timeToDisplayColorMilis
-
-        val isCurrentColorObsolete = desiredPixelLightPattern != previousPattern
-
-        val previousPixelToBeDisplayed = previousTargetState.targetRobot.lights.targetColor
-        val currentPixelToBeDisplayed: RevBlinkinLedDriver.BlinkinPattern = when {
-            isTimeToChangeColor || isCurrentColorObsolete -> {
-                (desiredPixelLightPattern.asList.firstOrNull { color ->
-                    color.blinkinPattern != previousPixelToBeDisplayed
-                } ?: desiredPixelLightPattern.leftPixel).blinkinPattern
-            }
-            else -> {
-                previousPixelToBeDisplayed
-            }
-        }
-
-        val newTimeOfColorChangeMilis = if (currentPixelToBeDisplayed != previousPixelToBeDisplayed) {
-            actualWorld.timestampMilis
-        } else {
-            timeWhenCurrentColorStartedBeingDisplayedMilis
-        }
+//        val timeToDisplayColorMilis = 1000
+//        val timeWhenCurrentColorStartedBeingDisplayedMilis = previousTargetState.targetRobot.lights.timeOfColorChangeMilis
+//        val timeSinceCurrentColorWasDisplayedMilis = actualWorld.timestampMilis - timeWhenCurrentColorStartedBeingDisplayedMilis
+//        val isTimeToChangeColor = timeSinceCurrentColorWasDisplayedMilis >= timeToDisplayColorMilis
+//
+//        val isCurrentColorObsolete = desiredPixelLightPattern != previousPattern
+//
+//        val previousPixelToBeDisplayed = previousTargetState.targetRobot.lights.targetColor
+//        val currentPixelToBeDisplayed: RevBlinkinLedDriver.BlinkinPattern = when {
+//            isTimeToChangeColor || isCurrentColorObsolete -> {
+//                (desiredPixelLightPattern.asList.firstOrNull { color ->
+//                    color.blinkinPattern != previousPixelToBeDisplayed
+//                } ?: desiredPixelLightPattern.leftPixel).blinkinPattern
+//            }
+//            else -> {
+//                previousPixelToBeDisplayed
+//            }
+//        }
 
         val timeBeforeEndOfMatchToStartEndgameSeconds = 15.0
         val matchTimeSeconds = 2.0 * 60.0
@@ -793,16 +815,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val timeToStartEndgame = timeSinceStartOfMatchSeconds >= timeSinceStartOfMatchToStartEndgameSeconds
 
         val colorToDisplay =  if (timeToStartEndgame) {
-            RevBlinkinLedDriver.BlinkinPattern.RED
+            Neopixels.HalfAndHalfTarget(Neopixels.NeoPixelColors.Red).compileStripState()
         } else {
-            currentPixelToBeDisplayed
+            desiredPixelLightPattern.toStripState()
         }
 
-        val lights = LightTarget(
-                colorToDisplay,
-                desiredPixelLightPattern,
-                newTimeOfColorChangeMilis
-        )
+        val lights = LightTarget(desiredPixelLightPattern, colorToDisplay)
 
         /**Rumble*/
         //Need to only trigger on rising edge
@@ -905,9 +923,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
                         lights = LightTarget(
-                                targetColor = RevBlinkinLedDriver.BlinkinPattern.BLUE,
                                 pattern = BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown),
-                                timeOfColorChangeMilis = 0L
+                                stripTarget = Neopixels.HalfAndHalfTarget().compileStripState()
                         ),
                 ),
                 isLiftEligableForReset = false,
@@ -980,7 +997,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
                         gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
                     }
-                    hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
+//                    hardware.lights.setPattern(targetState.targetRobot.lights.stripTarget)
                 }
         )
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()

@@ -24,12 +24,14 @@ import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
 import us.brainstormz.robotTwo.subsystems.Intake.CollectorPowers
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Transfer.TransferTarget
 import us.brainstormz.robotTwo.subsystems.Transfer.DirectorState
 import us.brainstormz.robotTwo.subsystems.Transfer.RollerPowers
 import us.brainstormz.robotTwo.subsystems.Wrist
+import us.brainstormz.robotTwo.subsystems.emitN
 import us.brainstormz.utils.DeltaTimeMeasurer
 import kotlin.math.absoluteValue
 
@@ -70,11 +72,12 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                                 timeOfEjectionStartMilis = timeTargetStartedMilis),
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
-                        lights = RobotTwoTeleOp.LightTarget(
-                                targetColor = RevBlinkinLedDriver.BlinkinPattern.BLUE,
-                                pattern = RobotTwoTeleOp.BothPixelsWeWant(RobotTwoTeleOp.PixelColor.Unknown, RobotTwoTeleOp.PixelColor.Unknown),
-                                timeOfColorChangeMilis = timeTargetStartedMilis
-                        ),
+                        lights = RobotTwoTeleOp.LightTarget(),
+//                                RobotTwoTeleOp.LightTarget(
+//                                targetColor = RevBlinkinLedDriver.BlinkinPattern.BLUE,
+//                                pattern = RobotTwoTeleOp.BothPixelsWeWant(RobotTwoTeleOp.PixelColor.Unknown, RobotTwoTeleOp.PixelColor.Unknown),
+//                                timeOfColorChangeMilis = timeTargetStartedMilis
+//                        ),
                 ),
                 driverInput = RobotTwoTeleOp.noInput,
                 isLiftEligableForReset = false,

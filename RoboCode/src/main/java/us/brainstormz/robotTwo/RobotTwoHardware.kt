@@ -30,6 +30,7 @@ import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
@@ -132,20 +133,10 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     }
     lateinit var launcherServo: Servo
 
+    //Neopixel Stuff
     lateinit var lights: RevBlinkinLedDriver
     lateinit var neopixelDriver: AdafruitNeopixelSeesaw
-
-    //Neopixel Stuff
-
-//
-//    data class HardwareHalves (
-//        val collectorServo: CRServo,
-//        val transferServo: Servo,
-//        val collectorSensor: ColorSensor,
-//        val transferSensor: ColorSensor
-//    )
-//    lateinit var leftHalf: HardwareHalves
-//    lateinit var rightHalf: HardwareHalves
+    val neopixelSystem = Neopixels()
 
     enum class Alliance {
         Red,
@@ -241,15 +232,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         val perpendicularOdomMotor = ctrlHub.getMotor(0)
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
-        lights = hwMap["lights"] as RevBlinkinLedDriver
-
         //neopixel support
-        var neopixelDriver: AdafruitNeopixelSeesaw?
-
+        lights = hwMap["lights"] as RevBlinkinLedDriver
         neopixelDriver = hwMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
         neopixelDriver.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB) //I don't get this.
         neopixelDriver.init_neopixels()
-
 
 
         // Drivetrain
@@ -422,11 +409,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         launcherServo.position = targetState.targetRobot.launcherPosition.position
 
         /**Lights*/
-        lights.setPattern(targetState.targetRobot.lights.targetColor)
+//        lights.setPattern(targetState.targetRobot.lights.targetColor)
 
-        neopixelDriver.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB)
-        neopixelDriver!!.init_neopixels()
-
+        neopixelSystem.writeQuickly(targetState.targetRobot.lights.stripTarget, previousTargetState.targetRobot.lights.stripTarget, neopixelDriver)
 
     }
 

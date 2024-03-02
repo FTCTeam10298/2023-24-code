@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import us.brainstormz.operationFramework.Subsystem
@@ -44,6 +45,15 @@ class Neopixels: Subsystem {
 
     data class PixelState(val red: Double, val blue: Double, val white: Double, val green: Double)
     data class StripState(val wroteForward: Boolean = true, val pixels: List<PixelState>)
+
+    data class HalfAndHalfTarget(val left: NeoPixelColors, val right: NeoPixelColors, val midPointIndex: Int = 30) {
+
+        constructor(both:NeoPixelColors = NeoPixelColors.Off): this(left = both, right = both)
+
+        fun compileStripState(): StripState {
+            return StripState(pixels= emitN(midPointIndex, left.pixelState) + emitN(60-midPointIndex, right.pixelState))
+        }
+    }
 
     val strandLength: Int = 60
 

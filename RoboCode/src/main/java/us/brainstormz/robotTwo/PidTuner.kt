@@ -18,6 +18,7 @@ import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.ConfigServer
@@ -240,12 +241,12 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                     println("newTargetPosition: $newTargetPosition")
 
                     val ligths = if (isAtTarget) {
-                        RevBlinkinLedDriver.BlinkinPattern.BLUE
+                        Neopixels.HalfAndHalfTarget(Neopixels.NeoPixelColors.Blue, Neopixels.NeoPixelColors.Blue)
                     } else {
-                        RevBlinkinLedDriver.BlinkinPattern.RED
+                        Neopixels.HalfAndHalfTarget(Neopixels.NeoPixelColors.Red, Neopixels.NeoPixelColors.Red)
                     }
 
-                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(drivetrainTarget = Drivetrain.DrivetrainTarget(targetPosition = newTargetPosition.first ?: PositionAndRotation(), power = Drivetrain.DrivetrainPower(y=newTargetPosition.second?.toDouble()?:0.0,x= 0.0, r=0.0), movementMode = DualMovementModeSubsystem.MovementMode.Position), lights = previousTargetState.targetRobot.lights.copy(targetColor = ligths)))
+                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(drivetrainTarget = Drivetrain.DrivetrainTarget(targetPosition = newTargetPosition.first ?: PositionAndRotation(), power = Drivetrain.DrivetrainPower(y=newTargetPosition.second?.toDouble()?:0.0,x= 0.0, r=0.0), movementMode = DualMovementModeSubsystem.MovementMode.Position), lights = RobotTwoTeleOp.LightTarget(ligths.compileStripState())))
                             ?: RobotTwoTeleOp.initialPreviousTargetState
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState ->
@@ -264,7 +265,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                             actualPosition = actualState.actualRobot.positionAndRotation,
                     )
 
-                    hardware.lights.setPattern(targetState.targetRobot.lights.targetColor)
+                    hardware.neopixelSystem.writeQuickly(targetState.targetRobot.lights.stripTarget, previousTargetState?.targetRobot?.lights?.stripTarget ?: RobotTwoTeleOp.BothPixelsWeWant().toStripState(), hardware.neopixelDriver)
                 }
         )
 
