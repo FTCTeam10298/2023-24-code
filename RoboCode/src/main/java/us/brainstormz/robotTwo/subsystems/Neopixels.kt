@@ -22,7 +22,13 @@ class Neopixels: Subsystem {
         RGB //todo, we don't care
     }
 
-    enum class NeoPixelColors(ColorInRGBWInUnknownOrder : ColorInRGBWInUnknownOrder) {
+
+    fun a(){
+
+
+    }
+
+    enum class NeoPixelColors(val ColorInRGBWInUnknownOrder : ColorInRGBWInUnknownOrder) {
         Red(ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 0.0)),
         Green(ColorInRGBWInUnknownOrder(0.0, 0.0, 10.0, 255.0)),
         Blue(ColorInRGBWInUnknownOrder(0.0, 255.0, 0.0, 0.0)),
@@ -191,67 +197,96 @@ class NeopixelPlayground : LinearOpMode() {
     @Throws(InterruptedException::class)
     override fun runOpMode() {
         initialize_opmode()
+
+
+
         waitForStart()
         if (opModeIsActive()) {
+            var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
+            neopixelSystem.initialize(neo)
+            var loopNumber = 0
+            var previousLoopStartTimeMillis = 0L
             while (opModeIsActive() && !isStopRequested) {
-                val redDouble = 0.0
-                val greenDouble = 255.0
-                val blueDouble = 0.0
-                val whiteDouble = 0.0
+                val loopStartTimeMillis = System.currentTimeMillis()
 
-                ///IS THAT THE BYTE OF '87??
-                val redInt = redDouble.toInt()
-                val greenInt = greenDouble.toInt()
-                val blueInt = blueDouble.toInt()
-                val whiteInt = whiteDouble.toInt()
-                val redByte = redInt.toByte()
-                val greenByte = greenInt.toByte()
-                val blueByte = blueInt.toByte()
-                val whiteByte = whiteInt.toByte()
-                val redPUKEDouble = 0.0
-                val greenPUKEDouble = 0.0
-                val bluePUKEDouble = 255.0
-                val whitePUKEDouble = 0.0
 
-                ///IS THAT THE BYTE OF '87??
-                val redPUKEInt = redPUKEDouble.toInt()
-                val greenPUKEInt = greenPUKEDouble.toInt()
-                val bluePUKEInt = bluePUKEDouble.toInt()
-                val whitePUKEInt = whitePUKEDouble.toInt()
-                val redPUKEByte = redPUKEInt.toByte()
-                val greenPUKEByte = greenPUKEInt.toByte()
-                val bluePUKEByte = bluePUKEInt.toByte()
-                val whitePUKEByte = whitePUKEInt.toByte()
-                val WRGB = 0x333333
-                //                for (int i = 0; i < 30; i++){
-//                    neo.setColor(WRGB, (short) i);
+                val red = ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 0.0)
+                val green = ColorInRGBWInUnknownOrder(0.0, 0.0, 10.0, 255.0)//not high contrast
+                val blue = ColorInRGBWInUnknownOrder(0.0, 255.0, 0.0, 0.0)
+                val white = ColorInRGBWInUnknownOrder(0.0, 0.0, 255.0, 0.0)
+                val purple = ColorInRGBWInUnknownOrder(255.0, 255.0, 0.0, 0.0 )
+                val yellow = ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 165.0)
+
+                neopixelSystem.writeTargetStateToLights(previousTargetState, neo)
+
+                loopNumber++
+                val timeBetweenLoopStartTimesMillis = loopStartTimeMillis - previousLoopStartTimeMillis
+                telemetry.addLine("Loop numer $loopNumber, time between start time of last loop and start time of this loop (milliseconds): $timeBetweenLoopStartTimesMillis")
+
+//                val redDouble = 0.0
+//                val greenDouble = 255.0
+//                val blueDouble = 0.0
+//                val whiteDouble = 0.0
+//
+//                ///IS THAT THE BYTE OF '87??
+//                val redInt = redDouble.toInt()
+//                val greenInt = greenDouble.toInt()
+//                val blueInt = blueDouble.toInt()
+//                val whiteInt = whiteDouble.toInt()
+//                val redByte = redInt.toByte()
+//                val greenByte = greenInt.toByte()
+//                val blueByte = blueInt.toByte()
+//                val whiteByte = whiteInt.toByte()
+//                val redPUKEDouble = 0.0
+//                val greenPUKEDouble = 0.0
+//                val bluePUKEDouble = 255.0
+//                val whitePUKEDouble = 0.0
+//
+//                ///IS THAT THE BYTE OF '87??
+//                val redPUKEInt = redPUKEDouble.toInt()
+//                val greenPUKEInt = greenPUKEDouble.toInt()
+//                val bluePUKEInt = bluePUKEDouble.toInt()
+//                val whitePUKEInt = whitePUKEDouble.toInt()
+//                val redPUKEByte = redPUKEInt.toByte()
+//                val greenPUKEByte = greenPUKEInt.toByte()
+//                val bluePUKEByte = bluePUKEInt.toByte()
+//                val whitePUKEByte = whitePUKEInt.toByte()
+//                val WRGB = 0x333333
+//                //                for (int i = 0; i < 30; i++){
+////                    neo.setColor(WRGB, (short) i);
+////                }
+//                for (i in 0..29) {
+//                    neo!!.setColorRGBW(redByte, greenByte, blueByte, whiteByte, i.toShort())
+//
+////                    state = neopixelSystem.changeOnePixel(neopixelSystem. 0.0)
+//
 //                }
-                for (i in 0..29) {
-                    neo!!.setColorRGBW(redByte, greenByte, blueByte, whiteByte, i.toShort())
+//                for (i in 30..59) {
+//                    neo!!.setColorRGBW(redPUKEByte, greenPUKEByte, bluePUKEByte, whitePUKEByte, i.toShort())
+//                }
+//
+////                    neo.setColorRGBW(redPUKEByte, greenPUKEByte, bluePUKEByte, whitePUKEByte, ((short) 0));
+////                    neo.setColorRGBW(redByte, greenByte, blueByte, whiteByte, ((short) 1));
+//                val red = WRGB shr 8 * 2 and 0xfe
+//                val green = WRGB shr 8 * 1 and 0xfe
+//                val blue = WRGB shr 8 * 0 and 0xfe
+//                val white = WRGB shr 8 * 3 and 0xfe
+//                telemetry.addData("red = ", red)
+//                telemetry.addData("green = ", green)
+//                telemetry.addData("blue = ", blue)
+//                telemetry.addData("white = ", white)
+//                telemetry.update()
 
-//                    state = neopixelSystem.changeOnePixel(neopixelSystem. 0.0)
 
-                }
-                for (i in 30..59) {
-                    neo!!.setColorRGBW(redPUKEByte, greenPUKEByte, bluePUKEByte, whitePUKEByte, i.toShort())
-                }
-
-//                    neo.setColorRGBW(redPUKEByte, greenPUKEByte, bluePUKEByte, whitePUKEByte, ((short) 0));
-//                    neo.setColorRGBW(redByte, greenByte, blueByte, whiteByte, ((short) 1));
-                val red = WRGB shr 8 * 2 and 0xfe
-                val green = WRGB shr 8 * 1 and 0xfe
-                val blue = WRGB shr 8 * 0 and 0xfe
-                val white = WRGB shr 8 * 3 and 0xfe
-                telemetry.addData("red = ", red)
-                telemetry.addData("green = ", green)
-                telemetry.addData("blue = ", blue)
-                telemetry.addData("white = ", white)
-                telemetry.update()
+                previousLoopStartTimeMillis = loopStartTimeMillis
             }
         }
     }
 
     fun initialize_opmode() {
+        var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
+        neopixelSystem.initialize(neo)
+
         val redZERODouble = 0.0
         val greenZERODouble = 0.0
         val blueZERODouble = 0.0
@@ -278,6 +313,8 @@ class NeopixelPlayground : LinearOpMode() {
         val purple = ColorInRGBWInUnknownOrder(255.0, 255.0, 0.0, 0.0 )
         val yellow = ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 165.0)
 
+
+
 //        enum class PixelColors
 
 
@@ -287,10 +324,6 @@ class NeopixelPlayground : LinearOpMode() {
 //        val gamma = neopixelSystem.colorInNeopixel(white)  //should be blue
 //        val delta = neopixelSystem.colorInNeopixel(green)  //should be white
         println("green = ")
-
-
-        var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
-        neopixelSystem.initialize(neo)
 
 //         previousTargetState = neopixelSystem.showOneByOne(previousTargetState, orange, 0, 60)
 
