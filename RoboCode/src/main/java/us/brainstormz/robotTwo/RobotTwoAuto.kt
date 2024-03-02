@@ -34,10 +34,17 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 import kotlin.math.absoluteValue
 
 class RobotTwoAuto(private val telemetry: Telemetry) {
-
+    
+    //(isTargetReached \= \{targetState\: TargetWorld\, actualState\: ActualWorld\, previousActualState\: ActualWorld \-\>)
+    //getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+    
+    //( *)(.*)(\n *},)
+    //$1val taskIsDone = $2\n$1nextTargetFromCondition(taskIsDone, previousTargetState)$3
+    
+    
     data class AutoTargetWorld(
             val targetRobot: RobotState,
-            val isTargetReached: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld)-> Boolean,
+            val getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld,
             val timeTargetStartedMilis: Long = 0L
     ) {
         val asTargetWorld: TargetWorld = TargetWorld(
@@ -79,7 +86,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                 driverInput = RobotTwoTeleOp.noInput,
                 isLiftEligableForReset = false,
                 doingHandoff = false,
-                isTargetReached = isTargetReached,
+                getNextTask = getNextTask,
                 timeTargetStartedMilis = timeTargetStartedMilis,
                 gamepad1Rumble = null
         )
@@ -134,7 +141,6 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
         val rotationErrorDegrees = actualState.actualRobot.positionAndRotation.r - targetWorld.targetRobot.drivetrainTarget.targetPosition.r
         return rotationErrorDegrees.absoluteValue <= 3.0
     }
-
 
     /** Generic functions */
     enum class RelativePropPosition {
@@ -194,11 +200,12 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                     positionAndRotation = depositingPosition,
                                     depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                             ),
-                            isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                                 telemetry.addLine("Waiting for extendo")
                                 val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 1.0)
                                 val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
-                                (isExtendoAtPosition && isRobotAtPosition) || hasTimeElapsed(4000, targetState)
+                                val taskIsDone = (isExtendoAtPosition && isRobotAtPosition) || hasTimeElapsed(4000, targetState)
+                                nextTargetFromCondition(taskIsDone, targetState)
                             },
                     ).asTargetWorld,
             )
@@ -209,10 +216,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                     positionAndRotation = depositingMoveAroundTrussWaypoint,
                                     depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                             ),
-                            isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                                 telemetry.addLine("Waiting for drivetrain to go around truss")
                                 val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 1.0)
-                                isRobotAtPosition || hasTimeElapsed(4000, targetState)
+                                val taskIsDone = isRobotAtPosition || hasTimeElapsed(4000, targetState)
+                                nextTargetFromCondition(taskIsDone, targetState)
                             },
                     ).asTargetWorld,
                     AutoTargetWorld(
@@ -221,10 +229,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                     positionAndRotation = depositingPosition,
                                     depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                             ),
-                            isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                                 telemetry.addLine("Waiting for extendo and rotation")
                                 val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 1.0, precisionDegrees = 2.0)
-                                isRobotAtPosition || hasTimeElapsed(4000, targetState)
+                                val taskIsDone = isRobotAtPosition || hasTimeElapsed(4000, targetState)
+                                nextTargetFromCondition(taskIsDone, targetState)
                             },
                     ).asTargetWorld,
                     AutoTargetWorld(
@@ -233,10 +242,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                     positionAndRotation = depositingPosition,
                                     depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                             ),
-                            isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                                 telemetry.addLine("Waiting for extendo")
                                 val isExtendoAtPosition = extendo.isExtendoAtPosition(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
-                                isExtendoAtPosition || hasTimeElapsed(4000, targetState)
+                                val taskIsDone = isExtendoAtPosition || hasTimeElapsed(4000, targetState)
+                                nextTargetFromCondition(taskIsDone, targetState)
                             },
                     ).asTargetWorld,
             )
@@ -249,9 +259,10 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
-                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                             telemetry.addLine("Waiting for eject")
-                            hasTimeElapsed(200, targetState)
+                            val taskIsDone = hasTimeElapsed(200, targetState)
+                            nextTargetFromCondition(taskIsDone, targetState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -259,10 +270,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
-                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                             telemetry.addLine("Waiting for extendo to retract")
                             val isExtendoABitAwayFromThePurple = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks - 80)
-                            isExtendoABitAwayFromThePurple || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            val taskIsDone = isExtendoABitAwayFromThePurple || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            nextTargetFromCondition(taskIsDone, targetState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -270,10 +282,11 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
-                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                             telemetry.addLine("Waiting for extendo to retract 2 electric boogaloo")
                             val isExtendoHalfwayIn = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= (ExtendoPositions.Max.ticks / 2)
-                            isExtendoHalfwayIn || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            val taskIsDone = isExtendoHalfwayIn || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            nextTargetFromCondition(taskIsDone, targetState)
                         },).asTargetWorld,
         )
 
@@ -296,12 +309,13 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
-                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                             telemetry.addLine("Waiting for go to board")
                             val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 2.0, precisionDegrees = 3.0)
-                            isRobotAtPosition || hasTimeElapsed(3000, targetState)
+                            val taskIsDone = isRobotAtPosition || hasTimeElapsed(3000, targetState)
 //                            val isCollectorRetracted = extendo.isExtendoAtPosition(ExtendoPositions.Min.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
 //                            (isRobotAtPosition && isCollectorRetracted) || hasTimeElapsed(3000, targetState)
+                            nextTargetFromCondition(taskIsDone, targetState)
                         },).asTargetWorld,
 //                AutoTargetWorld(
 //                        targetRobot = RobotState(
@@ -309,7 +323,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 //                                positionAndRotation = depositingPosition,
 //                                depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
 //                        ),
-//                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+//                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
 //                            hasTimeElapsed(timeToElapseMilis = 1000, targetState)
 //                        },).asTargetWorld,
                 AutoTargetWorld(
@@ -318,8 +332,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
-                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            lift.isLiftAtPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks) || hasTimeElapsed(1000, targetState)
+                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            val taskIsDone = lift.isLiftAtPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks) || hasTimeElapsed(1000, targetState)
+                            nextTargetFromCondition(taskIsDone, targetState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -327,8 +342,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
-                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            val taskIsDone = arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            nextTargetFromCondition(taskIsDone, targetState)
                         },).asTargetWorld,
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -336,8 +352,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
                         ),
-                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            actualState.actualRobot.depoState.wristAngles == Wrist.ActualWrist(ClawTarget.Retracted.angleDegrees, ClawTarget.Retracted.angleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            val taskIsDone = actualState.actualRobot.depoState.wristAngles == Wrist.ActualWrist(ClawTarget.Retracted.angleDegrees, ClawTarget.Retracted.angleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            nextTargetFromCondition(taskIsDone, targetState)
                         },).asTargetWorld,
         )
     }
@@ -353,7 +370,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             positionAndRotation = targetPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
-                    isTargetReached = isTargetReached,).asTargetWorld
+                    getNextTask = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        nextTargetFromCondition(isTargetReached(targetState, actualState, previousActualState), targetState)
+                    },).asTargetWorld
 
 
     /** Backboard side */
@@ -369,11 +388,12 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                     positionAndRotation = moveAroundRightPixelPosition,
                                     depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                             ),
-                            isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                                 telemetry.addLine("Waiting for robot to navigate around purple pixel")
                                 drivetrain.rotationPID = drivetrain.rotationOnlyPID
                                 val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
-                                isRobotAtPosition || hasTimeElapsed(4000, targetState)
+                                val taskIsDone = isRobotAtPosition || hasTimeElapsed(4000, targetState)
+                                nextTargetFromCondition(taskIsDone, targetState)
                             },).asTargetWorld
             )
             else -> listOf()
@@ -387,7 +407,7 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
-                        isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                             telemetry.addLine("Waiting for go to board")
                             val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
                             drivetrain.rotationPID = if (isRobotAtPosition)
@@ -395,7 +415,8 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             else
                                 drivetrain.rotationWithOtherAxisPID
                             val isCollectorRetracted = extendo.isExtendoAtPosition(ExtendoPositions.Min.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
-                            (isRobotAtPosition && isCollectorRetracted) || hasTimeElapsed(3000, targetState)
+                            val taskIsDone = (isRobotAtPosition && isCollectorRetracted) || hasTimeElapsed(3000, targetState)
+                            nextTargetFromCondition(taskIsDone, targetState)
                         },).asTargetWorld,
         )
 
@@ -410,8 +431,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             positionAndRotation = backboardSideParkingPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Retracted, ClawTarget.Retracted)
                     ),
-                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        isRobotAtPosition(targetState, actualState, previousActualState)
+                    getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        val taskIsDone = isRobotAtPosition(targetState, actualState, previousActualState)
+                        nextTargetFromCondition(taskIsDone, targetState)
                     },).asTargetWorld
     )
 
@@ -499,8 +521,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             positionAndRotation = PositionAndRotation(x= -10.0, y= -45.0, r= 0.0),
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Retracted, ClawTarget.Retracted)
                     ),
-                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        isRobotAtPosition(targetState, actualState, previousActualState)
+                    getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        val taskIsDone = isRobotAtPosition(targetState, actualState, previousActualState)
+                        nextTargetFromCondition(taskIsDone, targetState)
                     },).asTargetWorld,
             AutoTargetWorld(
                     targetRobot = RobotState(
@@ -508,8 +531,9 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
                             positionAndRotation = audienceSideParkPosition,
                             depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Retracted, ClawTarget.Retracted)
                     ),
-                    isTargetReached = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                        isRobotAtPosition(targetState, actualState, previousActualState)
+                    getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                        val taskIsDone = isRobotAtPosition(targetState, actualState, previousActualState)
+                        nextTargetFromCondition(taskIsDone, targetState)
                     },).asTargetWorld,
     )
 
@@ -597,19 +621,13 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
     private lateinit var autoStateList: List<TargetWorld>
     private lateinit var autoListIterator: ListIterator<TargetWorld>
-    private fun nextTargetState(
-            previousTargetState: TargetWorld?,
-            actualState: ActualWorld,
-            previousActualState: ActualWorld?): TargetWorld {
+    private fun nextTargetState(previousTargetState: TargetWorld?, actualState: ActualWorld, previousActualState: ActualWorld?): TargetWorld {
         return if (previousTargetState == null) {
             getNextTargetFromList()
         } else {
-            val isTargetReached = previousTargetState.isTargetReached(previousTargetState!!, actualState, previousActualState ?: actualState)
-            telemetry.addLine("isTargetReached: $isTargetReached")
-
             when {
-                isTargetReached && autoListIterator.hasNext()-> {
-                    getNextTargetFromList()
+                autoListIterator.hasNext()-> {
+                    previousTargetState.getNextTask(previousTargetState, actualState, previousActualState ?: actualState) ?: previousTargetState
                 }
                 else -> {
                     previousTargetState
@@ -617,6 +635,16 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             }
         }
     }
+
+    private fun nextTargetFromCondition(condition: Boolean, previousTargetState: TargetWorld) : TargetWorld {
+        return if (condition) {
+            getNextTargetFromList()
+        } else {
+            previousTargetState
+        }
+    }
+
+
 
     private val console = TelemetryConsole(telemetry)
     private val wizard = TelemetryWizard(console, null)

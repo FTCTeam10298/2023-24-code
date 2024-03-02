@@ -23,7 +23,6 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 import us.brainstormz.utils.DataClassHelper
-import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -849,7 +848,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 isLiftEligableForReset = false,
                 doingHandoff = doHandoffSequence,
                 driverInput = spoofDriverInputForDepo,
-                isTargetReached = {_, _, _-> false},
+                getNextTask = { _, _, _-> null },
                 gamepad1Rumble = gamepad1RumbleRoutine
         )
     }
@@ -914,7 +913,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 isLiftEligableForReset = false,
                 doingHandoff = false,
                 driverInput = noInput,
-                isTargetReached = { _, _, _ -> false },
+                getNextTask = { _, _, _ -> null },
                 gamepad1Rumble = null
         )
     }
