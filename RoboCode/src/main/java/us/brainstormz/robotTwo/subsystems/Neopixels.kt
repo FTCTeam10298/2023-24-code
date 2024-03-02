@@ -163,14 +163,27 @@ class Neopixels: Subsystem {
 
     //now for the fun stuff—animations!
 
-
+    val debugWhite = NeoPixelColors.White.ColorInRGBWInUnknownOrder
 
     //take in targetState and previousTargetState, iterate 1-by-1, and only change a light if it needs to be changed.
     //output the final target state.
     fun writeTargetStateToLights(targetState:  MutableList<MutableList<Double>>, pastTargetState:  MutableList<MutableList<Double>>, pixelStrandController: AdafruitNeopixelSeesaw): MutableList<MutableList<Double>>{
         var pixelsController = pixelStrandController
 
+        targetState.mapIndexed { index, pixelStatus ->
+            val pastPixelStatus = pastTargetState[index]
 
+            if (pixelStatus != pastPixelStatus) {
+                val targetRed = pixelStatus[0].toInt().toByte()
+                val targetGreen = pixelStatus[1].toInt().toByte()
+                val targetBlue = pixelStatus[2].toInt().toByte()
+                val targetWhite = pixelStatus[3].toInt().toByte()
+                pixelsController!!.setColorRGBW(debugWhite.red.toInt().toByte(), debugWhite.green.toInt().toByte(), debugWhite.blue.toInt().toByte(), debugWhite.white.toInt().toByte(), index.toShort()) //debugging
+                pixelsController!!.setColorRGBW(targetRed, targetGreen, targetBlue, targetWhite, index.toShort())
+            } else {
+                false
+            }
+        }
 
         /** example of indexed map operation on a list */
         val listOfBooleansNoProblem: List<Boolean> = targetState.mapIndexed { index, pixelStatus ->
@@ -200,18 +213,18 @@ class Neopixels: Subsystem {
             println("pastPixelStatus: $pastPixelStatus, index of pixel: $index")
         }
 
-        var indexOfThisPixelTarget: Int = 0
-        //what is this color format? I don't get it.
-        for (pixelStatus in targetState) {
-            indexOfThisPixelTarget += 1
-            val targetRed = pixelStatus[0].toInt().toByte()
-            val targetGreen = pixelStatus[1].toInt().toByte()
-            val targetBlue = pixelStatus[2].toInt().toByte()
-            val targetWhite = pixelStatus[3].toInt().toByte()
-//            Color.rgb(pixelStatus[0].toFloat(), pixelStatus[1].toFloat(), pixelStatus[2].toFloat())
-            pixelsController!!.setColorRGBW(targetRed, targetGreen, targetBlue, targetWhite, indexOfThisPixelTarget.toShort())
-            //WHAT IS WRGB??? I DON'T GET THIS COLOR FORMAT
-        }
+//        var indexOfThisPixelTarget: Int = 0
+//        //what is this color format? I don't get it.
+//        for (pixelStatus in targetState) {
+//            indexOfThisPixelTarget += 1
+//            val targetRed = pixelStatus[0].toInt().toByte()
+//            val targetGreen = pixelStatus[1].toInt().toByte()
+//            val targetBlue = pixelStatus[2].toInt().toByte()
+//            val targetWhite = pixelStatus[3].toInt().toByte()
+////            Color.rgb(pixelStatus[0].toFloat(), pixelStatus[1].toFloat(), pixelStatus[2].toFloat())
+//            pixelsController!!.setColorRGBW(targetRed, targetGreen, targetBlue, targetWhite, indexOfThisPixelTarget.toShort())
+//            //WHAT IS WRGB??? I DON'T GET THIS COLOR FORMAT
+//        }
 
         val pastTargetState = targetState
         return pastTargetState
@@ -225,6 +238,7 @@ class NeopixelPlayground : LinearOpMode() {
 //    var neo: AdafruitNeopixelSeesaw? = null
     val neopixelSystem = Neopixels()
     var previousTargetState = neopixelSystem.makeEmptyLightState()
+    var targetState = neopixelSystem.makeEmptyLightState()
     lateinit var neo: AdafruitNeopixelSeesaw
 
 
@@ -253,16 +267,16 @@ class NeopixelPlayground : LinearOpMode() {
                 val black = Neopixels.NeoPixelColors.Black.ColorInRGBWInUnknownOrder
 
 
-                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, purple, 0, 60)
+                targetState = neopixelSystem.showOneByOne(previousTargetState, purple, 0, 60)
 
-                neopixelSystem.writeTargetStateToLights(previousTargetState, neo)
+                previousTargetState = neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
 
-                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
-                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, purple, 16, 30)
-                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, yellow, 31, 46)
-                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, green, 47, 60)
+                targetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
+                targetState = neopixelSystem.showOneByOne(previousTargetState, purple, 16, 30)
+                targetState = neopixelSystem.showOneByOne(previousTargetState, yellow, 31, 46)
+                targetState = neopixelSystem.showOneByOne(previousTargetState, green, 47, 60)
 
-                neopixelSystem.writeTargetStateToLights(previousTargetState, neo)
+                previousTargetState = neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
 
                 loopNumber++
                 val timeBetweenLoopStartTimesMillis = loopStartTimeMillis - previousLoopStartTimeMillis
@@ -373,14 +387,14 @@ class NeopixelPlayground : LinearOpMode() {
 
 //         previousTargetState = neopixelSystem.showOneByOne(previousTargetState, orange, 0, 60)
 
-        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
-        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, purple, 16, 30)
-        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, yellow, 31, 46)
-        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, green, 47, 60)
+        targetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
+        targetState = neopixelSystem.showOneByOne(previousTargetState, purple, 16, 30)
+        targetState = neopixelSystem.showOneByOne(previousTargetState, yellow, 31, 46)
+        targetState = neopixelSystem.showOneByOne(previousTargetState, green, 47, 60)
 //        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, purple, 51, 60)
 
 
-        neopixelSystem.writeTargetStateToLights(previousTargetState, neo)
+        neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
 //        neopixelSystem.showOneByOne(state)
         //think I wrote an equivalent function... init()
 //        neo!!.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_WRGB)
