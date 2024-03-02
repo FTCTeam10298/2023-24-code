@@ -14,8 +14,8 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override var pid: PID =
                         PID(
                                 name= "extendo",
-                                kp= 0.0018,
-                                ki= 2.0E-7,
+                                kp= 0.00181,
+                                ki= 2.1E-7,
                                 kd= 0.08,
                         )
     /*
@@ -33,7 +33,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         Max(2000),
     }
 
-    private val acceptablePositionErrorTicks = 80
+    private val acceptablePositionErrorTicks = 100
     fun isExtendoAtPosition(targetPositionTicks: Int, currentPositionTicks: Int): Boolean {
         val positionErrorTicks = targetPositionTicks - currentPositionTicks
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
