@@ -134,9 +134,10 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var launcherServo: Servo
 
     //Neopixel Stuff
-    lateinit var lights: RevBlinkinLedDriver
+//    lateinit var lights: RevBlinkinLedDriver
     lateinit var neopixelDriver: AdafruitNeopixelSeesaw
     val neopixelSystem = Neopixels()
+    private var neoPixelActualState: Neopixels.StripState = neopixelSystem.makeEmptyLightState()
 
     enum class Alliance {
         Red,
@@ -233,10 +234,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
         //neopixel support
-        lights = hwMap["lights"] as RevBlinkinLedDriver
-        neopixelDriver = hwMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
-        neopixelDriver.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB) //I don't get this.
-        neopixelDriver.init_neopixels()
+//        lights = hwMap["lights"] as RevBlinkinLedDriver
+        neopixelDriver = hwMap["neopixels"] as AdafruitNeopixelSeesaw //hwMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
+//        neopixelDriver.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB)
+//        neopixelDriver.init_neopixels()
+        neopixelSystem.initialize(neopixelDriver)
 
 
         // Drivetrain
@@ -311,7 +313,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         return ActualRobot(
                 positionAndRotation = drivetrain.getPosition(),
                 collectorSystemState = collectorSystem.getCurrentState(this, previousActualWorld),
-                depoState = depoManager.getDepoState(this, previousActualWorld)
+                depoState = depoManager.getDepoState(this, previousActualWorld),
+                neopixelState = neoPixelActualState
         )
     }
 
@@ -411,8 +414,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         /**Lights*/
 //        lights.setPattern(targetState.targetRobot.lights.targetColor)
 
-        neopixelSystem.writeQuickly(targetState.targetRobot.lights.stripTarget, previousTargetState.targetRobot.lights.stripTarget, neopixelDriver)
-
+        neoPixelActualState = neopixelSystem.writeQuicklyFromCenter(30, targetState.targetRobot.lights.stripTarget, actualState.actualRobot.neopixelState, neopixelDriver)
     }
 
     fun wiggleTest(telemetry: Telemetry, gamepad: Gamepad) {

@@ -44,10 +44,16 @@ class Neopixels: Subsystem {
     }
 
     data class PixelState(val red: Double, val blue: Double, val white: Double, val green: Double)
-    data class StripState(val wroteForward: Boolean = true, val pixels: List<PixelState>)
+    data class StripState(val wroteForward: Boolean = true, val pixels: List<PixelState>) {
+        override fun toString(): String = """
+            StripState(
+                wroteForward = $wroteForward,
+                pixels = $pixels
+            )
+        """.trimMargin()
+    }
 
     data class HalfAndHalfTarget(val left: NeoPixelColors, val right: NeoPixelColors, val midPointIndex: Int = 30) {
-
         constructor(both:NeoPixelColors = NeoPixelColors.Off): this(left = both, right = both)
 
         fun compileStripState(): StripState {
@@ -358,11 +364,12 @@ class Neopixels: Subsystem {
                                 green = Random.nextDouble(0.0, 255.0),
                                 white = Random.nextDouble(0.0, 255.0),
                         )
-                        val midPoint = 10
-                        val targetState = StripState(
-//                                pixels = fiftyFifty(randomColor(), randomColor()),//(0 .. 60).map{randomColor()}
-                                pixels = emitN(midPoint, randomColor()) + emitN(60-midPoint, randomColor())
-                            )
+                        val midPoint = 30
+//                        val targetState = StripState(
+////                                pixels = fiftyFifty(randomColor(), randomColor()),//(0 .. 60).map{randomColor()}
+//                                pixels = emitN(midPoint, randomColor()) + emitN(60-midPoint, randomColor())
+//                            )
+                        val targetState = HalfAndHalfTarget(left = NeoPixelColors.Blue, right = NeoPixelColors.Red).compileStripState()
                         var loopNumber = 0
                         while (targetState != previousTargetState) {
                             val startTimeMillis = System.currentTimeMillis()

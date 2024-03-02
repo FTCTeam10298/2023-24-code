@@ -65,6 +65,7 @@ data class ActualRobot(
         val positionAndRotation: PositionAndRotation,
         val depoState: DepoManager.ActualDepo,
         val collectorSystemState: CollectorSystem.ActualCollector,
+        val neopixelState: Neopixels.StripState
 ) {
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 }

@@ -752,7 +752,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                 startPosition = wizardResults!!.startPosition
 
                 runCamera(opencv, wizardResults!!)
-                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
+//                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
             }
         } else {
             telemetry.addLine("propPosition? = ${propDetector?.propPosition}")
@@ -774,7 +774,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
         autoStateList = calcAutoTargetStateList(alliance, startPosition, propPosition)
         autoListIterator = autoStateList.listIterator()
 
-        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
+//        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
     }
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
@@ -816,7 +816,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                         armOverridePower = 0.0
                 )
 
-                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
+//                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
             }
         )
 

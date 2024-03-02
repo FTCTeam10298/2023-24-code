@@ -62,7 +62,7 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
 
         imu = FauxImu()
 
-        lights = FauxRevBlinkinLedDriver()
+//        lights = FauxRevBlinkinLedDriver()
     }
 
     lateinit var actualRobot: ActualRobot

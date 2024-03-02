@@ -11,6 +11,7 @@ import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
@@ -196,6 +197,7 @@ class TeleopTest {
                                         right = emptyActualTransferHalf
                                 ),
                         ),
+                        neopixelState = Neopixels.HalfAndHalfTarget().compileStripState()
                 ),
                 timestampMilis = 0,
         )
