@@ -6,7 +6,7 @@ import org.opencv.core.Mat
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 
 class FauxOpenCvAbstraction(opmode: OpMode): OpenCvAbstraction(opmode) {
-    override fun init(hardwareMap: HardwareMap) {
+    override fun init(hardwareMap: HardwareMap, cameraMonitorViewId: Int?) {
         println("initializing FauxOpenCvAbstraction")
     }
 

@@ -59,7 +59,7 @@ open class OpenCvAbstraction(private val opmode: OpMode) {
 
     open lateinit var pipeline:PipelineAbstraction// = PipelineAbstraction()
 
-    private lateinit var camera: OpenCvCamera
+    lateinit var camera: OpenCvCamera
 
     var optimizeView = false
     var openCameraDeviceAsync = false
@@ -69,13 +69,16 @@ open class OpenCvAbstraction(private val opmode: OpMode) {
 
 //TODO: Add blur support from this init according to blurType:String, blurRadius:Float
 
-    open fun init(hardwareMap: HardwareMap) {
+    open fun init(hardwareMap: HardwareMap, cameraMonitorViewId: Int? = null) {
         pipeline = PipelineAbstraction()
-        val cameraMonitorViewId: Int = opmode.hardwareMap.appContext.resources.getIdentifier(
-            "cameraMonitorViewId",
-            "id",
-            opmode.hardwareMap.appContext.packageName
-        )
+
+        val cameraMonitorViewId: Int = cameraMonitorViewId
+                ?: opmode.hardwareMap.appContext.resources.getIdentifier(
+                        "cameraMonitorViewId",
+                        "id",
+                        opmode.hardwareMap.appContext.packageName
+                )
+
        camera = if (internalCamera)
            OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId)
        else {
