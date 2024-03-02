@@ -3,7 +3,6 @@ package us.brainstormz.robotTwo
 import android.util.Size
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
-//import com.outoftheboxrobotics.photoncore.hardware.motor.PhotonDcMotor
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
@@ -33,6 +32,7 @@ import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
+import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
 import java.lang.Thread.sleep
 import kotlin.math.PI
 
@@ -133,7 +133,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var launcherServo: Servo
 
     lateinit var lights: RevBlinkinLedDriver
-    public lateinit var neopixelDriver: AdafruitNeopixelSeesaw
+    lateinit var neopixelDriver: AdafruitNeopixelSeesaw
 
     //Neopixel Stuff
 
