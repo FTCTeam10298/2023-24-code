@@ -39,7 +39,7 @@ fun aprilTagDetectionToString(tag: AprilTagDetection): String = """
 
 open class AprilTagPipeline(val cameraName: String, val resolution: Size) {
     private var aprilTag: AprilTagProcessor? = null
-    private var visionPortal: VisionPortal? = null
+    var visionPortal: VisionPortal? = null
 
     fun init(viewContainerId:Int?, hardwareMap: HardwareMap) {
         aprilTag = AprilTagProcessor.Builder().build()
@@ -54,6 +54,8 @@ open class AprilTagPipeline(val cameraName: String, val resolution: Size) {
         builder.setCameraResolution(resolution)
         builder.setCamera(hardwareMap.get(WebcamName::class.java, cameraName))
         builder.addProcessor(aprilTag)
+
+
 
         visionPortal = builder.build()
     }
@@ -84,7 +86,7 @@ class AprilTagLineup {
 
     fun findDetection(detections: List<AprilTagDetection>, propPosition: RobotTwoPropDetector.PropPosition, alliance: RobotTwoHardware.Alliance): AprilTagDetection? {
         val id = getTagIdForPropPosition(propPosition, getTagIdOffsetForAlliance(alliance))
-        return detections.first{ it.id == id }
+        return detections.firstOrNull{ it.id == id }
     }
 
     fun getTargetPositionToLineupWithTag(currentPosition: PositionAndRotation, previousPosition: PositionAndRotation, aprilTagReading: AprilTagDetection?, previousAprilTagReading: AprilTagDetection?): PositionAndRotation {
@@ -135,17 +137,16 @@ class LineUpToAprilTagTest(private val hardware: RobotTwoHardware, private val t
         drivetrain.xTranslationPID = sidewaysPID
         val currentDetections: List<AprilTagDetection> = aprilTagPipeline.detections()
 
-        val detectionWeWant: AprilTagDetection? = currentDetections.firstOrNull {
-            it.id == detectionWeWantId
-        }
+        val tag = aprilTagLineup.findDetection(currentDetections, RobotTwoPropDetector.PropPosition.Center, RobotTwoHardware.Alliance.Red)
+        val previousTag = previousDetectionWeWant//aprilTagLineup.findDetection(listOf(previousDetectionWeWant?:currentDetections), RobotTwoPropDetector.PropPosition.Center, RobotTwoHardware.Alliance.Red)
 
         val currentPosition = drivetrain.getPosition()
 
         val targetPosition = aprilTagLineup.getTargetPositionToLineupWithTag(
                 previousPosition = previousTarget.targetPosition,
                 currentPosition = currentPosition,
-                aprilTagReading = detectionWeWant,
-                previousAprilTagReading = previousDetectionWeWant,
+                aprilTagReading = tag,
+                previousAprilTagReading = previousTag
         )
 
         telemetry.addLine("\n\ntargetPosition: ${targetPosition}")
@@ -176,10 +177,10 @@ class LineUpToAprilTagTest(private val hardware: RobotTwoHardware, private val t
                 previousTarget = previousTarget)
 
         telemetry.addLine("All detections: ${currentDetections.fold("") {acc, it -> "$acc \n${aprilTagDetectionToString(it)}"}}")
-        telemetry.addLine("\n\nOur detection: ${detectionWeWant?.let { aprilTagDetectionToString(it) }}")
+        telemetry.addLine("\n\nOur detection: ${tag?.let { aprilTagDetectionToString(it) }}")
         telemetry.update()
         previousTarget = drivetrainTarget
-        previousDetectionWeWant = detectionWeWant
+        previousDetectionWeWant = tag
     }
 
 

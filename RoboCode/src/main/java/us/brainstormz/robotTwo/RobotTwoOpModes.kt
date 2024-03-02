@@ -7,6 +7,7 @@ import com.outoftheboxrobotics.photoncore.Photon
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.vision.VisionPortal
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 
 
@@ -42,12 +43,14 @@ class Autonomous: OpMode() {
 
     private lateinit var auto: RobotTwoAuto
     private val opencv: OpenCvAbstraction = OpenCvAbstraction(this)
+    private val aprilTagPipeline = AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution)
     override fun init() {
         hardware.init(hardwareMap)
 
-        opencv.init(hardwareMap)
-        val aprilTagPipeline = AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution)
-        aprilTagPipeline.init(null, hardwareMap)
+        val containerIds = VisionPortal.makeMultiPortalView(2, VisionPortal.MultiPortalLayout.HORIZONTAL)
+        aprilTagPipeline.init(containerIds.first(), hardwareMap)
+
+        opencv.init(hardwareMap, containerIds.last())
 
         auto = RobotTwoAuto(multiTelemetry, aprilTagPipeline)
 
@@ -66,4 +69,7 @@ class Autonomous: OpMode() {
         auto.loop(hardware= hardware, gamepad1)
     }
 
+    override fun stop() {
+        aprilTagPipeline.close()
+    }
 }
