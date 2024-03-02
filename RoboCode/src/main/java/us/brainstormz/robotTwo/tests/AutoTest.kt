@@ -9,6 +9,7 @@ import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
+import us.brainstormz.robotTwo.AprilTagPipeline
 import us.brainstormz.robotTwo.Autonomous
 import us.brainstormz.robotTwo.CollectorSystem
 import us.brainstormz.robotTwo.DepoManager
@@ -40,7 +41,7 @@ class AutoTest {
     fun runTest(testSteps: List<ActualWorld>, numberOfTimesToRunInitLoop: Int): List<Pair<ActualWorld, TargetWorld>> {
         val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
         val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
-        val program = RobotTwoAuto(opmode.telemetry)
+        val program = RobotTwoAuto(opmode.telemetry, AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution))
         val openCvAbstraction = FauxOpenCvAbstraction(opmode)
 
         program.init(hardware, openCvAbstraction)

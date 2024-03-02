@@ -45,9 +45,12 @@ class Autonomous: OpMode() {
     override fun init() {
         hardware.init(hardwareMap)
 
-        auto = RobotTwoAuto(multiTelemetry)
-
         opencv.init(hardwareMap)
+        val aprilTagPipeline = AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution)
+        aprilTagPipeline.init(null, hardwareMap)
+
+        auto = RobotTwoAuto(multiTelemetry, aprilTagPipeline)
+
         auto.init(hardware, opencv)
     }
 

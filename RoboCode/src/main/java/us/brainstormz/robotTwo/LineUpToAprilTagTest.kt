@@ -1,8 +1,6 @@
 package us.brainstormz.robotTwo
 
 import android.util.Size
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
@@ -13,14 +11,10 @@ import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
-import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.localizer.RRLocalizer
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.subsystems.Drivetrain
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
-import us.brainstormz.utils.ConfigServer
 
 fun formatFtcPose(ftcPose: AprilTagPoseFtc): String = """
    |AprilTagPoseFtc(
@@ -43,12 +37,11 @@ fun aprilTagDetectionToString(tag: AprilTagDetection): String = """
     """.trimMargin()
 
 
-class AprilTagPipeline(val cameraName: String, val resolution: Size) {
+open class AprilTagPipeline(val cameraName: String, val resolution: Size) {
     private var aprilTag: AprilTagProcessor? = null
     private var visionPortal: VisionPortal? = null
 
     fun init(viewContainerId:Int?, hardwareMap: HardwareMap) {
-
         aprilTag = AprilTagProcessor.Builder().build()
 
         aprilTag?.setDecimation(1f)
@@ -70,11 +63,31 @@ class AprilTagPipeline(val cameraName: String, val resolution: Size) {
     }
 
     fun detections() = aprilTag?.detections ?: emptyList()
-
 }
 
 class AprilTagLineup {
-    fun lineUpToTag(currentPosition: PositionAndRotation, previousPosition: PositionAndRotation, aprilTagReading: AprilTagDetection?, previousAprilTagReading: AprilTagDetection?): PositionAndRotation {
+
+    private fun getTagIdOffsetForAlliance(alliance: RobotTwoHardware.Alliance): Int {
+        return when (alliance) {
+            RobotTwoHardware.Alliance.Red -> 3
+            RobotTwoHardware.Alliance.Blue -> 0
+        }
+    }
+
+    private fun getTagIdForPropPosition(propPosition: RobotTwoPropDetector.PropPosition, offsetForAlliance: Int): Int {
+        return offsetForAlliance + when (propPosition) {
+            RobotTwoPropDetector.PropPosition.Left -> 1
+            RobotTwoPropDetector.PropPosition.Center -> 2
+            RobotTwoPropDetector.PropPosition.Right -> 3
+        }
+    }
+
+    fun findDetection(detections: List<AprilTagDetection>, propPosition: RobotTwoPropDetector.PropPosition, alliance: RobotTwoHardware.Alliance): AprilTagDetection? {
+        val id = getTagIdForPropPosition(propPosition, getTagIdOffsetForAlliance(alliance))
+        return detections.first{ it.id == id }
+    }
+
+    fun getTargetPositionToLineupWithTag(currentPosition: PositionAndRotation, previousPosition: PositionAndRotation, aprilTagReading: AprilTagDetection?, previousAprilTagReading: AprilTagDetection?): PositionAndRotation {
         return if (aprilTagReading != previousAprilTagReading && aprilTagReading != null) {
             previousPosition.copy(x = currentPosition.x - aprilTagReading.ftcPose.x)
         } else {
@@ -125,10 +138,10 @@ class LineUpToAprilTagTest(private val hardware: RobotTwoHardware, private val t
         val detectionWeWant: AprilTagDetection? = currentDetections.firstOrNull {
             it.id == detectionWeWantId
         }
-        
+
         val currentPosition = drivetrain.getPosition()
 
-        val targetPosition = aprilTagLineup.lineUpToTag(
+        val targetPosition = aprilTagLineup.getTargetPositionToLineupWithTag(
                 previousPosition = previousTarget.targetPosition,
                 currentPosition = currentPosition,
                 aprilTagReading = detectionWeWant,

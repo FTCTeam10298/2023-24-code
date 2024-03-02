@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo
 
 import com.qualcomm.robotcore.hardware.Gamepad
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Drivetrain
@@ -68,6 +69,7 @@ data class ActualRobot(
 }
 data class ActualWorld(
         val actualRobot: ActualRobot,
+        val aprilTagReadings: List<AprilTagDetection> = listOf(),
         val actualGamepad1: Gamepad,
         val actualGamepad2: Gamepad,
         val timestampMilis: Long

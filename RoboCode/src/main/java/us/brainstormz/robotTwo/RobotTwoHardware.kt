@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import android.util.Size
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
 //import com.outoftheboxrobotics.photoncore.hardware.motor.PhotonDcMotor
@@ -38,6 +39,7 @@ import kotlin.math.PI
 open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
 
     val backCameraName = "Webcam 2"
+    val backCameraResolution = Size(1920, 1080)
 
     override lateinit var lFDrive: DcMotor
     override lateinit var rFDrive: DcMotor
