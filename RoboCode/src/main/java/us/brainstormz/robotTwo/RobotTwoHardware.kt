@@ -37,6 +37,8 @@ import kotlin.math.PI
 
 open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
 
+    val backCameraName = "Webcam 2"
+
     override lateinit var lFDrive: DcMotor
     override lateinit var rFDrive: DcMotor
     override lateinit var lBDrive: DcMotor
