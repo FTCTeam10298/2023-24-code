@@ -6,11 +6,15 @@ import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
 import java.lang.Thread.sleep
+import kotlin.random.Random
+import kotlin.system.exitProcess
 
 //R -> R, G -> B, B -> W, W -> G
 //data class ColorInRGBWInUnknownOrder(val red: Double, val green: Double, val blue: Double, val white: Double)
 
+fun emitN(n: Int, color: Neopixels.PixelState): List<Neopixels.PixelState> = (0..n).map { color }
 class Neopixels: Subsystem {
+    var lastPixelWriteDuration: Long = -1
 
     //color corrects for weird channel mapping.  TODO god its frustrating.
 //    fun colorInNeopixel(wrongColor: ColorInRGBW): ColorInRGBW {
@@ -24,12 +28,12 @@ class Neopixels: Subsystem {
     }
 
 
-    fun a(){
+    fun a() {
 
 
     }
 
-    enum class NeoPixelColors(val pixelState : PixelState) {
+    enum class NeoPixelColors(val pixelState: PixelState) {
         Red(PixelState(255.0, 0.0, 0.0, 0.0)),
         Green(PixelState(0.0, 0.0, 0.0, 255.0)),
         Blue(PixelState(0.0, 255.0, 0.0, 0.0)),
@@ -42,6 +46,7 @@ class Neopixels: Subsystem {
     data class PixelState(val red: Double, val blue: Double, val white: Double, val green: Double)
 
     val strandLength: Int = 60
+
     //represents light current status
     var lightStrandTarget = mutableListOf<MutableList<Double>>()
     var mondrianStatusBarTarget = mutableListOf<mondrianStatusBarMessages>()
@@ -57,7 +62,8 @@ class Neopixels: Subsystem {
 
         return currentTargetState
         println("Initial Status String: $lightStrandTarget")
-        }
+    }
+
     fun initialize(seesawController: AdafruitNeopixelSeesaw) {
         seesawController.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_WRGB)
         seesawController.setBufferLength(60.toShort())
@@ -71,13 +77,11 @@ class Neopixels: Subsystem {
     }
 
 
-
     fun changeOnePixel(targetColor: PixelState, targetPixel: Int) {
         lightStrandTarget[targetPixel] = mutableListOf(targetColor.red, targetColor.blue, targetColor.white, targetColor.green)
     }
 
-    fun flood(targetColor: PixelState)
-    {
+    fun flood(targetColor: PixelState) {
         for (n in 1..strandLength) {
             lightStrandTarget[n] = mutableListOf(targetColor.red, targetColor.blue, targetColor.white, targetColor.green)
         }
@@ -85,7 +89,7 @@ class Neopixels: Subsystem {
 
     }
 
-    fun showOneByOne(previousTargetState:  List<PixelState>, targetColor: PixelState, startPixel: Int, endPixel: Int):  List<PixelState> {
+    fun showOneByOne(previousTargetState: List<PixelState>, targetColor: PixelState, startPixel: Int, endPixel: Int): List<PixelState> {
         val mutated = previousTargetState.toMutableList()
         //not very necessary. Maybe someday?
         for (n in startPixel..endPixel) {
@@ -104,10 +108,9 @@ class Neopixels: Subsystem {
 
         val halfOfStrand: Int
         if (strandLength % 2 == 0) {
-            halfOfStrand = (strandLength/2).toInt()
-        }
-        else {
-            halfOfStrand =  (strandLength/2 - 0.5).toInt()
+            halfOfStrand = (strandLength / 2).toInt()
+        } else {
+            halfOfStrand = (strandLength / 2 - 0.5).toInt()
         }
 
         for (n in 1..halfOfStrand) {
@@ -136,7 +139,7 @@ class Neopixels: Subsystem {
 
     data class positionAndRGBWColor(val position: List<Int>, val targetColor: PixelState)
 
-    fun updateMondrianStatusBar(){
+    fun updateMondrianStatusBar() {
         //black out status bar area
 
         //can't change color. --
@@ -170,23 +173,18 @@ class Neopixels: Subsystem {
 
     //take in targetState and previousTargetState, iterate 1-by-1, and only change a light if it needs to be changed.
     //output the final target state.
-    fun writeTargetStateToLights(targetState:  List<PixelState>, pastTargetState:  List<PixelState>, pixelStrandController: AdafruitNeopixelSeesaw): List<PixelState>{
+
+    fun writeTargetStateToLights(targetState: List<PixelState>, pastTargetState: List<PixelState>, pixelStrandController: AdafruitNeopixelSeesaw): List<PixelState> {
 
         var pixelsController = pixelStrandController
 
         targetState.mapIndexed { index, pixelStatus ->
-            val pastPixelStatus = pastTargetState[index]
+            val pastPixelStatus = pastTargetState.getOrNull(index)
 
             if (pixelStatus != pastPixelStatus) {
-                val targetRed = pixelStatus.red.toInt().toByte()
-                val targetGreen = pixelStatus.blue.toInt().toByte()
-                val targetBlue = pixelStatus.white.toInt().toByte()
-                val targetWhite = pixelStatus.green.toInt().toByte()
-//                println("targetstate: $targetState, \n past target state $pastTargetState")
-                println("pixelStatus: $pixelStatus, \n past pixel status $pastPixelStatus")
-                pixelsController!!.setColorRGBW(debugWhite.red.toInt().toByte(), debugWhite.blue.toInt().toByte(), debugWhite.white.toInt().toByte(), debugWhite.green.toInt().toByte(), index.toShort()) //debugging
-                sleep(128) //250 is also quite good.
-                pixelsController!!.setColorRGBW(targetRed, targetGreen, targetBlue, targetWhite, index.toShort())
+                val start = System.currentTimeMillis()
+                writePixel(pixelStatus, pixelsController, index)
+                lastPixelWriteDuration = System.currentTimeMillis() - start
             } else {
                 false
             }
@@ -238,58 +236,112 @@ class Neopixels: Subsystem {
 
     }
 
+    fun writePixel(pixelStatus: PixelState, pixelsController: AdafruitNeopixelSeesaw, index: Int) {
+        val targetRed = pixelStatus.red.toInt().toByte()
+        val targetGreen = pixelStatus.blue.toInt().toByte()
+        val targetBlue = pixelStatus.white.toInt().toByte()
+        val targetWhite = pixelStatus.green.toInt().toByte()
+        //                println("targetstate: $targetState, \n past target state $pastTargetState")
+        //                println("pixelStatus: $pixelStatus, \n past pixel status $pastPixelStatus")
+        //                pixelsController!!.setColorRGBW(debugWhite.red.toInt().toByte(), debugWhite.blue.toInt().toByte(), debugWhite.white.toInt().toByte(), debugWhite.green.toInt().toByte(), index.toShort()) //debugging
+        //                sleep(128) //250 is also quite good.
+        pixelsController!!.setColorRGBW(targetRed, targetGreen, targetBlue, targetWhite, index.toShort())
+    }
 
-}
-@TeleOp
-class NeopixelPlayground : LinearOpMode() {
-//    var neo: AdafruitNeopixelSeesaw? = null
-    val neopixelSystem = Neopixels()
-    var previousTargetState = neopixelSystem.makeEmptyLightState()
-    lateinit var neo: AdafruitNeopixelSeesaw
+    fun writeQuickly(desiredState: List<PixelState>, currentState: List<PixelState>, pixelStrandController: AdafruitNeopixelSeesaw):List<PixelState> {
+
+        val updatedState = desiredState.toMutableList()
+
+        var haveWrittenOnce = false
+        desiredState.forEachIndexed { index, desiredPixelState ->
+            val currentPixelState = currentState.getOrNull(index)
+            if (currentPixelState != desiredPixelState && !haveWrittenOnce) {
+                writePixel(desiredPixelState, pixelStrandController, index)
+                updatedState[index] = desiredPixelState
+                haveWrittenOnce = true
+            }else{
+                updatedState[index] = currentPixelState ?: NeoPixelColors.Off.pixelState
+            }
+        }
+
+        return updatedState
+//        var pixelsController = pixelStrandController
+//
+//        var index = 0
+//
+//        fun makeChanges() {
+//            for (pixelStatus in desiredState) {
+//                val pastPixelStatus = currentState.getOrNull(index)
+//
+//                if (pixelStatus != pastPixelStatus) {
+//                    val start = System.currentTimeMillis()
+//
+//
+//                    writePixel(pixelStatus, pixelsController, index)
+//                    lastPixelWriteDuration = System.currentTimeMillis() - start
+//                    return
+//                }
+//            }
+//        }
+
+    }
+
+    @TeleOp
+    class NeopixelPlayground : LinearOpMode() {
+        //    var neo: AdafruitNeopixelSeesaw? = null
+        val neopixelSystem = Neopixels()
+        var previousTargetState = neopixelSystem.makeEmptyLightState()
+        lateinit var neo: AdafruitNeopixelSeesaw
 
 
-    @Throws(InterruptedException::class)
-    override fun runOpMode() {
-        initialize_opmode()
+        @Throws(InterruptedException::class)
+        override fun runOpMode() {
+            initialize_opmode()
 
 
 
-        waitForStart()
-        if (opModeIsActive()) {
-            var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
-            neopixelSystem.initialize(neo)
-            var loopNumber = 0
-            var previousLoopStartTimeMillis = 0L
-            while (opModeIsActive() && !isStopRequested) {
-                val loopStartTimeMillis = System.currentTimeMillis()
+            val red = Neopixels.PixelState(255.0, 0.0, 0.0, 0.0)
+            val green = Neopixels.PixelState(0.0, 0.0, 10.0, 255.0)//not high contrast
+            val blue = Neopixels.PixelState(0.0, 255.0, 0.0, 0.0)
+            val white = Neopixels.PixelState(0.0, 0.0, 255.0, 0.0)
+            val purple = Neopixels.PixelState(255.0, 255.0, 0.0, 0.0)
+            val yellow = Neopixels.PixelState(255.0, 0.0, 0.0, 165.0)
+            val black = Neopixels.NeoPixelColors.Off.pixelState
 
+            waitForStart()
+            if (opModeIsActive()) {
+                var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
+                neopixelSystem.initialize(neo)
+                while (opModeIsActive() && !isStopRequested) {
 
-                val red = Neopixels.PixelState(255.0, 0.0, 0.0, 0.0)
-                val green = Neopixels.PixelState(0.0, 0.0, 10.0, 255.0)//not high contrast
-                val blue = Neopixels.PixelState(0.0, 255.0, 0.0, 0.0)
-                val white = Neopixels.PixelState(0.0, 0.0, 255.0, 0.0)
-                val purple = Neopixels.PixelState(255.0, 255.0, 0.0, 0.0)
-                val yellow = Neopixels.PixelState(255.0, 0.0, 0.0, 165.0)
-                val black = Neopixels.NeoPixelColors.Off.pixelState
+//                    var targetState = neopixelSystem.showOneByOne(previousTargetState, purple, 0, 60)
 
+//                    previousTargetState = neopixelSystem.writeTargetStateToLights(emitN(60, white), previousTargetState, neo)
+                    sleep(1000)
+//
+//                    targetState = neopixelSystem.showOneByOne(targetState, white, 0, 15)
+//                    targetState = neopixelSystem.showOneByOne(targetState, purple, 16, 30)
+//                    targetState = neopixelSystem.showOneByOne(targetState, yellow, 31, 46)
+//                    targetState = neopixelSystem.showOneByOne(targetState, green, 47, 60)
+                    fun fiftyFifty(a:PixelState, b:PixelState) = emitN(30, a) + emitN(30, b)
+                    fun randomColor() = PixelState(
+                            red = Random.nextDouble(0.0, 255.0),
+                            blue = Random.nextDouble(0.0, 255.0),
+                            green = Random.nextDouble(0.0, 255.0),
+                            white = Random.nextDouble(0.0, 255.0),
+                    )
+                    val targetState =  fiftyFifty(randomColor(), randomColor())//(0 .. 60).map{randomColor()}
+                    var loopNumber = 0
+                    while(targetState != previousTargetState){
+                        val startTimeMillis = System.currentTimeMillis()
+                        previousTargetState = neopixelSystem.writeQuickly(targetState, previousTargetState, neo)
+                        val durationMillis = System.currentTimeMillis() - startTimeMillis
 
-                var targetState = neopixelSystem.showOneByOne(previousTargetState, purple, 0, 60)
+                        loopNumber++
+                        telemetry.clearAll()
+                        telemetry.addLine("Last pixel ${neopixelSystem.lastPixelWriteDuration} millis, Loop numer $loopNumber, time between start time of last loop and start time of this loop (milliseconds): $durationMillis")
 
-                previousTargetState = neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
-
-                sleep(1000)
-
-                targetState = neopixelSystem.showOneByOne(targetState, white, 0, 15)
-                targetState = neopixelSystem.showOneByOne(targetState, purple, 16, 30)
-                targetState = neopixelSystem.showOneByOne(targetState, yellow, 31, 46)
-                targetState = neopixelSystem.showOneByOne(targetState, green, 47, 60)
-
-                previousTargetState = neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
-
-                loopNumber++
-                val timeBetweenLoopStartTimesMillis = loopStartTimeMillis - previousLoopStartTimeMillis
-                telemetry.addLine("Loop numer $loopNumber, time between start time of last loop and start time of this loop (milliseconds): $timeBetweenLoopStartTimesMillis")
-
+                    }
 //                val redDouble = 0.0
 //                val greenDouble = 255.0
 //                val blueDouble = 0.0
@@ -345,22 +397,21 @@ class NeopixelPlayground : LinearOpMode() {
 //                telemetry.update()
 
 
-                previousLoopStartTimeMillis = loopStartTimeMillis
-                telemetry.update()
+                    telemetry.update()
+                }
             }
         }
-    }
 
-    fun initialize_opmode() {
-        var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
-        neopixelSystem.initialize(neo)
+        fun initialize_opmode() {
+            var neo = hardwareMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
+            neopixelSystem.initialize(neo)
 
-        val redZERODouble = 0.0
-        val greenZERODouble = 0.0
-        val blueZERODouble = 0.0
-        val whiteZERODouble = 0.0
+            val redZERODouble = 0.0
+            val greenZERODouble = 0.0
+            val blueZERODouble = 0.0
+            val whiteZERODouble = 0.0
 
-        ///IS THAT THE BYTE OF '87??
+            ///IS THAT THE BYTE OF '87??
 //        val redZEROInt = redZERODouble.toInt()
 //        val greenZEROInt = greenZERODouble.toInt()
 //        val blueZEROInt = blueZERODouble.toInt()
@@ -370,48 +421,45 @@ class NeopixelPlayground : LinearOpMode() {
 //        val blueZEROByte = blueZEROInt.toByte()
 //        val whiteZEROByte = whiteZEROInt.toByte()
 
-        //test all colors
+            //test all colors
 
 //
 //        }
 
 
-
 //        enum class PixelColors
-
 
 
 //        val alpha = neopixelSystem.colorInNeopixel(red) //should be red
 //        val beta = neopixelSystem.colorInNeopixel(blue)  //should be green
 //        val gamma = neopixelSystem.colorInNeopixel(white)  //should be blue
 //        val delta = neopixelSystem.colorInNeopixel(green)  //should be white
-        println("green = ")
+            println("green = ")
 
 //         previousTargetState = neopixelSystem.showOneByOne(previousTargetState, orange, 0, 60)
-         val white = Neopixels.NeoPixelColors.White.pixelState
-         val blue = Neopixels.NeoPixelColors.Blue.pixelState
+            val white = Neopixels.NeoPixelColors.White.pixelState
+            val blue = Neopixels.NeoPixelColors.Blue.pixelState
 
 
-         fun emitN(n:Int, color:Neopixels.PixelState):List<Neopixels.PixelState> = (0 .. n).map{color}
 
-         val targetState = (
-                 emitN(2, white) +
-                 emitN(5, Neopixels.PixelState(255.0, 205.0, 0.0, 0.0)) +
-                 emitN(2, white) +
-                 emitN(5, Neopixels.PixelState(255.0, 255.0, 0.0, 0.0)) +
-                 emitN(2, white) +
-                 emitN(5, Neopixels.PixelState(205.0, 255.0, 0.0, 0.0)) +
-                 emitN(2, white) +
-                 emitN(5, Neopixels.PixelState(190.0, 255.0, 0.0, 0.0)) +
-                 emitN(2, white) +
-                 emitN(5, Neopixels.PixelState(170.0, 255.0, 0.0, 0.0)) +
-                 emitN(2, white) +
-                 emitN(5, Neopixels.PixelState(150.0, 255.0, 0.0, 0.0)) +
-                 emitN(2, white) +
-                 emitN(5, Neopixels.PixelState(100.0, 255.0, 0.0, 0.0)) +
-                 emitN(2, white) +
-                 emitN(2, blue)
-         )
+            val targetState = (
+                    emitN(2, white) +
+                            emitN(5, Neopixels.PixelState(255.0, 205.0, 0.0, 0.0)) +
+                            emitN(2, white) +
+                            emitN(5, Neopixels.PixelState(255.0, 255.0, 0.0, 0.0)) +
+                            emitN(2, white) +
+                            emitN(5, Neopixels.PixelState(205.0, 255.0, 0.0, 0.0)) +
+                            emitN(2, white) +
+                            emitN(5, Neopixels.PixelState(190.0, 255.0, 0.0, 0.0)) +
+                            emitN(2, white) +
+                            emitN(5, Neopixels.PixelState(170.0, 255.0, 0.0, 0.0)) +
+                            emitN(2, white) +
+                            emitN(5, Neopixels.PixelState(150.0, 255.0, 0.0, 0.0)) +
+                            emitN(2, white) +
+                            emitN(5, Neopixels.PixelState(100.0, 255.0, 0.0, 0.0)) +
+                            emitN(2, white) +
+                            emitN(2, blue)
+                    )
 //        var targetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
 //        targetState = neopixelSystem.showOneByOne(targetState, purple, 16, 30)
 //        targetState = neopixelSystem.showOneByOne(targetState, yellow, 31, 46)
@@ -420,9 +468,10 @@ class NeopixelPlayground : LinearOpMode() {
 //        previousTargetState = neopixelSystem.showOneByOne(previousTargetState, purple, 51, 60)
 
 
-        neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
+//            neopixelSystem.writeTargetStateToLights(targetState, previousTargetState, neo)
+            neopixelSystem.writeQuickly(targetState, previousTargetState, neo)
 //        neopixelSystem.showOneByOne(state)
-        //think I wrote an equivalent function... init()
+            //think I wrote an equivalent function... init()
 //        neo!!.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_WRGB)
 //        neo!!.setBufferLength(60.toShort())
 //        for (i in 0..100) {
@@ -430,27 +479,28 @@ class NeopixelPlayground : LinearOpMode() {
 //        }
 //        neo!!.init_neopixels()
 
+        }
     }
 }
 
 
 
-fun main() {
-    /** Nevermind, it's pass by value */
-    var A: List<List<Int>> = listOf(listOf(0))
-    println("A is: $A")
-
-    var B: List<List<Int>> = listOf(listOf(420))
-    println("B is: $B")
-
-    println("B is still : $B") //it's 420
-    B = A
-    println("B is now: $B") //it's 0
-
-    A = listOf(listOf(0), listOf(1), listOf(69))
-    println("A is now: $A") //it's 0, 1, 69
-    println("B is still: $B") //it's 0
-
-    val aIsEqualToB = A==B
-    println("aIsEqualToB: $aIsEqualToB")
-}
+//fun main() {
+//    /** Nevermind, it's pass by value */
+//    var A: List<List<Int>> = listOf(listOf(0))
+//    println("A is: $A")
+//
+//    var B: List<List<Int>> = listOf(listOf(420))
+//    println("B is: $B")
+//
+//    println("B is still : $B") //it's 420
+//    B = A
+//    println("B is now: $B") //it's 0
+//
+//    A = listOf(listOf(0), listOf(1), listOf(69))
+//    println("A is now: $A") //it's 0, 1, 69
+//    println("B is still: $B") //it's 0
+//
+//    val aIsEqualToB = A==B
+//    println("aIsEqualToB: $aIsEqualToB")
+//}
