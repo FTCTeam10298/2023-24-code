@@ -65,7 +65,9 @@ class ExtendoPIDTuner(private val hardware: RobotTwoHardware, telemetry: Telemet
 
     val routine = listOf(
             Extendo.ExtendoPositions.Min,
-            Extendo.ExtendoPositions.PurpleSidePosition,
+            Extendo.ExtendoPositions.PurpleFarSidePosition,
+            Extendo.ExtendoPositions.Min,
+            Extendo.ExtendoPositions.PurpleCloseSidePosition,
             Extendo.ExtendoPositions.Min,
             Extendo.ExtendoPositions.PurpleCenterPosition,
     )

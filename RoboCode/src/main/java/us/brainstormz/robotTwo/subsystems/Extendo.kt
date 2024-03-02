@@ -27,7 +27,8 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         AllTheWayInTarget(-10),
         Min(0),
         Manual(0),
-        PurpleSidePosition(700),
+        PurpleFarSidePosition(700),
+        PurpleCloseSidePosition(800),
         PurpleCenterPosition(2000),
         Max(2000),
     }

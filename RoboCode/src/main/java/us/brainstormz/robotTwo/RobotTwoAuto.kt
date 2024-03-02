@@ -164,17 +164,24 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
             PropPosition.Left -> +1
             else -> -1
         }
-        val sideRotation: Double = startPosition.redStartPosition.r + (40.0 * rotationPolarity)
 
         val depositingPosition = when (propPosition) {
-            RelativePropPosition.NextToTruss    -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 18, r= sideRotation)
-            RelativePropPosition.Center         -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 5.0)
-            RelativePropPosition.AwayFromTruss  -> startPosition.redStartPosition.copy(x= startPosition.redStartPosition.x + 13, r= sideRotation)
+            RelativePropPosition.NextToTruss    -> startPosition.redStartPosition.copy(
+                    x= startPosition.redStartPosition.x + 18,
+                    r= startPosition.redStartPosition.r + (40.0*rotationPolarity))
+
+            RelativePropPosition.Center         -> startPosition.redStartPosition.copy(
+                    x= startPosition.redStartPosition.x + 5.0)
+
+            RelativePropPosition.AwayFromTruss  -> startPosition.redStartPosition.copy(
+                    x= startPosition.redStartPosition.x + 11,
+                    r= startPosition.redStartPosition.r + (35.0*rotationPolarity))
         }
 
         val extendoPosition = when (propPosition) {
+            RelativePropPosition.NextToTruss -> ExtendoPositions.PurpleFarSidePosition
             RelativePropPosition.Center -> ExtendoPositions.PurpleCenterPosition
-            else -> ExtendoPositions.PurpleSidePosition
+            RelativePropPosition.AwayFromTruss -> ExtendoPositions.PurpleCloseSidePosition
         }
 
         val depositingMoveAroundTrussWaypoint = depositingPosition.copy(r= startPosition.redStartPosition.r)
@@ -695,7 +702,6 @@ class RobotTwoAuto(private val telemetry: Telemetry) {
 
         hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
     }
-
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     private val loopTimeMeasurer = DeltaTimeMeasurer()
