@@ -217,7 +217,17 @@ class NeopixelPlayground : LinearOpMode() {
                 val white = ColorInRGBWInUnknownOrder(0.0, 0.0, 255.0, 0.0)
                 val purple = ColorInRGBWInUnknownOrder(255.0, 255.0, 0.0, 0.0 )
                 val yellow = ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 165.0)
+                val black = Neopixels.NeoPixelColors.Black.ColorInRGBWInUnknownOrder
 
+
+                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, black, 0, 60)
+
+                neopixelSystem.writeTargetStateToLights(previousTargetState, neo)
+
+                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, white, 0, 15)
+                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, purple, 16, 30)
+                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, yellow, 31, 46)
+                previousTargetState = neopixelSystem.showOneByOne(previousTargetState, green, 47, 60)
 
                 neopixelSystem.writeTargetStateToLights(previousTargetState, neo)
 
