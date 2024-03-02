@@ -34,7 +34,8 @@ class Neopixels: Subsystem {
         Blue(ColorInRGBWInUnknownOrder(0.0, 255.0, 0.0, 0.0)),
         White(ColorInRGBWInUnknownOrder(0.0, 0.0, 255.0, 0.0)),
         Purple(ColorInRGBWInUnknownOrder(255.0, 255.0, 0.0, 0.0)),
-        Yellow(ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 165.0))
+        Yellow(ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 165.0)),
+        Black(ColorInRGBWInUnknownOrder(0.0, 0.0, 0.0, 0.0))
     }
 
     val strandLength: Int = 60
@@ -217,6 +218,7 @@ class NeopixelPlayground : LinearOpMode() {
                 val purple = ColorInRGBWInUnknownOrder(255.0, 255.0, 0.0, 0.0 )
                 val yellow = ColorInRGBWInUnknownOrder(255.0, 0.0, 0.0, 165.0)
 
+
                 neopixelSystem.writeTargetStateToLights(previousTargetState, neo)
 
                 loopNumber++
@@ -279,6 +281,7 @@ class NeopixelPlayground : LinearOpMode() {
 
 
                 previousLoopStartTimeMillis = loopStartTimeMillis
+                telemetry.update()
             }
         }
     }
