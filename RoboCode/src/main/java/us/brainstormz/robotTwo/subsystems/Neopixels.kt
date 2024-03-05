@@ -45,12 +45,13 @@ class Neopixels: Subsystem {
 
     data class PixelState(val red: Double, val blue: Double, val white: Double, val green: Double)
     data class StripState(val wroteForward: Boolean = true, val pixels: List<PixelState>) {
-        override fun toString(): String = """
-            StripState(
-                wroteForward = $wroteForward,
-                pixels = $pixels
-            )
-        """.trimMargin()
+//        override fun toString(): String = """
+//            StripState(
+//                wroteForward = $wroteForward,
+//                pixels = $pixels
+//            )
+//        """.trimMargin()
+        override fun toString(): String = ""
     }
 
     data class HalfAndHalfTarget(val left: NeoPixelColors, val right: NeoPixelColors, val midPointIndex: Int = 30) {

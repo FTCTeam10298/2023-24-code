@@ -2,6 +2,7 @@ package us.brainstormz.hardwareClasses
 
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.util.Range
+import us.brainstormz.utils.printToLogcat
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -125,7 +126,7 @@ open class MecanumDriveTrain(private val hardware: MecanumHardware) {
         br = Range.clip(br, -1.0, 1.0)
 
 //        telemetry.addLine("Powers: $fl, $bl, $fr, $br" )
-        println("Powers: $fl, $bl, $fr, $br")
+        printToLogcat("Powers: $fl, $bl, $fr, $br")
 
         // Set powers
         driveSetPower(fl, fr, bl, br)
