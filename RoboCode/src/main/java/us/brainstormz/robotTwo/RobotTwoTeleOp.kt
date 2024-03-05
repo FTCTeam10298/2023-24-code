@@ -23,7 +23,7 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 import us.brainstormz.utils.DataClassHelper
-import kotlin.math.abs
+import us.brainstormz.utils.Utils.sqrKeepSign
 import kotlin.math.absoluteValue
 
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
@@ -52,6 +52,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     enum class Gamepad1BumperMode {
         Collector,
         Claws
+    }
+    enum class Gamepad2RightStickMode {
+        Drivetrain,
+        Depo
     }
     enum class DepoInput {
         SetLine1,
@@ -118,9 +122,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     }
     data class DriverInput (
             val bumperMode: Gamepad1BumperMode,
+            val gamepad2StickMode: Gamepad2RightStickMode,
             val lightInput: LightInput,
             val depo: DepoInput,
             val depoScoringHeightAdjust: Double,
+            val armOverridePower: Double,
             val wrist: WristInput,
             val collector: CollectorInput,
             val extendo: ExtendoInput,
@@ -174,48 +180,80 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val dpadInput: DepoInput = depoGamepad2Input ?: depoGamepad1Input
 
-        val liftControlMode = when (previousTargetState.targetRobot.depoTarget.lift.targetPosition) {
-            Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
-            Lift.LiftPositions.SetLine1 -> LiftControlMode.Adjust
-            Lift.LiftPositions.SetLine2 -> LiftControlMode.Adjust
-            Lift.LiftPositions.SetLine3 -> LiftControlMode.Adjust
-            else -> {
-                val isEnumTarget = Lift.LiftPositions.entries.contains(previousTargetState.targetRobot.depoTarget.lift.targetPosition)
-                if (!isEnumTarget) {
-                    LiftControlMode.Adjust
-                } else {
-                    LiftControlMode.Override
-                }
+
+
+        val gamepad2RightStickMode: Gamepad2RightStickMode = if (gamepad2.touchpad && !previousGamepad2.touchpad) {
+            when (previousTargetState.driverInput.gamepad2StickMode) {
+                Gamepad2RightStickMode.Drivetrain -> Gamepad2RightStickMode.Depo
+                Gamepad2RightStickMode.Depo -> Gamepad2RightStickMode.Drivetrain
             }
+        } else {
+            previousTargetState.driverInput.gamepad2StickMode
         }
-        telemetry.addLine("liftControlMode: $liftControlMode")
 
         val liftStickInput = -gamepad2.right_stick_y.toDouble()
-        val isLiftControlActive = liftStickInput.absoluteValue > 0.2
-
-        val isLiftManualOverrideActive = isLiftControlActive && liftControlMode == LiftControlMode.Override
-        val dpadAdjustIsActive = isLiftControlActive && liftControlMode == LiftControlMode.Adjust
-
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
-        val armManualOverrideActivationThreshold = when {
-            isLiftManualOverrideActive -> {
-                0.2
+
+        val depoInput = if (gamepad2RightStickMode == Gamepad2RightStickMode.Depo) {
+            telemetry.addLine("gamepad2RightStickMode: $gamepad2RightStickMode")
+
+            val isLiftControlActive = liftStickInput.absoluteValue > 0.2
+
+            val liftControlMode = when (previousTargetState.targetRobot.depoTarget.lift.targetPosition) {
+                Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
+                Lift.LiftPositions.SetLine1 -> LiftControlMode.Adjust
+                Lift.LiftPositions.SetLine2 -> LiftControlMode.Adjust
+                Lift.LiftPositions.SetLine3 -> LiftControlMode.Adjust
+                else -> {
+                    val isEnumTarget = Lift.LiftPositions.entries.contains(previousTargetState.targetRobot.depoTarget.lift.targetPosition)
+                    if (!isEnumTarget) {
+                        LiftControlMode.Adjust
+                    } else {
+                        LiftControlMode.Override
+                    }
+                }
             }
-            dpadAdjustIsActive -> {
-                0.4
+            telemetry.addLine("liftControlMode: $liftControlMode")
+            val isLiftManualOverrideActive = isLiftControlActive && liftControlMode == LiftControlMode.Override
+            val dpadAdjustIsActive = isLiftControlActive && liftControlMode == LiftControlMode.Adjust
+
+            val armManualOverrideActivationThreshold = when {
+                isLiftManualOverrideActive -> {
+                    0.2
+                }
+                dpadAdjustIsActive -> {
+                    0.4
+                }
+                else -> {
+                    0.2
+                }
             }
-            else -> {
-                0.2
+            val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= armManualOverrideActivationThreshold
+
+            val driverInputIsManual = isLiftManualOverrideActive || isArmManualOverrideActive
+            val depoWasManualLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual
+
+
+            if ((driverInputIsManual || (depoWasManualLastLoop && dpadInput == DepoInput.NoInput))) {
+                DepoInput.Manual
+            } else if (dpadAdjustIsActive || (previousTargetState.driverInput.depo == DepoInput.ScoringHeightAdjust && dpadInput == DepoInput.NoInput)) {
+                DepoInput.ScoringHeightAdjust
+            } else {
+                dpadInput
+            }
+        } else {
+            if (dpadInput == DepoInput.Manual) {
+                DepoInput.NoInput
+            } else {
+                dpadInput
             }
         }
-        val isArmManualOverrideActive = armOverrideStickValue.absoluteValue >= armManualOverrideActivationThreshold
 
-        val depoInput = if (isLiftManualOverrideActive || isArmManualOverrideActive) {
-            DepoInput.Manual
-        } else if (dpadAdjustIsActive || (previousTargetState.driverInput.depo == DepoInput.ScoringHeightAdjust && dpadInput == DepoInput.NoInput)) {
-            DepoInput.ScoringHeightAdjust
+
+        val armOverridePower = if (depoInput == DepoInput.Manual) {
+            armOverrideStickValue
         } else {
-            dpadInput
+            0.0
         }
 
         val liftVariableInput = if (depoInput == DepoInput.ScoringHeightAdjust) {
@@ -245,7 +283,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             //Power to set
             liftStickInput
         }
-
 
         /**Bumper Mode*/
         val gamepad1DpadIsActive = depoGamepad1Input != DepoInput.NoInput
@@ -398,35 +435,37 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Drive*/
-        val yInput = -gamepad1.left_stick_y.toDouble()
-        val xInput = gamepad1.left_stick_x.toDouble()
-        val rInput = gamepad1.right_stick_x.toDouble()
-
-        // Strafe without turing for depositing
-        val xSlowDowMultiplier = 1.0
-        val driver2XInput = if (xInput == 0.0) {
-            (gamepad2.left_trigger - gamepad2.right_trigger) * xSlowDowMultiplier
-        } else {
-            0.0
-        }
-        val ySlowDowMultiplier: Double = (2.0)/(3.0)
-        val driver2YInput = if (yInput in -0.1..0.1) {
-            gamepad2.left_stick_y.toDouble() * ySlowDowMultiplier
-        } else {
-            0.0
-        }
-
         val isAtTheEndOfExtendo = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= Extendo.ExtendoPositions.Max.ticks || actualWorld.actualRobot.collectorSystemState.extendo.currentAmps > 6.0
-        val extendoCompensationPower = if (isAtTheEndOfExtendo && yInput == 0.0) {
+        val extendoCompensationPower = if (isAtTheEndOfExtendo && gamepad1.left_stick_y == 0f) {
             gamepad1.right_trigger.toDouble()
         } else {
             0.0
         }
 
-        val y = yInput + extendoCompensationPower + driver2YInput
-        val x = xInput + driver2XInput
-        val r = -rInput * abs(rInput)
-        val driveVelocity = Drivetrain.DrivetrainPower(x= x, y= y, r= r)
+        val drive1Input = Drivetrain.DrivetrainPower(
+                y = -gamepad1.left_stick_y.toDouble() + extendoCompensationPower,
+                x = gamepad1.left_stick_x.toDouble(),
+                r = gamepad1.right_stick_x.toDouble()
+        )
+
+
+        val drive2Input = Drivetrain.DrivetrainPower(
+                y = gamepad2.left_stick_y.toDouble(),
+                x = -gamepad2.left_stick_x.toDouble(),
+                r = when (gamepad2RightStickMode) {
+                    Gamepad2RightStickMode.Drivetrain -> {
+                        gamepad2.right_stick_x.toDouble()
+                    }
+                    Gamepad2RightStickMode.Depo -> {
+                        0.0
+                    }
+                }
+        )
+        //Driver 2 is same as driver 1 except other side of bot is front
+
+        val driveVelocityWithoutSqrt = drive1Input + drive2Input
+
+        val driveVelocity = driveVelocityWithoutSqrt.copy(r = sqrKeepSign(driveVelocityWithoutSqrt.r))
 
         /**Lights*/
         val previousIsAnyColorButtonPressed = previousGamepad2.a || previousGamepad2.b || previousGamepad2.x || previousGamepad2.y
@@ -463,6 +502,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 driveVelocity = driveVelocity,
                 depo = depoInput,
                 depoScoringHeightAdjust = liftVariableInput,
+                armOverridePower = armOverridePower,
                 wrist = WristInput(leftClaw, rightClaw),
                 collector = inputCollectorStateSystem,
                 rollers = rollers,
@@ -472,6 +512,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 hang = hang,
                 launcher = launcher,
                 bumperMode = gamepadOneBumperMode,
+                gamepad2StickMode = gamepad2RightStickMode,
                 lightInput = lightColor
         )
     }
@@ -728,13 +769,17 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
 
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
-        val depoWasManualLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual
-        val noAutomationTakingOver = !doingHandoff
-        val depoTarget: DepoTarget = if ( (driverInputIsManual || (depoWasManualLastLoop && driverInput.depo == DepoInput.NoInput)) && noAutomationTakingOver) {
-            val armPosition = Arm.Positions.Manual
+//        val depoWasManualLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual
+//        val noAutomationTakingOver = !doingHandoff
+        val depoTarget: DepoTarget = if (driverInputIsManual) { //if ( (driverInputIsManual || (depoWasManualLastLoop && driverInput.depo == DepoInput.NoInput)) && noAutomationTakingOver) {
+//            val armPosition = Arm.Positions.Manual
             DepoTarget(
                     lift = Lift.TargetLift(power = driverInput.depoScoringHeightAdjust, movementMode = MovementMode.Power, targetPosition = previousTargetState.targetRobot.depoTarget.lift.targetPosition),
-                    armPosition = armPosition,
+                    armPosition = Arm.ArmTarget(
+                            power = driverInput.armOverridePower,
+                            movementMode = MovementMode.Power,
+                            targetPosition = previousTargetState.targetRobot.depoTarget.armPosition.targetPosition
+                    ),
                     wristPosition = driverInputWrist,
                     targetType = DepoTargetType.Manual
             )
@@ -901,6 +946,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 driveVelocity = Drivetrain.DrivetrainPower(),
                 depo = DepoInput.NoInput,
                 depoScoringHeightAdjust = 0.0,
+                armOverridePower = 0.0,
                 wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
                 collector = CollectorInput.NoInput,
                 rollers = RollerInput.NoInput,
@@ -910,12 +956,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 hang = HangInput.NoInput,
                 launcher = LauncherInput.NoInput,
                 bumperMode = Gamepad1BumperMode.Collector,
+                gamepad2StickMode = Gamepad2RightStickMode.Drivetrain,
                 lightInput = LightInput.NoInput
         )
 
         val initDepoTarget = DepoTarget(
                 lift = Lift.TargetLift(Lift.LiftPositions.Down),
-                armPosition = Arm.Positions.In,
+                armPosition = Arm.ArmTarget(Arm.Positions.In, MovementMode.Power, 0.0),
                 wristPosition = WristTargets(ClawTarget.Gripping),
                 targetType = DepoTargetType.GoingHome
         )
@@ -1015,8 +1062,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             lift= lift,
                             extendo= extendo,
                             intake= intake,
-                            transfer= transfer,
-                            armOverridePower = gamepad2.right_stick_x.toDouble()
+                            transfer= transfer
                     )
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
                         gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)

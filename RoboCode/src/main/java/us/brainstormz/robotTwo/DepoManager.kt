@@ -80,7 +80,7 @@ class DepoManager(
 
         return DepoTarget(
                 lift = Lift.TargetLift(liftTarget, movementMode = MovementMode.Position),
-                armPosition = armTarget,
+                armPosition = Arm.ArmTarget(armTarget, movementMode = MovementMode.Position, 0.0),
                 wristPosition = wristTarget,
                 targetType = depoTargetType
         )
@@ -129,14 +129,14 @@ class DepoManager(
         val armTarget: Arm.Positions = if (bothClawsAreAtTarget) {
             when (liftIsAtFinalRestingPlace) {
                 true -> {
-                    finalDepoTarget.armPosition
+                    finalDepoTarget.armPosition.targetPosition
                 }
                 false -> {
                     val liftIsAtOrAboveClear = actualDepo.lift.currentPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
                     val depoTargetIsOut = finalDepoTarget.targetType == DepoTargetType.GoingOut
                     val armIsOut = actualDepo.armAngleDegrees < Arm.Positions.InsideTheBatteryBox.angleDegrees
                     if (depoTargetIsOut && (liftIsAtOrAboveClear || armIsOut)) {
-                        finalDepoTarget.armPosition
+                        finalDepoTarget.armPosition.targetPosition
                     } else {
                         telemetry.addLine("arm is clearing lift because depo is either going in and aren't there or are going out and aren't past the wiring box")
                         Arm.Positions.ClearLiftMovement
@@ -158,13 +158,13 @@ class DepoManager(
                 DepoTargetType.GoingOut -> {
                     val liftIsAboveClear = actualDepo.lift.currentPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
                     if (clawsArentMoving && liftIsAboveClear) {
-                        finalDepoTarget.armPosition
+                        finalDepoTarget.armPosition.targetPosition
                     } else {
-                        previousTargetDepo.armPosition
+                        previousTargetDepo.armPosition.targetPosition
                     }
                 }
                 else -> {
-                    previousTargetDepo.armPosition
+                    previousTargetDepo.armPosition.targetPosition
                 }
             }
         }
@@ -240,7 +240,7 @@ class DepoManager(
 
         return DepoTarget(
                 lift = Lift.TargetLift(liftTarget, movementMode = MovementMode.Position),
-                armPosition = armTarget,
+                armPosition = Arm.ArmTarget(armTarget),
                 wristPosition = wristTarget,
                 targetType = finalDepoTarget.targetType
         )
@@ -270,7 +270,7 @@ class DepoManager(
                         }
                     }
                     DepoTargetType.GoingOut -> {
-                        if (checkIfArmIsAtTarget(finalDepoTarget.armPosition, actualDepo.armAngleDegrees)) {
+                        if (checkIfArmIsAtTarget(finalDepoTarget.armPosition.targetPosition, actualDepo.armAngleDegrees)) {
                             wristInput
                         } else {
                             //When going in/out keep the claws retracted/griping so that pixels can't get dropped
@@ -311,7 +311,7 @@ class DepoManager(
 
     fun checkIfArmAndLiftAreAtTarget(target: DepoTarget, actualDepo: ActualDepo): Boolean {
         val liftIsAtTarget = lift.isLiftAtPosition(target.lift.targetPosition.ticks, actualDepo.lift.currentPositionTicks)
-        val armIsAtTarget = checkIfArmIsAtTarget(target.armPosition, actualDepo.armAngleDegrees)//arm.isArmAtAngle(target.armPosition.angleDegrees, actualDepo.armAngleDegrees)
+        val armIsAtTarget = checkIfArmIsAtTarget(target.armPosition.targetPosition, actualDepo.armAngleDegrees)//arm.isArmAtAngle(target.armPosition.angleDegrees, actualDepo.armAngleDegrees)
         return liftIsAtTarget && armIsAtTarget
     }
 

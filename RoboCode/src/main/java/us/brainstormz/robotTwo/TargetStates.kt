@@ -5,6 +5,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Drivetrain
+import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
@@ -14,7 +15,7 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DataClassHelper
 
 data class DepoTarget(
-        val armPosition: Arm.Positions,
+        val armPosition: Arm.ArmTarget,
         val lift: Lift.TargetLift,
         val wristPosition: Wrist.WristTargets,
         val targetType: DepoManager.DepoTargetType

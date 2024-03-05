@@ -328,8 +328,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             transfer: Transfer,
             lift: Lift,
             arm: Arm,
-            wrist: Wrist,
-            armOverridePower: Double
+            wrist: Wrist
     ) {
         /**Drive*/
         drivetrain.actuateDrivetrain(
@@ -381,10 +380,18 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         lift.powerSubsystem(liftPower, this)
 
         /**Arm*/
-        val armPower: Double = if (targetState.targetRobot.depoTarget.armPosition == Arm.Positions.Manual) {
-            armOverridePower
-        } else {
-            arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
+//        val armPower: Double = if (targetState.targetRobot.depoTarget.armPosition == Arm.Positions.Manual) {
+//            targetState.targetRobot.depoTarget.armPosition.
+//        } else {
+//            arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
+//        }
+        val armPower: Double = when (targetState.targetRobot.depoTarget.armPosition.movementMode) {
+            MovementMode.Position -> {
+                arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.targetPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
+            }
+            MovementMode.Power -> {
+                targetState.targetRobot.depoTarget.armPosition.power
+            }
         }
         arm.powerSubsystem(armPower, this)
 

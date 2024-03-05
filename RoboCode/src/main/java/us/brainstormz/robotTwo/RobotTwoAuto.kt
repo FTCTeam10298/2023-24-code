@@ -23,14 +23,12 @@ import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
 import us.brainstormz.robotTwo.subsystems.Intake.CollectorPowers
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Transfer.TransferTarget
 import us.brainstormz.robotTwo.subsystems.Transfer.DirectorState
 import us.brainstormz.robotTwo.subsystems.Transfer.RollerPowers
 import us.brainstormz.robotTwo.subsystems.Wrist
-import us.brainstormz.robotTwo.subsystems.emitN
 import us.brainstormz.utils.DeltaTimeMeasurer
 import kotlin.math.absoluteValue
 
@@ -45,7 +43,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                 targetRobot = TargetRobot(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(targetRobot.positionAndRotation),
                         depoTarget = DepoTarget(
-                                armPosition = targetRobot.depoState.armPos,
+                                armPosition = Arm.ArmTarget(targetRobot.depoState.armPos, MovementMode.Position, 0.0),
                                 lift= Lift.TargetLift(
                                         targetPosition = targetRobot.depoState.liftPosition,
                                         power = 0.0,
@@ -366,7 +364,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                                 depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
                         getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            val taskIsDone = arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                            val taskIsDone = arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.targetPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
                             nextTargetFromCondition(taskIsDone, modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState))
                         },).asTargetWorld,
                 AutoTargetWorld(
@@ -810,8 +808,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                         lift= lift,
                         extendo= extendo,
                         intake= intake,
-                        transfer= transfer,
-                        armOverridePower = 0.0
+                        transfer= transfer
                 )
 
 //                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)

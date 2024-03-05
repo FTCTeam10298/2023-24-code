@@ -43,8 +43,7 @@ fun main() {
                 lift = Lift(telemetry),
                 extendo = Extendo(telemetry),
                 intake = Intake(),
-                transfer = Transfer(telemetry),
-                armOverridePower = 0.0
+                transfer = Transfer(telemetry)
         )
     }
 }

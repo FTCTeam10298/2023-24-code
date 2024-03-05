@@ -6,7 +6,15 @@ import us.brainstormz.robotTwo.AxonEncoderReader
 import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.cos
 
-class Arm: Subsystem {
+class Arm: Subsystem, DualMovementModeSubsystem {
+
+    data class ArmTarget(
+            override val targetPosition: Positions,
+            override val movementMode: DualMovementModeSubsystem.MovementMode,
+            override val power: Double): DualMovementModeSubsystem.TargetMovementSubsystem {
+                constructor(targetPosition: Positions): this(targetPosition= targetPosition, movementMode= DualMovementModeSubsystem.MovementMode.Position, power = 0.0)
+            }
+
     enum class Positions(val angleDegrees:Double) {
         TooFarIn(270.0),
         ClearLiftMovement(240.0),
@@ -19,7 +27,7 @@ class Arm: Subsystem {
         OutButUnderTwelve(50.0),
         Out(60.0),
         DroppingWithHighPrecision(65.0),
-        Manual(0.0),
+//        Manual(0.0),
     }
 
 
