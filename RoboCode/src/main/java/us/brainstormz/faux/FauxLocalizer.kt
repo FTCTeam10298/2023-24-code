@@ -2,20 +2,21 @@ package us.brainstormz.faux
 
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
+import us.brainstormz.utils.printToLogcat
 
 
 class FauxLocalizer: Localizer {
     override fun currentPositionAndRotation(): PositionAndRotation {
-        println("FauxLocalizer: currentPositionAndRotation")
+        printToLogcat("FauxLocalizer: currentPositionAndRotation")
         return PositionAndRotation()
     }
 
     override fun recalculatePositionAndRotation() {
-        println("FauxLocalizer: recalculatePositionAndRotation")
+        printToLogcat("FauxLocalizer: recalculatePositionAndRotation")
     }
 
     override fun setPositionAndRotation(newPosition: PositionAndRotation) {
-        println("FauxLocalizer: setPositionAndRotation= $newPosition")
+        printToLogcat("FauxLocalizer: setPositionAndRotation= $newPosition")
 
     }
 }

@@ -4,6 +4,7 @@ import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.AxonEncoderReader
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.utils.printToLogcat
 import kotlin.math.cos
 
 class Arm: Subsystem, DualMovementModeSubsystem {
@@ -84,12 +85,12 @@ class Arm: Subsystem, DualMovementModeSubsystem {
             false -> outHoldingConstant
         }
 
-        println("arm pid name: ${pid.name}")
-        println("arm target: ${targetDegrees}")
-        println("arm error: ${errorDegrees}")
-        println("arm pid v: ${pid.v}")
+        printToLogcat("arm pid name: ${pid.name}")
+        printToLogcat("arm target: ${targetDegrees}")
+        printToLogcat("arm error: ${errorDegrees}")
+        printToLogcat("arm pid v: ${pid.v}")
         val pidPower = pid.calcPID(target = targetDegrees, error = errorDegrees)
-        println("arm pidPower: $pidPower")
+        printToLogcat("arm pidPower: $pidPower")
         val gravityCompPower = (holdingConstant * cos(Math.toRadians(currentDegrees - holdingConstantAngleOffset)))
         val power = pidPower + gravityCompPower
 //        telemetry.addLine("Arm currentDegrees: $currentDegrees")
