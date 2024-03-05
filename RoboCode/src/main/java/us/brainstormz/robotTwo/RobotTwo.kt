@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.localizer.RRTwoWheelLocalizer
@@ -13,6 +14,59 @@ import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
+
+fun main() {
+    val startTimeMillis = System.currentTimeMillis()
+    val thread2 = Thread {
+        do {
+            println("Thread1 is going")
+            val timeSinceStart = System.currentTimeMillis() - startTimeMillis
+        } while (timeSinceStart < 600)
+    }
+    thread2.start()
+
+    do {
+        println("Thread1 is going")
+        val timeSinceStart = System.currentTimeMillis() - startTimeMillis
+    } while (timeSinceStart < 500)
+
+    thread2.join()
+}
+
+
+abstract class RobotTwoOpMode: OpMode() {
+    private val hardware = RobotTwoHardware(telemetry, this)
+    private lateinit var robot: Robot
+
+    abstract class RobotLogicThread: Thread("RobotLogicThread") {
+        abstract fun fetchTargetState(
+                previousTargetState: TargetWorld,
+                actualState: ActualWorld,
+                previousActualState: ActualWorld): TargetWorld
+        override fun run() {
+
+        }
+    }
+    abstract val logicThread: RobotLogicThread
+
+    override fun init() {
+        hardware.init(hardwareMap)
+
+        robot = Robot(telemetry, hardware)
+    }
+
+    override fun loop() {
+        robot.loop(
+                gamepad1 = gamepad1,
+                gamepad2 = gamepad2,
+                targetStateFetcher = logicThread::fetchTargetState
+        )
+    }
+
+    override fun stop() {
+
+    }
+}
 
 class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHardware) {
     val intake = Intake()
