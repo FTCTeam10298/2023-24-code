@@ -778,17 +778,19 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     }
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
+    var currentGamepad1 = Gamepad()
+
     private val loopTimeMeasurer = DeltaTimeMeasurer()
     val timeBetweenloopMeasurer = DeltaTimeMeasurer()
     val actualStateGetterMeasurer = DeltaTimeMeasurer()
     val targetStateGetterMeasurer = DeltaTimeMeasurer()
     val stateFulfillerMeasurer = DeltaTimeMeasurer()
+
     fun loop(hardware: RobotTwoHardware, gamepad1: Gamepad) {
         timeBetweenloopMeasurer.endMeasureDT()
         functionalReactiveAutoRunner.loop(
             actualStateGetter = { previousActualState ->
                 actualStateGetterMeasurer.beginMeasureDT()
-                val currentGamepad1 = Gamepad()
                 currentGamepad1.copy(gamepad1)
                 ActualWorld(
                         actualRobot = hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState),

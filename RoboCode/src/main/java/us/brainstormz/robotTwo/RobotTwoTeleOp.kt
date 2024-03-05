@@ -951,11 +951,15 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     }
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
+    var currentGamepad1 = Gamepad()
+    var currentGamepad2 = Gamepad()
+
     val loopTimeMeasurer = DeltaTimeMeasurer()
     val timeBetweenloopMeasurer = DeltaTimeMeasurer()
     val actualStateGetterMeasurer = DeltaTimeMeasurer()
     val targetStateGetterMeasurer = DeltaTimeMeasurer()
     val stateFulfillerMeasurer = DeltaTimeMeasurer()
+
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) {
 
         timeBetweenloopMeasurer.endMeasureDT()
@@ -967,9 +971,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = { previousActualState ->
                     actualStateGetterMeasurer.beginMeasureDT()
-                    val currentGamepad1 = Gamepad()
                     currentGamepad1.copy(gamepad1)
-                    val currentGamepad2 = Gamepad()
                     currentGamepad2.copy(gamepad2)
                     ActualWorld(
                             actualRobot = hardware.getActualState(drivetrain= drivetrain, depoManager = depoManager, collectorSystem = collectorSystem, previousActualWorld= previousActualState),
