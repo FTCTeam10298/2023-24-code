@@ -8,7 +8,7 @@ import kotlin.math.cos
 
 class Arm: Subsystem {
     enum class Positions(val angleDegrees:Double) {
-        TooFarIn(255.0),
+        TooFarIn(270.0),
         ClearLiftMovement(240.0),
         In(238.0),
         TransferringTarget(230.0),
