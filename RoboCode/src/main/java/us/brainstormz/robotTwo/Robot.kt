@@ -1,6 +1,5 @@
 package us.brainstormz.robotTwo
 
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.localizer.RRTwoWheelLocalizer
@@ -66,7 +65,6 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
                             extendo= extendo,
                             intake= intake,
                             transfer= transfer,
-                            extendoOverridePower = 0.0,
                             armOverridePower = 0.0
                     )
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {

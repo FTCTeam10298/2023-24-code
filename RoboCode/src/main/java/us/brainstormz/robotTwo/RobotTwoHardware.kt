@@ -329,7 +329,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             lift: Lift,
             arm: Arm,
             wrist: Wrist,
-            extendoOverridePower: Double,
             armOverridePower: Double
     ) {
         /**Drive*/
@@ -340,24 +339,22 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         )
 
         /**Extendo*/
-        val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {
-            Extendo.ExtendoPositions.Manual -> {
-                extendoOverridePower
-            }
-//            Extendo.ExtendoPositions.ResetEncoder -> {
-//                extendo.resetPosition(this)
-//                0.0
-//            }
-            Extendo.ExtendoPositions.AllTheWayInTarget -> {
-                val atZeroPosition = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= Extendo.ExtendoPositions.Min.ticks + 5
-                if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
+        val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.movementMode) {
+            MovementMode.Position -> when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {
+                Extendo.ExtendoPositions.AllTheWayInTarget -> {
+                    val atZeroPosition = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= Extendo.ExtendoPositions.Min.ticks + 5
+                    if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
+                        extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
+                    } else {
+                        -0.48
+                    }
+                }
+                else -> {
                     extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
-                } else {
-                    -0.48
                 }
             }
-            else -> {
-                extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
+            MovementMode.Power -> {
+                targetState.targetRobot.collectorTarget.extendo.power
             }
         }
         extendo.powerSubsystem(extendoPower, this)

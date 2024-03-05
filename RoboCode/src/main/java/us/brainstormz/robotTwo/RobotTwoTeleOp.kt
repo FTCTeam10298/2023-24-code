@@ -1,7 +1,6 @@
 package us.brainstormz.robotTwo
 
 import com.qualcomm.hardware.lynx.LynxModule
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -92,8 +91,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         NoInput
     }
     enum class ExtendoInput {
-        Extend,
-        Retract,
+        ExtendManual,
+        RetractManual,
+        RetractSetAmount,
         NoInput,
     }
     enum class HangInput {
@@ -124,6 +124,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val wrist: WristInput,
             val collector: CollectorInput,
             val extendo: ExtendoInput,
+            val extendoManualPower: Double,
             val hang: HangInput,
             val launcher: LauncherInput,
             val handoff: HandoffInput,
@@ -338,9 +339,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val extendoTriggerActivation = 0.1
         val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
         val leftTrigger: Boolean = gamepad1.left_trigger > extendoTriggerActivation
+
+        val gamepad2X = gamepad2.square
+
         val extendo = when {
-            rightTrigger -> ExtendoInput.Extend
-            leftTrigger -> ExtendoInput.Retract
+            rightTrigger -> ExtendoInput.ExtendManual
+            leftTrigger -> ExtendoInput.RetractManual
+            gamepad2X -> ExtendoInput.RetractSetAmount
             else -> ExtendoInput.NoInput
         }
 
@@ -462,6 +467,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 collector = inputCollectorStateSystem,
                 rollers = rollers,
                 extendo = extendo,
+                extendoManualPower = gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble(),
                 handoff = handoff,
                 hang = hang,
                 launcher = launcher,
@@ -533,7 +539,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val weWantToStartHandoff = driverInput.handoff == HandoffInput.StartHandoff || theRobotJustCollectedTwoPixels
 
-        val inputsConflictWithTransfer = driverInput.extendo == ExtendoInput.Extend || (driverInput.depo == DepoInput.Manual)
+        val inputsConflictWithTransfer = driverInput.extendo == ExtendoInput.ExtendManual || (driverInput.depo == DepoInput.Manual)
 
         val doHandoffSequence: Boolean = when {
             inputsConflictWithTransfer -> {
@@ -615,32 +621,50 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
 
         /**Extendo*/
-        val extendoState: SlideSubsystem.SlideTargetPosition = when (driverInput.extendo) {
-            ExtendoInput.Extend -> {
-                Extendo.ExtendoPositions.Manual
+
+        val previousExtendoTargetPosition = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
+        val extendoTargetState: SlideSubsystem.TargetSlideSubsystem = when (driverInput.extendo) {
+            ExtendoInput.ExtendManual -> {
+                SlideSubsystem.TargetSlideSubsystem(
+                        targetPosition = previousExtendoTargetPosition,
+                        movementMode = MovementMode.Power,
+                        power = driverInput.extendoManualPower)
             }
-            ExtendoInput.Retract -> {
-                Extendo.ExtendoPositions.Manual
+            ExtendoInput.RetractManual -> {
+                SlideSubsystem.TargetSlideSubsystem(
+                        targetPosition = previousExtendoTargetPosition,
+                        movementMode = MovementMode.Power,
+                        power = driverInput.extendoManualPower)
             }
             ExtendoInput.NoInput -> {
                 val limitIsActivated = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
                 val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Min
                 val extendoIsManual = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Manual
-                if ((extendoIsAlreadyGoingIn || extendoIsManual) && limitIsActivated) {
-                    previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
-                } else if (doHandoffSequence) {
-                    if (!limitIsActivated) {
+                if ((!(extendoIsAlreadyGoingIn || extendoIsManual) || !limitIsActivated) && doHandoffSequence) {
+                    val targetPosition = if (!limitIsActivated) {
                         Extendo.ExtendoPositions.AllTheWayInTarget
                     } else {
                         Extendo.ExtendoPositions.Min
                     }
+                    SlideSubsystem.TargetSlideSubsystem(
+                            targetPosition = targetPosition,
+                            movementMode = MovementMode.Position,
+                            power = 0.0)
                 } else {
-                    previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
+                    SlideSubsystem.TargetSlideSubsystem(
+                            targetPosition = previousExtendoTargetPosition,
+                            movementMode = MovementMode.Power,
+                            power = 0.0)
                 }
             }
+            ExtendoInput.RetractSetAmount -> {
+                SlideSubsystem.TargetSlideSubsystem(
+                        targetPosition = previousExtendoTargetPosition,
+                        movementMode = MovementMode.Power,
+                        power = -0.5)
+            }
         }
-        val ticksSinceLastExtendoReset = actualRobot.collectorSystemState.extendo.ticksMovedSinceReset
-        telemetry.addLine("ticksSinceLastExtendoReset: $ticksSinceLastExtendoReset")
+
 
         /**Depo*/
         val driverInputWrist = WristTargets(
@@ -857,7 +881,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 timeOfEjectionStartMilis = timeOfEjectionStartMilis,
                                 transferState = transferState,
                                 rollers = rollerTargetState,
-                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = extendoState, movementMode = MovementMode.Position, power = 0.0),
+                                extendo = extendoTargetState,
                         ),
                         hangPowers = hangTarget,
                         launcherPosition = launcherTarget,
@@ -881,6 +905,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 collector = CollectorInput.NoInput,
                 rollers = RollerInput.NoInput,
                 extendo = ExtendoInput.NoInput,
+                extendoManualPower = 0.0,
                 handoff = HandoffInput.NoInput,
                 hang = HangInput.NoInput,
                 launcher = LauncherInput.NoInput,
@@ -991,7 +1016,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             extendo= extendo,
                             intake= intake,
                             transfer= transfer,
-                            extendoOverridePower = (gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble()),
                             armOverridePower = gamepad2.right_stick_x.toDouble()
                     )
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {

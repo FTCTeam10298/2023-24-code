@@ -2,10 +2,8 @@ package us.brainstormz.robotTwo.tests
 
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
-import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.robotTwo.RobotTwoTeleOp
-import us.brainstormz.robotTwo.TeleOpMode
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Drivetrain
@@ -46,7 +44,6 @@ fun main() {
                 extendo = Extendo(telemetry),
                 intake = Intake(),
                 transfer = Transfer(telemetry),
-                extendoOverridePower = 0.0,
                 armOverridePower = 0.0
         )
     }

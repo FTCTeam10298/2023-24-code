@@ -1,6 +1,5 @@
 package us.brainstormz.robotTwo
 
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.openftc.easyopencv.OpenCvCameraRotation
@@ -812,7 +811,6 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                         extendo= extendo,
                         intake= intake,
                         transfer= transfer,
-                        extendoOverridePower = 0.0,
                         armOverridePower = 0.0
                 )
 
