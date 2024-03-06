@@ -30,6 +30,7 @@ import us.brainstormz.robotTwo.subsystems.Transfer.DirectorState
 import us.brainstormz.robotTwo.subsystems.Transfer.RollerPowers
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipeline: AprilTagPipeline) {
@@ -41,7 +42,11 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     ) {
         val asTargetWorld: TargetWorld = TargetWorld(
                 targetRobot = TargetRobot(
-                        drivetrainTarget = Drivetrain.DrivetrainTarget(targetRobot.positionAndRotation),
+                        drivetrainTarget = Drivetrain.DrivetrainTarget(
+                                    targetPosition = targetRobot.positionAndRotation,
+                                    power = targetRobot.drivePower,
+                                    movementMode = targetRobot.movementMode
+                                ),
                         depoTarget = DepoTarget(
                                 armPosition = Arm.ArmTarget(targetRobot.depoState.armPos, MovementMode.Position, 0.0),
                                 lift= Lift.TargetLift(
@@ -88,6 +93,8 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     data class MovementPIDSet(val x: PID, val y: PID, val r: PID)
     data class RobotState(
             val positionAndRotation: PositionAndRotation,
+            val movementMode: MovementMode = MovementMode.Position,
+            val drivePower: Drivetrain.DrivetrainPower = Drivetrain.DrivetrainPower(),
             val movementPIDs: MovementPIDSet? = null,
             val depoState: DepoState,
             val collectorSystemState: CollectorState
@@ -300,29 +307,81 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
             kd = 1.0
     )
 
-    private fun yellowPlacement(propPosition: PropPosition, alliance: RobotTwoHardware.Alliance): List<TargetWorld> {
+    private fun yellowPlacement(propPosition: PropPosition, startPosition: StartPosition, alliance: RobotTwoHardware.Alliance): List<TargetWorld> {
         val depositingPosition = getYellowDepositingPosition(propPosition)
-        val awayFromBoardPosition = depositingPosition.copy(y = depositingPosition.y + 10)
-
-        fun modifyTargetWorldToLineUpToTag(targetWorld: TargetWorld, actualWorld: ActualWorld, previousActualWorld: ActualWorld): TargetWorld {
-            if (targetWorld.targetRobot.drivetrainTarget.targetPosition.x != depositingPosition.x){
-                drivetrain.xTranslationPID = aprilTagLineupXPID
+        return when (startPosition) {
+            StartPosition.Backboard -> {
+                listOf(
+                        AutoTargetWorld(
+                                targetRobot = RobotState(
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                        positionAndRotation = depositingPosition,
+                                        depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
+                                ),
+                                getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                    val xError = actualState.actualRobot.positionAndRotation.x - targetState.targetRobot.drivetrainTarget.targetPosition.x
+                                    val yError = actualState.actualRobot.positionAndRotation.y - targetState.targetRobot.drivetrainTarget.targetPosition.y
+                                    val isRobotAtPosition = abs(xError) < 1.5 && abs(yError) < 3.0//targetStateisRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 2.0, precisionDegrees = 5.0)
+//                                    val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 2.0, precisionDegrees = 5.0)
+                                    nextTargetFromCondition(isRobotAtPosition || hasTimeElapsed(1000, targetState), targetState)
+                                },).asTargetWorld,
+                        AutoTargetWorld(
+                                targetRobot = RobotState(
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                        positionAndRotation = depositingPosition,
+                                        depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
+                                ),
+                                getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                    val taskIsDone = lift.isLiftAtPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks) || hasTimeElapsed(500, targetState)
+                                    nextTargetFromCondition(taskIsDone, targetState)
+                                },).asTargetWorld,
+                        AutoTargetWorld(
+                                targetRobot = RobotState(
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                        positionAndRotation = depositingPosition,
+                                        depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
+                                ),
+                                getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                    val taskIsDone = arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.targetPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                                    nextTargetFromCondition(taskIsDone, targetState)
+                                },).asTargetWorld,
+                        AutoTargetWorld(
+                                targetRobot = RobotState(
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                        positionAndRotation = depositingPosition,
+                                        movementMode = MovementMode.Power,
+                                        drivePower = Drivetrain.DrivetrainPower(y= -0.2, x= 0.0, r= 0.0),
+                                        depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
+                                ),
+                                getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                    val taskIsDone = actualState.actualRobot.depoState.wristAngles == Wrist.ActualWrist(ClawTarget.Retracted.angleDegrees, ClawTarget.Retracted.angleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                                    nextTargetFromCondition(taskIsDone, targetState)
+                                },).asTargetWorld,
+                )
             }
+            StartPosition.Audience -> {
 
-            val tag = aprilTagLineup.findDetection(actualWorld.aprilTagReadings, propPosition, alliance)
-            val previousTag = aprilTagLineup.findDetection(previousActualWorld.aprilTagReadings, propPosition, alliance)
+                val awayFromBoardPosition = depositingPosition.copy(y = depositingPosition.y + 15)
 
-            val targetPosition = aprilTagLineup.getTargetPositionToLineupWithTag(
-                    currentPosition = targetWorld.targetRobot.drivetrainTarget.targetPosition,
-                    previousPosition = previousActualWorld.actualRobot.positionAndRotation,
-                    aprilTagReading = tag,
-                    previousAprilTagReading = previousTag
-            )
+                fun modifyTargetWorldToLineUpToTag(targetWorld: TargetWorld, actualWorld: ActualWorld, previousActualWorld: ActualWorld): TargetWorld {
+                    if (targetWorld.targetRobot.drivetrainTarget.targetPosition.x != depositingPosition.x){
+                        drivetrain.xTranslationPID = aprilTagLineupXPID
+                    }
 
-            return targetWorld.copy(targetRobot = targetWorld.targetRobot.copy(drivetrainTarget = Drivetrain.DrivetrainTarget(targetPosition)))
-        }
+                    val tag = aprilTagLineup.findDetection(actualWorld.aprilTagReadings, propPosition, alliance)
+                    val previousTag = aprilTagLineup.findDetection(previousActualWorld.aprilTagReadings, propPosition, alliance)
 
-        return listOf(
+                    val targetPosition = aprilTagLineup.getTargetPositionToLineupWithTag(
+                            currentPosition = targetWorld.targetRobot.drivetrainTarget.targetPosition,
+                            previousPosition = previousActualWorld.actualRobot.positionAndRotation,
+                            aprilTagReading = tag,
+                            previousAprilTagReading = previousTag
+                    )
+
+                    return targetWorld.copy(targetRobot = targetWorld.targetRobot.copy(drivetrainTarget = Drivetrain.DrivetrainTarget(targetPosition)))
+                }
+
+                listOf(
 //                AutoTargetWorld(
 //                        targetRobot = RobotState(
 //                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
@@ -337,56 +396,64 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
 ////                            (isRobotAtPosition && isCollectorRetracted) || hasTimeElapsed(3000, targetState)
 //                            nextTargetFromCondition(taskIsDone, targetState)
 //                        },).asTargetWorld,
-                AutoTargetWorld(
-                        targetRobot = RobotState(
-                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
-                                positionAndRotation = awayFromBoardPosition,
-                                depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
-                        ),
-                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            val newTargetWorld = modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState)
-                            nextTargetFromCondition(isRobotAtPosition(newTargetWorld, actualState, previousActualState, precisionInches = 1.5, precisionDegrees = 5.0) && hasTimeElapsed(10000, newTargetWorld), newTargetWorld)
-                        },).asTargetWorld,
-                AutoTargetWorld(
-                        targetRobot = RobotState(
-                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
-                                positionAndRotation = depositingPosition,
-                                depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
-                        ),
-                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            val taskIsDone = lift.isLiftAtPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks) || hasTimeElapsed(1000, targetState)
-                            nextTargetFromCondition(taskIsDone, modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState))
-                        },).asTargetWorld,
-                AutoTargetWorld(
-                        targetRobot = RobotState(
-                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
-                                positionAndRotation = depositingPosition,
-                                depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
-                        ),
-                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            val taskIsDone = arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.targetPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
-                            nextTargetFromCondition(taskIsDone, modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState))
-                        },).asTargetWorld,
-                AutoTargetWorld(
-                        targetRobot = RobotState(
-                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
-                                positionAndRotation = depositingPosition,
-                                depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
-                        ),
-                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            nextTargetFromCondition(isRobotAtPosition(targetState, actualState, previousActualState, precisionInches = 2.0, precisionDegrees = 3.0), modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState))
-                        },).asTargetWorld,
-                AutoTargetWorld(
-                        targetRobot = RobotState(
-                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
-                                positionAndRotation = depositingPosition,
-                                depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
-                        ),
-                        getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                            val taskIsDone = actualState.actualRobot.depoState.wristAngles == Wrist.ActualWrist(ClawTarget.Retracted.angleDegrees, ClawTarget.Retracted.angleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
-                            nextTargetFromCondition(taskIsDone, modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState))
-                        },).asTargetWorld,
-        )
+                        AutoTargetWorld(
+                                targetRobot = RobotState(
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                        positionAndRotation = awayFromBoardPosition,
+                                        depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
+                                ),
+                                getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                    val newTargetWorld = modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState)
+                                    nextTargetFromCondition(isRobotAtPosition(newTargetWorld, actualState, previousActualState, precisionInches = 1.5, precisionDegrees = 5.0) && hasTimeElapsed(10000, newTargetWorld), newTargetWorld)
+                                },).asTargetWorld,
+                        AutoTargetWorld(
+                                targetRobot = RobotState(
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                        positionAndRotation = depositingPosition,
+                                        depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
+                                ),
+                                getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                    val taskIsDone = lift.isLiftAtPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks) || hasTimeElapsed(1000, targetState)
+                                    nextTargetFromCondition(taskIsDone, modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState))
+                                },).asTargetWorld,
+                        AutoTargetWorld(
+                                targetRobot = RobotState(
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                        positionAndRotation = depositingPosition,
+                                        depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
+                                ),
+                                getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                    val taskIsDone = arm.isArmAtAngle(targetState.targetRobot.depoTarget.armPosition.targetPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                                    nextTargetFromCondition(taskIsDone, modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState))
+                                },).asTargetWorld,
+                        AutoTargetWorld(
+                                targetRobot = RobotState(
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                        positionAndRotation = depositingPosition,
+                                        depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Gripping, ClawTarget.Gripping)
+                                ),
+                                getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                    val robotYDelta = actualState.actualRobot.positionAndRotation.y - targetState.targetRobot.drivetrainTarget.targetPosition.y
+                                    val isRobotAtBoard = robotYDelta <= -1
+                                    telemetry.addLine("isRobotAtBoard: $isRobotAtBoard")
+                                    nextTargetFromCondition(isRobotAtBoard || hasTimeElapsed(timeToElapseMilis = 5000, targetState), modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState))
+                                },).asTargetWorld,
+                        AutoTargetWorld(
+                                targetRobot = RobotState(
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                        positionAndRotation = depositingPosition,
+                                        movementMode = MovementMode.Power,
+                                        drivePower = Drivetrain.DrivetrainPower(y= -0.5, x= 0.0, r= 0.0),
+                                        depoState = DepoState(Arm.Positions.Out, Lift.LiftPositions.BackboardBottomRow, ClawTarget.Retracted, ClawTarget.Retracted)
+                                ),
+                                getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                                    val taskIsDone = actualState.actualRobot.depoState.wristAngles == Wrist.ActualWrist(ClawTarget.Retracted.angleDegrees, ClawTarget.Retracted.angleDegrees) || hasTimeElapsed(timeToElapseMilis = 1000, targetState)
+                                    nextTargetFromCondition(taskIsDone, modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState))
+                                },).asTargetWorld,
+                )
+            }
+        }
+
     }
 
     fun navigatingTargetSetup(
@@ -398,7 +465,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                     targetRobot = RobotState(
                             collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
                             positionAndRotation = targetPosition,
-                            depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
+                            depoState = DepoState(Arm.Positions.OutButUnderTwelve, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                     ),
                     getNextTask = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                         nextTargetFromCondition(isTargetReached(targetState, actualState, previousActualState), targetState)
@@ -445,7 +512,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                             else
                                 drivetrain.rotationWithOtherAxisPID
                             val isCollectorRetracted = extendo.isExtendoAtPosition(ExtendoPositions.Min.ticks, actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks)
-                            val taskIsDone = (isRobotAtPosition && isCollectorRetracted) || hasTimeElapsed(3000, targetState)
+                            val taskIsDone = (isRobotAtPosition && isCollectorRetracted) || hasTimeElapsed(2000, targetState)
                             nextTargetFromCondition(taskIsDone, targetState)
                         },).asTargetWorld,
         )
@@ -533,7 +600,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                     actualState.actualRobot.positionAndRotation.y <= targetState.targetRobot.drivetrainTarget.targetPosition.y
                 },
                 navigatingTargetSetup(
-                        targetPosition = getYellowDepositingPosition(propPosition),
+                        targetPosition = getYellowDepositingPosition(propPosition).copy(y= -45.0),
                         isTargetReached = ::isRobotAtPosition
                 ),
         )
@@ -600,7 +667,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                 PathPreAssembled(
                         purplePlacementPath = { purplePlacement(StartPosition.Backboard, it) },
                         driveToBoardPath = ::backboardSideNavigateToBackboard,
-                        yellowDepositPath = { yellowPlacement(it, alliance) },
+                        yellowDepositPath = { yellowPlacement(it, StartPosition.Backboard, alliance) },
                         parkPath = backboardSidePark
                 )
             }
@@ -608,7 +675,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                 PathPreAssembled(
                         purplePlacementPath = { purplePlacement(StartPosition.Audience, it) },
                         driveToBoardPath = ::audienceSideNavigateToBackboard,
-                        yellowDepositPath = { yellowPlacement(it, alliance) },
+                        yellowDepositPath = { yellowPlacement(it, StartPosition.Audience, alliance) },
                         parkPath = audienceSidePark
                 )
             }
