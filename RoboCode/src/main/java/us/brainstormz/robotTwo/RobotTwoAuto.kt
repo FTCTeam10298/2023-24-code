@@ -404,7 +404,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                                 ),
                                 getNextTask = {targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                                     val newTargetWorld = modifyTargetWorldToLineUpToTag(targetState, actualState, previousActualState)
-                                    nextTargetFromCondition(isRobotAtPosition(newTargetWorld, actualState, previousActualState, precisionInches = 1.5, precisionDegrees = 5.0) && hasTimeElapsed(10000, newTargetWorld), newTargetWorld)
+                                    nextTargetFromCondition(isRobotAtPosition(newTargetWorld, actualState, previousActualState, precisionInches = 1.5, precisionDegrees = 5.0) || hasTimeElapsed(5000, newTargetWorld), newTargetWorld)
                                 },).asTargetWorld,
                         AutoTargetWorld(
                                 targetRobot = RobotState(
