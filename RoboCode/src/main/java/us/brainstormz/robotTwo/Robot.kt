@@ -70,7 +70,7 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
                             armOverridePower = 0.0
                     )
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
-                        gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                        gamepad1.runRumbleEffect(targetState.gamepad1Rumble!!.effect)
                     }
                 }
         )

@@ -102,10 +102,10 @@ interface SlideSubsystem: DualMovementModeSubsystem {
     }
 
     open class TargetSlideSubsystem (
-            override val targetPosition: SlideTargetPosition,
-            override val movementMode: MovementMode,
-            override val power: Double = 0.0,
-            open val timeOfResetMoveDirectionStartMilis: Long = 0): TargetMovementSubsystem
+        override var targetPosition: SlideTargetPosition,
+        override var movementMode: MovementMode,
+        override var power: Double = 0.0,
+        open val timeOfResetMoveDirectionStartMilis: Long = 0): TargetMovementSubsystem
 
     val stallCurrentAmps: Double
     val definitelyMovingVelocityTicksPerMili: Double

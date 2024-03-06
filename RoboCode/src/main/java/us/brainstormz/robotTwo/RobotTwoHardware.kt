@@ -307,15 +307,16 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         imu.initialize(parameters)
         imu.resetYaw()
     }
+    open lateinit var actualRobot: ActualRobot
     open fun getActualState(drivetrain: Drivetrain, collectorSystem: CollectorSystem, depoManager: DepoManager, previousActualWorld: ActualWorld?): ActualRobot {
         telemetry.addLine("getting state")
 //        telemetry.addLine("extendo current position: ${extendoMotorMaster.currentPosition}")
-        return ActualRobot(
-                positionAndRotation = drivetrain.getPosition(),
-                collectorSystemState = collectorSystem.getCurrentState(this, previousActualWorld),
-                depoState = depoManager.getDepoState(this, previousActualWorld),
-                neopixelState = neoPixelActualState
-        )
+        actualRobot.positionAndRotation = drivetrain.getPosition()
+        actualRobot.collectorSystemState = collectorSystem.getCurrentState(this, previousActualWorld)
+        actualRobot.depoState = depoManager.getDepoState(this, previousActualWorld)
+        actualRobot.neopixelState = neoPixelActualState
+
+        return actualRobot
     }
 
     fun actuateRobot(

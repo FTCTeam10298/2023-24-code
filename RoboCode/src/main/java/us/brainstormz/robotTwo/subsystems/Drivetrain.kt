@@ -21,9 +21,9 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
     val drivetrainLoopTimeMeasurer = DeltaTimeMeasurer()
 
     data class DrivetrainTarget(
-            override val targetPosition: PositionAndRotation,
-            override val movementMode: DualMovementModeSubsystem.MovementMode,
-            override val power: DrivetrainPower): DualMovementModeSubsystem.TargetMovementSubsystem {
+        override var targetPosition: PositionAndRotation,
+        override var movementMode: DualMovementModeSubsystem.MovementMode,
+        override var power: DrivetrainPower): DualMovementModeSubsystem.TargetMovementSubsystem {
         constructor(targetPosition: PositionAndRotation): this(targetPosition, DualMovementModeSubsystem.MovementMode.Position, DrivetrainPower())
         constructor(power: DrivetrainPower): this(PositionAndRotation(), DualMovementModeSubsystem.MovementMode.Power, power)
     }

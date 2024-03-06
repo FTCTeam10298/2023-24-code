@@ -65,7 +65,7 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
 //        lights = FauxRevBlinkinLedDriver()
     }
 
-    lateinit var actualRobot: ActualRobot
+    override lateinit var actualRobot: ActualRobot
     override fun getActualState(drivetrain: Drivetrain, collectorSystem: CollectorSystem, depoManager: DepoManager, previousActualWorld: ActualWorld?): ActualRobot = actualRobot
 }
 

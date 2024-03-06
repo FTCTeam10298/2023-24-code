@@ -117,21 +117,22 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         NoInput
     }
     data class DriverInput (
-            val bumperMode: Gamepad1BumperMode,
-            val lightInput: LightInput,
-            val depo: DepoInput,
-            val depoScoringHeightAdjust: Double,
-            val wrist: WristInput,
-            val collector: CollectorInput,
-            val extendo: ExtendoInput,
-            val hang: HangInput,
-            val launcher: LauncherInput,
-            val handoff: HandoffInput,
-            val rollers: RollerInput,
-            val driveVelocity: Drivetrain.DrivetrainPower
+        var bumperMode: Gamepad1BumperMode,
+        var lightInput: LightInput,
+        var depo: DepoInput,
+        var depoScoringHeightAdjust: Double,
+        var wrist: WristInput,
+        var collector: CollectorInput,
+        var extendo: ExtendoInput,
+        var hang: HangInput,
+        var launcher: LauncherInput,
+        var handoff: HandoffInput,
+        var rollers: RollerInput,
+        var driveVelocity: Drivetrain.DrivetrainPower
     ) {
         override fun toString(): String = DataClassHelper.dataClassToString(this)
     }
+    lateinit var driverInput: DriverInput
     fun getDriverInput(actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): DriverInput {
         val gamepad1 = actualWorld.actualGamepad1
         val gamepad2 = actualWorld.actualGamepad2
@@ -454,20 +455,19 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             LightInput.NoInput
         }
 
-        return DriverInput(
-                driveVelocity = driveVelocity,
-                depo = depoInput,
-                depoScoringHeightAdjust = liftVariableInput,
-                wrist = WristInput(leftClaw, rightClaw),
-                collector = inputCollectorStateSystem,
-                rollers = rollers,
-                extendo = extendo,
-                handoff = handoff,
-                hang = hang,
-                launcher = launcher,
-                bumperMode = gamepadOneBumperMode,
-                lightInput = lightColor
-        )
+        driverInput.driveVelocity = driveVelocity
+        driverInput.depo = depoInput
+        driverInput.depoScoringHeightAdjust = liftVariableInput
+        driverInput.wrist = WristInput(leftClaw, rightClaw)
+        driverInput.collector = inputCollectorStateSystem
+        driverInput.rollers = rollers
+        driverInput.extendo = extendo
+        driverInput.handoff = handoff
+        driverInput.hang = hang
+        driverInput.launcher = launcher
+        driverInput.bumperMode = gamepadOneBumperMode
+        driverInput.lightInput = lightColor
+        return driverInput
     }
 
     enum class PixelColor(val neoPixelColor: Neopixels.NeoPixelColors) {
@@ -512,6 +512,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         constructor(stripTarget: Neopixels.StripState): this(pattern = BothPixelsWeWant(), stripTarget = stripTarget)
         constructor(): this(pattern = BothPixelsWeWant(), stripTarget = Neopixels.HalfAndHalfTarget().compileStripState())
     }
+    lateinit var targetWorld: TargetWorld
+    lateinit var targetRobot: TargetRobot
+    lateinit var drivetrainTarget: Drivetrain.DrivetrainTarget
+    lateinit var collectorTarget: CollectorTarget
+    lateinit var targetSlideSubsystem: SlideSubsystem.TargetSlideSubsystem
     fun getTargetWorld(driverInput: DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): TargetWorld {
         val actualRobot = actualWorld.actualRobot
 
@@ -843,32 +848,35 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }?.first
 //        val gamepad1RumbleRoutine = null
 
+        targetSlideSubsystem.targetPosition = extendoState
+        targetSlideSubsystem.movementMode = MovementMode.Position
+        targetSlideSubsystem.power = 0.0
 
-        return TargetWorld(
-                targetRobot = TargetRobot(
-                        drivetrainTarget = Drivetrain.DrivetrainTarget(
-                                power = driveTarget,
-                                movementMode = MovementMode.Power,
-                                targetPosition = PositionAndRotation()
-                        ),
-                        depoTarget = depoTarget,
-                        collectorTarget = CollectorTarget(
-                                intakeNoodles = intakeNoodleTarget,
-                                timeOfEjectionStartMilis = timeOfEjectionStartMilis,
-                                transferState = transferState,
-                                rollers = rollerTargetState,
-                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = extendoState, movementMode = MovementMode.Position, power = 0.0),
-                        ),
-                        hangPowers = hangTarget,
-                        launcherPosition = launcherTarget,
-                        lights = lights,
-                ),
-                isLiftEligableForReset = false,
-                doingHandoff = doHandoffSequence,
-                driverInput = spoofDriverInputForDepo,
-                getNextTask = { _, _, _-> null },
-                gamepad1Rumble = gamepad1RumbleRoutine
-        )
+        drivetrainTarget.power = driveTarget
+        drivetrainTarget.movementMode = MovementMode.Power
+//        drivetrainTarget.targetPosition = PositionAndRotation()
+
+        collectorTarget.intakeNoodles = intakeNoodleTarget
+        collectorTarget.timeOfEjectionStartMilis = timeOfEjectionStartMilis
+        collectorTarget.transferState = transferState
+        collectorTarget.rollers = rollerTargetState
+        collectorTarget.extendo = targetSlideSubsystem
+
+        targetRobot.drivetrainTarget = drivetrainTarget
+        targetRobot.depoTarget = depoTarget
+        targetRobot.collectorTarget = collectorTarget
+        targetRobot.hangPowers = hangTarget
+        targetRobot.launcherPosition = launcherTarget
+        targetRobot.lights = lights
+
+        targetWorld.targetRobot = targetRobot
+        targetWorld.isLiftEligableForReset = false
+        targetWorld.doingHandoff = doHandoffSequence
+        targetWorld.driverInput = spoofDriverInputForDepo
+        targetWorld.getNextTask = { _, _, _-> null }
+        targetWorld.gamepad1Rumble = gamepad1RumbleRoutine
+
+        return targetWorld
     }
 
 
@@ -960,6 +968,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val targetStateGetterMeasurer = DeltaTimeMeasurer()
     val stateFulfillerMeasurer = DeltaTimeMeasurer()
 
+    lateinit var actualWorld: ActualWorld
+
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) {
 
         timeBetweenloopMeasurer.endMeasureDT()
@@ -973,22 +983,21 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     actualStateGetterMeasurer.beginMeasureDT()
                     currentGamepad1.copy(gamepad1)
                     currentGamepad2.copy(gamepad2)
-                    ActualWorld(
-                            actualRobot = hardware.getActualState(drivetrain= drivetrain, depoManager = depoManager, collectorSystem = collectorSystem, previousActualWorld= previousActualState),
-                            actualGamepad1 = currentGamepad1,
-                            actualGamepad2 = currentGamepad2,
-                            timestampMilis = System.currentTimeMillis()
-                    )
+                    actualWorld.actualRobot = hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState)
+                    actualWorld.actualGamepad1 = currentGamepad1
+                    actualWorld.actualGamepad2 = currentGamepad1
+                    actualWorld.timestampMilis = System.currentTimeMillis()
+                    actualWorld
                 },
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
                     actualStateGetterMeasurer.endMeasureDT()
                     targetStateGetterMeasurer.beginMeasureDT()
 
                     telemetry.addLine("actualState: $actualState\n")
-                    val previousActualState = previousActualState ?: actualState
-                    val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
-                    val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
-                    getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
+//                    val previousActualState = previousActualState ?: actualState
+//                    val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
+                    val driverInput = getDriverInput(previousTargetState= previousTargetState ?: initialPreviousTargetState, actualWorld= actualState, previousActualWorld= previousActualState ?: actualState)
+                    getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState ?: initialPreviousTargetState, actualWorld= actualState, previousActualWorld= previousActualState ?: actualState)
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState ->
                     targetStateGetterMeasurer.endMeasureDT()
@@ -1009,7 +1018,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             armOverridePower = gamepad2.right_stick_x.toDouble()
                     )
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
-                        gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                        gamepad1.runRumbleEffect(targetState.gamepad1Rumble!!.effect)
                     }
                     actualStateGetterMeasurer.endMeasureDT()
 //                    hardware.lights.setPattern(targetState.targetRobot.lights.stripTarget)

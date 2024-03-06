@@ -22,32 +22,32 @@ data class DepoTarget(
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 }
 data class CollectorTarget(
-        val extendo: SlideSubsystem.TargetSlideSubsystem,
-        val timeOfEjectionStartMilis: Long?,
-        val intakeNoodles: Intake.CollectorPowers,
-        val transferState: Transfer.TransferState,
-        val rollers: Transfer.TransferTarget,
+    var extendo: SlideSubsystem.TargetSlideSubsystem,
+    var timeOfEjectionStartMilis: Long?,
+    var intakeNoodles: Intake.CollectorPowers,
+    var transferState: Transfer.TransferState,
+    var rollers: Transfer.TransferTarget,
 ) {
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 }
 data class TargetRobot(
-        val drivetrainTarget: Drivetrain.DrivetrainTarget,
-        val depoTarget: DepoTarget,
-        val collectorTarget: CollectorTarget,
-        val hangPowers: RobotTwoHardware.HangPowers,
-        val launcherPosition: RobotTwoHardware.LauncherPosition,
-        val lights: RobotTwoTeleOp.LightTarget
+    var drivetrainTarget: Drivetrain.DrivetrainTarget,
+    var depoTarget: DepoTarget,
+    var collectorTarget: CollectorTarget,
+    var hangPowers: RobotTwoHardware.HangPowers,
+    var launcherPosition: RobotTwoHardware.LauncherPosition,
+    var lights: RobotTwoTeleOp.LightTarget
 ) {
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 }
 data class TargetWorld(
-        val targetRobot: TargetRobot,
-        val driverInput: RobotTwoTeleOp.DriverInput,
-        val isLiftEligableForReset: Boolean,
-        val doingHandoff: Boolean,
-        val getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?,
-        val timeTargetStartedMilis: Long = 0,
-        val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
+    var targetRobot: TargetRobot,
+    var driverInput: RobotTwoTeleOp.DriverInput,
+    var isLiftEligableForReset: Boolean,
+    var doingHandoff: Boolean,
+    var getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?,
+    val timeTargetStartedMilis: Long = 0,
+    var gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
 ) {
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 
@@ -62,19 +62,19 @@ data class TargetWorld(
 
 
 data class ActualRobot(
-        val positionAndRotation: PositionAndRotation,
-        val depoState: DepoManager.ActualDepo,
-        val collectorSystemState: CollectorSystem.ActualCollector,
-        val neopixelState: Neopixels.StripState
+    var positionAndRotation: PositionAndRotation,
+    var depoState: DepoManager.ActualDepo,
+    var collectorSystemState: CollectorSystem.ActualCollector,
+    var neopixelState: Neopixels.StripState
 ) {
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 }
 data class ActualWorld(
-        val actualRobot: ActualRobot,
-        val aprilTagReadings: List<AprilTagDetection> = listOf(),
-        val actualGamepad1: Gamepad,
-        val actualGamepad2: Gamepad,
-        val timestampMilis: Long
+    var actualRobot: ActualRobot,
+    var aprilTagReadings: List<AprilTagDetection> = listOf(),
+    var actualGamepad1: Gamepad,
+    var actualGamepad2: Gamepad,
+    var timestampMilis: Long
 ) {
     override fun toString(): String = DataClassHelper.dataClassToString(this)
 }

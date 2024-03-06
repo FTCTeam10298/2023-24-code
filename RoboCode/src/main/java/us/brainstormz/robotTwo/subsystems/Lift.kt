@@ -57,9 +57,9 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
                      override val ticksMovedSinceReset: Int = 0,
                      override val currentAmps: Double = 0.0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset, currentAmps)
 
-    data class TargetLift(override val targetPosition: SlideSubsystem.SlideTargetPosition = LiftPositions.Down,
-                          override val power: Double = 0.0,
-                          override val movementMode: MovementMode = MovementMode.Position,
+    data class TargetLift(override var targetPosition: SlideSubsystem.SlideTargetPosition = LiftPositions.Down,
+                          override var power: Double = 0.0,
+                          override var movementMode: MovementMode = MovementMode.Position,
                           override val timeOfResetMoveDirectionStartMilis: Long = 0): SlideSubsystem.TargetSlideSubsystem(targetPosition, movementMode, power, timeOfResetMoveDirectionStartMilis) {
                               constructor(targetSlideSubsystem: SlideSubsystem.TargetSlideSubsystem):
                                     this(   targetPosition= targetSlideSubsystem.targetPosition,
