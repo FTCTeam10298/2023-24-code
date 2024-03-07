@@ -1,20 +1,22 @@
 package us.brainstormz.utils
 
+import kotlin.random.Random
+
 val mStack = mutableListOf<String>()
-inline fun tag(time:Long) = "[MEASURES] [$time] [${mStack.joinToString("/")}]"
+inline fun logMeasure(m:String) = println("[MEASURES] [${System.currentTimeMillis()}] [${mStack.joinToString("/")}] $m")
 inline fun <T>measured(name:String, fn:()->T):T{
     val start = System.currentTimeMillis()
     mStack.add(name)
 
-    println("${tag(start)} Started")
+    logMeasure("Started")
     val r = fn()
-    mStack.removeLastOrNull()
     val end = System.currentTimeMillis()
     val duration = end - start
-    println("${tag(end)} Ended - Duration $duration millis")
+    logMeasure("Ended - Duration $duration millis (end $end)")
     if(duration > 300){
-        println("[MEASURES] SLOOOOOW ^")
+        logMeasure("SLOOOOOW ^")
     }
+    mStack.removeLastOrNull()
     return r
 }
 
@@ -24,16 +26,17 @@ fun main() {
 
     fun test(name:String, fn:(()->Unit)? = null){
         measured(name) {
+            Thread.sleep(Random.nextLong(0, 100))
             if (fn != null) fn()
         }
     }
 
     while (true){
         test("top-level"){
-            test("detail a"){
-                test("sub detail foo")
+            test("detail-a"){
+                test("sub-detail-foo")
             }
-            test("detail b")
+            test("detail-b")
         }
     }
 }
