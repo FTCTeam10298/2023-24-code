@@ -10,6 +10,7 @@ import us.brainstormz.robotTwo.CollectorSystem
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetWorld
+import us.brainstormz.robotTwo.subsystems.ColorReading
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
@@ -166,7 +167,12 @@ class TeleopTest {
         return passCondition(result.last().second)
     }
     companion object {
-        val emptySensorReading = Transfer.ColorReading(0f, 0f, 0f, 0f)
+        val emptySensorReading = ColorReading(
+            red = 0f,
+            green = 0f,
+            blue = 0f,
+            alpha = 0f,
+        )
         val emptyActualTransferHalf = Transfer.ActualTransferHalf(
                 upperSensor = emptySensorReading,
                 lowerSensor = emptySensorReading

@@ -11,6 +11,21 @@ import us.brainstormz.robotTwo.tests.TeleopTest
 import us.brainstormz.utils.CleanToStringPrint
 import kotlin.math.abs
 
+data class ColorReading(val red: Float, val green: Float, val blue: Float, val alpha: Float) {
+    val asList = listOf(red, green, blue, alpha)
+}
+fun readColor(sensor: NormalizedColorSensor): ColorReading = measured("read-color"){
+    val normalized = sensor
+    val c = normalized.normalizedColors
+    println("Read color from a ${sensor.javaClass}")
+    ColorReading(
+        red= c.red,
+        green= c.green,
+        blue= c.blue,
+        alpha = c.alpha,
+    )
+}
+
 class Transfer(private val telemetry: Telemetry) {
     enum class RollerPowers(val power: Double) {
         Off(0.0),
@@ -71,15 +86,19 @@ class Transfer(private val telemetry: Telemetry) {
     data class ActualTransferHalf(val upperSensor: ColorReading, val lowerSensor: ColorReading): CleanToStringPrint()
     data class ActualTransfer(val left: ActualTransferHalf, val right: ActualTransferHalf): CleanToStringPrint()
 
+
+
     fun getActualTransfer(hardware: RobotTwoHardware): ActualTransfer {
         return ActualTransfer(
                 left = ActualTransferHalf(
                         upperSensor = TeleopTest.emptySensorReading,
-                        lowerSensor = readColor(hardware.leftTransferLowerSensor),
+//                        lowerSensor = readColor(hardware.leftTransferLowerSensor),
+                        lowerSensor = hardware.leftTransferLowerSensorWrapped.read(),
                 ),
                 right = ActualTransferHalf(
                         upperSensor = TeleopTest.emptySensorReading,
-                        lowerSensor = readColor(hardware.rightTransferLowerSensor),
+//                        lowerSensor = readColor(hardware.rightTransferLowerSensor),
+                        lowerSensor = hardware.rightTransferLowerSensorWrapped.read(),
                 )
         )
     }
@@ -447,20 +466,7 @@ green   - OtherColorReading(red=0.037695315,  green=0.07109375,  blue=0.03544921
     }
 
 
-    data class ColorReading(val red: Float, val green: Float, val blue: Float, val alpha: Float) {
-        val asList = listOf(red, green, blue, alpha)
-    }
-    private fun readColor(sensor: NormalizedColorSensor): ColorReading = measured("get color sensor"){
-        val normalized = sensor
-        val c = normalized.normalizedColors
-        println("Read color from a ${sensor.javaClass}")
-        ColorReading(
-            red= c.red,
-            green= c.green,
-            blue= c.blue,
-            alpha = c.alpha,
-        )
-    }
+
 
 //
 //    data class RGBValue(val red: Double, val green: Double, val blue: Double) {
