@@ -30,7 +30,7 @@ fun logMeasure(m:String) = println("[MEASURES] [${Thread.currentThread().name}] 
     val duration = end - start
     logMeasure("Ended - Duration $duration millis (end $end)")
     if(duration > 300){
-        logMeasure("SLOOOOOW ^")
+        logMeasure("SLOOOOOW ^ - Duration $duration millis ")
     }
     mStack.get().removeLastOrNull()
      
