@@ -69,7 +69,7 @@ class Transfer(private val telemetry: Telemetry) {
         return power
     }
 
-    data class ActualTransferHalf(val upperSensor: SensorReading, val lowerSensor: SensorReading): CleanToStringPrint()
+    data class ActualTransferHalf(val upperSensor: ColorReading, val lowerSensor: ColorReading): CleanToStringPrint()
     data class ActualTransfer(val left: ActualTransferHalf, val right: ActualTransferHalf): CleanToStringPrint()
 
     fun getActualTransfer(hardware: RobotTwoHardware): ActualTransfer {
@@ -92,7 +92,7 @@ class Transfer(private val telemetry: Telemetry) {
 
     fun getTransferState(actualWorld: ActualWorld, previousTransferState: TransferState): TransferState {
 
-        fun getSensorState(actualReading: SensorReading, previousSensorState: SensorState): SensorState {
+        fun getSensorState(actualReading: ColorReading, previousSensorState: SensorState): SensorState {
             val isSeeingPixel = isPixelIn(actualReading)
             val timeOfSeeingRightPixelMilis = when {
                 !previousSensorState.hasPixelBeenSeen && isSeeingPixel -> System.currentTimeMillis()
@@ -231,9 +231,9 @@ class Transfer(private val telemetry: Telemetry) {
         return rollerState.power
     }
 
-    val upperNothingReading = SensorReading(red= 207, green= 336, blue= 473, alpha= 990)
-    val lowerNothingReading = SensorReading(red= 41, green= 69, blue= 106, alpha= 219)
-    private fun isPixelIn(reading: SensorReading): Boolean {
+    val upperNothingReading = ColorReading(red= 207, green= 336, blue= 473, alpha= 990)
+    val lowerNothingReading = ColorReading(red= 41, green= 69, blue= 106, alpha= 219)
+    private fun isPixelIn(reading: ColorReading): Boolean {
         val doesEachColorChannelPass = reading.asList.mapIndexed {i, it ->
             it > (upperNothingReading.asList[i] * 2)
         }
@@ -295,13 +295,13 @@ class Transfer(private val telemetry: Telemetry) {
         Blue
     }
 
-    data class SensorReading(val red: Int, val green: Int, val blue: Int, val alpha: Int): CleanToStringPrint() {
+    data class ColorReading(val red: Int, val green: Int, val blue: Int, val alpha: Int): CleanToStringPrint() {
         val asList = listOf(red, green, blue, alpha)
         val rgbAsMap = mapOf(RGB.Red to red, RGB.Green to green, RGB.Blue to blue)
     }
-    fun getColorSensorReading(sensor: ColorSensor): SensorReading = measured("get color sensor"){
+    fun getColorSensorReading(sensor: ColorSensor): ColorReading = measured("get color sensor"){
         val reading = sensor.argb()
-        return SensorReading(
+        ColorReading(
                 red   = Color.red(reading),
                 green = Color.green(reading),
                 blue  = Color.blue(reading),

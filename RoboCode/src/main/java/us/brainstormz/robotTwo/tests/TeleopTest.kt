@@ -166,7 +166,7 @@ class TeleopTest {
         return passCondition(result.last().second)
     }
     companion object {
-        val emptySensorReading = Transfer.SensorReading(0, 0, 0, 0)
+        val emptySensorReading = Transfer.ColorReading(0, 0, 0, 0)
         val emptyActualTransferHalf = Transfer.ActualTransferHalf(
                 upperSensor = emptySensorReading,
                 lowerSensor = emptySensorReading
