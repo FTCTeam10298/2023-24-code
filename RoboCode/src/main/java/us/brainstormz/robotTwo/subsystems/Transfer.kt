@@ -1,9 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
-import android.graphics.Color
-import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor
-import com.qualcomm.robotcore.hardware.NormalizedRGBA
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.ActualRobot
@@ -71,18 +68,18 @@ class Transfer(private val telemetry: Telemetry) {
         return power
     }
 
-    data class ActualTransferHalf(val upperSensor: OtherColorReading, val lowerSensor: OtherColorReading): CleanToStringPrint()
+    data class ActualTransferHalf(val upperSensor: ColorReading, val lowerSensor: ColorReading): CleanToStringPrint()
     data class ActualTransfer(val left: ActualTransferHalf, val right: ActualTransferHalf): CleanToStringPrint()
 
     fun getActualTransfer(hardware: RobotTwoHardware): ActualTransfer {
         return ActualTransfer(
                 left = ActualTransferHalf(
                         upperSensor = TeleopTest.emptySensorReading,
-                        lowerSensor = getColorSensorReading(hardware.leftTransferLowerSensor),
+                        lowerSensor = readColor(hardware.leftTransferLowerSensor),
                 ),
                 right = ActualTransferHalf(
                         upperSensor = TeleopTest.emptySensorReading,
-                        lowerSensor = getColorSensorReading(hardware.rightTransferLowerSensor),
+                        lowerSensor = readColor(hardware.rightTransferLowerSensor),
                 )
         )
     }
@@ -94,7 +91,7 @@ class Transfer(private val telemetry: Telemetry) {
 
     fun getTransferState(actualWorld: ActualWorld, previousTransferState: TransferState): TransferState {
 
-        fun getSensorState(actualReading: OtherColorReading, previousSensorState: SensorState): SensorState {
+        fun getSensorState(actualReading: ColorReading, previousSensorState: SensorState): SensorState {
             val isSeeingPixel = isPixelIn(actualReading)
             val timeOfSeeingRightPixelMilis = when {
                 !previousSensorState.hasPixelBeenSeen && isSeeingPixel -> System.currentTimeMillis()
@@ -384,10 +381,10 @@ purple  - OtherColorReading(red=0.0703125,    green=0.07900391,  blue=0.08583984
 yellow  - OtherColorReading(red=0.0803711,    green=0.07353516,  blue=0.03691406,   alpha=0.18984376)
 green   - OtherColorReading(red=0.037695315,  green=0.07109375,  blue=0.035449218,  alpha=0.14658204)
      */
-    val upperNothingReading = OtherColorReading(red=0.0070312503f, green=0.012011719f, blue=0.0146484375f, alpha=0.03388672f)
+    val upperNothingReading = ColorReading(red=0.0070312503f, green=0.012011719f, blue=0.0146484375f, alpha=0.03388672f)
 //    val upperNothingReading = ColorReading(red= 207, green= 336, blue= 473, alpha= 990)
 //    val lowerNothingReading = ColorReading(red= 41, green= 69, blue= 106, alpha= 219)
-    private fun isPixelIn(reading: OtherColorReading): Boolean {
+    private fun isPixelIn(reading: ColorReading): Boolean {
         val doesEachColorChannelPass = reading.asList.mapIndexed {i, it ->
             it > (upperNothingReading.asList[i] * 2)
         }
@@ -450,14 +447,14 @@ green   - OtherColorReading(red=0.037695315,  green=0.07109375,  blue=0.03544921
     }
 
 
-    data class OtherColorReading(val red: Float, val green: Float, val blue: Float, val alpha: Float) {
+    data class ColorReading(val red: Float, val green: Float, val blue: Float, val alpha: Float) {
         val asList = listOf(red, green, blue, alpha)
     }
-    private fun getColorSensorReading(sensor: NormalizedColorSensor): OtherColorReading = measured("get color sensor"){
+    private fun readColor(sensor: NormalizedColorSensor): ColorReading = measured("get color sensor"){
         val normalized = sensor
         val c = normalized.normalizedColors
         println("Read color from a ${sensor.javaClass}")
-        OtherColorReading(
+        ColorReading(
             red= c.red,
             green= c.green,
             blue= c.blue,
