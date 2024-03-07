@@ -8,6 +8,7 @@ class TLocal<V>(private val makeInitial:(t:Thread)->V){
         val t = Thread.currentThread()
         val n = t.name
         return values.getOrPut(n) { makeInitial(t) }
+
     }
     fun set(v:V){
         val n = Thread.currentThread().name
@@ -32,8 +33,7 @@ fun logMeasure(m:String) = println("[MEASURES] [${Thread.currentThread().name}] 
         logMeasure("SLOOOOOW ^")
     }
     mStack.get().removeLastOrNull()
-
-    logMeasure("After")
+     
     return r
 }
 
