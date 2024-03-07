@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import android.os.Debug
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
@@ -1082,8 +1083,24 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             timestampMilis = System.currentTimeMillis()
         )
     }
+
+    fun printRuntimeStat(tag:String){
+        println("[MEMORY_STATS] [$tag] ${Debug.getRuntimeStat(tag)}")
+    }
+    fun dumpRuntimeStats(){
+        printRuntimeStat("art.gc.gc-count-rate-histogram")
+        printRuntimeStat("art.gc.blocking-gc-count-rate-histogram")
+        printRuntimeStat("art.gc.blocking-gc-count")
+        printRuntimeStat("art.gc.blocking-gc-time")
+        printRuntimeStat("art.gc.gc-count")
+        printRuntimeStat("art.gc.bytes-freed")
+        printRuntimeStat("art.gc.gc-time")
+        printRuntimeStat("art.gc.bytes-allocated")
+    }
+
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) = measured("main loop"){
 
+        dumpRuntimeStats()
         measured("clear bulk cache"){
             for (hub in hardware.allHubs) {
                 hub.clearBulkCache()
