@@ -58,9 +58,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Depo
     }
     enum class DepoInput {
-        SetLine1,
-        SetLine2,
-        SetLine3,
+//        SetLine1,
+//        SetLine2,
+//        SetLine3,
+        Preset1,
+        Preset2,
+        Preset3,
+        Preset4,
         ScoringHeightAdjust,
         Down,
         Manual,
@@ -151,36 +155,42 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Depo*/
         val depoGamepad2Input: DepoInput? = when {
             gamepad2.dpad_up-> {
-                DepoInput.SetLine3
+                DepoInput.Preset4
             }
             gamepad2.dpad_down -> {
                 DepoInput.Down
             }
             gamepad2.dpad_right && !previousGamepad2.dpad_right -> {
-                if (previousRobotTarget.depoTarget.lift.targetPosition != Lift.LiftPositions.SetLine1) {
-                    DepoInput.SetLine1
-                } else {
-                    DepoInput.SetLine2
+                when (previousTargetState.driverInput.depo) {
+                    DepoInput.Preset1 -> DepoInput.Preset2
+                    DepoInput.Preset2 -> DepoInput.Preset3
+//                    Lift.LiftPositions.Preset3 -> DepoInput.Preset4
+                    else -> {
+                        DepoInput.Preset1
+                    }
                 }
+//                if (previousRobotTarget.depoTarget.lift.targetPosition != Lift.LiftPositions.SetLine1) {
+//                    DepoInput.Preset1
+//                } else {
+//                    DepoInput.Preset2
+//                }
             }
             else -> null
         }
         val depoGamepad1Input: DepoInput = when {
             gamepad1.dpad_up-> {
-                DepoInput.SetLine3
+                DepoInput.Preset4
             }
             gamepad1.dpad_left -> {
-                DepoInput.SetLine2
+                DepoInput.Preset3
             }
             gamepad1.dpad_down -> {
-                DepoInput.SetLine1
+                DepoInput.Preset1
             }
             else -> DepoInput.NoInput
         }
 
         val dpadInput: DepoInput = depoGamepad2Input ?: depoGamepad1Input
-
-
 
         val gamepad2RightStickMode: Gamepad2RightStickMode = if (gamepad2.touchpad && !previousGamepad2.touchpad) {
             when (previousTargetState.driverInput.gamepad2StickMode) {

@@ -37,9 +37,10 @@ class DepoManager(
 
     fun getDepoTargetTypeFromDepoInput(depoInput: RobotTwoTeleOp.DepoInput): DepoTargetType? {
         return when (depoInput) {
-            RobotTwoTeleOp.DepoInput.SetLine1 -> DepoTargetType.GoingOut
-            RobotTwoTeleOp.DepoInput.SetLine2 -> DepoTargetType.GoingOut
-            RobotTwoTeleOp.DepoInput.SetLine3 -> DepoTargetType.GoingOut
+            RobotTwoTeleOp.DepoInput.Preset1 -> DepoTargetType.GoingOut
+            RobotTwoTeleOp.DepoInput.Preset2 -> DepoTargetType.GoingOut
+            RobotTwoTeleOp.DepoInput.Preset3 -> DepoTargetType.GoingOut
+            RobotTwoTeleOp.DepoInput.Preset4 -> DepoTargetType.GoingOut
             RobotTwoTeleOp.DepoInput.ScoringHeightAdjust -> DepoTargetType.GoingOut
             RobotTwoTeleOp.DepoInput.Down -> DepoTargetType.GoingHome
             else -> null

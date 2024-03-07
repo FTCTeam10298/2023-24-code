@@ -1,12 +1,9 @@
 package us.brainstormz.robotTwo.subsystems
 
-import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
-import us.brainstormz.robotTwo.ActualRobot
-import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import kotlin.math.absoluteValue
@@ -22,6 +19,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         ClearForArmToMove(547),
         WaitForArmToMove(800),
         SetLine1(500),
+        SetLine2Other(700),
         SetLine2(1000),
         SetLine3(1800),
         Max(2100)
@@ -29,9 +27,10 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, position: Double): SlideSubsystem.SlideTargetPosition {
         return when (depoInput) {
-            RobotTwoTeleOp.DepoInput.SetLine1 -> LiftPositions.SetLine1
-            RobotTwoTeleOp.DepoInput.SetLine2 -> LiftPositions.SetLine2
-            RobotTwoTeleOp.DepoInput.SetLine3 -> LiftPositions.SetLine3
+            RobotTwoTeleOp.DepoInput.Preset1 -> LiftPositions.SetLine1
+            RobotTwoTeleOp.DepoInput.Preset2 -> LiftPositions.SetLine2Other
+            RobotTwoTeleOp.DepoInput.Preset3 -> LiftPositions.SetLine2
+            RobotTwoTeleOp.DepoInput.Preset4 -> LiftPositions.SetLine3
             RobotTwoTeleOp.DepoInput.Down -> LiftPositions.Down
 //            RobotTwoTeleOp.DepoInput.NoInput -> LiftPositions.Nothing
 //            RobotTwoTeleOp.DepoInput.ScoringHeightAdjust -> SlideSubsystem.VariableTargetPosition(ticks = position.toInt())

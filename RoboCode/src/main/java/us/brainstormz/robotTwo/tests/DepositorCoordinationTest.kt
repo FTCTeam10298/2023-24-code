@@ -835,7 +835,7 @@ class DepoTest {
 fun main() {
 
     val depoTest = DepoTest()
-    val allMovingOutTests = listOf(RobotTwoTeleOp.DepoInput.SetLine1, RobotTwoTeleOp.DepoInput.SetLine2,RobotTwoTeleOp.DepoInput.SetLine3).fold(listOf<DepoTest.AllDataForTest>()) { acc, it -> acc + depoTest.movingOutTests(it) }
+//    val allMovingOutTests = listOf(RobotTwoTeleOp.DepoInput.SetLine1, RobotTwoTeleOp.DepoInput.SetLine2,RobotTwoTeleOp.DepoInput.SetLine3).fold(listOf<DepoTest.AllDataForTest>()) { acc, it -> acc + depoTest.movingOutTests(it) }
     val tests = depoTest.operationBelowTheClearanceTest //+ /*depoTest.liftResetTest +*/ depoTest.noInputOnStartTest + depoTest.clawInputsTests + depoTest.specificTest + allMovingOutTests + depoTest.movingInTests + depoTest.staticTests + depoTest.specificTest
 
     fun boolToPassFail(result: Boolean): String {
