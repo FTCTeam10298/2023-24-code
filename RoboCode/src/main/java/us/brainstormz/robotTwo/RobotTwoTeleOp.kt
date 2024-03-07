@@ -1052,6 +1052,29 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
+
+    fun getActualState(previousActualState:ActualWorld?, gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware):ActualWorld{
+        val (currentGamepad1, currentGamepad2)  = measured("gamepad copies"){
+            val currentGamepad1 = Gamepad()
+            currentGamepad1.copy(gamepad1)
+            val currentGamepad2 = Gamepad()
+            currentGamepad2.copy(gamepad2)
+            currentGamepad1 to currentGamepad2
+        }
+
+        val actualRobot = hardware.getActualState(
+            drivetrain= drivetrain,
+            depoManager = depoManager,
+            collectorSystem = collectorSystem,
+            previousActualWorld= previousActualState,
+        )
+        return ActualWorld(
+            actualRobot = actualRobot,
+            actualGamepad1 = currentGamepad1,
+            actualGamepad2 = currentGamepad2,
+            timestampMilis = System.currentTimeMillis()
+        )
+    }
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) = measured("main loop"){
 
         measured("clear bulk cache"){
@@ -1061,28 +1084,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
         
         functionalReactiveAutoRunner.loop(
-                actualStateGetter = { previousActualState ->
-                    val (currentGamepad1, currentGamepad2)  = measured("gamepad copies"){
-                        val currentGamepad1 = Gamepad()
-                        currentGamepad1.copy(gamepad1)
-                        val currentGamepad2 = Gamepad()
-                        currentGamepad2.copy(gamepad2)
-                        currentGamepad1 to currentGamepad2
-                    }
-
-                    val actualRobot = hardware.getActualState(
-                            drivetrain= drivetrain,
-                            depoManager = depoManager,
-                            collectorSystem = collectorSystem,
-                            previousActualWorld= previousActualState,
-                    )
-                    ActualWorld(
-                            actualRobot = actualRobot,
-                            actualGamepad1 = currentGamepad1,
-                            actualGamepad2 = currentGamepad2,
-                            timestampMilis = System.currentTimeMillis()
-                    )
-                },
+                actualStateGetter = {getActualState(it, gamepad1, gamepad2, hardware)},
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
                     telemetry.addLine("actualState: $actualState\n")
                     val previousActualState = previousActualState ?: actualState
