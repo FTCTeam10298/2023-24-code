@@ -28,6 +28,10 @@ class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
                 Transfer.Side.Right -> rightClawAngleDegrees
             }
         }
+        fun mapToSide(): Map<Transfer.Side, Double> = mapOf(
+                Transfer.Side.Left to leftClawAngleDegrees,
+                Transfer.Side.Right to rightClawAngleDegrees
+        )
     }
     fun getWristActualState(hardware: RobotTwoHardware): ActualWrist {
         return ActualWrist(

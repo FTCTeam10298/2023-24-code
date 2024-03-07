@@ -923,9 +923,16 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         //Need to only trigger on rising edge
 //        handoffIsReadyCheck
         val gamepad1RumbleEffectToCondition: Map<RumbleEffects, List<()->Boolean>> = mapOf(
-                RumbleEffects.Throb to listOf(
-                        {handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)}
-                )
+                RumbleEffects.Throb to listOf {
+                    wrist.clawsAsMap.map {(side, claw) ->
+                        claw.isClawAtAngle(
+                                target = ClawTarget.Gripping,
+                                actualDegrees = actualRobot.depoState.wristAngles.getBySide(side),)
+                    }.fold(false) { acc, it ->
+                        acc || it
+                    }
+//                    handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)
+                }
 //                RumbleEffects.OneTap to listOf(
 //                        { lift.isSlideSystemAllTheWayIn(actualRobot.depoState.lift) && lift.isSlideSystemAllTheWayIn(previousActualWorld.actualRobot.depoState.lift)},
 //                        { theRobotJustCollectedTwoPixels },
