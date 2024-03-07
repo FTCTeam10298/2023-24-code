@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import android.graphics.Color
 import com.qualcomm.robotcore.hardware.ColorSensor
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.ActualRobot
@@ -298,11 +299,12 @@ class Transfer(private val telemetry: Telemetry) {
         val rgbAsMap = mapOf(RGB.Red to red, RGB.Green to green, RGB.Blue to blue)
     }
     fun getSensorReading(sensor: ColorSensor): SensorReading {
+        val reading = sensor.argb()
         return SensorReading(
-                red= sensor.red(),
-                green= sensor.green(),
-                blue= sensor.blue(),
-                alpha = sensor.alpha()
+                red   = Color.red(reading),
+                green = Color.green(reading),
+                blue  = Color.blue(reading),
+                alpha = Color.alpha(reading),
         )
     }
 //
