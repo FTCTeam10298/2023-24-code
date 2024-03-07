@@ -332,94 +332,119 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             wrist: Wrist
     ) {
         /**Drive*/
-        drivetrain.actuateDrivetrain(
-            targetState.targetRobot.drivetrainTarget,
-            previousTargetState.targetRobot.drivetrainTarget,
-            actualState.actualRobot.positionAndRotation,
-        )
+        measured("drivetrain"){
+            drivetrain.actuateDrivetrain(
+                targetState.targetRobot.drivetrainTarget,
+                previousTargetState.targetRobot.drivetrainTarget,
+                actualState.actualRobot.positionAndRotation,
+            )
+        }
 
         /**Extendo*/
-        val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.movementMode) {
-            MovementMode.Position -> when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {
-                Extendo.ExtendoPositions.AllTheWayInTarget -> {
-                    val atZeroPosition = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= Extendo.ExtendoPositions.Min.ticks + 5
-                    if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
+
+        measured("extendo") {
+            val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.movementMode) {
+                MovementMode.Position -> when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {
+                    Extendo.ExtendoPositions.AllTheWayInTarget -> {
+                        val atZeroPosition = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= Extendo.ExtendoPositions.Min.ticks + 5
+                        if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
+                            extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
+                        } else {
+                            -0.48
+                        }
+                    }
+                    else -> {
                         extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
-                    } else {
-                        -0.48
                     }
                 }
-                else -> {
-                    extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
+
+                MovementMode.Power -> {
+                    targetState.targetRobot.collectorTarget.extendo.power
                 }
             }
-            MovementMode.Power -> {
-                targetState.targetRobot.collectorTarget.extendo.power
-            }
+            extendo.powerSubsystem(extendoPower, this)
         }
-        extendo.powerSubsystem(extendoPower, this)
-
         /**Collector*/
-        intake.powerSubsystem(targetState.targetRobot.collectorTarget.intakeNoodles.power, this)
+
+        measured("collector") {
+            intake.powerSubsystem(targetState.targetRobot.collectorTarget.intakeNoodles.power, this)
+        }
 
         /**Rollers*/
-        transfer.powerSubsystem(targetState.targetRobot.collectorTarget.rollers, this, actualRobot = actualState.actualRobot)
+
+        measured("rollers") {
+            transfer.powerSubsystem(targetState.targetRobot.collectorTarget.rollers, this, actualRobot = actualState.actualRobot)
+        }
 
         /**Lift*/
-        val liftPower: Double = when (targetState.targetRobot.depoTarget.lift.movementMode) {
-            MovementMode.Position -> {
-                lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
-            }
-            MovementMode.Power -> {
-                telemetry.addLine("Running lift in manual mode at power ${targetState.targetRobot.depoTarget.lift.power}")
-                targetState.targetRobot.depoTarget.lift.power
-            }
-        }
 
-        telemetry.addLine("lift position: ${targetState.targetRobot.depoTarget.lift.targetPosition}")
-        telemetry.addLine("lift power: $liftPower\n\n")
-        lift.powerSubsystem(liftPower, this)
+        measured("lift") {
+            val liftPower: Double = when (targetState.targetRobot.depoTarget.lift.movementMode) {
+                MovementMode.Position -> {
+                    lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
+                }
+                MovementMode.Power -> {
+                    telemetry.addLine("Running lift in manual mode at power ${targetState.targetRobot.depoTarget.lift.power}")
+                    targetState.targetRobot.depoTarget.lift.power
+                }
+            }
+
+            telemetry.addLine("lift position: ${targetState.targetRobot.depoTarget.lift.targetPosition}")
+            telemetry.addLine("lift power: $liftPower\n\n")
+            lift.powerSubsystem(liftPower, this)
+        }
 
         /**Arm*/
-//        val armPower: Double = if (targetState.targetRobot.depoTarget.armPosition == Arm.Positions.Manual) {
-//            targetState.targetRobot.depoTarget.armPosition.
-//        } else {
-//            arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
-//        }
-        val armPower: Double = when (targetState.targetRobot.depoTarget.armPosition.movementMode) {
-            MovementMode.Position -> {
-                arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.targetPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
+
+        measured("arm") {
+    //        val armPower: Double = if (targetState.targetRobot.depoTarget.armPosition == Arm.Positions.Manual) {
+    //            targetState.targetRobot.depoTarget.armPosition.
+    //        } else {
+    //            arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
+    //        }
+            val armPower: Double = when (targetState.targetRobot.depoTarget.armPosition.movementMode) {
+                MovementMode.Position -> {
+                    arm.calcPowerToReachTarget(targetState.targetRobot.depoTarget.armPosition.targetPosition.angleDegrees, actualState.actualRobot.depoState.armAngleDegrees)
+                }
+                MovementMode.Power -> {
+                    targetState.targetRobot.depoTarget.armPosition.power
+                }
             }
-            MovementMode.Power -> {
-                targetState.targetRobot.depoTarget.armPosition.power
-            }
+            arm.powerSubsystem(armPower, this)
         }
-        arm.powerSubsystem(armPower, this)
 
         /**Claws*/
-        wrist.powerSubsystem(targetState.targetRobot.depoTarget.wristPosition, actualState.actualRobot.depoState.wristAngles,this)
-//        val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.left) {
-//            Claw.ClawTarget.Gripping -> RobotTwoHardware.LeftClawPosition.Gripping
-//            Claw.ClawTarget.Retracted -> RobotTwoHardware.LeftClawPosition.Retracted
-//        }
-//        leftClawServo.position = leftClawPosition.position
-//
-//        val rightClawPosition: RobotTwoHardware.RightClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.right) {
-//            Claw.ClawTarget.Gripping -> RobotTwoHardware.RightClawPosition.Gripping
-//            Claw.ClawTarget.Retracted -> RobotTwoHardware.RightClawPosition.Retracted
-//        }
-//        rightClawServo.position = rightClawPosition.position
+        measured("claws") {
+            wrist.powerSubsystem(targetState.targetRobot.depoTarget.wristPosition, actualState.actualRobot.depoState.wristAngles,this)
+    //        val leftClawPosition: RobotTwoHardware.LeftClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.left) {
+    //            Claw.ClawTarget.Gripping -> RobotTwoHardware.LeftClawPosition.Gripping
+    //            Claw.ClawTarget.Retracted -> RobotTwoHardware.LeftClawPosition.Retracted
+    //        }
+    //        leftClawServo.position = leftClawPosition.position
+    //
+    //        val rightClawPosition: RobotTwoHardware.RightClawPosition = when (targetState.targetRobot.depoTarget.wristPosition.right) {
+    //            Claw.ClawTarget.Gripping -> RobotTwoHardware.RightClawPosition.Gripping
+    //            Claw.ClawTarget.Retracted -> RobotTwoHardware.RightClawPosition.Retracted
+    //        }
+    //        rightClawServo.position = rightClawPosition.position
+        }
 
         /**Hang*/
-        hangReleaseServo.power = targetState.targetRobot.hangPowers.power
+        measured("hang") {
+            hangReleaseServo.power = targetState.targetRobot.hangPowers.power
+        }
 
         /**Launcher*/
-        launcherServo.position = targetState.targetRobot.launcherPosition.position
+        measured("launcher") {
+            launcherServo.position = targetState.targetRobot.launcherPosition.position
+        }
 
         /**Lights*/
-//        lights.setPattern(targetState.targetRobot.lights.targetColor)
+        measured("lights"){
+    //        lights.setPattern(targetState.targetRobot.lights.targetColor)
 
-        neoPixelActualState = neopixelSystem.writeQuicklyFromCenter(30, targetState.targetRobot.lights.stripTarget, actualState.actualRobot.neopixelState, neopixelDriver)
+            neoPixelActualState = neopixelSystem.writeQuicklyFromCenter(30, targetState.targetRobot.lights.stripTarget, actualState.actualRobot.neopixelState, neopixelDriver)
+        }
     }
 
     fun wiggleTest(telemetry: Telemetry, gamepad: Gamepad) {
