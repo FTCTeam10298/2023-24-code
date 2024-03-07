@@ -40,6 +40,25 @@ import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSee
 import us.brainstormz.robotTwo.subsystems.readColor
 import java.lang.Thread.sleep
 import kotlin.math.PI
+class WrappedColorSensor(val offset:Int, val sensor:NormalizedColorSensor){
+    var lastReading: ColorReading? = null
+    var readCycle = 1 + offset
+
+    fun read(): ColorReading = measured("colorRead"){
+        readCycle +=1
+        val lastReading = this.lastReading
+        if(lastReading==null || (readCycle%2 == 0)){
+            println("Getting new reading for ${sensor.deviceName}")
+            val c = measured("real-color-read"){readColor(sensor)}
+            this.lastReading = c
+            c
+        }else{
+            println("Recycling reading for ${sensor.deviceName}")
+            lastReading
+        }
+    }
+}
+
 
 open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
 
@@ -113,10 +132,15 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var leftTransferServo: CRServo
     lateinit var rightTransferServo: CRServo
 
+
+    lateinit var leftTransferUpperSensorWrapped:WrappedColorSensor
     lateinit var leftTransferUpperSensor: NormalizedColorSensor
+    lateinit var rightTransferUpperSensorWrapped:WrappedColorSensor
     lateinit var rightTransferUpperSensor: NormalizedColorSensor
 
+    lateinit var leftTransferLowerSensorWrapped:WrappedColorSensor
     lateinit var leftTransferLowerSensor: NormalizedColorSensor
+    lateinit var rightTransferLowerSensorWrapped:WrappedColorSensor
     lateinit var rightTransferLowerSensor: NormalizedColorSensor
 
     lateinit var leftRollerEncoder: AnalogInput
@@ -213,10 +237,14 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         armEncoder = ctrlHub.getAnalogInput(2)
 
         leftTransferUpperSensor = hwMap["rightLowSensor"] as NormalizedColorSensor
+        leftTransferUpperSensorWrapped = WrappedColorSensor(1, leftTransferUpperSensor)
         rightTransferUpperSensor = hwMap["leftLowSensor"] as NormalizedColorSensor
+        rightTransferUpperSensorWrapped = WrappedColorSensor(2, rightTransferUpperSensor)
 
         leftTransferLowerSensor = hwMap["rightSensor"] as NormalizedColorSensor
+        leftTransferLowerSensorWrapped = WrappedColorSensor(1, leftTransferLowerSensor)
         rightTransferLowerSensor = hwMap["leftSensor"] as NormalizedColorSensor
+        rightTransferLowerSensorWrapped = WrappedColorSensor(2, rightTransferLowerSensor)
 
         leftRollerEncoder = exHub.getAnalogInput(1)
         rightRollerEncoder = ctrlHub.getAnalogInput(0)

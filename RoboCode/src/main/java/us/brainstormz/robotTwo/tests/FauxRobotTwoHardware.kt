@@ -18,6 +18,7 @@ import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorSystem
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.WrappedColorSensor
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 
 class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHardware(opmode = opmode, telemetry = telemetry) {
@@ -53,7 +54,9 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
         rightRollerEncoder = AnalogInput(FauxAnalogInputController(), 0)
 
         leftTransferUpperSensor = FauxColorSensor()
+        leftTransferUpperSensorWrapped = WrappedColorSensor(1, leftTransferUpperSensor)
         rightTransferUpperSensor = FauxColorSensor()
+        rightTransferUpperSensorWrapped = WrappedColorSensor(2, leftTransferUpperSensor)
 
         liftMagnetLimit = FauxDigitalChannel()
 
