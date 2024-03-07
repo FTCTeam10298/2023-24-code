@@ -453,9 +453,10 @@ green   - OtherColorReading(red=0.037695315,  green=0.07109375,  blue=0.03544921
     data class OtherColorReading(val red: Float, val green: Float, val blue: Float, val alpha: Float) {
         val asList = listOf(red, green, blue, alpha)
     }
-    fun getColorSensorReading(sensor: ColorSensor): OtherColorReading = measured("get color sensor"){
-        val normalized = sensor as NormalizedColorSensor
+    private fun getColorSensorReading(sensor: NormalizedColorSensor): OtherColorReading = measured("get color sensor"){
+        val normalized = sensor
         val c = normalized.normalizedColors
+        println("Read color from a ${sensor.javaClass}")
         OtherColorReading(
             red= c.red,
             green= c.green,

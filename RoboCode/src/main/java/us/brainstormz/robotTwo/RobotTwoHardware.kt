@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.IMU
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -110,11 +111,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var leftTransferServo: CRServo
     lateinit var rightTransferServo: CRServo
 
-    lateinit var leftTransferUpperSensor: ColorSensor
-    lateinit var rightTransferUpperSensor: ColorSensor
+    lateinit var leftTransferUpperSensor: NormalizedColorSensor
+    lateinit var rightTransferUpperSensor: NormalizedColorSensor
 
-    lateinit var leftTransferLowerSensor: ColorSensor
-    lateinit var rightTransferLowerSensor: ColorSensor
+    lateinit var leftTransferLowerSensor: NormalizedColorSensor
+    lateinit var rightTransferLowerSensor: NormalizedColorSensor
 
     lateinit var leftRollerEncoder: AnalogInput
     lateinit var rightRollerEncoder: AnalogInput
@@ -209,11 +210,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)
 
-        leftTransferUpperSensor = hwMap["rightLowSensor"] as ColorSensor
-        rightTransferUpperSensor = hwMap["leftLowSensor"] as ColorSensor
+        leftTransferUpperSensor = hwMap["rightLowSensor"] as NormalizedColorSensor
+        rightTransferUpperSensor = hwMap["leftLowSensor"] as NormalizedColorSensor
 
-        leftTransferLowerSensor = hwMap["rightSensor"] as ColorSensor
-        rightTransferLowerSensor = hwMap["leftSensor"] as ColorSensor
+        leftTransferLowerSensor = hwMap["rightSensor"] as NormalizedColorSensor
+        rightTransferLowerSensor = hwMap["leftSensor"] as NormalizedColorSensor
 
         leftRollerEncoder = exHub.getAnalogInput(1)
         rightRollerEncoder = ctrlHub.getAnalogInput(0)
