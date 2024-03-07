@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo.subsystems
 import android.graphics.Color
 import com.qualcomm.robotcore.hardware.ColorSensor
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.operationFramework.measured
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.AxonEncoderReader
@@ -75,11 +76,11 @@ class Transfer(private val telemetry: Telemetry) {
         return ActualTransfer(
                 left = ActualTransferHalf(
                         upperSensor = TeleopTest.emptySensorReading,
-                        lowerSensor = getSensorReading(hardware.leftTransferLowerSensor),
+                        lowerSensor = getColorSensorReading(hardware.leftTransferLowerSensor),
                 ),
                 right = ActualTransferHalf(
                         upperSensor = TeleopTest.emptySensorReading,
-                        lowerSensor = getSensorReading(hardware.rightTransferLowerSensor),
+                        lowerSensor = getColorSensorReading(hardware.rightTransferLowerSensor),
                 )
         )
     }
@@ -298,7 +299,7 @@ class Transfer(private val telemetry: Telemetry) {
         val asList = listOf(red, green, blue, alpha)
         val rgbAsMap = mapOf(RGB.Red to red, RGB.Green to green, RGB.Blue to blue)
     }
-    fun getSensorReading(sensor: ColorSensor): SensorReading {
+    fun getColorSensorReading(sensor: ColorSensor): SensorReading = measured("get color sensor"){
         val reading = sensor.argb()
         return SensorReading(
                 red   = Color.red(reading),

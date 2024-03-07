@@ -7,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
+import us.brainstormz.operationFramework.measured
 import us.brainstormz.robotTwo.DepoManager.*
 import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
@@ -1034,20 +1035,32 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
-    fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) {
+    fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) = measured("main loop"){
 
-        for (hub in hardware.allHubs) {
-            hub.clearBulkCache()
+        measured("clear bulk cache"){
+            for (hub in hardware.allHubs) {
+                hub.clearBulkCache()
+            }
         }
         
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = { previousActualState ->
-                    val currentGamepad1 = Gamepad()
-                    currentGamepad1.copy(gamepad1)
-                    val currentGamepad2 = Gamepad()
-                    currentGamepad2.copy(gamepad2)
+                    val (currentGamepad1, currentGamepad2)  = measured("gamepad copies"){
+                        val currentGamepad1 = Gamepad()
+                        currentGamepad1.copy(gamepad1)
+                        val currentGamepad2 = Gamepad()
+                        currentGamepad2.copy(gamepad2)
+                        currentGamepad1 to currentGamepad2
+                    }
+
+                    val actualRobot = hardware.getActualState(
+                            drivetrain= drivetrain,
+                            depoManager = depoManager,
+                            collectorSystem = collectorSystem,
+                            previousActualWorld= previousActualState,
+                    )
                     ActualWorld(
-                            actualRobot = hardware.getActualState(drivetrain= drivetrain, depoManager = depoManager, collectorSystem = collectorSystem, previousActualWorld= previousActualState),
+                            actualRobot = actualRobot,
                             actualGamepad1 = currentGamepad1,
                             actualGamepad2 = currentGamepad2,
                             timestampMilis = System.currentTimeMillis()
@@ -1062,7 +1075,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState ->
                     telemetry.addLine("\ntargetState: $targetState")
-                    hardware.actuateRobot(
+                    measured("actuate robot"){
+                        hardware.actuateRobot(
                             targetState,
                             previousTargetState ?: targetState,
                             actualState,
@@ -1073,17 +1087,23 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             extendo= extendo,
                             intake= intake,
                             transfer= transfer
-                    )
-                    if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
-                        gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                        )
                     }
-//                    hardware.lights.setPattern(targetState.targetRobot.lights.stripTarget)
+                    measured("rumble"){
+                        if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
+                            gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                        }
+                    }
+}//                    hardware.lights.setPattern(targetState.targetRobot.lights.stripTarget)
                 }
         )
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
-        telemetry.addLine("loop time: $loopTime milis")
-        telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime()} milis")
 
-        telemetry.update()
+        measured("telemetry"){
+            telemetry.addLine("loop time: $loopTime milis")
+            telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime()} milis")
+
+            telemetry.update()
+        }
     }
 }

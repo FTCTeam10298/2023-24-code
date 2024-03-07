@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo
 
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.operationFramework.measured
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
@@ -316,7 +317,7 @@ class DepoManager(
         return liftIsAtTarget && armIsAtTarget
     }
 
-    fun getDepoState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualDepo {
+    fun getDepoState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualDepo = measured("dep get depo state"){
         val readStartTimeMilis = System.currentTimeMillis()
         val actualDepo =  ActualDepo(
                 armAngleDegrees = arm.getArmAngleDegrees(hardware),
