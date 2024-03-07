@@ -35,7 +35,7 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
 
     fun getPosition(): PositionAndRotation = measured("drivetrain getPosition"){
         localizer.recalculatePositionAndRotation()
-        return localizer.currentPositionAndRotation()
+        localizer.currentPositionAndRotation()
     }
 
     fun actuateDrivetrain(target: DrivetrainTarget,

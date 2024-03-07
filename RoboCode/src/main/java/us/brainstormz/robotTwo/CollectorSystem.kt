@@ -35,6 +35,6 @@ class CollectorSystem(
         val collectorReadEndTimeMilis = System.currentTimeMillis()
         val timeToReadCollector = collectorReadEndTimeMilis-collectorReadStartTimeMilis
         telemetry.addLine("timeToReadCollector: $timeToReadCollector")
-        return actualCollector
+        actualCollector
     }
 }

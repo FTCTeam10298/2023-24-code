@@ -330,7 +330,7 @@ class DepoManager(
         val readEndTimeMilis = System.currentTimeMillis()
         val timeToRead = readEndTimeMilis-readStartTimeMilis
         telemetry.addLine("timeToRead Depo: $timeToRead")
-        return actualDepo
+        actualDepo
     }
 
 }

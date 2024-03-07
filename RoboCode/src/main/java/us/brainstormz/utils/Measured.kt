@@ -2,11 +2,26 @@ package us.brainstormz.utils
 
 import kotlin.random.Random
 
-val mStack = mutableListOf<String>()
-inline fun logMeasure(m:String) = println("[MEASURES] [${System.currentTimeMillis()}] [${mStack.joinToString("/")}] $m")
-inline fun <T>measured(name:String, fn:()->T):T{
+class TLocal<V>(private val makeInitial:(t:Thread)->V){
+    private val values = mutableMapOf<String, V>()
+    fun get():V{
+        val t = Thread.currentThread()
+        val n = t.name
+        return values.getOrPut(n) { makeInitial(t) }
+    }
+    fun set(v:V){
+        val n = Thread.currentThread().name
+        values[n] = v
+    }
+}
+val mStack = TLocal{
+    println("Initializing thread local for ${it.name}")
+    mutableListOf<String>()
+}
+fun logMeasure(m:String) = println("[MEASURES] [${Thread.currentThread().name}] [${System.currentTimeMillis()}] [${mStack.get().joinToString("/")}] $m")
+ fun <T>measured(name:String, fn:()->T):T{
     val start = System.currentTimeMillis()
-    mStack.add(name)
+    mStack.get().add(name)
 
     logMeasure("Started")
     val r = fn()
@@ -16,9 +31,12 @@ inline fun <T>measured(name:String, fn:()->T):T{
     if(duration > 300){
         logMeasure("SLOOOOOW ^")
     }
-    mStack.removeLastOrNull()
+    mStack.get().removeLastOrNull()
+
+    logMeasure("After")
     return r
 }
+
 
 
 
@@ -30,13 +48,19 @@ fun main() {
             if (fn != null) fn()
         }
     }
+    (0..2).forEach {
+        object:Thread(){
+            override fun run() {
 
-    while (true){
-        test("top-level"){
-            test("detail-a"){
-                test("sub-detail-foo")
+                while (true){
+                    test("top-level"){
+                        test("detail-a"){
+                            test("sub-detail-foo")
+                        }
+                        test("detail-b")
+                    }
+                }
             }
-            test("detail-b")
-        }
+        }.start()
     }
 }
