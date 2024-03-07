@@ -18,14 +18,37 @@ class FunctionalReactiveAutoRunner<TargetState, ActualState> {
     private inline fun now() = System.currentTimeMillis()
 }
 
+val mStack = mutableListOf<String>()
 inline fun <T>measured(name:String, fn:()->T):T{
     val start = System.currentTimeMillis()
+    mStack.add(name)
+    val tag = "[MEASURES] [$start] [${mStack.joinToString("/")}]"
+    println("$tag Started")
     val r = fn()
+    mStack.removeLastOrNull()
     val end = System.currentTimeMillis()
     val duration = end - start
-    println("[MEASURES] [$start] [$name] $duration millis (ended $end)")
+    println("$tag Finished in $duration millis (ended $end)")
     if(duration > 300){
         println("[MEASURES] SLOOOOOW ^")
     }
     return r
+}
+
+fun main() {
+
+    fun test(name:String, fn:(()->Unit)? = null){
+        measured(name) {
+            if (fn != null) fn()
+        }
+    }
+    
+    while (true){
+        test("top-level"){
+            test("detail a"){
+                test("sub detail foo")
+            }
+            test("detail b")
+        }
+    }
 }
