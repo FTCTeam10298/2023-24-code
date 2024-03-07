@@ -665,12 +665,29 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             RollerInput.RightOut -> null to Transfer.RollerPowers.Eject
             RollerInput.NoInput -> null to null
         }
-        val rollerTargetState = autoRollerState.copy(
-                leftServoCollect = autoRollerState.leftServoCollect.copy(
+        val rollerTargetState = Transfer.TransferTarget(
+                leftServoCollect =
+                autoRollerState.leftServoCollect.copy(
                         target = overrideRollerState.first ?: autoRollerState.leftServoCollect.target),
-                rightServoCollect = autoRollerState.rightServoCollect.copy(
-                        target = overrideRollerState.second ?: autoRollerState.rightServoCollect.target)
+
+                rightServoCollect =
+                autoRollerState.rightServoCollect.copy(
+                        target = overrideRollerState.second ?: autoRollerState.rightServoCollect.target,),
+
+                directorState =
+                if (intakeNoodleTarget == Intake.CollectorPowers.Eject) {
+                    Transfer.DirectorState.Left
+                } else {
+                    autoRollerState.directorState
+                }
         )
+//        autoRollerState.copy(
+//                leftServoCollect = autoRollerState.leftServoCollect.copy(
+//                        target = overrideRollerState.first ?: autoRollerState.leftServoCollect.target),
+//                rightServoCollect = autoRollerState.rightServoCollect.copy(
+//                        target = overrideRollerState.second ?: autoRollerState.rightServoCollect.target,),
+//                directorState = if ()
+//        )
 
         /**Extendo*/
 
@@ -1094,7 +1111,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
                         }
                     }
-}//                    hardware.lights.setPattern(targetState.targetRobot.lights.stripTarget)
+//                    hardware.lights.setPattern(targetState.targetRobot.lights.stripTarget)
                 }
         )
         val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
