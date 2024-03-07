@@ -311,7 +311,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         imu.initialize(parameters)
         imu.resetYaw()
     }
-    open fun getActualState(drivetrain: Drivetrain, collectorSystem: CollectorSystem, depoManager: DepoManager, previousActualWorld: ActualWorld?): ActualRobot = measured("actual robot"){
+    open fun getActualState(drivetrain: Drivetrain, collectorSystem: CollectorSystem, depoManager: DepoManager, previousActualWorld: ActualWorld?): ActualRobot = measured("getActualState"){
         telemetry.addLine("getting state")
         telemetry.addLine("extendo current position: ${extendoMotorMaster.currentPosition}")
         ActualRobot(

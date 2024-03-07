@@ -22,7 +22,7 @@ class CollectorSystem(
             val rightRollerAngleDegrees: Double,
     )
 
-    fun getCurrentState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualCollector = measured("Collector get current state"){
+    fun getCurrentState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualCollector = measured("collector-state"){
         val collectorReadStartTimeMilis = System.currentTimeMillis()
 
         val actualCollector = ActualCollector(
