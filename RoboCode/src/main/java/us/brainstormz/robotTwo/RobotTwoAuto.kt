@@ -556,7 +556,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                     ),
                     navigatingTargetSetup(
                             targetPosition =
-                                startPosition.copy(x= redDistanceFromCenterlineInches - 5, y = 52.0, r = 0.0),
+                                startPosition.copy(x= redDistanceFromCenterlineInches - 5, y = 52.0),
                             isTargetReached = ::isRobotAtAngle
                     ),
             )
@@ -580,18 +580,22 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                         ),
                 )
             }
-        } + listOf(navigatingTargetSetup(
-                targetPosition = readyToGoAroundTrussWaypoint,
-                isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
-                    val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
+        } + listOf(
+                navigatingTargetSetup(
+                        targetPosition = readyToGoAroundTrussWaypoint.copy(r = startPosition.r),
+                        isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
+                            isRobotAtPosition
+                        }),
+                navigatingTargetSetup(
+                        targetPosition = readyToGoAroundTrussWaypoint,
+                        isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
+                            val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
+                            isRobotAtPosition
+                        }),
 
-                    drivetrain.rotationPID = if (isRobotAtPosition)
-                        drivetrain.rotationOnlyPID
-                    else
-                        drivetrain.rotationWithOtherAxisPID
 
-                    isRobotAtPosition
-                }))
+                )
 
         val driveToBackboard = listOf(
                 navigatingTargetSetup(targetPosition =
