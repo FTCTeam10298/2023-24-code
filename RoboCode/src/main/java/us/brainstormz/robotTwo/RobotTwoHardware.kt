@@ -21,7 +21,6 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
 import posePlanner.Point2D
 import us.brainstormz.hardwareClasses.MecanumHardware
 import us.brainstormz.hardwareClasses.SmartLynxModule
@@ -209,10 +208,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             //opmode.requestOpModeStop()
         }
 
-//        val hub =  allHubs.first()
-//        hub.getInputVoltage(VoltageUnit.VOLTS)
-//        hub.getAuxiliaryVoltage(VoltageUnit.VOLTS)
-
         //Motors
         lFDrive =       ctrlHub.getMotor(0)
         rFDrive =       ctrlHub.getMotor(3)
@@ -259,8 +254,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         leftClawEncoder = exHub.getAnalogInput(3)
         rightClawEncoder = exHub.getAnalogInput(2)
-        leftClawEncoderReader =     AxonEncoderReader(leftClawEncoder, hub = exHubLynx!!, angleOffsetDegrees = -80.0,  AxonEncoderReader.Direction.Reverse)//260.0)
-        rightClawEncoderReader =    AxonEncoderReader(rightClawEncoder, hub = exHubLynx!!, angleOffsetDegrees = -80.0, AxonEncoderReader.Direction.Reverse)
+        leftClawEncoderReader =     AxonEncoderReader(leftClawEncoder, angleOffsetDegrees = -80.0,  AxonEncoderReader.Direction.Reverse)//260.0)
+        rightClawEncoderReader =    AxonEncoderReader(rightClawEncoder, angleOffsetDegrees = -80.0, AxonEncoderReader.Direction.Reverse)
 
         liftMagnetLimit = ctrlHub.getDigitalController(6) as DigitalChannel
 

@@ -1,11 +1,8 @@
 package us.brainstormz.robotTwo
 
-import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.AnalogInput
-import com.qualcomm.robotcore.hardware.Servo
-import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
 
-class AxonEncoderReader(private val axonEncoder: AnalogInput, private val hub: LynxModule, val angleOffsetDegrees: Double = 0.0, val direction: Direction = Direction.Forward) {
+class AxonEncoderReader(private val axonEncoder: AnalogInput, val angleOffsetDegrees: Double = 0.0, val direction: Direction = Direction.Forward) {
     enum class Direction {
         Forward,
         Reverse
@@ -23,12 +20,9 @@ class AxonEncoderReader(private val axonEncoder: AnalogInput, private val hub: L
 
     /** Angle from 0-360 */
     fun getRawPositionDegrees(): Double {
-        val suppliedVoltage = hub.getAuxiliaryVoltage(VoltageUnit.VOLTS)
-        println("suppliedVoltage: $suppliedVoltage")
         // get the voltage of our analog line
         // divide by 3.3 (the max voltage) to get a value between 0 and 1
         // multiply by 360 to convert it to 0 to 360 degrees
-//        return ((axonEncoder.voltage / 3.3) * 360)
-        return ((axonEncoder.voltage / suppliedVoltage) * 360)
+        return ((axonEncoder.voltage / 3.3) * 360)
     }
 }
