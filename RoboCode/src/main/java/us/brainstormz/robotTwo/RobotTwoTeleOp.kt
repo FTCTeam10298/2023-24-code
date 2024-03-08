@@ -30,9 +30,10 @@ import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.utils.Utils.sqrKeepSign
 import us.brainstormz.utils.measured
+import us.brainstormz.utils.runOnDedicatedThread
 import kotlin.math.absoluteValue
 
-class StatsDumper(context: Context){
+class StatsDumper(val reportingIntervalMillis:Long, context: Context){
     val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
     val memInfo = MemoryInfo()
     val outFoo = RunningAppProcessInfo()
@@ -99,19 +100,12 @@ class StatsDumper(context: Context){
     fun start() {
         runOnDedicatedThread("bot stats thread"){
             while(true){
-                Thread.sleep(100)
+                Thread.sleep(reportingIntervalMillis)
                 dumpRuntimeStats()
             }
         }
     }
 
-    fun runOnDedicatedThread(name:String, fn:()->Unit){
-        object:Thread(name){
-            override fun run() {
-                fn()
-            }
-        }.start()
-    }
 }
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val intake = Intake()
@@ -1128,11 +1122,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
     }
 
+    lateinit var stateDumper: StateDumper
     lateinit var statsDumper:StatsDumper
     lateinit var drivetrain: Drivetrain
     fun init(hardware: RobotTwoHardware) {
-        statsDumper = StatsDumper(FtcRobotControllerActivity.instance!!)
+        statsDumper = StatsDumper(reportingIntervalMillis = 1000, FtcRobotControllerActivity.instance!!)
         statsDumper.start()
+        stateDumper = StateDumper(reportingIntervalMillis = 1000, functionalReactiveAutoRunner)
+        stateDumper.start()
 
         drivetrain = Drivetrain(hardware, FauxLocalizer(), telemetry)
 
@@ -1175,18 +1172,19 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) = measured("main loop"){
 
-
-
         measured("clear bulk cache"){
             for (hub in hardware.allHubs) {
                 hub.clearBulkCache()
             }
         }
+
+        measured("expensiveTelemetryLines-addLine"){
+            stateDumper.lines().forEach(telemetry::addLine)
+        }
         
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = {getActualState(it, gamepad1, gamepad2, hardware)},
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
-                   // telemetry.addLine("actualState: $actualState\n")
                     val previousActualState = previousActualState ?: actualState
                     val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
                     val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)

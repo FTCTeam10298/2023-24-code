@@ -15,3 +15,12 @@ object Utils {
         return -n * abs(n)
     }
 }
+
+
+fun runOnDedicatedThread(name:String, fn:()->Unit){
+    object:Thread(name){
+        override fun run() {
+            fn()
+        }
+    }.start()
+}
