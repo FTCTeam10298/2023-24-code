@@ -46,7 +46,7 @@ class Transfer(private val telemetry: Telemetry) {
 
 //    fun checkIfPixelIsTransferred(actualWorld: ActualWorld, transferHalfState: TransferHalfState, previousRollerTarget: RollerTarget): Boolean {
     fun checkIfPixelIsTransferred(transferHalfState: TransferHalfState): Boolean {
-        return transferHalfState.upperSensor.hasPixelBeenSeen
+        return transferHalfState.lowerSensor.hasPixelBeenSeen
 //        return transferHalfState.lowerSensor.hasPixelBeenSeen && checkIfRollerIsDoneTransferring(actualWorld.timestampMilis, previousRollerTarget.timeStartedIntakingMillis)
     }
 
@@ -91,12 +91,12 @@ class Transfer(private val telemetry: Telemetry) {
     fun getActualTransfer(hardware: RobotTwoHardware): ActualTransfer {
         return ActualTransfer(
                 left = ActualTransferHalf(
-                        upperSensor = hardware.leftTransferUpperSensorWrapped.read(),
+                        upperSensor = TeleopTest.emptySensorReading,
 //                        lowerSensor = readColor(hardware.leftTransferLowerSensor),
                         lowerSensor = hardware.leftTransferLowerSensorWrapped.read(),
                 ),
                 right = ActualTransferHalf(
-                        upperSensor = hardware.rightTransferUpperSensorWrapped.read(),
+                        upperSensor = TeleopTest.emptySensorReading,
 //                        lowerSensor = readColor(hardware.rightTransferLowerSensor),
                         lowerSensor = hardware.rightTransferLowerSensorWrapped.read(),
                 )
@@ -134,7 +134,7 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
 
-    data class RollerTarget(val target: RollerPowers, val timeStartedIntakingMillis: Long? = null): CleanToStringPrint()
+    data class RollerTarget(val target: RollerPowers, val timeStartedIntakingMillis: Long): CleanToStringPrint()
     data class TransferTarget(
             val leftServoCollect: RollerTarget,
             val rightServoCollect: RollerTarget,
@@ -153,60 +153,35 @@ class Transfer(private val telemetry: Telemetry) {
             previousRollerTarget: RollerTarget
             ): RollerTarget {
 
-
-        val upperSensorIsSeeingPixel = actualTransferHalfState.upperSensor.hasPixelBeenSeen
         val lowerSensorIsSeeingPixel = actualTransferHalfState.lowerSensor.hasPixelBeenSeen
 
 
-        val targetPower: RollerTarget = if (shouldFinishTransfer) {
-            if (upperSensorIsSeeingPixel) {
-                RollerTarget(RollerPowers.Off)
+        val targetPower: Pair<RollerPowers, Long?> = if (shouldFinishTransfer) {
+            val previousTimeStartedMovingPixelToNextStageMillis = previousRollerTarget.timeStartedIntakingMillis
+            if (lowerSensorIsSeeingPixel) {
+                if (0L == previousTimeStartedMovingPixelToNextStageMillis) {
+                    RollerPowers.Intake to timestampMillis
+                } else if (checkIfRollerIsDoneTransferring(timestampMillis, previousTimeStartedMovingPixelToNextStageMillis)) {
+                    RollerPowers.Intake to previousTimeStartedMovingPixelToNextStageMillis
+                } else {
+                    RollerPowers.Off to previousTimeStartedMovingPixelToNextStageMillis
+                }
             } else {
-//                val previousTimeStartedMovingPixelToNextStageMillis = previousRollerTarget.timeStartedIntakingMillis
-//                if (null == previousTimeStartedMovingPixelToNextStageMillis) {
-//                    RollerTarget(RollerPowers.Intake, timestampMillis)
-//                } else {
-//                    val timeSinceStartedMovingPixelToNextStageMillis = timestampMillis - (previousTimeStartedMovingPixelToNextStageMillis ?:timestampMillis)
-//                    val timeSinceStartedToWigglePixelMillis = 800
-//                    val timeToEjectWhenWigglingPixelMillis = 500
-//                    if (timeSinceStartedMovingPixelToNextStageMillis in timeSinceStartedToWigglePixelMillis..timeSinceStartedToWigglePixelMillis+timeToEjectWhenWigglingPixelMillis) {
-//                        RollerTarget(
-//                                target = RollerPowers.Eject,
-//                                timeStartedIntakingMillis = previousTimeStartedMovingPixelToNextStageMillis)
-//                    } else {
-//                        RollerTarget(
-//                                target = RollerPowers.Intake,
-//                                timeStartedIntakingMillis = previousTimeStartedMovingPixelToNextStageMillis)
-//                    }
-//                }
-                RollerTarget(RollerPowers.Intake)
+                RollerPowers.Off to null
             }
-
-//            if (lowerSensorIsSeeingPixel) {
-//                if (0L == previousTimeStartedMovingPixelToNextStageMillis) {
-//                    RollerPowers.Intake to timestampMillis
-//                } else if (checkIfRollerIsDoneTransferring(timestampMillis, previousTimeStartedMovingPixelToNextStageMillis)) {
-//                    RollerPowers.Intake to previousTimeStartedMovingPixelToNextStageMillis
-//                } else {
-//                    RollerPowers.Off to previousTimeStartedMovingPixelToNextStageMillis
-//                }
-//            } else {
-//                RollerPowers.Off to null
-//            }
         } else {
 //            if (upperSensorHasBeenSeen) {
 //                RollerPowers.Off
 //            } else {
-            if (lowerSensorIsSeeingPixel || upperSensorIsSeeingPixel) {
-                RollerTarget(RollerPowers.Off)
+            if (lowerSensorIsSeeingPixel) {
+                RollerPowers.Off to null
             } else {
-                RollerTarget(RollerPowers.Intake)
+                RollerPowers.Intake to null
             }
 //            }
         }
-        return targetPower
 
-//        return RollerTarget(targetPower.first, targetPower.second ?: 0L)
+        return RollerTarget(targetPower.first, targetPower.second ?: 0L)
     }
 
     fun getTransferSortingTarget(
