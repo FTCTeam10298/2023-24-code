@@ -815,6 +815,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
 
         /**Depo*/
+        telemetry.addLine("actualRobot.depoState.armAngleDegrees: ${actualRobot.depoState.armAngleDegrees}")
         val driverInputWrist = WristTargets(
                 left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
