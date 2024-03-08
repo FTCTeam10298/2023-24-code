@@ -66,8 +66,8 @@ class Arm: Subsystem, DualMovementModeSubsystem {
     fun getArmAngleDegrees(hardware: RobotTwoHardware): Double {
         //20
         //180
-//        val encoderReader: AxonEncoderReader = AxonEncoderReader(hardware.armEncoder, 148.0)
-        return  hardware.armEncoderReader.getPositionDegrees()
+        val encoderReader: AxonEncoderReader = AxonEncoderReader(hardware.armEncoder, 148.0)
+        return  encoderReader.getPositionDegrees()
     }
 
     private val armAngleMidpointDegrees = 150.0

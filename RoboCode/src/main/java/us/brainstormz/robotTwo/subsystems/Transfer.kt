@@ -56,10 +56,8 @@ class Transfer(private val telemetry: Telemetry) {
 
     fun getFlapAngleDegrees(side: Side, hardware: RobotTwoHardware): Double {
         val encoderReader = when (side) {
-//            Side.Left -> AxonEncoderReader(hardware.leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
-//            Side.Right -> AxonEncoderReader(hardware.rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
-            Side.Left -> hardware.leftRollerEncoderReader;
-            Side.Right -> hardware.rightRollerEncoderReader;
+            Side.Left -> AxonEncoderReader(hardware.leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
+            Side.Right -> AxonEncoderReader(hardware.rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
         }
 
         return (encoderReader.getPositionDegrees() * 2).mod(360.0)

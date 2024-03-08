@@ -1,7 +1,6 @@
 package us.brainstormz.robotTwo
 
 import android.util.Size
-import com.acmerobotics.roadrunner.constantProfile
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
 import com.qualcomm.hardware.lynx.LynxModule
@@ -107,7 +106,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var armServo1: CRServo
     lateinit var armServo2: CRServo
     lateinit var armEncoder: AnalogInput
-    lateinit var armEncoderReader: AxonEncoderReader
 
     enum class RightClawPosition(val position: Double) {
         Retracted(1.0),
@@ -148,8 +146,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
     lateinit var leftRollerEncoder: AnalogInput
     lateinit var rightRollerEncoder: AnalogInput
-    lateinit var leftRollerEncoderReader: AxonEncoderReader
-    lateinit var rightRollerEncoderReader: AxonEncoderReader
 
     //Aka throbber
     lateinit var transferDirectorServo: CRServo
@@ -247,7 +243,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)
-        armEncoderReader = AxonEncoderReader(armEncoder, hub = ctrlHubLynx!!, angleOffsetDegrees= 148.0)
 
         leftTransferUpperSensor = hwMap["rightUpSensor"] as NormalizedColorSensor
         leftTransferUpperSensorWrapped = WrappedColorSensor(1, leftTransferUpperSensor)
@@ -261,8 +256,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         leftRollerEncoder = exHub.getAnalogInput(1)
         rightRollerEncoder = ctrlHub.getAnalogInput(0)
-        leftRollerEncoderReader = AxonEncoderReader(leftRollerEncoder, hub = exHubLynx!!,0.0, direction = AxonEncoderReader.Direction.Forward)
-        rightRollerEncoderReader = AxonEncoderReader(rightRollerEncoder, hub= ctrlHubLynx!!, 0.0, direction = AxonEncoderReader.Direction.Forward)
 
         leftClawEncoder = exHub.getAnalogInput(3)
         rightClawEncoder = exHub.getAnalogInput(2)
