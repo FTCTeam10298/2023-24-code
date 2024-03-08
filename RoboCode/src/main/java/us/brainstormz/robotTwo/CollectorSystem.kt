@@ -18,8 +18,8 @@ class CollectorSystem(
     data class ActualCollector(
             val extendo: SlideSubsystem.ActualSlideSubsystem,
             val transferState: Transfer.ActualTransfer,
-            val leftRollerAngleDegrees: Double,
-            val rightRollerAngleDegrees: Double,
+//            val leftRollerAngleDegrees: Double,
+//            val rightRollerAngleDegrees: Double,
     )
 
     fun getCurrentState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualCollector = measured("collector-state"){
@@ -27,8 +27,8 @@ class CollectorSystem(
 
         val actualCollector = ActualCollector(
                 extendo= extendo.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.collectorSystemState?.extendo),
-                leftRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Left, hardware),
-                rightRollerAngleDegrees= transfer.getFlapAngleDegrees(Transfer.Side.Right, hardware),
+//                leftRollerAngleDegrees= 0.0,//transfer.getFlapAngleDegrees(Transfer.Side.Left, hardware),
+//                rightRollerAngleDegrees= 0.0,//transfer.getFlapAngleDegrees(Transfer.Side.Right, hardware),
                 transferState= transfer.getActualTransfer(hardware),
         )
 

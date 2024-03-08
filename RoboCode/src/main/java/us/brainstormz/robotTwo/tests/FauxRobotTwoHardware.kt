@@ -50,8 +50,8 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
 
 
         armEncoder = AnalogInput(FauxAnalogInputController(), 0)
-        leftRollerEncoder = AnalogInput(FauxAnalogInputController(), 0)
-        rightRollerEncoder = AnalogInput(FauxAnalogInputController(), 0)
+//        leftRollerEncoder = AnalogInput(FauxAnalogInputController(), 0)
+//        rightRollerEncoder = AnalogInput(FauxAnalogInputController(), 0)
 
         leftTransferUpperSensor = FauxColorSensor()
         leftTransferUpperSensorWrapped = WrappedColorSensor(1, leftTransferUpperSensor)

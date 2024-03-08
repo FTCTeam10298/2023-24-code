@@ -143,8 +143,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var rightTransferLowerSensorWrapped:WrappedColorSensor
     lateinit var rightTransferLowerSensor: NormalizedColorSensor
 
-    lateinit var leftRollerEncoder: AnalogInput
-    lateinit var rightRollerEncoder: AnalogInput
+//    lateinit var leftRollerEncoder: AnalogInput
+//    lateinit var rightRollerEncoder: AnalogInput
 
     //Aka throbber
     lateinit var transferDirectorServo: CRServo
@@ -249,8 +249,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         rightTransferLowerSensor = hwMap["leftSensor"] as NormalizedColorSensor
         rightTransferLowerSensorWrapped = WrappedColorSensor(2, rightTransferLowerSensor)
 
-        leftRollerEncoder = exHub.getAnalogInput(1)
-        rightRollerEncoder = ctrlHub.getAnalogInput(0)
+//        rightRollerEncoder = ctrlHub.getAnalogInput(0)
 
         leftClawEncoder = exHub.getAnalogInput(3)
         rightClawEncoder = exHub.getAnalogInput(2)

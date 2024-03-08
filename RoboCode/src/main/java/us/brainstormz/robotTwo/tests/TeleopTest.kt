@@ -196,8 +196,8 @@ class TeleopTest {
                                         limitSwitchIsActivated = false,
                                         zeroPositionOffsetTicks = 0,
                                         currentAmps = 0.0),
-                                leftRollerAngleDegrees = 0.0,
-                                rightRollerAngleDegrees = 0.0,
+//                                leftRollerAngleDegrees = 0.0,
+//                                rightRollerAngleDegrees = 0.0,
                                 transferState = Transfer.ActualTransfer(
                                         left = emptyActualTransferHalf,
                                         right = emptyActualTransferHalf

@@ -49,39 +49,6 @@ class Transfer(private val telemetry: Telemetry) {
 //        return transferHalfState.lowerSensor.hasPixelBeenSeen && checkIfRollerIsDoneTransferring(actualWorld.timestampMilis, previousRollerTarget.timeStartedIntakingMillis)
     }
 
-    private val leftFlapTransferReadyAngleDegrees = 20.0
-    private val rightFlapTransferReadyAngleDegrees = 305.0
-    private val leftFlapKp = 0.22
-    private val rightFlapKp = 0.22
-
-    fun getFlapAngleDegrees(side: Side, hardware: RobotTwoHardware): Double = measured("FlapAngle") {
-        val encoderReader = when (side) {
-            Side.Left -> AxonEncoderReader(hardware.leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
-            Side.Right -> AxonEncoderReader(hardware.rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
-        }
-
-        (encoderReader.getPositionDegrees() * 2).mod(360.0)
-    }
-
-    fun isFlapAtAngle(currentAngleDegrees: Double, angleToCheckDegrees: Double, flapAngleToleranceDegrees: Double = 5.0): Boolean {
-        val maxAcceptedAngle = (angleToCheckDegrees + flapAngleToleranceDegrees).mod(360.0)
-        val minAcceptedAngle = (angleToCheckDegrees - flapAngleToleranceDegrees).mod(360.0)
-        val angleTolerance = (minAcceptedAngle..maxAcceptedAngle)
-        return currentAngleDegrees in angleTolerance
-    }
-
-    fun getPowerToMoveFlapToAngle(flap: Side, targetAngleDegrees: Double, currentAngleDegrees: Double): Double {
-        val angleErrorDegrees = (currentAngleDegrees - targetAngleDegrees).mod(360.0)
-
-        val proportionalConstant = when (flap) {
-            Side.Left -> leftFlapKp
-            Side.Right -> rightFlapKp
-        }
-        val power = abs((angleErrorDegrees / 360) * proportionalConstant)
-
-        return power
-    }
-
     data class ActualTransferHalf(val upperSensor: ColorReading, val lowerSensor: ColorReading)
     data class ActualTransfer(val left: ActualTransferHalf, val right: ActualTransferHalf)
 
@@ -225,29 +192,10 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
     fun powerSubsystem(transferState: TransferTarget, hardware: RobotTwoHardware, actualRobot: ActualRobot) {
-        hardware.leftTransferServo.power = getRollerPowerBasedOnState(Side.Left, transferState.leftServoCollect.target, actualRobot)
-        hardware.rightTransferServo.power = getRollerPowerBasedOnState(Side.Right, transferState.rightServoCollect.target, actualRobot)
+        hardware.leftTransferServo.power = transferState.leftServoCollect.target.power
+        hardware.rightTransferServo.power = transferState.rightServoCollect.target.power
         hardware.transferDirectorServo.power = transferState.directorState.power
     }
-
-    fun getRollerPowerBasedOnState(side: Side, rollerState: RollerPowers, actualRobot: ActualRobot): Double {
-        val flapTransferReadyAngleDegrees = when (side) {
-            Side.Left -> leftFlapTransferReadyAngleDegrees
-            Side.Right -> rightFlapTransferReadyAngleDegrees
-        }
-        val actualFlapAngle = when (side) {
-            Side.Left -> actualRobot.collectorSystemState.leftRollerAngleDegrees
-            Side.Right -> actualRobot.collectorSystemState.rightRollerAngleDegrees
-        }
-//        return if (rollerState == RollerPowers.Off) {
-//            getPowerToMoveFlapToAngle(side, flapTransferReadyAngleDegrees, actualFlapAngle)
-////            0.0
-//        } else {
-//            rollerState.power
-//        }
-        return rollerState.power
-    }
-
 
     /*
     No Pixel
