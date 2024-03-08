@@ -1,19 +1,22 @@
 package us.brainstormz.robotTwo
 
+import android.app.ActivityManager
+import android.app.ActivityManager.RunningAppProcessInfo
+import android.content.Context
 import android.os.Debug
+import android.os.Debug.MemoryInfo
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
+import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
-import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.DepoManager.*
-import us.brainstormz.utils.DeltaTimeMeasurer
-import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
+import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
@@ -25,9 +28,92 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 import us.brainstormz.utils.DataClassHelper
+import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.utils.Utils.sqrKeepSign
+import us.brainstormz.utils.measured
 import kotlin.math.absoluteValue
 
+class StatsDumper(context: Context){
+    val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    val memInfo = MemoryInfo()
+    val outFoo = RunningAppProcessInfo()
+    val memInfo2 = ActivityManager.MemoryInfo()
+
+    fun dumpRuntimeStats() = measured("dumpRuntimeStats"){
+        logRuntimeStat("Runtime.freeMemory", formatBytes(Runtime.getRuntime().freeMemory()))
+        logRuntimeStat("Runtime.maxMemory", formatBytes(Runtime.getRuntime().maxMemory()))
+        logRuntimeStat("Runtime.totalMemory", formatBytes(Runtime.getRuntime().totalMemory()))
+
+        logRuntimeStat("Debug.getNativeHeapSize", formatBytes(Debug.getNativeHeapSize()))
+        logRuntimeStat("Debug.getNativeHeapFreeSize", formatBytes(Debug.getNativeHeapFreeSize()))
+        logRuntimeStat("Debug.getNativeHeapAllocatedSize", formatBytes(Debug.getNativeHeapAllocatedSize()))
+
+        Debug.getMemoryInfo(memInfo)
+        memInfo.memoryStats.entries.forEach{(key, value) ->
+            logRuntimeStat("Debug.memoryStats.$key", value)
+        }
+
+//        03-07 17:49:02.263  4428  4569 I System.out: [MEMORY_STATS] [Debug.memoryStats.summary.native-heap] 5360
+//        03-07 17:49:02.263  4428  4569 I System.out: [MEMORY_STATS] [Debug.memoryStats.summary.system] 10936
+//        03-07 17:49:02.263  4428  4569 I System.out: [MEMORY_STATS] [Debug.memoryStats.summary.total-swap] 2388
+//        03-07 17:49:02.263  4428  4569 I System.out: [MEMORY_STATS] [Debug.memoryStats.summary.graphics] 0
+//        03-07 17:49:02.263  4428  4569 I System.out: [MEMORY_STATS] [Debug.memoryStats.summary.java-heap] 43304
+//        03-07 17:49:02.263  4428  4569 I System.out: [MEMORY_STATS] [Debug.memoryStats.summary.total-pss] 112800
+//        03-07 17:49:02.263  4428  4569 I System.out: [MEMORY_STATS] [Debug.memoryStats.summary.private-other] 19124
+//        03-07 17:49:02.263  4428  4569 I System.out: [MEMORY_STATS] [Debug.memoryStats.summary.code] 32572
+//        03-07 17:49:02.263  4428  4569 I System.out: [MEMORY_STATS] [Debug.memoryStats.summary.stack] 1504
+
+        ActivityManager.getMyMemoryState(outFoo)
+        am.getMemoryInfo(memInfo2)
+
+        logRuntimeStat("ActivityManager.memoryInfo.availMem", formatBytes(memInfo2.availMem))
+        logRuntimeStat("ActivityManager.memoryInfo.totalMem", formatBytes(memInfo2.totalMem))
+        logRuntimeStat("ActivityManager.memoryInfo.threshold", formatBytes(memInfo2.threshold))
+        logRuntimeStat("ActivityManager.memoryInfo.lowMemory", memInfo2.lowMemory)
+
+//        logRuntimeStat("Debug.memoryStats.$key", outFoo.)
+
+        printRuntimeStat("art.gc.gc-count-rate-histogram")
+        printRuntimeStat("art.gc.blocking-gc-count-rate-histogram")
+        printRuntimeStat("art.gc.blocking-gc-count")
+        printRuntimeStat("art.gc.blocking-gc-time")
+        printRuntimeStat("art.gc.gc-count")
+        printRuntimeStat("art.gc.bytes-freed")
+        printRuntimeStat("art.gc.gc-time")
+        printRuntimeStat("art.gc.bytes-allocated")
+    }
+
+
+    fun printRuntimeStat(tag:String){
+        logRuntimeStat(tag, Debug.getRuntimeStat(tag))
+    }
+    fun logRuntimeStat(tag:String, value:Any){
+        println("[MEMORY_STATS] [$tag] $value")
+    }
+
+    fun formatBytes(bytes:Long):String {
+        val kbytes = bytes/1000
+        val mbytes = kbytes/1000
+        return "$bytes bytes (${kbytes}kb, ${mbytes}mb)"
+    }
+
+    fun start() {
+        runOnDedicatedThread("bot stats thread"){
+            while(true){
+                Thread.sleep(100)
+                dumpRuntimeStats()
+            }
+        }
+    }
+
+    fun runOnDedicatedThread(name:String, fn:()->Unit){
+        object:Thread(name){
+            override fun run() {
+                fn()
+            }
+        }.start()
+    }
+}
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val intake = Intake()
     val transfer = Transfer(telemetry)
@@ -673,7 +759,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
                 rightServoCollect =
                 autoRollerState.rightServoCollect.copy(
-                        target = overrideRollerState.second ?: autoRollerState.rightServoCollect.target,),
+                    target = overrideRollerState.second ?: autoRollerState.rightServoCollect.target,
+                ),
 
                 directorState =
                 if (intakeNoodleTarget == Intake.CollectorPowers.Eject) {
@@ -927,8 +1014,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 RumbleEffects.Throb to listOf {
                     wrist.clawsAsMap.map {(side, claw) ->
                         claw.isClawAtAngle(
-                                target = ClawTarget.Gripping,
-                                actualDegrees = actualRobot.depoState.wristAngles.getBySide(side),)
+                            target = ClawTarget.Gripping,
+                            actualDegrees = actualRobot.depoState.wristAngles.getBySide(side),
+                        )
                     }.fold(false) { acc, it ->
                         acc || it
                     }
@@ -1043,9 +1131,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
     }
 
-
+    lateinit var statsDumper:StatsDumper
     lateinit var drivetrain: Drivetrain
     fun init(hardware: RobotTwoHardware) {
+        statsDumper = StatsDumper(FtcRobotControllerActivity.instance!!)
+        statsDumper.start()
+
         drivetrain = Drivetrain(hardware, FauxLocalizer(), telemetry)
 
         for (module in hardware.allHubs) {
@@ -1084,23 +1175,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
     }
 
-    fun printRuntimeStat(tag:String){
-        println("[MEMORY_STATS] [$tag] ${Debug.getRuntimeStat(tag)}")
-    }
-    fun dumpRuntimeStats(){
-        printRuntimeStat("art.gc.gc-count-rate-histogram")
-        printRuntimeStat("art.gc.blocking-gc-count-rate-histogram")
-        printRuntimeStat("art.gc.blocking-gc-count")
-        printRuntimeStat("art.gc.blocking-gc-time")
-        printRuntimeStat("art.gc.gc-count")
-        printRuntimeStat("art.gc.bytes-freed")
-        printRuntimeStat("art.gc.gc-time")
-        printRuntimeStat("art.gc.bytes-allocated")
-    }
 
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) = measured("main loop"){
 
-        dumpRuntimeStats()
+
+
         measured("clear bulk cache"){
             for (hub in hardware.allHubs) {
                 hub.clearBulkCache()

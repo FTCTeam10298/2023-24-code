@@ -19,7 +19,13 @@ val mStack = TLocal{
     println("Initializing thread local for ${it.name}")
     mutableListOf<String>()
 }
-fun logMeasure(m:String) = println("[MEASURES] [${Thread.currentThread().name}] [${System.currentTimeMillis()}] [${mStack.get().joinToString("/")}] $m")
+
+private val logEverything = true
+fun logMeasure(m:String, critical:Boolean = false) {
+    if(logEverything || critical){
+        println("[MEASURES] [${Thread.currentThread().name}] [${System.currentTimeMillis()}] [${mStack.get().joinToString("/")}] $m")
+    }
+}
  fun <T>measured(name:String, fn:()->T):T{
     val start = System.currentTimeMillis()
     mStack.get().add(name)

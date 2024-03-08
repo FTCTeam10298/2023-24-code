@@ -142,6 +142,8 @@ public class FtcRobotControllerActivity extends Activity
   private static final int REQUEST_CONFIG_WIFI_CHANNEL = 1;
   private static final int NUM_GAMEPADS = 2;
 
+  public static FtcRobotControllerActivity instance = null;
+
   protected WifiManager.WifiLock wifiLock;
   protected RobotConfigFileManager cfgFileMgr;
 
@@ -268,6 +270,8 @@ public class FtcRobotControllerActivity extends Activity
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    FtcRobotControllerActivity.instance = this;
 
     if (enforcePermissionValidator()) {
       return;
