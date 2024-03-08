@@ -34,7 +34,8 @@ class TeleOpMode: OpMode() {
 @Autonomous(name = "RobotTwoAuto", group = "!")
 class Autonomous: OpMode() {
 
-    private val multiTelemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
+//    private val multiTelemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
+    private val multiTelemetry = telemetry
     private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= multiTelemetry, opmode = this)
 
     private lateinit var auto: RobotTwoAuto
