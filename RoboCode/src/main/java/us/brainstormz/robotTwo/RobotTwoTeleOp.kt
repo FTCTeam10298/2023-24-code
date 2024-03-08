@@ -1186,14 +1186,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = {getActualState(it, gamepad1, gamepad2, hardware)},
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
-                    telemetry.addLine("actualState: $actualState\n")
+                   // telemetry.addLine("actualState: $actualState\n")
                     val previousActualState = previousActualState ?: actualState
                     val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
                     val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                     getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState ->
-                    telemetry.addLine("\ntargetState: $targetState")
+//                    telemetry.addLine("\ntargetState: $targetState")
                     measured("actuate robot"){
                         hardware.actuateRobot(
                             targetState,
