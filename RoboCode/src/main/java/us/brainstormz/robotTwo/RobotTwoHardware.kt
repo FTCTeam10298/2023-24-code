@@ -186,19 +186,22 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         hwMap = ahwMap
 
         allHubs = hwMap.getAll(LynxModule::class.java)
-        print("modules.size ${allHubs.size}")
-        for (lynx in allHubs) {
+        val (ctrlHubLynx, exHubLynx) = allHubs.fold<LynxModule, Pair<LynxModule?, LynxModule?>>(null to null) {acc, lynx ->
             lynx.bulkCachingMode = LynxModule.BulkCachingMode.AUTO
+
             if (lynx.isParent && LynxConstants.isEmbeddedSerialNumber(lynx.serialNumber)) {
                 println("ctrlHubFound: $lynx")
+                acc.copy(first = lynx)
 
-                ctrlHub = SmartLynxModule(lynx)
             } else {
                 println("exHubFound: $lynx")
+                acc.copy(second = lynx)
 
-                exHub = SmartLynxModule(lynx)
             }
         }
+        ctrlHub = SmartLynxModule(ctrlHubLynx)
+        exHub = SmartLynxModule(exHubLynx)
+
         if (!this::exHub.isInitialized) {
             telemetry.addLine("Expansion Hub not found!")
             telemetry.update()
