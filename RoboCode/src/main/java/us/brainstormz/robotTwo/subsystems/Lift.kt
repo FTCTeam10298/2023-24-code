@@ -15,7 +15,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         PastDown(0),
         Down(0),
-        BackboardBottomRow(330),
+        BackboardBottomRow(500),
         ClearForArmToMove(547),
         WaitForArmToMove(800),
         SetLine1(500),

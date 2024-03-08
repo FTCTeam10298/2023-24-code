@@ -33,7 +33,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         Max(2000),
     }
 
-    private val acceptablePositionErrorTicks = 100
+    val acceptablePositionErrorTicks = 100
     fun isExtendoAtPosition(targetPositionTicks: Int, currentPositionTicks: Int): Boolean {
         val positionErrorTicks = targetPositionTicks - currentPositionTicks
         return positionErrorTicks.absoluteValue <= acceptablePositionErrorTicks
