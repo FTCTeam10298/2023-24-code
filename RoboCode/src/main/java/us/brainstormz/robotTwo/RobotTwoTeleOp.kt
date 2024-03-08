@@ -289,7 +289,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val isLiftControlActive = liftStickInput.absoluteValue > 0.2
 
             val liftControlMode = when (previousTargetState.targetRobot.depoTarget.lift.targetPosition) {
-                Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
+//                Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
                 Lift.LiftPositions.SetLine1 -> LiftControlMode.Adjust
                 Lift.LiftPositions.SetLine2 -> LiftControlMode.Adjust
                 Lift.LiftPositions.SetLine3 -> LiftControlMode.Adjust
