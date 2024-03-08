@@ -3,7 +3,6 @@ package us.brainstormz.robotTwo.tests
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.robotTwo.RobotTwoTeleOp
-import us.brainstormz.utils.DataClassHelper
 import us.brainstormz.utils.DeltaTimeMeasurer
 
 fun getHeapInfoAsString(env: Runtime): String {
@@ -22,10 +21,7 @@ data class PeakData(
         val timeSinceStartMillis: Long,
         val memoryData: String,
         val previousLoopMemoryData: String,
-) {
-    override fun toString(): String = DataClassHelper.dataClassToString(this)
-}
-
+)
 var previousLoopMemoryData = ""
 fun main() {
     val env = Runtime.getRuntime()

@@ -3,7 +3,6 @@ package us.brainstormz.robotTwo.subsystems
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.RobotTwoHardware
-import us.brainstormz.utils.DataClassHelper
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
@@ -15,9 +14,7 @@ interface SlideSubsystem: DualMovementModeSubsystem {
             open val zeroPositionOffsetTicks: Int,
             open val ticksMovedSinceReset: Int,
             open val currentAmps: Double
-    ) {
-        override fun toString() = DataClassHelper.dataClassToString(this)
-    }
+    )
 
     val telemetry: Telemetry
 
@@ -97,8 +94,6 @@ interface SlideSubsystem: DualMovementModeSubsystem {
                 false
             }
         }
-
-        override fun toString(): String = DataClassHelper.dataClassToString(this)
     }
 
     open class TargetSlideSubsystem (

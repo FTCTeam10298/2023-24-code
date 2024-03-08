@@ -27,7 +27,6 @@ import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
-import us.brainstormz.utils.DataClassHelper
 import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.utils.Utils.sqrKeepSign
 import us.brainstormz.utils.measured
@@ -228,9 +227,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val handoff: HandoffInput,
             val rollers: RollerInput,
             val driveVelocity: Drivetrain.DrivetrainPower
-    ) {
-        override fun toString(): String = DataClassHelper.dataClassToString(this)
-    }
+    )
     fun getDriverInput(actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): DriverInput {
         val gamepad1 = actualWorld.actualGamepad1
         val gamepad2 = actualWorld.actualGamepad2

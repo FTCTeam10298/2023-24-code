@@ -8,7 +8,6 @@ import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.AxonEncoderReader
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.tests.TeleopTest
-import us.brainstormz.utils.CleanToStringPrint
 import kotlin.math.abs
 
 data class ColorReading(val red: Float, val green: Float, val blue: Float, val alpha: Float) {
@@ -83,8 +82,8 @@ class Transfer(private val telemetry: Telemetry) {
         return power
     }
 
-    data class ActualTransferHalf(val upperSensor: ColorReading, val lowerSensor: ColorReading): CleanToStringPrint()
-    data class ActualTransfer(val left: ActualTransferHalf, val right: ActualTransferHalf): CleanToStringPrint()
+    data class ActualTransferHalf(val upperSensor: ColorReading, val lowerSensor: ColorReading)
+    data class ActualTransfer(val left: ActualTransferHalf, val right: ActualTransferHalf)
 
 
 
@@ -104,9 +103,9 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
 
-    data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long): CleanToStringPrint()
-    data class TransferHalfState(val upperSensor: SensorState, val lowerSensor: SensorState): CleanToStringPrint()
-    data class TransferState(val left: TransferHalfState, val right: TransferHalfState): CleanToStringPrint()
+    data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
+    data class TransferHalfState(val upperSensor: SensorState, val lowerSensor: SensorState)
+    data class TransferState(val left: TransferHalfState, val right: TransferHalfState)
 
     fun getTransferState(actualWorld: ActualWorld, previousTransferState: TransferState): TransferState {
 
@@ -134,11 +133,11 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
 
-    data class RollerTarget(val target: RollerPowers, val timeStartedIntakingMillis: Long): CleanToStringPrint()
+    data class RollerTarget(val target: RollerPowers, val timeStartedIntakingMillis: Long)
     data class TransferTarget(
             val leftServoCollect: RollerTarget,
             val rightServoCollect: RollerTarget,
-            val directorState: DirectorState): CleanToStringPrint()
+            val directorState: DirectorState)
 
     private val timeToRunRollerToGetPixelAllTheWayUpMillis = 1200
     private fun checkIfRollerIsDoneTransferring(timestampMillis: Long, previousTimeStartedMovingPixelToNextStageMillis: Long): Boolean {
