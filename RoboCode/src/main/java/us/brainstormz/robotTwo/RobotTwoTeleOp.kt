@@ -292,6 +292,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 //                Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
                 Lift.LiftPositions.SetLine1 -> LiftControlMode.Adjust
                 Lift.LiftPositions.SetLine2 -> LiftControlMode.Adjust
+                Lift.LiftPositions.SetLine2Other -> LiftControlMode.Adjust
                 Lift.LiftPositions.SetLine3 -> LiftControlMode.Adjust
                 else -> {
                     val isEnumTarget = Lift.LiftPositions.entries.contains(previousTargetState.targetRobot.depoTarget.lift.targetPosition)
