@@ -30,6 +30,7 @@ import us.brainstormz.robotTwo.subsystems.Transfer.DirectorState
 import us.brainstormz.robotTwo.subsystems.Transfer.RollerPowers
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
+import us.brainstormz.utils.measured
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
@@ -847,51 +848,64 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     private val loopTimeMeasurer = DeltaTimeMeasurer()
+
+
     fun loop(hardware: RobotTwoHardware, gamepad1: Gamepad) {
-        functionalReactiveAutoRunner.loop(
-            actualStateGetter = { previousActualState ->
-                val currentGamepad1 = Gamepad()
-                currentGamepad1.copy(gamepad1)
-                ActualWorld(
-                        actualRobot = hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState),
-                        aprilTagReadings = aprilTagPipeline.detections(),
-                        actualGamepad1 = currentGamepad1,
-                        actualGamepad2 = currentGamepad1,
-                        timestampMilis = System.currentTimeMillis()
-                )
-            },
-            targetStateFetcher = { previousTargetState, actualState, previousActualState ->
-                nextTargetState(previousTargetState, actualState, previousActualState)
-            },
-            stateFulfiller = { targetState, previousTargetState, actualState ->
-                telemetry.addLine("target position: ${targetState.targetRobot.drivetrainTarget.targetPosition}")
-                telemetry.addLine("current position: ${drivetrain.localizer.currentPositionAndRotation()}")
 
-                val universalTargetWorld: TargetWorld = targetState
+        measured("reactiveLoop"){
 
-                hardware.actuateRobot(
-                        universalTargetWorld,
-                        previousTargetState?: targetState,
-                        actualState,
-                        drivetrain = drivetrain,
-                        wrist= wrist,
-                        arm= arm,
-                        lift= lift,
-                        extendo= extendo,
-                        intake= intake,
-                        transfer= transfer
-                )
+            functionalReactiveAutoRunner.loop(
+                actualStateGetter = { previousActualState ->
+                    measured("getActualState"){
+                        val currentGamepad1 = Gamepad()
+                        currentGamepad1.copy(gamepad1)
+                        ActualWorld(
+                            actualRobot = hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState),
+                            aprilTagReadings = aprilTagPipeline.detections(),
+                            actualGamepad1 = currentGamepad1,
+                            actualGamepad2 = currentGamepad1,
+                            timestampMilis = System.currentTimeMillis()
+                        )
+                    }
+                },
+                targetStateFetcher = { previousTargetState, actualState, previousActualState ->
+                    nextTargetState(previousTargetState, actualState, previousActualState)
+                },
+                stateFulfiller = { targetState, previousTargetState, actualState ->
 
-//                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
-            }
-        )
+                    measured("fulfillState"){
 
-        val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
-        telemetry.addLine("loop time: $loopTime milis")
-        println("loopTime: ${loopTimeMeasurer.peakDeltaTime()}")
+                        telemetry.addLine("target position: ${targetState.targetRobot.drivetrainTarget.targetPosition}")
+                        telemetry.addLine("current position: ${drivetrain.localizer.currentPositionAndRotation()}")
 
-        telemetry.addLine("average loop time: ${loopTimeMeasurer.getAverageLoopTimeMillis()}")
+                        val universalTargetWorld: TargetWorld = targetState
 
-        telemetry.update()
+                        hardware.actuateRobot(
+                            universalTargetWorld,
+                            previousTargetState?: targetState,
+                            actualState,
+                            drivetrain = drivetrain,
+                            wrist= wrist,
+                            arm= arm,
+                            lift= lift,
+                            extendo= extendo,
+                            intake= intake,
+                            transfer= transfer
+                        )
+
+    //                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
+                    }
+                }
+            )
+        }
+        measured("final-telemetry-updates"){
+            val loopTime = loopTimeMeasurer.measureTimeSinceLastCallMillis()
+            telemetry.addLine("loop time: $loopTime milis")
+            println("loopTime: ${loopTimeMeasurer.peakDeltaTime()}")
+
+            telemetry.addLine("average loop time: ${loopTimeMeasurer.getAverageLoopTimeMillis()}")
+
+            telemetry.update()
+        }
     }
 }
