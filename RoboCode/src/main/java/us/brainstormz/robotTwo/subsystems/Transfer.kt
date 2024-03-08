@@ -140,7 +140,7 @@ class Transfer(private val telemetry: Telemetry) {
             val rightServoCollect: RollerTarget,
             val directorState: DirectorState): CleanToStringPrint()
 
-    private val timeToRunRollerToGetPixelAllTheWayUpMillis = 800
+    private val timeToRunRollerToGetPixelAllTheWayUpMillis = 1200
     private fun checkIfRollerIsDoneTransferring(timestampMillis: Long, previousTimeStartedMovingPixelToNextStageMillis: Long): Boolean {
         val timeSinceRollerStartedMillis = timestampMillis - previousTimeStartedMovingPixelToNextStageMillis
         return timeSinceRollerStartedMillis < timeToRunRollerToGetPixelAllTheWayUpMillis
