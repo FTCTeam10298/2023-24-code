@@ -850,8 +850,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     private val loopTimeMeasurer = DeltaTimeMeasurer()
 
 
-    fun loop(hardware: RobotTwoHardware, gamepad1: Gamepad) {
-
+    fun loop(hardware: RobotTwoHardware, gamepad1: Gamepad) = measured("main loop"){
         measured("reactiveLoop"){
 
             functionalReactiveAutoRunner.loop(

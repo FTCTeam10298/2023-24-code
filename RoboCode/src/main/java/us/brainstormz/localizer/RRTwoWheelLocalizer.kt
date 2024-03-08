@@ -3,6 +3,7 @@ package us.brainstormz.localizer
 import com.acmerobotics.roadrunner.Pose2d
 import us.brainstormz.hardwareClasses.TwoWheelImuOdometry
 import us.brainstormz.roadrunner.RoadRunnerTwoDeadWheelLocalizer
+import us.brainstormz.utils.measured
 import java.util.LinkedList
 import kotlin.math.PI
 
@@ -28,7 +29,9 @@ class RRTwoWheelLocalizer(hardware: TwoWheelImuOdometry, inchesPerTick: Double):
     var pose: Pose2d = defaultInitPose
     private val poseHistory = LinkedList<Pose2d>()
     override fun recalculatePositionAndRotation() {
-        val twist = roadRunnerLocalizer.update()
+        val twist = measured("odomentry-update"){
+            roadRunnerLocalizer.update()
+        }
         pose = pose.plus(twist.value())
         poseHistory.add(pose)
         while (poseHistory.size > 100) {

@@ -6,6 +6,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
+import us.brainstormz.utils.measured
 
 interface SlideSubsystem: DualMovementModeSubsystem {
     open class ActualSlideSubsystem(
@@ -46,7 +47,7 @@ interface SlideSubsystem: DualMovementModeSubsystem {
         return ticksMovedSinceReset
     }
 
-    fun getActualSlideSubsystem(hardware: RobotTwoHardware, previousActualSlideSubsystem: ActualSlideSubsystem?): ActualSlideSubsystem {
+    fun getActualSlideSubsystem(hardware: RobotTwoHardware, previousActualSlideSubsystem: ActualSlideSubsystem?): ActualSlideSubsystem = measured("SlideSubsystem") {
         val rawPositionTicks = getRawPositionTicks(hardware)
         val limitSwitchIsActivated = getIsLimitSwitchActivated(hardware)
 
@@ -56,7 +57,7 @@ interface SlideSubsystem: DualMovementModeSubsystem {
 
         val ticksMovedSinceReset = getTicksMovedSinceReset(currentPositionTicks, limitSwitchIsActivated, previousActualSlideSubsystem)
 
-        return ActualSlideSubsystem(
+        ActualSlideSubsystem(
                 currentPositionTicks = currentPositionTicks,
                 zeroPositionOffsetTicks= zeroPositionOffsetTicks,
                 limitSwitchIsActivated= limitSwitchIsActivated,

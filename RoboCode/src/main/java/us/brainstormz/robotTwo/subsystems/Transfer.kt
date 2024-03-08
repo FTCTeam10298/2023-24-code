@@ -54,13 +54,13 @@ class Transfer(private val telemetry: Telemetry) {
     private val leftFlapKp = 0.22
     private val rightFlapKp = 0.22
 
-    fun getFlapAngleDegrees(side: Side, hardware: RobotTwoHardware): Double {
+    fun getFlapAngleDegrees(side: Side, hardware: RobotTwoHardware): Double = measured("FlapAngle") {
         val encoderReader = when (side) {
             Side.Left -> AxonEncoderReader(hardware.leftRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
             Side.Right -> AxonEncoderReader(hardware.rightRollerEncoder, 0.0, direction = AxonEncoderReader.Direction.Forward)
         }
 
-        return (encoderReader.getPositionDegrees() * 2).mod(360.0)
+        (encoderReader.getPositionDegrees() * 2).mod(360.0)
     }
 
     fun isFlapAtAngle(currentAngleDegrees: Double, angleToCheckDegrees: Double, flapAngleToleranceDegrees: Double = 5.0): Boolean {
