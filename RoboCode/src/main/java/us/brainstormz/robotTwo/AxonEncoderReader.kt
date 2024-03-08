@@ -22,19 +22,16 @@ class AxonEncoderReader(private val axonEncoder: AnalogInput, private val hub: L
 
     /** Angle from 0-360 */
     fun getRawPositionDegrees(): Double {
-        hub.getAnalogInputVoltage
         val servoSuppliedVoltage = hub.getAuxiliaryVoltage(VoltageUnit.VOLTS)
         println("servoSuppliedVoltage: $servoSuppliedVoltage")
 
+
         val voltageStepDown = 5.0-3.3
         val suppliedVoltage = servoSuppliedVoltage - voltageStepDown
-
         println("suppliedVoltage: $suppliedVoltage")
-
         // get the voltage of our analog line
         // divide by 3.3 (the max voltage) to get a value between 0 and 1
         // multiply by 360 to convert it to 0 to 360 degrees
-
 //        return ((axonEncoder.voltage / 3.3) * 360)
         return ((axonEncoder.voltage / suppliedVoltage) * 360)
     }
