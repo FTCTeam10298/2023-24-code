@@ -1,17 +1,13 @@
 package us.brainstormz.robotTwo
 
-import com.acmerobotics.dashboard.DashboardCore
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
-import com.outoftheboxrobotics.photoncore.Photon
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.vision.VisionPortal
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 
-
-@Photon
 @TeleOp(name = "RobotTwoTeleOp", group = "!")
 class TeleOpMode: OpMode() {
     private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= telemetry, opmode = this)
@@ -34,7 +30,7 @@ class TeleOpMode: OpMode() {
 
 }
 
-@Photon
+//@Photon
 @Autonomous(name = "RobotTwoAuto", group = "!")
 class Autonomous: OpMode() {
 
