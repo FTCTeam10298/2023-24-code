@@ -66,7 +66,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                                         power = 0.0,
                                         movementMode = MovementMode.Position
                                 ),
-                                intakeNoodles = targetRobot.collectorSystemState.collectorState,
+                                intakeNoodles = targetRobot.collectorSystemState.intakeTarget ?: Intake.TargetIntake(targetRobot.collectorSystemState.collectorState),
                                 rollers = targetRobot.collectorSystemState.transferRollersState.toRealTransferTarget(),
                                 transferState = Transfer.TransferState(
                                         left = RobotTwoTeleOp.initTransferHalfState,
@@ -104,6 +104,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
             val collectorState: CollectorPowers,
             val extendoPosition: ExtendoPositions,
             val transferRollersState: TransferTarget,
+            val intakeTarget: Intake.TargetIntake? = null,
     )
     data class TransferTarget(val left: RollerPowers, val right: RollerPowers, val directorState: DirectorState) {
         fun toRealTransferTarget(): Transfer.TransferTarget {
@@ -197,7 +198,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
             RelativePropPosition.Center -> listOf(
                     AutoTargetWorld(
                             targetRobot = RobotState(
-                                    collectorSystemState = CollectorState(CollectorPowers.Off, extendoPosition, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),
+                                    collectorSystemState = CollectorState(CollectorPowers.Off, extendoPosition, TransferTarget(RollerPowers.Off, RollerPowers.Off, DirectorState.Off)),//, intakeTarget = Intake.TargetIntake(0.0)),
                                     positionAndRotation = depositingPosition,
                                     depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                             ),

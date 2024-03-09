@@ -428,7 +428,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     0 to CollectorInput.Off,
                     -1 to CollectorInput.Eject
             )
-            val previousPowerInt: Int = previousRobotTarget.collectorTarget.intakeNoodles.power.toInt()
+            val previousPowerInt: Int = previousRobotTarget.collectorTarget.intakeNoodles.power.power.toInt()
 
             val valueToChangeBy = if (isDirectionPositive) {
                 1
@@ -692,7 +692,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Intake Noodles*/
         val timeSinceEjectionStartedMilis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis?:actualWorld.timestampMilis)
         val timeToStopEjecting = timeSinceEjectionStartedMilis > 1000
-        val wasPreviouslyEjecting = previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.Eject
+        val wasPreviouslyEjecting = previousTargetState.targetRobot.collectorTarget.intakeNoodles.power == Intake.CollectorPowers.Eject
 //        val intakeNoodleTarget = intake.getCollectorState(
 //                driverInput = if (theRobotJustCollectedTwoPixels) {
 //                    Intake.CollectorPowers.Eject
@@ -718,7 +718,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         CollectorInput.Intake -> Intake.CollectorPowers.Intake
                         CollectorInput.Eject -> Intake.CollectorPowers.Eject
                         CollectorInput.Off -> Intake.CollectorPowers.Off
-                        CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
+                        CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles.power
                     }
                 }
         val timeOfEjectionStartMilis = if (theRobotJustCollectedTwoPixels) {
@@ -1038,7 +1038,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         ),
                         depoTarget = depoTarget,
                         collectorTarget = CollectorTarget(
-                                intakeNoodles = intakeNoodleTarget,
+                                intakeNoodles = Intake.TargetIntake(intakeNoodleTarget),
                                 timeOfEjectionStartMilis = timeOfEjectionStartMilis,
                                 transferState = transferState,
                                 rollers = rollerTargetState,
@@ -1095,7 +1095,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(), MovementMode.Power, Drivetrain.DrivetrainPower()),
                         depoTarget = initDepoTarget,
                         collectorTarget = CollectorTarget(
-                                intakeNoodles = Intake.CollectorPowers.Off,
+                                intakeNoodles = Intake.TargetIntake(Intake.CollectorPowers.Off),
                                 timeOfEjectionStartMilis = 0,
                                 transferState = Transfer.TransferState(
                                         left = initTransferHalfState,

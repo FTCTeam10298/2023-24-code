@@ -22,7 +22,7 @@ data class DepoTarget(
 data class CollectorTarget(
         val extendo: SlideSubsystem.TargetSlideSubsystem,
         val timeOfEjectionStartMilis: Long?,
-        val intakeNoodles: Intake.CollectorPowers,
+        val intakeNoodles: Intake.TargetIntake,
         val transferState: Transfer.TransferState,
         val rollers: Transfer.TransferTarget,
 )
