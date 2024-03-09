@@ -175,15 +175,13 @@ class DepoManager(
         val armIsAtTarget = checkIfArmIsAtTarget(armTarget, actualDepo.armAngleDegrees)
         telemetry.addLine("armIsAtTarget: $armIsAtTarget")
 
-        val liftTargetStayWhereItIs = SlideSubsystem.VariableTargetPosition(actualDepo.lift.currentPositionTicks)
-
         val liftTarget: SlideSubsystem.SlideTargetPosition = when (finalDepoTarget.targetType) {
             DepoTargetType.GoingOut -> {
                 if (clawsArentMoving) {
                     finalDepoTarget.lift.targetPosition
                 } else {
                     telemetry.addLine("lift is waiting for the claws")
-                    liftTargetStayWhereItIs
+                    previousTargetDepo.lift.targetPosition
                 }
             }
             DepoTargetType.GoingHome -> {
@@ -202,12 +200,12 @@ class DepoManager(
                     }
                 } else {
                     telemetry.addLine("lift is waiting for the claws")
-                    liftTargetStayWhereItIs
+                    previousTargetDepo.lift.targetPosition
                 }
             }
             else -> {
                 telemetry.addLine("lift is confused af (asinine and futile)")
-                liftTargetStayWhereItIs
+                previousTargetDepo.lift.targetPosition
             }
         }
 
