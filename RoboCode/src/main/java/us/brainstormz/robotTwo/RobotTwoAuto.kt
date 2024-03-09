@@ -310,7 +310,11 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     )
 
     private fun yellowPlacement(propPosition: PropPosition, startPosition: StartPosition, alliance: RobotTwoHardware.Alliance, partnerPixelIsPlaced: Boolean): List<TargetWorld> {
-        val depositingPosition = getYellowDepositingPosition(propPosition)
+        val backboardDepoPos = getYellowDepositingPosition(propPosition)
+        val depositingPosition = when (startPosition) {
+            StartPosition.Backboard -> backboardDepoPos
+            StartPosition.Audience -> backboardDepoPos.copy(x= backboardDepoPos.x - 2)
+        }
 
         val scoringLiftPosition = when (partnerPixelIsPlaced) {
             true -> Lift.LiftPositions.AutoAbovePartnerPlacement
@@ -675,6 +679,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     }
 
     private fun calcAutoTargetStateList(
+            shouldDoYellow: Boolean,
             partnerPixelIsPlaced: Boolean,
             alliance: RobotTwoHardware.Alliance,
             startPosition: StartPosition,
@@ -694,12 +699,28 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                 )
             }
             StartPosition.Audience -> {
-                PathPreAssembled(
+                if (shouldDoYellow) {
+                    PathPreAssembled(
                         purplePlacementPath = { purplePlacement(StartPosition.Audience, it) },
                         driveToBoardPath = ::audienceSideNavigateToBackboard,
-                        yellowDepositPath = { yellowPlacement(it, StartPosition.Audience, alliance, partnerPixelIsPlaced) },
+                        yellowDepositPath = {
+                            yellowPlacement(
+                                it,
+                                StartPosition.Audience,
+                                alliance,
+                                partnerPixelIsPlaced
+                            )
+                        },
                         parkPath = audienceSidePark
-                )
+                    )
+                } else {
+                    PathPreAssembled(
+                        purplePlacementPath = { purplePlacement(StartPosition.Audience, it) },
+                        driveToBoardPath = { listOf() },
+                        yellowDepositPath = { listOf() },
+                        parkPath = listOf()
+                    )
+                }
             }
         }
 
@@ -767,7 +788,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
 
     private val console = TelemetryConsole(telemetry)
     private val wizard = TelemetryWizard(console, null)
-    data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean)
+    data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val shouldDoYellow: Boolean)
 
     private fun getMenuWizardResults(gamepad1: Gamepad): WizardResults {
         return WizardResults(
@@ -779,7 +800,8 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                     true -> StartPosition.Audience
                     false -> StartPosition.Backboard
                 },
-                partnerIsPlacingYellow = wizard.wasItemChosen("partnerYellow", "Yellow")
+                partnerIsPlacingYellow = wizard.wasItemChosen("partnerYellow", "Yellow"),
+                shouldDoYellow = wizard.wasItemChosen("doYellow", "Yellow")
         )
     }
 
@@ -811,9 +833,10 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
         wrist = Wrist(left = Claw(telemetry), right = Claw(telemetry), telemetry= telemetry)
         depoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
 
-        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "startingPos", firstMenu = true)
-        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"), nextMenu = "partnerYellow")
-        wizard.newMenu("partnerYellow", "What will our partner be placing on the board?", listOf("Yellow", "Nothing"))
+        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "partnerYellow", firstMenu = true)
+        wizard.newMenu("partnerYellow", "What will our partner be placing on the board?", listOf("Yellow", "Nothing"), nextMenu = "startingPos")
+        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience" to "doYellow", "Backboard" to null))
+        wizard.newMenu("doYellow", "What do we do after the purple?", listOf("Yellow", "Nothing"))
 
         opencv.internalCamera = false
         opencv.cameraName = "Webcam 1"
@@ -859,7 +882,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
 
         drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
 
-        autoStateList = calcAutoTargetStateList(wizardResults?.partnerIsPlacingYellow ?: true, alliance, startPosition, propPosition)
+        autoStateList = calcAutoTargetStateList(wizardResults?.shouldDoYellow ?: false, wizardResults?.partnerIsPlacingYellow ?: true, alliance, startPosition, propPosition)
         autoListIterator = autoStateList.listIterator()
 
 //        hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
