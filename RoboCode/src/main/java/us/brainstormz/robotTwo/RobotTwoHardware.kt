@@ -143,8 +143,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var rightTransferLowerSensorWrapped:WrappedColorSensor
     lateinit var rightTransferLowerSensor: NormalizedColorSensor
 
-    lateinit var noodleEncoder: AnalogInput
-    lateinit var noodleEncoderReader: AxonEncoderReader
 //    lateinit var leftRollerEncoder: AnalogInput
 //    lateinit var rightRollerEncoder: AnalogInput
 
@@ -251,8 +249,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         rightTransferLowerSensor = hwMap["leftSensor"] as NormalizedColorSensor
         rightTransferLowerSensorWrapped = WrappedColorSensor(2, rightTransferLowerSensor)
 
-        noodleEncoder = exHub.getAnalogInput(1)
-        noodleEncoderReader = AxonEncoderReader(noodleEncoder)
 //        rightRollerEncoder = ctrlHub.getAnalogInput(0)
 
         leftClawEncoder = exHub.getAnalogInput(3)
@@ -404,7 +400,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         /**Collector*/
 
         measured("collector") {
-            intake.powerSubsystem(targetState.targetRobot.collectorTarget.intakeNoodles.power.power, this)
+            intake.powerSubsystem(targetState.targetRobot.collectorTarget.intakeNoodles.power, this)
         }
 
         /**Rollers*/

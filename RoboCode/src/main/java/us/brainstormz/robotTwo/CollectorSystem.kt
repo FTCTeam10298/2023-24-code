@@ -18,7 +18,6 @@ class CollectorSystem(
     data class ActualCollector(
             val extendo: SlideSubsystem.ActualSlideSubsystem,
             val transferState: Transfer.ActualTransfer,
-            val noodleAngleDegrees: Double
 //            val leftRollerAngleDegrees: Double,
 //            val rightRollerAngleDegrees: Double,
     )
@@ -31,7 +30,6 @@ class CollectorSystem(
 //                leftRollerAngleDegrees= 0.0,//transfer.getFlapAngleDegrees(Transfer.Side.Left, hardware),
 //                rightRollerAngleDegrees= 0.0,//transfer.getFlapAngleDegrees(Transfer.Side.Right, hardware),
                 transferState= transfer.getActualTransfer(hardware),
-                noodleAngleDegrees = hardware.noodleEncoderReader.getPositionDegrees()
         )
 
         val collectorReadEndTimeMilis = System.currentTimeMillis()
