@@ -1194,6 +1194,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState ->
 //                    telemetry.addLine("\ntargetState: $targetState")
+                    telemetry.addLine("\nleft.upperSensor: ${targetState.targetRobot.collectorTarget.transferState.left.upperSensor}")
+                    telemetry.addLine("right.upperSensor: ${targetState.targetRobot.collectorTarget.transferState.right.upperSensor}")
+
                     measured("actuate robot"){
                         hardware.actuateRobot(
                             targetState,
