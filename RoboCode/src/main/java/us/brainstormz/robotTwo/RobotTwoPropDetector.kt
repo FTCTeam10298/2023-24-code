@@ -38,9 +38,9 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
     @Volatile
     var propPosition = PropPosition.Left
 
-    private var mat = Mat()
-    private var redLowMat = Mat()
-    private var redHighMat = Mat()
+    private val mat = Mat()
+    private val redLowMat = Mat()
+    private val redHighMat = Mat()
     private var regions: Map<PropPosition, Mat> = emptyMap()
 
     fun processFrame(frame: Mat): Mat {

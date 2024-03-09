@@ -39,7 +39,7 @@ fun aprilTagDetectionToString(tag: AprilTagDetection): String = """
 
 open class AprilTagPipeline(val cameraName: String, val resolution: Size) {
     private var aprilTag: AprilTagProcessor? = null
-    var visionPortal: VisionPortal? = null
+    private var visionPortal: VisionPortal? = null
 
     fun init(viewContainerId:Int?, hardwareMap: HardwareMap) {
         aprilTag = AprilTagProcessor.Builder().build()
