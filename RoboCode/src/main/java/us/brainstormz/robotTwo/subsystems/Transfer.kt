@@ -56,16 +56,16 @@ class Transfer(private val telemetry: Telemetry) {
 
     fun getActualTransfer(hardware: RobotTwoHardware): ActualTransfer {
         return ActualTransfer(
-            left = ActualTransferHalf(
-                upperSensor = hardware.leftTransferUpperSensorWrapped.read(),
+                left = ActualTransferHalf(
+                        upperSensor = TeleopTest.emptySensorReading,
 //                        lowerSensor = readColor(hardware.leftTransferLowerSensor),
-                lowerSensor = hardware.leftTransferLowerSensorWrapped.read(),
-            ),
-            right = ActualTransferHalf(
-                upperSensor = hardware.rightTransferUpperSensorWrapped.read(),
+                        lowerSensor = hardware.leftTransferLowerSensorWrapped.read(),
+                ),
+                right = ActualTransferHalf(
+                        upperSensor = TeleopTest.emptySensorReading,
 //                        lowerSensor = readColor(hardware.rightTransferLowerSensor),
-                lowerSensor = hardware.rightTransferLowerSensorWrapped.read(),
-            )
+                        lowerSensor = hardware.rightTransferLowerSensorWrapped.read(),
+                )
         )
     }
 
