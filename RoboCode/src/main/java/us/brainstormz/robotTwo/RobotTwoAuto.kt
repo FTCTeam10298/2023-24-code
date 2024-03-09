@@ -621,7 +621,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                     actualState.actualRobot.positionAndRotation.y <= targetState.targetRobot.drivetrainTarget.targetPosition.y
                 },
                 navigatingTargetSetup(
-                        targetPosition = getYellowDepositingPosition(propPosition).copy(y= -45.0),
+                        targetPosition = getYellowDepositingPosition(propPosition).copy(y= -45.0, r = startPosition.r),
                         isTargetReached = ::isRobotAtPosition
                 ),
         )
