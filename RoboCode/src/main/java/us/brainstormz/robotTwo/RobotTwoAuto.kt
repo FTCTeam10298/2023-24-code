@@ -870,7 +870,12 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
 
     fun start(hardware: RobotTwoHardware, opencv: OpenCvAbstraction) {
         val propPosition = propDetector?.propPosition ?: PropPosition.Right
-        opencv.stop()
+        try{
+            opencv.stop()
+        }catch (t:Throwable){
+            t.printStackTrace()
+            println("WARN: OPENCV Didn't stop cleanly")
+        }
 
         val startPositionAndRotation: PositionAndRotation = when (alliance) {
             RobotTwoHardware.Alliance.Red -> startPosition.redStartPosition
