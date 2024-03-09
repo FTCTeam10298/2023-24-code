@@ -239,10 +239,10 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)
 
-        leftTransferUpperSensor = hwMap["rightUpSensor"] as NormalizedColorSensor
-        leftTransferUpperSensorWrapped = WrappedColorSensor(1, leftTransferUpperSensor)
-        rightTransferUpperSensor = hwMap["leftUpSensor"] as NormalizedColorSensor
-        rightTransferUpperSensorWrapped = WrappedColorSensor(2, rightTransferUpperSensor)
+//        leftTransferUpperSensor = hwMap["rightUpSensor"] as NormalizedColorSensor
+//        leftTransferUpperSensorWrapped = WrappedColorSensor(1, leftTransferUpperSensor)
+//        rightTransferUpperSensor = hwMap["leftUpSensor"] as NormalizedColorSensor
+//        rightTransferUpperSensorWrapped = WrappedColorSensor(2, rightTransferUpperSensor)
 
         leftTransferLowerSensor = hwMap["rightSensor"] as NormalizedColorSensor
         leftTransferLowerSensorWrapped = WrappedColorSensor(1, leftTransferLowerSensor)
