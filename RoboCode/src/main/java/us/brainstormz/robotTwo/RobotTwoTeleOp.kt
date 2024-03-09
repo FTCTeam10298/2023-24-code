@@ -422,6 +422,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Collector*/
+        //when collector stops and starts forget about the remembered roller intake times
         fun nextPosition(isDirectionPositive: Boolean): CollectorInput {
             val intakePowerOptions = mapOf(
                     1 to CollectorInput.Intake,
