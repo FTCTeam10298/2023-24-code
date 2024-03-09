@@ -513,7 +513,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
             else -> listOf()
         }
 
-        val depositingPosition = getYellowDepositingPosition(propPosition)
+        val depositingPosition = getYellowDepositingPosition(propPosition).copy(r= startPosition.redStartPosition.r)
         val moveToBackboard = listOf(
                 AutoTargetWorld(
                         targetRobot = RobotState(
@@ -557,7 +557,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
 
         val redDistanceFromCenterlineInches = -((RobotTwoHardware.robotWidthInches/2)+1.0)
 
-        val readyToGoAroundTrussWaypoint = PositionAndRotation(x= redDistanceFromCenterlineInches, y= 40.0, r= 0.0)
+        val readyToGoAroundTrussWaypoint = PositionAndRotation(x= redDistanceFromCenterlineInches, y= 40.0, r= startPosition.r)
 
         val navigateAroundSpike = when (propPosition) {
             PropPosition.Center -> listOf(
@@ -605,7 +605,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                             isRobotAtPosition
                         }),
                 navigatingTargetSetup(
-                        targetPosition = readyToGoAroundTrussWaypoint,
+                        targetPosition = readyToGoAroundTrussWaypoint.copy(r = startPosition.r),
                         isTargetReached = { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                             val isRobotAtPosition = isRobotAtPosition(targetState, actualState, previousActualState)
                             isRobotAtPosition
@@ -616,7 +616,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
 
         val driveToBackboard = listOf(
                 navigatingTargetSetup(targetPosition =
-                    PositionAndRotation(x = redDistanceFromCenterlineInches, y = -36.0, r = 0.0)
+                    PositionAndRotation(x = redDistanceFromCenterlineInches, y = -36.0, r = startPosition.r)
                 ) { targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld ->
                     actualState.actualRobot.positionAndRotation.y <= targetState.targetRobot.drivetrainTarget.targetPosition.y
                 },
