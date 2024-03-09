@@ -517,7 +517,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
             else -> listOf()
         }
 
-        val depositingPosition = getYellowDepositingPosition(propPosition).copy(r= startPosition.redStartPosition.r)
+        val depositingPosition = getYellowDepositingPosition(propPosition)
         val moveToBackboard = listOf(
                 AutoTargetWorld(
                         targetRobot = RobotState(
