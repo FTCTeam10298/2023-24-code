@@ -134,6 +134,8 @@ public class AprilTagDetectionPipeline extends OpenCvPipeline
         return input;
     }
 
+
+
     public void setDecimation(float decimation)
     {
         synchronized (decimationSync)

@@ -20,12 +20,16 @@ class Foo(private val name:String, val size:Size?) {
 
         val builder = VisionPortal.Builder()
                 .enableLiveView(true)
+//                .setCamera()
                 .setStreamFormat(VisionPortal.StreamFormat.YUY2)
+
         viewContainerId?.let(builder::setLiveViewContainerId)
+
         size?.let{builder.setCameraResolution(size)}
 //                .setCameraResolution(Size(2304, 1536))
 
-        builder.setCamera(hardwareMap.get(WebcamName::class.java, name))
+        val camera = hardwareMap.get(WebcamName::class.java, name)
+        builder.setCamera(camera)
 
         builder.addProcessor(aprilTag)
 

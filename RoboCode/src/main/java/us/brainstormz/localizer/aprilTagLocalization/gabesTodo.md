@@ -6,6 +6,7 @@
 4. Test whether the tag diff will still be small if the robot does a 360 then returns to the original position
 5. Perform *Changing tag test*
 6. Let me know your results
+7. haha no more hw changes
 
 *Changing tag test:*
 1. cover all but one tag
