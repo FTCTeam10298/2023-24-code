@@ -101,7 +101,7 @@ class AprilTagBOSSFIGHT_StandardTest: LinearOpMode() {
         }
         val topTwoYaw = listOf(sortedByYaw[0], sortedByYaw[1])
         val differenceInYawBetweenTopChoices = (topTwoYaw[1].ftcPose.yaw - topTwoYaw[0].ftcPose.yaw).absoluteValue
-        val areTheYawValuesSuperClose:Boolean = differenceInYawBetweenTopChoices < 2 //too large... 0.5 worked better
+        val areTheYawValuesSuperClose:Boolean = differenceInYawBetweenTopChoices < 0.5 //too large... 0.5 worked better
         if (areTheYawValuesSuperClose) {
             val closestToCenter: AprilTagDetection = topTwoYaw.minBy {
                 val bearing = it.ftcPose.bearing.absoluteValue

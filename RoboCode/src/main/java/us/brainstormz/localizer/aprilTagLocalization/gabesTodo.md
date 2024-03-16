@@ -16,13 +16,17 @@
 6. note the diff
 7. line up robot to new uncovered tag
 
+5 in. from target up to 24 in. on Y axis, with camera within corner-to-corner of the Apriltags, with max angle = 0 Bearing, 30 degrees yaw.
+
 Non-AprilTag Todo:
 
 Set off some notification (light, vibration) when pixels are engaged. (heartbeat?) - DONE!
 
-Rumble code: RobotTwoTeleOp.kt lines 42-45, 793-808, 953-955
+Rumble code: RobotTwoTeleOp.kt lines 42-45, 793-808, 953-955 - USED!
 
 LIGHTING 
+
+Only fill 1/2 or 1/4 of lights to accelerate play
 
 Implement init — done!
 data representation of pixels - done
@@ -43,5 +47,4 @@ Pt. 2—rewrite lighting updater to be lazy—compare past and present state –
 Pt. 3—rewrite show 2Colors to update x lights at a time… find first wrong light, fill x lights on both sides with target colors (lazy rewriter will handle overwrites
 Pt. 4—Test with just continuous rewrites and then do switchback—repeat
 (james has a loop timing class!)
-
 
