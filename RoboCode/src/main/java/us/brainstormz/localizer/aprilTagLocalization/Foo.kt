@@ -44,8 +44,8 @@ class Foo(private val name:String, val size:Size?) {
     }
 
     fun close() {
-        visionPortal!!.stopStreaming()
-        visionPortal!!.close()
+        visionPortal?.stopStreaming()
+        visionPortal?.close()
     }
 
     fun detections() = aprilTag?.detections ?: emptyList()

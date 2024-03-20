@@ -28,7 +28,7 @@ class AprilTagOmeter: LinearOpMode() {
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
             //default is "Webcam 1", for 2023-24 it's...
-            Foo("Webcam 1", Size(1920, 1080)),
+            Foo("Webcam 1", Size(640, 480)),
 //            Foo("Webcam 2", Size(320, 240)),
 //            Foo("Webcam 3", Size(320, 240)),
 //          Foo("Webcam 4", Size(320, 240)) - Not working. Each bus seems to support 2 cameras.
@@ -93,7 +93,7 @@ class AprilTagOmeter: LinearOpMode() {
         //Find tag that is least rotated from being straight on (least off axis)
         val theTargetAprilTag = returnTargetAprilTag(currentDetections)
         if (theTargetAprilTag != null) {
-            telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag?.id, "TAG WITH LEAST YAW and kinda least off axis!"))
+            telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag?.id, "WAS YOUR SELECTED TAG, AND I FOUND IT!"))
 
             // Step through the list of detections and display info for each one.
 
@@ -108,11 +108,17 @@ class AprilTagOmeter: LinearOpMode() {
 
                 //elvis operator
                 val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(theTag ?: currentDetections.first()).posAndRot
+                val currentRobotPositionRelativeToCamera = theTargetAprilTag.ftcPose.bearing
+
                 if (isThisTheFirstTimeAnyAprilTagHasBeenSeen) {
                     isThisTheFirstTimeAnyAprilTagHasBeenSeen = false
                 }
 
-                telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentPositionOfRobot")
+                telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
+
+                println("Robot X: ${theTargetAprilTag.ftcPose.x}")
+                println("Robot Y: ${theTargetAprilTag.ftcPose.y}")
+                println("Robot Bearing: ${theTargetAprilTag.ftcPose.bearing}")
 
 
 
