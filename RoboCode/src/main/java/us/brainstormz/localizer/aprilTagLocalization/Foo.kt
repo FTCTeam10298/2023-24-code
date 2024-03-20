@@ -44,6 +44,7 @@ class Foo(private val name:String, val size:Size?) {
     }
 
     fun close() {
+        visionPortal!!.stopStreaming()
         visionPortal!!.close()
     }
 
