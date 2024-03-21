@@ -40,6 +40,8 @@ import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSee
 import us.brainstormz.robotTwo.subsystems.readColor
 import java.lang.Thread.sleep
 import kotlin.math.PI
+import kotlin.math.max
+
 class WrappedColorSensor(val offset:Int, val sensor:NormalizedColorSensor){
     var lastReading: ColorReading? = null
     var readCycle = 1 + offset
@@ -381,7 +383,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
                     Extendo.ExtendoPositions.AllTheWayInTarget -> {
                         val atZeroPosition = actualState.actualRobot.collectorSystemState.extendo.currentPositionTicks <= Extendo.ExtendoPositions.Min.ticks + 5
                         if (!atZeroPosition || actualState.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
-                            extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
+                            max(extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot), -0.48)
                         } else {
                             -0.48
                         }
