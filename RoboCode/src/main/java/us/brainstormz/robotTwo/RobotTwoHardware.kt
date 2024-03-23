@@ -149,7 +149,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 //    lateinit var rightRollerEncoder: AnalogInput
 
     //Aka throbber
-    lateinit var transferDirectorServo: CRServo
+//    lateinit var transferDirectorServo: CRServo
 
     enum class HangPowers(val power: Double) {
         Holding(0.0),
@@ -229,7 +229,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         rightTransferServo = ctrlHub.getCRServo(5)
         leftTransferServo = exHub.getCRServo(3)
-        transferDirectorServo = exHub.getCRServo(2)
+//        transferDirectorServo = exHub.getCRServo(2)
 
         leftClawServo =     exHub.getCRServo(1)   // left/right from driver 2 perspective when depositing
         rightClawServo =    exHub.getCRServo(0)

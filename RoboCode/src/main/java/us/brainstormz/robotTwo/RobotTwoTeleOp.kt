@@ -738,11 +738,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
                 previousTransferTarget = previousTargetState.targetRobot.collectorTarget.rollers,
                 )
-        val overrideRollerState: Pair<Transfer.RollerPowers?, Transfer.RollerPowers?> = when (driverInput.rollers) {
-            RollerInput.BothIn -> Transfer.RollerPowers.Intake to Transfer.RollerPowers.Intake
-            RollerInput.BothOut -> Transfer.RollerPowers.Eject to Transfer.RollerPowers.Eject
-            RollerInput.LeftOut -> Transfer.RollerPowers.Eject to null
-            RollerInput.RightOut -> null to Transfer.RollerPowers.Eject
+        val overrideRollerState: Pair<Transfer.RollerPositions?, Transfer.RollerPositions?> = when (driverInput.rollers) {
+            RollerInput.BothIn -> Transfer.RollerPositions.Open to Transfer.RollerPositions.Open
+            RollerInput.BothOut -> Transfer.RollerPositions.Open to Transfer.RollerPositions.Open
+            RollerInput.LeftOut -> Transfer.RollerPositions.Open to null
+            RollerInput.RightOut -> null to Transfer.RollerPositions.Open
             RollerInput.NoInput -> null to null
         }
         val rollerTargetState = Transfer.TransferTarget(
@@ -753,14 +753,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 rightServoCollect =
                 autoRollerState.rightServoCollect.copy(
                     target = overrideRollerState.second ?: autoRollerState.rightServoCollect.target,
-                ),
-
-                directorState =
-                if (intakeNoodleTarget == Intake.CollectorPowers.Eject) {
-                    Transfer.DirectorState.Left
-                } else {
-                    autoRollerState.directorState
-                }
+                )
         )
 //        autoRollerState.copy(
 //                leftServoCollect = autoRollerState.leftServoCollect.copy(
@@ -1089,8 +1082,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 timeOfSeeingMilis = 0L,
         )
 
-        val initTransferHalfState = Transfer.TransferHalfState(initSensorState, initSensorState)
-
         val initialPreviousTargetState = TargetWorld(
                 targetRobot = TargetRobot(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(), MovementMode.Power, Drivetrain.DrivetrainPower()),
@@ -1099,13 +1090,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 intakeNoodles = Intake.CollectorPowers.Off,
                                 timeOfEjectionStartMilis = 0,
                                 transferState = Transfer.TransferState(
-                                        left = initTransferHalfState,
-                                        right = initTransferHalfState
+                                        left = initSensorState,
+                                        right = initSensorState
                                 ),
                                 rollers = Transfer.TransferTarget(
-                                        leftServoCollect = Transfer.RollerTarget(Transfer.RollerPowers.Off, 0L),
-                                        rightServoCollect = Transfer.RollerTarget(Transfer.RollerPowers.Off, 0L),
-                                        directorState = Transfer.DirectorState.Off
+                                        leftServoCollect = Transfer.RollerTarget(Transfer.RollerPositions.Closed, 0L),
+                                        rightServoCollect = Transfer.RollerTarget(Transfer.RollerPositions.Closed, 0L)
                                 ),
                                 extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, MovementMode.Position),
                         ),

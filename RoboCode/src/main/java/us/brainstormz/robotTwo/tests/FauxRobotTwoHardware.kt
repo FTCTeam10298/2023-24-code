@@ -38,7 +38,6 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
         collectorServo1 = FauxCRServo()
         collectorServo2 = FauxCRServo()
         collectorServo2 = FauxCRServo()
-        transferDirectorServo = FauxCRServo()
         leftTransferServo = FauxCRServo()
         rightTransferServo = FauxCRServo()
         armServo1 = FauxCRServo()
