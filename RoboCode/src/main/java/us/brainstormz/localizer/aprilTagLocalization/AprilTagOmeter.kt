@@ -9,6 +9,15 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 @Autonomous
 class AprilTagOmeter: LinearOpMode() {
 
+    // A
+    //03-19 22:53:42.309  1691  1817 I System.out: Robot X: -0.7379603385925293
+    //03-19 22:53:42.309  1691  1817 I System.out: Robot Y: 21.688961029052734
+    //03-19 22:53:42.309  1691  1817 I System.out: Robot Bearing: 1.948719801258371
+
+
+
+
+
     //configure cam offset
 //    val robotCameraYOffset = RobotTwoHardware.robotLengthInches/2 //only hardware ref
 //    var aprilTagLocalization = AprilTagLocalizationOTron(
@@ -17,13 +26,13 @@ class AprilTagOmeter: LinearOpMode() {
 //    )
 
     //...but let's not
-    val robotCameraYOffset = RobotTwoHardware.robotLengthInches/2
+    val robotCameraYOffset = 0.0
     var aprilTagLocalization = AprilTagLocalizationOTron(
             cameraXOffset=robotCameraYOffset,
             cameraYOffset=0.00 //it's right on center! Yay!
     )
 
-    val targetAprilTagID = 1
+    val targetAprilTagID = 2
 
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
@@ -62,7 +71,9 @@ class AprilTagOmeter: LinearOpMode() {
         }
         if(isStopRequested) {
             aprilTagThings.forEach { it.close() }
-            //TODO: STOP CRASHING THE BOT EVERY RUN
+            //TODO: STOP CRASHING THE BOT EVERY RUN...
+            //REBOOT THE BOT IF THE CAMERA BLUESCREENS and is on Hardware Config.
+            //Also, we can just leave this code running to get data.
         }
     }
 
