@@ -731,13 +731,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Rollers*/
-        val autoRollerState = transfer.getTransferSortingTarget(
-                isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake,
-                actualWorld = actualWorld,
-                actualTransferState = transferState,
-                previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
-                previousTransferTarget = previousTargetState.targetRobot.collectorTarget.rollers,
-                )
+//        val autoRollerState = transfer.getTransferSortingTarget(
+//                isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake,
+//                actualWorld = actualWorld,
+//                actualTransferState = transferState,
+//                previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
+//                previousTransferTarget = previousTargetState.targetRobot.collectorTarget.rollers,
+//                )
         val overrideRollerState: Pair<Transfer.RollerPositions?, Transfer.RollerPositions?> = when (driverInput.rollers) {
             RollerInput.BothIn -> Transfer.RollerPositions.Open to Transfer.RollerPositions.Open
             RollerInput.BothOut -> Transfer.RollerPositions.Open to Transfer.RollerPositions.Open
@@ -746,14 +746,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             RollerInput.NoInput -> null to null
         }
         val rollerTargetState = Transfer.TransferTarget(
-                leftServoCollect =
-                autoRollerState.leftServoCollect.copy(
-                        target = overrideRollerState.first ?: autoRollerState.leftServoCollect.target),
-
-                rightServoCollect =
-                autoRollerState.rightServoCollect.copy(
-                    target = overrideRollerState.second ?: autoRollerState.rightServoCollect.target,
-                )
+                leftServoCollect = Transfer.RollerTarget(overrideRollerState.first ?: Transfer.RollerPositions.Closed, 0),
+                rightServoCollect = Transfer.RollerTarget(overrideRollerState.second ?: Transfer.RollerPositions.Closed, 0)
         )
 //        autoRollerState.copy(
 //                leftServoCollect = autoRollerState.leftServoCollect.copy(
