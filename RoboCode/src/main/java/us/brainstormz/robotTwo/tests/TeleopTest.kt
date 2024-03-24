@@ -173,10 +173,6 @@ class TeleopTest {
             blue = 0f,
             alpha = 0f,
         )
-        val emptyActualTransferHalf = Transfer.ActualTransferHalf(
-                upperSensor = emptySensorReading,
-                lowerSensor = emptySensorReading
-        )
         val emptyWorld = ActualWorld(
                 actualGamepad1 = Gamepad(),
                 actualGamepad2 = Gamepad(),
@@ -199,8 +195,8 @@ class TeleopTest {
 //                                leftRollerAngleDegrees = 0.0,
 //                                rightRollerAngleDegrees = 0.0,
                                 transferState = Transfer.ActualTransfer(
-                                        left = emptyActualTransferHalf,
-                                        right = emptyActualTransferHalf
+                                        left = emptySensorReading,
+                                        right = emptySensorReading
                                 ),
                         ),
                         neopixelState = Neopixels.HalfAndHalfTarget().compileStripState()
