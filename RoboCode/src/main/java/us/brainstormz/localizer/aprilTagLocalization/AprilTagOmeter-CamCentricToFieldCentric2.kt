@@ -23,9 +23,25 @@ fun main () {
 data class CameraRelativePointInSpace(val xInches: Double, val yInches: Double, val yawDegrees: Double, val rangeInches: Double)
 data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val angleDegrees: Double)
 
-
-
 private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
+    //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
+
+    val aSectionOfXInches = anyOldTag.xInches/cos(anyOldTag.yawDegrees)
+    val yOutsideOfSquareInches = aSectionOfXInches * sin(anyOldTag.yawDegrees)
+
+    //another angle in the triangle.
+    val qDegrees: Double = 180 - 90 - anyOldTag.yawDegrees
+    val yInsideOfSquareInches = anyOldTag.yInches - yOutsideOfSquareInches
+
+    val otherPartOfXInches = yInsideOfSquareInches * cos(qDegrees)
+    val yRelativeToTagInches = yInsideOfSquareInches * sin(qDegrees)
+    val xRelativeToTagInches = aSectionOfXInches + otherPartOfXInches
+
+    return TagRelativePointInSpace(xInches=xRelativeToTagInches, yInches=yRelativeToTagInches, angleDegrees=0.0)
+
+}
+
+private fun returnCamCentricCoordsInTagCentricCoordsVeryLimited(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
     //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
 
 
@@ -36,7 +52,6 @@ private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePo
     val yRelativeToTag = sin(aDegreesInRadians) * anyOldTag.rangeInches
     val angleRelativeToTag = aDegrees
 
-    //abusing our tag class as a
     return TagRelativePointInSpace(xInches=xRelativeToTag, yInches=yRelativeToTag, angleDegrees=angleRelativeToTag)
 
 }
@@ -119,6 +134,10 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
     /** Gabe edit me */
     private fun returnTargetAprilTagInTagCentricCoords(allAprilTags: List<AprilTagDetection>): aprilTagAndData? {
         //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
+
+        //you need to look at the diagram to get this.
+
+        //getting l
 
         for (thisAprilTag in allAprilTags) {
             val thisAprilTagPose = thisAprilTag.ftcPose
