@@ -2,6 +2,8 @@
 
 //Teague ask - function to find how many apriltags
 
+//when angle between 0 and 1, subtract .4 or .5 from X
+
 //TESTING EXTREME TAG DETECTION CASES
 - Decide position
 - hardcode tag to look at
