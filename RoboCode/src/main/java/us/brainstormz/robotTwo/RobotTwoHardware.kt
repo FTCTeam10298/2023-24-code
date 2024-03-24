@@ -145,12 +145,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var rightTransferLowerSensorWrapped:WrappedColorSensor
     lateinit var rightTransferLowerSensor: NormalizedColorSensor
 
-//    lateinit var leftRollerEncoder: AnalogInput
-//    lateinit var rightRollerEncoder: AnalogInput
-
-    //Aka throbber
-//    lateinit var transferDirectorServo: CRServo
-
     enum class HangPowers(val power: Double) {
         Holding(0.0),
         Release(1.0)
@@ -164,7 +158,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     lateinit var launcherServo: Servo
 
     //Neopixel Stuff
-//    lateinit var lights: RevBlinkinLedDriver
     lateinit var neopixelDriver: AdafruitNeopixelSeesaw
     val neopixelSystem = Neopixels()
     private var neoPixelActualState: Neopixels.StripState = neopixelSystem.makeEmptyLightState()
@@ -241,17 +234,10 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(2)
 
-//        leftTransferUpperSensor = hwMap["rightUpSensor"] as NormalizedColorSensor
-//        leftTransferUpperSensorWrapped = WrappedColorSensor(1, leftTransferUpperSensor)
-//        rightTransferUpperSensor = hwMap["leftUpSensor"] as NormalizedColorSensor
-//        rightTransferUpperSensorWrapped = WrappedColorSensor(2, rightTransferUpperSensor)
-
         leftTransferLowerSensor = hwMap["rightSensor"] as NormalizedColorSensor
         leftTransferLowerSensorWrapped = WrappedColorSensor(1, leftTransferLowerSensor)
         rightTransferLowerSensor = hwMap["leftSensor"] as NormalizedColorSensor
         rightTransferLowerSensorWrapped = WrappedColorSensor(2, rightTransferLowerSensor)
-
-//        rightRollerEncoder = ctrlHub.getAnalogInput(0)
 
         leftClawEncoder = exHub.getAnalogInput(3)
         rightClawEncoder = exHub.getAnalogInput(2)
@@ -270,10 +256,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
         //neopixel support
-//        lights = hwMap["lights"] as RevBlinkinLedDriver
-        neopixelDriver = hwMap["neopixels"] as AdafruitNeopixelSeesaw //hwMap.get(AdafruitNeopixelSeesaw::class.java, "neopixels")
-//        neopixelDriver.setPixelType(AdafruitNeopixelSeesaw.ColorOrder.NEO_GRB)
-//        neopixelDriver.init_neopixels()
+        neopixelDriver = hwMap["neopixels"] as AdafruitNeopixelSeesaw
         neopixelSystem.initialize(neopixelDriver)
 
 
