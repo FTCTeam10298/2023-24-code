@@ -2,11 +2,14 @@ import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
+import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationOTron
 import us.brainstormz.localizer.aprilTagLocalization.Foo
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Autonomous
-class AprilTagOmeter: LinearOpMode() {
+class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
     // A
     //03-19 22:53:42.309  1691  1817 I System.out: Robot X: -0.7379603385925293
@@ -76,13 +79,22 @@ class AprilTagOmeter: LinearOpMode() {
         }
     }
 
+    data class aprilTagAndData(val anAprilTag: AprilTagDetection, val aPositionAndRotation: PositionAndRotation)
+
     /** Gabe edit me */
-    private fun returnTargetAprilTag(allAprilTags: List<AprilTagDetection>): AprilTagDetection? {
+    private fun returnTargetAprilTagInTagCentricCoords(allAprilTags: List<AprilTagDetection>): aprilTagAndData? {
+        //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
 
         for (thisAprilTag in allAprilTags) {
-            if (thisAprilTag.id == targetAprilTagID) {
-                return thisAprilTag
-            }
+            val thisAprilTagPose = thisAprilTag.ftcPose
+            val a: Double = 180 - 90 - thisAprilTagPose.yaw
+            //we're just scaling a right triangle of length 1 by the range
+            val xRelativeToTag = cos(a) * thisAprilTagPose.range
+            val yRelativeToTag = sin(a) * thisAprilTagPose.range
+            val angleRelativeToTag = 90 - a
+            val thisAprilTagPositionAndRotation = PositionAndRotation(xRelativeToTag, yRelativeToTag, angleRelativeToTag)
+            return aprilTagAndData(thisAprilTag, thisAprilTagPositionAndRotation)
+
         }
         return null
     }
@@ -101,9 +113,10 @@ class AprilTagOmeter: LinearOpMode() {
         //data.
 
         //Find tag that is least rotated from being straight on (least off axis)
-        val theTargetAprilTag = returnTargetAprilTag(currentDetections)
+        val theTargetAprilTag: AprilTagDetection? = returnTargetAprilTagInTagCentricCoords(currentDetections)?.anAprilTag
+        val theTargetAprilTagData = returnTargetAprilTagInTagCentricCoords(currentDetections)?.aPositionAndRotation
         if (theTargetAprilTag != null) {
-            telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag?.id, "WAS YOUR SELECTED TAG, AND I FOUND IT!"))
+            telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag.id, "WAS YOUR SELECTED TAG, AND I FOUND IT!"))
 
             // Step through the list of detections and display info for each one.
 
@@ -126,9 +139,9 @@ class AprilTagOmeter: LinearOpMode() {
 
                 telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
 
-                println("Robot X: ${theTargetAprilTag.ftcPose.x}")
-                println("Robot Y: ${theTargetAprilTag.ftcPose.y}")
-                println("Robot Bearing: ${theTargetAprilTag.ftcPose.bearing}")
+                println("Robot X: ${theTargetAprilTagData?.x}")
+                println("Robot Y: ${theTargetAprilTagData?.y}")
+                println("Robot Bearing: ${theTargetAprilTagData?.r}")
 
 
 

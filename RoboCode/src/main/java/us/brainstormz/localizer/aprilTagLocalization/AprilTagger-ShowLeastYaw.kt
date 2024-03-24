@@ -3,11 +3,8 @@ package us.brainstormz.robotTwo
 import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import org.opencv.core.Core
 import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationOTron
 import us.brainstormz.localizer.aprilTagLocalization.Foo
 
@@ -17,7 +14,7 @@ import kotlin.math.absoluteValue
 //gabe this class is your example
 @Autonomous
 //test full pipeline.
-class AprilTaggerAdvance: LinearOpMode() {
+class `AprilTagger-ShowBestFound`: LinearOpMode() {
 
     //configure cam offset
 //    val robotCameraYOffset = RobotTwoHardware.robotLengthInches/2 //only hardware ref
