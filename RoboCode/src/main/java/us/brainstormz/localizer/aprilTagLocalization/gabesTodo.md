@@ -1,5 +1,7 @@
 ## Todo from James (Lovingly, -ya boi)
 
+//Teague ask - function to find how many apriltags
+
 //TESTING EXTREME TAG DETECTION CASES
 - Decide position
 - hardcode tag to look at

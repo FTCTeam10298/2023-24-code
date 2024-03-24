@@ -26,19 +26,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package us.brainstormz.localizer.aprilTagLocalization.aprilTagAnalysis
+package us.brainstormz.localizer.aprilTagLocalization
 
+import CameraRelativePointInSpace
+import TagRelativePointInSpace
 import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import us.brainstormz.localizer.PositionAndRotation
-import kotlin.math.abs
-import kotlin.math.atan
-import us.brainstormz.localizer.RRTwoWheelLocalizer
-import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationOTron
-import us.brainstormz.localizer.aprilTagLocalization.Foo
+import kotlin.math.cos
+import kotlin.math.sin
 
 //TODO: Test the April tag localization against odometery
 //
@@ -72,8 +70,7 @@ import us.brainstormz.localizer.aprilTagLocalization.Foo
 [800x600], [864x480], [960x720], [1024x576], [1280x720], [1600x896], [1920x1080], [2560x1472],
  */
 @TeleOp(name = "AprilStreaker-tags, fast", group = "Concept") //@Disabled
-class AprilTagger : LinearOpMode() {
-
+class AprilStreaker: LinearOpMode() {
 
     //y = distance from camera center to apriltag center
     //x = camera centric - distance between where the camera is pointing to the center of the apriltag
@@ -130,6 +127,55 @@ class AprilTagger : LinearOpMode() {
     /**
      * Add telemetry about AprilTag detections.
      */
+
+    data class aprilTagAndData(val anAprilTag: AprilTagDetection, val aPositionAndRotation: PositionAndRotation)
+
+    /** Gabe edit me */
+    private fun returnAprilTagInTagCentricCoords(aprilTag: AprilTagDetection): AprilStreaker.aprilTagAndData? {
+        //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
+
+        //you need to look at the diagram to get this.
+
+        //getting l
+
+        if (aprilTag != null) {
+            val thisAprilTagPose = aprilTag.ftcPose
+            val representationOfAprilTag = CameraRelativePointInSpace(xInches=thisAprilTagPose.x,
+                    yInches=thisAprilTagPose.y, yawDegrees=thisAprilTagPose.yaw, rangeInches=thisAprilTagPose.range)
+            val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoords(representationOfAprilTag)
+            val resultPosition = PositionAndRotation(thisTagInTagCentricCoords.xInches,
+                    thisTagInTagCentricCoords.yInches, thisTagInTagCentricCoords.headingDegrees)
+
+            return AprilStreaker.aprilTagAndData(aprilTag, resultPosition)
+        }
+        else return null
+    }
+
+
+    private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
+        //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
+
+        val yawRadians = Math.toRadians(anyOldTag.yawDegrees)
+
+        val aSectionOfXInches = anyOldTag.xInches/ cos(yawRadians)
+        val yOutsideOfSquareInches = aSectionOfXInches * sin(yawRadians)
+
+        //another angle in the triangle.
+        val qDegrees: Double = 180 - 90 - anyOldTag.yawDegrees
+
+        val qRadians = Math.toRadians(qDegrees)
+
+        val yInsideOfSquareInches = anyOldTag.yInches - yOutsideOfSquareInches
+
+        val otherPartOfXInches = yInsideOfSquareInches * cos(qRadians)
+        val yRelativeToTagInches = yInsideOfSquareInches * sin(qRadians)
+        val xRelativeToTagInches = aSectionOfXInches + otherPartOfXInches
+
+        return TagRelativePointInSpace(xInches=xRelativeToTagInches, yInches=yRelativeToTagInches, headingDegrees=anyOldTag.yawDegrees)
+
+    }
+
+
     private fun telemetryAprilTag() {
 
         val currentDetections: List<AprilTagDetection> = aprilTagThings.flatMap{it.detections()}
@@ -160,32 +206,25 @@ class AprilTagger : LinearOpMode() {
         for (detection in currentDetections) {
             if (currentDetections.isNotEmpty()) {
 
-                val theTag = detection
-                val whatTag = theTag.id
+                val thisTagInTagCentricCoords = returnAprilTagInTagCentricCoords(detection)
 
-                val tagBadness = theTag.hamming //not necessary... yaw = distortion, typically
-                //find units of cam relative to tag and tag relative to field
-                val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(theTag)
-                val orientation = currentPositionOfRobot.posAndRot.r
-
-                val tagPosition = aprilTagLocalization.getAprilTagLocation(whatTag)
-//                val odometryPosition = 0 //Gabe's jank odometry call placeholder
-//                telemetry.addLine("Sir, I found AprilTag ID 2.")
-//                telemetry.addLine("Current Position Of Robot: $currentPositionOfRobot")
-//                telemetry.addLine("BUT the tag position is: $tagPosition")
-//                telemetry.addLine("Error Correction Bits Added (hamming): $tagBadness")
-//                telemetry.addLine("Odometry reports we're at: $odometryPosition")
-//                telemetry.addLine("Orientation Found: $orientation")
+                if (thisTagInTagCentricCoords == null) {
+                    println("Nothing here, cap'n.")
+                }
+                else {
+                    val detectionTagCentric = thisTagInTagCentricCoords!!.aPositionAndRotation
 
 
+                    println(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
+                    //
+                    println(String.format("XYH %6.1f %6.1f %6.1f  (inch, inch, deg)", detectionTagCentric.x, detectionTagCentric.y, detectionTagCentric.r))
 
-                println(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
-                //
-                println(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z))
+                    println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
 
-                println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
+                    println(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+                }
 
-                println(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+
 //                val muchData = aprilTagLocalization.getAprilTagLocation(detection.id)
 //                println("Random Madness!! $muchData")
 
