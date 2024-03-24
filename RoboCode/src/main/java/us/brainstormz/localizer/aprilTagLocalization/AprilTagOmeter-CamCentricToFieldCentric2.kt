@@ -34,7 +34,7 @@ private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePo
     //we're just scaling a right triangle of length 1 by the range
     val xRelativeToTag = cos(aDegreesInRadians) * anyOldTag.rangeInches
     val yRelativeToTag = sin(aDegreesInRadians) * anyOldTag.rangeInches
-    val angleRelativeToTag = 90 - aDegrees
+    val angleRelativeToTag = aDegrees
 
     //abusing our tag class as a
     return TagRelativePointInSpace(xInches=xRelativeToTag, yInches=yRelativeToTag, angleDegrees=angleRelativeToTag)
