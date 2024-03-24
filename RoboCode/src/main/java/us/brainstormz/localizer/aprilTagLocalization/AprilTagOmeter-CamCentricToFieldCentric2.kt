@@ -8,6 +8,41 @@ import us.brainstormz.localizer.aprilTagLocalization.Foo
 import kotlin.math.cos
 import kotlin.math.sin
 
+fun main () {
+    val input = CameraRelativePointInSpace(xInches=0.0, yInches=5.0, yawDegrees=37.0, rangeInches=5.0)
+
+    val expectedOutput = TagRelativePointInSpace(xInches=3.0, yInches=4.0, angleDegrees=0.0)
+
+    val actualOutput = returnCamCentricCoordsInTagCentricCoords(input)
+
+    println("input was $input" )
+    println("Our expected output was $expectedOutput")
+    println("...but we got $actualOutput")
+}
+
+data class CameraRelativePointInSpace(val xInches: Double, val yInches: Double, val yawDegrees: Double, val rangeInches: Double)
+data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val angleDegrees: Double)
+
+
+
+private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
+    //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
+
+
+    val aDegrees: Double = 180 - 90 - anyOldTag.yawDegrees
+    val aDegreesInRadians = Math.toRadians(aDegrees)
+    //we're just scaling a right triangle of length 1 by the range
+    val xRelativeToTag = cos(aDegreesInRadians) * anyOldTag.rangeInches
+    val yRelativeToTag = sin(aDegreesInRadians) * anyOldTag.rangeInches
+    val angleRelativeToTag = 90 - aDegrees
+
+    //abusing our tag class as a
+    return TagRelativePointInSpace(xInches=xRelativeToTag, yInches=yRelativeToTag, angleDegrees=angleRelativeToTag)
+
+}
+
+
+
 @Autonomous
 class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
