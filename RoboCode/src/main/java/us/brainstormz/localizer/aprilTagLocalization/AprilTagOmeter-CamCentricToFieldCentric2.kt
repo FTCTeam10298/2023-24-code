@@ -9,9 +9,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 fun main () {
-    val input = CameraRelativePointInSpace(xInches=15.0, yInches=50.0, yawDegrees=-32.0, rangeInches=50.0)
+    val input = CameraRelativePointInSpace(xInches=88.0, yInches=0.0, yawDegrees= -1.0, rangeInches=88.0)
 
-    val expectedOutput = TagRelativePointInSpace(xInches=13.775, yInches=50.351, headingDegrees= -32.0)
+    val expectedOutput = TagRelativePointInSpace(xInches=87.987, yInches=1.536, headingDegrees= 1.00)
 
     val actualOutput = returnCamCentricCoordsInTagCentricCoords(input)
 
