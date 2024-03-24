@@ -9,9 +9,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 fun main () {
-    val input = CameraRelativePointInSpace(xInches=0.0, yInches=5.0, yawDegrees=37.0, rangeInches=5.0)
+    val input = CameraRelativePointInSpace(xInches=15.0, yInches=50.0, yawDegrees=-32.0, rangeInches=50.0)
 
-    val expectedOutput = TagRelativePointInSpace(xInches=3.0, yInches=4.0, angleDegrees=0.0)
+    val expectedOutput = TagRelativePointInSpace(xInches=13.775, yInches=50.351, headingDegrees= -32.0)
 
     val actualOutput = returnCamCentricCoordsInTagCentricCoords(input)
 
@@ -21,7 +21,7 @@ fun main () {
 }
 
 data class CameraRelativePointInSpace(val xInches: Double, val yInches: Double, val yawDegrees: Double, val rangeInches: Double)
-data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val angleDegrees: Double)
+data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
 
 private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
     //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
@@ -33,7 +33,7 @@ private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePo
 
     //another angle in the triangle.
     val qDegrees: Double = 180 - 90 - anyOldTag.yawDegrees
-    g
+
     val qRadians = Math.toRadians(qDegrees)
 
     val yInsideOfSquareInches = anyOldTag.yInches - yOutsideOfSquareInches
@@ -42,7 +42,7 @@ private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePo
     val yRelativeToTagInches = yInsideOfSquareInches * sin(qRadians)
     val xRelativeToTagInches = aSectionOfXInches + otherPartOfXInches
 
-    return TagRelativePointInSpace(xInches=xRelativeToTagInches, yInches=yRelativeToTagInches, angleDegrees=0.0)
+    return TagRelativePointInSpace(xInches=xRelativeToTagInches, yInches=yRelativeToTagInches, headingDegrees=anyOldTag.yawDegrees)
 
 }
 
@@ -57,7 +57,7 @@ private fun returnCamCentricCoordsInTagCentricCoordsVeryLimited(anyOldTag: Camer
     val yRelativeToTag = sin(aDegreesInRadians) * anyOldTag.rangeInches
     val angleRelativeToTag = aDegrees
 
-    return TagRelativePointInSpace(xInches=xRelativeToTag, yInches=yRelativeToTag, angleDegrees=angleRelativeToTag)
+    return TagRelativePointInSpace(xInches=xRelativeToTag, yInches=yRelativeToTag, headingDegrees=angleRelativeToTag)
 
 }
 
