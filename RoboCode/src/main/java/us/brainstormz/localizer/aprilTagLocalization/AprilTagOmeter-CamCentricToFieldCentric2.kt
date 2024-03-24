@@ -26,15 +26,20 @@ data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val
 private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
     //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
 
-    val aSectionOfXInches = anyOldTag.xInches/cos(anyOldTag.yawDegrees)
-    val yOutsideOfSquareInches = aSectionOfXInches * sin(anyOldTag.yawDegrees)
+    val yawRadians = Math.toRadians(anyOldTag.yawDegrees)
+
+    val aSectionOfXInches = anyOldTag.xInches/cos(yawRadians)
+    val yOutsideOfSquareInches = aSectionOfXInches * sin(yawRadians)
 
     //another angle in the triangle.
     val qDegrees: Double = 180 - 90 - anyOldTag.yawDegrees
+    g
+    val qRadians = Math.toRadians(qDegrees)
+
     val yInsideOfSquareInches = anyOldTag.yInches - yOutsideOfSquareInches
 
-    val otherPartOfXInches = yInsideOfSquareInches * cos(qDegrees)
-    val yRelativeToTagInches = yInsideOfSquareInches * sin(qDegrees)
+    val otherPartOfXInches = yInsideOfSquareInches * cos(qRadians)
+    val yRelativeToTagInches = yInsideOfSquareInches * sin(qRadians)
     val xRelativeToTagInches = aSectionOfXInches + otherPartOfXInches
 
     return TagRelativePointInSpace(xInches=xRelativeToTagInches, yInches=yRelativeToTagInches, angleDegrees=0.0)
