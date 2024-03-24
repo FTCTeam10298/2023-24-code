@@ -294,8 +294,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         collectorServo2.direction = DcMotorSimple.Direction.FORWARD
 
         //Transfer
-        rightTransferServo.direction = DcMotorSimple.Direction.FORWARD
-        leftTransferServo.direction = DcMotorSimple.Direction.REVERSE
+        rightTransferServo.direction = DcMotorSimple.Direction.REVERSE
+        leftTransferServo.direction = DcMotorSimple.Direction.FORWARD
 
         //Lift
         liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
