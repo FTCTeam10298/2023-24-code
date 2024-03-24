@@ -46,21 +46,6 @@ private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePo
 
 }
 
-private fun returnCamCentricCoordsInTagCentricCoordsVeryLimited(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
-    //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
-
-
-    val aDegrees: Double = 180 - 90 - anyOldTag.yawDegrees
-    val aDegreesInRadians = Math.toRadians(aDegrees)
-    //we're just scaling a right triangle of length 1 by the range
-    val xRelativeToTag = cos(aDegreesInRadians) * anyOldTag.rangeInches
-    val yRelativeToTag = sin(aDegreesInRadians) * anyOldTag.rangeInches
-    val angleRelativeToTag = aDegrees
-
-    return TagRelativePointInSpace(xInches=xRelativeToTag, yInches=yRelativeToTag, headingDegrees=angleRelativeToTag)
-
-}
-
 
 
 @Autonomous
@@ -137,29 +122,36 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
     data class aprilTagAndData(val anAprilTag: AprilTagDetection, val aPositionAndRotation: PositionAndRotation)
 
     /** Gabe edit me */
-    private fun returnTargetAprilTagInTagCentricCoords(allAprilTags: List<AprilTagDetection>): aprilTagAndData? {
+    private fun returnAprilTagInTagCentricCoords(aprilTag: AprilTagDetection): aprilTagAndData? {
         //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
 
         //you need to look at the diagram to get this.
 
         //getting l
 
-        for (thisAprilTag in allAprilTags) {
-            val thisAprilTagPose = thisAprilTag.ftcPose
-            val a: Double = 180 - 90 - thisAprilTagPose.yaw
-            //we're just scaling a right triangle of length 1 by the range
-            val xRelativeToTag = cos(a) * thisAprilTagPose.range
-            val yRelativeToTag = sin(a) * thisAprilTagPose.range
-            val angleRelativeToTag = 90 - a
-            val thisAprilTagPositionAndRotation = PositionAndRotation(xRelativeToTag, yRelativeToTag, angleRelativeToTag)
-            return aprilTagAndData(thisAprilTag, thisAprilTagPositionAndRotation)
+        if (aprilTag != null) {
+            val thisAprilTagPose = aprilTag.ftcPose
+            val representationOfAprilTag = CameraRelativePointInSpace(xInches=thisAprilTagPose.x,
+                    yInches=thisAprilTagPose.y, yawDegrees=thisAprilTagPose.yaw, rangeInches=thisAprilTagPose.range)
+            val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoords(representationOfAprilTag)
+            val resultPosition = PositionAndRotation(thisTagInTagCentricCoords.xInches,
+                    thisTagInTagCentricCoords.yInches, thisTagInTagCentricCoords.headingDegrees)
 
+            return aprilTagAndData(aprilTag, resultPosition)
         }
-        return null
+        else return null
     }
 
-    var isThisTheFirstTimeAnyAprilTagHasBeenSeen = true
+    private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>): aprilTagAndData? {
+        for (detection in currentDetections) {
+            if (detection.id == targetAprilTagID) {
+                val targetAprilTagInTagCentricCoords = returnAprilTagInTagCentricCoords(detection)
+                return targetAprilTagInTagCentricCoords
+            }
+        }
 
+       return null
+    }
     private fun telemetryAprilTag() {
 
         val currentDetections: List<AprilTagDetection> = aprilTagThings.flatMap{it.detections()}
@@ -172,8 +164,10 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
         //data.
 
         //Find tag that is least rotated from being straight on (least off axis)
-        val theTargetAprilTag: AprilTagDetection? = returnTargetAprilTagInTagCentricCoords(currentDetections)?.anAprilTag
-        val theTargetAprilTagData = returnTargetAprilTagInTagCentricCoords(currentDetections)?.aPositionAndRotation
+
+
+        val theTargetAprilTag: AprilTagDetection? = returnTargetAprilTag(currentDetections)?.anAprilTag
+        val theTargetAprilTagData = returnTargetAprilTag(currentDetections)?.aPositionAndRotation
         if (theTargetAprilTag != null) {
             telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag.id, "WAS YOUR SELECTED TAG, AND I FOUND IT!"))
 
@@ -191,10 +185,6 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                 //elvis operator
                 val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(theTag ?: currentDetections.first()).posAndRot
                 val currentRobotPositionRelativeToCamera = theTargetAprilTag.ftcPose.bearing
-
-                if (isThisTheFirstTimeAnyAprilTagHasBeenSeen) {
-                    isThisTheFirstTimeAnyAprilTagHasBeenSeen = false
-                }
 
                 telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
 
