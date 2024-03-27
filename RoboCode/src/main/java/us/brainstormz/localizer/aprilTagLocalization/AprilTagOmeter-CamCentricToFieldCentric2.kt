@@ -7,21 +7,46 @@ import us.brainstormz.localizer.aprilTagLocalization.Foo
 import kotlin.math.cos
 import kotlin.math.sin
 
+/*
+LIST OF TESTS
+    ... 01
+
+     val inputCamRelative = CameraRelativePointInSpace(xInches=5.0, yInches=10.0, yawDegrees= 0.0)
+
+    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=5.0, yInches=10.0, headingDegrees= 0.0)//heading degrees = yaw
+
+    val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoords(inputCamRelative)
+
+    val inputTagRelative = actualOutputTagRelative
+
+    val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=50.25, yInches=40.41, headingDegrees = 0.0)
+
+    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
+
+    ... 02
+
+
+
+ */
+
 fun main () {
     var aprilTagLocalization = AprilTagLocalizationOTron(
             cameraXOffset=0.00,
             cameraYOffset=0.00 //it's right on center! Yay!
     )
     val targetAprilTagID: Int = 2
-    val inputCamRelative = CameraRelativePointInSpace(xInches=22.0, yInches=67.0, yawDegrees= -10.0, rangeInches=88.0)
+    val inputCamRelative = CameraRelativePointInSpace(xInches=10.0, yInches=10.0, yawDegrees= 10.0)
 
-    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=87.987, yInches=1.536, headingDegrees= 1.00)
+    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=11.585, yInches=8.112, headingDegrees= 10.0)//heading degrees = yaw
 
     val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoords(inputCamRelative)
 
     val inputTagRelative = actualOutputTagRelative
 
-    val outputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
+    val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=46.995, yInches=52.138, headingDegrees = 10.0)
+
+    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
+
 
 
     println("Our camera-relative input was $inputCamRelative" )
@@ -29,7 +54,8 @@ fun main () {
     println("...but we got this: $actualOutputTagRelative")
 
     println("So we took that tag-relative position, $inputTagRelative.")
-    println("The position that we calculated our camera to be on the field is $outputFieldRelative.")
+    println("We expected to see a position of $expectedOutputFieldRelative")
+    println("Instead, we calculated that our camera is at $actualOutputFieldRelative.")
 
 
 
@@ -38,7 +64,7 @@ fun main () {
 
 }
 
-data class CameraRelativePointInSpace(val xInches: Double, val yInches: Double, val yawDegrees: Double, val rangeInches: Double)
+data class CameraRelativePointInSpace(val xInches: Double, val yInches: Double, val yawDegrees: Double)
 data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
 
 data class FieldRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
@@ -157,7 +183,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
         if (aprilTag != null) {
             val thisAprilTagPose = aprilTag.ftcPose
             val representationOfAprilTag = CameraRelativePointInSpace(xInches=thisAprilTagPose.x,
-                    yInches=thisAprilTagPose.y, yawDegrees=thisAprilTagPose.yaw, rangeInches=thisAprilTagPose.range)
+                    yInches=thisAprilTagPose.y, yawDegrees=thisAprilTagPose.yaw)
             val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoords(representationOfAprilTag)
             val resultPosition = TagRelativePointInSpace(thisTagInTagCentricCoords.xInches,
                     thisTagInTagCentricCoords.yInches, thisTagInTagCentricCoords.headingDegrees)

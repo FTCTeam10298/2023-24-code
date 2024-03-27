@@ -33,50 +33,50 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
 
         //I guess subtraction works? Some things should just be worked out with experimentation.
         //Has to be 12-14 inches from most on-center target for results accurate to +- one inch.
-        val robotRelativeToFieldX = tagRelativeToField.x - tagRelativeToCameraOurCoordinateSystem.x
+        val  robotRelativeToFieldX = tagRelativeToField.x + tagRelativeToCameraOurCoordinateSystem.x
         val robotRelativeToFieldY = tagRelativeToField.y + tagRelativeToCameraOurCoordinateSystem.y
-//        val robotRelativeToFieldZ = (tagRelativeToCamera.z + tagRelativeToFieldZ)
 
         val robotRelativeToFieldRotation = tagRelativeToCameraOurCoordinateSystem.r
 
         //TODO: TRIGONOMETRYYYY IDK if this is complete :&
-        //We're trying to find the angle between the AprilTag Y Axis and the bot. Draw this out:
-        //There are two relevant angles: bearing, angle between us and the AprilTag, and
-        //the angle between that bearing. If we find all of these, we can finish the triangle with
-        //180 - those two angles, which means the angle between this angle and
+//        //We're trying to find the angle between the AprilTag Y Axis and the bot. Draw this out:
+//        //There are two relevant angles: bearing, angle between us and the AprilTag, and
+//        //the angle between that bearing. If we find all of these, we can finish the triangle with
+//        //180 - those two angles, which means the angle between this angle and
+//
+//        //what is the point on AprilTagY that is at RobotX? A point that is (RobotX, AprilTagY).
+//        //James wants the Y Axis
+//
+//        val distanceBetweenAprilTagAndBot = sqrt(tagRelativeToCameraOurCoordinateSystem.x.pow(2) +
+//                tagRelativeToCameraOurCoordinateSystem.y.pow(2))
+//
+////        robotRelativeToFieldY = (sqrt(2.0)/2)
+////        robotRelativeToFieldX = (sqrt(2.0)/2)
+//
+//        val intersectionBetweenBotAndAprilTagYAxis = PositionAndRotation(
+//                x= robotRelativeToFieldX,
+//                y= tagRelativeToField.y,
+//                r= 0.0 //there really isn't one.
+//        )
+//        //So, what length of AprilTagY is that? That's just the x of that point we just made.
+//
+//        var distanceBetweenBotAndAprilTagXAxis = tagRelativeToField.x - robotRelativeToFieldX
+//        println("Robot X Distance: $distanceBetweenBotAndAprilTagXAxis")
+//
+//        var distanceBetweenBotAndAprilTagYAxis = tagRelativeToField.y - robotRelativeToFieldY
+//
+//        val tangentOfAngleBetweenCenterOfAprilTagAndBot =
+//                distanceBetweenBotAndAprilTagYAxis/distanceBetweenBotAndAprilTagXAxis
+//
+//        val angleBetweenCenterOfAprilTagAndRobot = Math.toDegrees(atan(tangentOfAngleBetweenCenterOfAprilTagAndBot))
+////        println("Robot-AprilTag Angle Found: $angleBetweenCenterOfAprilTagAndRobot")
+//        val angleBetweenAprilTagYAxisAndRobot = 90 - angleBetweenCenterOfAprilTagAndRobot
+////        println("Robot-AprilTag Axis Angle Found: $angleBetweenAprilTagYAxisAndRobot")
+//        //arctangent takes us home to the first angle! Yay!
+////        val angleBetween
 
-        //what is the point on AprilTagY that is at RobotX? A point that is (RobotX, AprilTagY).
-        //James wants the Y Axis
-
-        val distanceBetweenAprilTagAndBot = sqrt(tagRelativeToCameraOurCoordinateSystem.x.pow(2) +
-                tagRelativeToCameraOurCoordinateSystem.y.pow(2))
-
-//        robotRelativeToFieldY = (sqrt(2.0)/2)
-//        robotRelativeToFieldX = (sqrt(2.0)/2)
-
-        val intersectionBetweenBotAndAprilTagYAxis = PositionAndRotation(
-                x= robotRelativeToFieldX,
-                y= tagRelativeToField.y,
-                r= 0.0 //there really isn't one.
-        )
-        //So, what length of AprilTagY is that? That's just the x of that point we just made.
-
-        var distanceBetweenBotAndAprilTagXAxis = tagRelativeToField.x - robotRelativeToFieldX
-        println("Robot X Distance: $distanceBetweenBotAndAprilTagXAxis")
-
-        var distanceBetweenBotAndAprilTagYAxis = tagRelativeToField.y - robotRelativeToFieldY
-
-        val tangentOfAngleBetweenCenterOfAprilTagAndBot =
-                distanceBetweenBotAndAprilTagYAxis/distanceBetweenBotAndAprilTagXAxis
-
-        val angleBetweenCenterOfAprilTagAndRobot = Math.toDegrees(atan(tangentOfAngleBetweenCenterOfAprilTagAndBot))
-//        println("Robot-AprilTag Angle Found: $angleBetweenCenterOfAprilTagAndRobot")
-        val angleBetweenAprilTagYAxisAndRobot = 90 - angleBetweenCenterOfAprilTagAndRobot
-//        println("Robot-AprilTag Axis Angle Found: $angleBetweenAprilTagYAxisAndRobot")
-        //arctangent takes us home to the first angle! Yay!
-//        val angleBetween
-
-        return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, angleBetweenAprilTagYAxisAndRobot))
+        return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, tagRelativeToCameraOurCoordinateSystem.r))
+        //yaw is equivalent to bearing
     }
 
     fun getAprilTagLocation(tagId: Int): AprilTagPositionOnField {
