@@ -1,5 +1,6 @@
 package us.brainstormz.localizer.aprilTagLocalization
 
+import FieldRelativePointInSpace
 import TagRelativePointInSpace
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import us.brainstormz.localizer.PositionAndRotation
@@ -9,7 +10,7 @@ import kotlin.math.*
 class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Double) {
     //distance of the camera from the bot's center so that we find position relative to bot center
     // not camera center.
-    fun getCameraPositionOnField(aprilTagID: Int, aprilTagInTagCentricCoords: TagRelativePointInSpace): RobotPositionOnField {
+    fun getCameraPositionOnField(aprilTagID: Int, aprilTagInTagCentricCoords: TagRelativePointInSpace): FieldRelativePointInSpace {
 
         /** adds relative position to position of tags on field, because both are calculated with
          * the same origin (point with an x and y of 0), because then we reflect how much more/less the bot
@@ -75,7 +76,7 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
 //        //arctangent takes us home to the first angle! Yay!
 ////        val angleBetween
 
-        return RobotPositionOnField(PositionAndRotation(robotRelativeToFieldX, robotRelativeToFieldY, tagRelativeToCameraOurCoordinateSystem.r))
+        return FieldRelativePointInSpace(robotRelativeToFieldX, robotRelativeToFieldY, tagRelativeToCameraOurCoordinateSystem.r)
         //yaw is equivalent to bearing
     }
 

@@ -34,6 +34,8 @@ fun main () {
             cameraXOffset=0.00,
             cameraYOffset=0.00 //it's right on center! Yay!
     )
+
+
     val targetAprilTagID: Int = 2
     val inputCamRelative = CameraRelativePointInSpace(xInches=10.0, yInches=10.0, yawDegrees= 10.0)
 
@@ -46,7 +48,6 @@ fun main () {
     val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=46.995, yInches=52.138, headingDegrees = 10.0)
 
     val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
-
 
 
     println("Our camera-relative input was $inputCamRelative" )
@@ -92,9 +93,18 @@ private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePo
 
 }
 
-private fun returnTagCentricCoordsInFieldCoords() {
-
-}
+//private fun returnTagCentricCoordsInFieldCoords(cameraXOffset: Double, cameraYOffset: Double, targetAprilTagID: Int, inputTagRelative: TagRelativePointInSpace): FieldRelativePointInSpace {
+//
+//    var aprilTagLocalization = AprilTagLocalizationOTron(
+//            cameraXOffset=0.00,
+//            cameraYOffset=0.00 //it's right on center! Yay!
+//    )
+//
+//    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
+//
+//    return actualOutputFieldRelative
+//
+//}
 
 
 
@@ -170,10 +180,11 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
         }
     }
 
-    data class aprilTagAndData(val anAprilTag: AprilTagDetection, val aTagRelativePointInSpace: TagRelativePointInSpace)
+    data class AprilTagAndData(val AprilTag: AprilTagDetection, val CamRelativePointInSpace: CameraRelativePointInSpace?,
+                               val TagRelativePointInSpace: TagRelativePointInSpace?, val FieldRelativePointInSpace: FieldRelativePointInSpace?)
 
     /** Gabe edit me */
-    private fun returnAprilTagInTagCentricCoords(aprilTag: AprilTagDetection): aprilTagAndData? {
+    private fun returnAprilTagInFieldCentricCoords(aprilTag: AprilTagDetection): AprilTagAndData? {
         //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
 
         //you need to look at the diagram to get this.
@@ -185,19 +196,23 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
             val representationOfAprilTag = CameraRelativePointInSpace(xInches=thisAprilTagPose.x,
                     yInches=thisAprilTagPose.y, yawDegrees=thisAprilTagPose.yaw)
             val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoords(representationOfAprilTag)
-            val resultPosition = TagRelativePointInSpace(thisTagInTagCentricCoords.xInches,
+            val resultPositionInTagCentric = TagRelativePointInSpace(thisTagInTagCentricCoords.xInches,
                     thisTagInTagCentricCoords.yInches, thisTagInTagCentricCoords.headingDegrees)
 
-            return aprilTagAndData(aprilTag, resultPosition)
+            val thisTagInFieldCentricCoords = aprilTagLocalization.getCameraPositionOnField(aprilTagID = aprilTag.id, thisTagInTagCentricCoords)
+
+            val resultPositionInFieldCentric = FieldRelativePointInSpace(thisTagInFieldCentricCoords.xInches,
+                    thisTagInFieldCentricCoords.yInches, thisTagInFieldCentricCoords.headingDegrees)
+
+            return AprilTagAndData(aprilTag, representationOfAprilTag!!, resultPositionInTagCentric, resultPositionInFieldCentric)
         }
         else return null
     }
 
-    private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>): aprilTagAndData? {
+    private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>): AprilTagAndData? {
         for (detection in currentDetections) {
             if (detection.id == targetAprilTagID) {
-                val targetAprilTagInTagCentricCoords = returnAprilTagInTagCentricCoords(detection)
-                return targetAprilTagInTagCentricCoords
+                return returnAprilTagInFieldCentricCoords(detection)
             }
         }
 
@@ -217,8 +232,10 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
         //Find tag that is least rotated from being straight on (least off axis)
 
 
-        val theTargetAprilTag: AprilTagDetection? = returnTargetAprilTag(currentDetections)?.anAprilTag
-        val theTargetAprilTagPosition = returnTargetAprilTag(currentDetections)?.aTagRelativePointInSpace
+        val theTargetAprilTag: AprilTagDetection = returnTargetAprilTag(currentDetections)!!.AprilTag
+        val theTargetAprilTagPositionCamRelative = returnTargetAprilTag(currentDetections)!!.CamRelativePointInSpace
+        val theTargetAprilTagPositionTagRelative = returnTargetAprilTag(currentDetections)!!.TagRelativePointInSpace
+        val theTargetAprilTagPositionFieldRelative = returnTargetAprilTag(currentDetections)!!.FieldRelativePointInSpace
         if (theTargetAprilTag != null) {
             telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag.id, "WAS YOUR SELECTED TAG, AND I FOUND IT!"))
 
@@ -235,14 +252,20 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                 val idOfTargetTag = (currentDetections.first().id).toInt()
 
                 //elvis operator
-                val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(aprilTagID=idOfTargetTag, aprilTagInTagCentricCoords=theTargetAprilTagPosition!!).posAndRot
+                val currentPositionOfRobot = returnCamCentricCoordsInTagCentricCoords(anyOldTag = theTargetAprilTagPositionCamRelative!!)
                 val currentRobotPositionRelativeToCamera = theTargetAprilTag.ftcPose.bearing
 
                 telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
 
-                println("Robot X: ${theTargetAprilTagPosition?.xInches}")
-                println("Robot Y: ${theTargetAprilTagPosition?.yInches}")
-                println("Robot Bearing: ${theTargetAprilTagPosition?.headingDegrees}")
+//                println("Robot X: ${theTargetAprilTagPosition?.xInches}")
+//                println("Robot Y: ${theTargetAprilTagPosition?.yInches}")
+//                println("Robot Bearing: ${theTargetAprilTagPosition?.headingDegrees}")
+
+                println("Field X: ${theTargetAprilTagPositionFieldRelative!!.xInches}")
+                println("Robot Y: ${theTargetAprilTagPositionFieldRelative!!.yInches}")
+                println("Robot Bearing: ${theTargetAprilTagPositionFieldRelative!!.headingDegrees}")
+
+
 
 
 
