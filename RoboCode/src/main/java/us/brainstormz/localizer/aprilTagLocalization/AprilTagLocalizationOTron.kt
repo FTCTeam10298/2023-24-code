@@ -1,14 +1,15 @@
 package us.brainstormz.localizer.aprilTagLocalization
 
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
+import TagRelativePointInSpace
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import us.brainstormz.localizer.PositionAndRotation
 import kotlin.math.atan
+import kotlin.math.*
 
 class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Double) {
     //distance of the camera from the bot's center so that we find position relative to bot center
     // not camera center.
-    fun getCameraPositionOnField(aprilTagDetection: AprilTagDetection): RobotPositionOnField {
+    fun getCameraPositionOnField(aprilTagID: Int, aprilTagInTagCentricCoords: TagRelativePointInSpace): RobotPositionOnField {
 
         /** adds relative position to position of tags on field, because both are calculated with
          * the same origin (point with an x and y of 0), because then we reflect how much more/less the bot
@@ -20,15 +21,15 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
 
         val angle = 0
 
-        val tagRelativeToCamera = aprilTagDetection.ftcPose
+        val tagRelativeToCamera = aprilTagInTagCentricCoords
         val tagRelativeToCameraOurCoordinateSystem = PositionAndRotation(
-                x= tagRelativeToCamera.x + cameraXOffset,
-                y= -tagRelativeToCamera.y + cameraYOffset,
-                r= tagRelativeToCamera.bearing
+                x= tagRelativeToCamera.xInches + cameraXOffset,
+                y= -tagRelativeToCamera.yInches + cameraYOffset,
+                r= tagRelativeToCamera.headingDegrees //originally bearing, WATCH OUT
         )
 
 
-        val tagRelativeToField = getAprilTagLocation(aprilTagDetection.id).posAndRot
+        val tagRelativeToField = getAprilTagLocation(aprilTagID).posAndRot
 
         //I guess subtraction works? Some things should just be worked out with experimentation.
         //Has to be 12-14 inches from most on-center target for results accurate to +- one inch.
@@ -47,7 +48,8 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
         //what is the point on AprilTagY that is at RobotX? A point that is (RobotX, AprilTagY).
         //James wants the Y Axis
 
-        val distanceBetweenAprilTagAndBot = tagRelativeToCamera.range
+        val distanceBetweenAprilTagAndBot = sqrt(tagRelativeToCameraOurCoordinateSystem.x.pow(2) +
+                tagRelativeToCameraOurCoordinateSystem.y.pow(2))
 
 //        robotRelativeToFieldY = (sqrt(2.0)/2)
 //        robotRelativeToFieldX = (sqrt(2.0)/2)

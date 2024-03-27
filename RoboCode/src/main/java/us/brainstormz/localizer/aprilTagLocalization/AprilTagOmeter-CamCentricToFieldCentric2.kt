@@ -2,26 +2,31 @@ import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationOTron
 import us.brainstormz.localizer.aprilTagLocalization.Foo
 import kotlin.math.cos
 import kotlin.math.sin
 
 fun main () {
-    val input = CameraRelativePointInSpace(xInches=88.0, yInches=0.0, yawDegrees= -1.0, rangeInches=88.0)
+    val inputCamRelative = CameraRelativePointInSpace(xInches=88.0, yInches=0.0, yawDegrees= -1.0, rangeInches=88.0)
 
-    val expectedOutput = TagRelativePointInSpace(xInches=87.987, yInches=1.536, headingDegrees= 1.00)
+    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=87.987, yInches=1.536, headingDegrees= 1.00)
 
-    val actualOutput = returnCamCentricCoordsInTagCentricCoords(input)
+    val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoords(inputCamRelative)
 
-    println("input was $input" )
-    println("Our expected output was $expectedOutput")
-    println("...but we got $actualOutput")
+    
+
+    println("input was $inputCamRelative" )
+    println("Our expected output was $expectedOutputTagRelative")
+    println("...but we got $actualOutputTagRelative")
+
+
 }
 
 data class CameraRelativePointInSpace(val xInches: Double, val yInches: Double, val yawDegrees: Double, val rangeInches: Double)
 data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
+
+data class FieldRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
 
 private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
     //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
@@ -45,6 +50,11 @@ private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePo
     return TagRelativePointInSpace(xInches=xRelativeToTagInches, yInches=yRelativeToTagInches, headingDegrees=anyOldTag.yawDegrees)
 
 }
+
+private fun returnTagCentricCoordsInFieldCoords() {
+
+}
+
 
 
 
@@ -119,7 +129,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
         }
     }
 
-    data class aprilTagAndData(val anAprilTag: AprilTagDetection, val aPositionAndRotation: PositionAndRotation)
+    data class aprilTagAndData(val anAprilTag: AprilTagDetection, val aTagRelativePointInSpace: TagRelativePointInSpace)
 
     /** Gabe edit me */
     private fun returnAprilTagInTagCentricCoords(aprilTag: AprilTagDetection): aprilTagAndData? {
@@ -134,7 +144,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
             val representationOfAprilTag = CameraRelativePointInSpace(xInches=thisAprilTagPose.x,
                     yInches=thisAprilTagPose.y, yawDegrees=thisAprilTagPose.yaw, rangeInches=thisAprilTagPose.range)
             val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoords(representationOfAprilTag)
-            val resultPosition = PositionAndRotation(thisTagInTagCentricCoords.xInches,
+            val resultPosition = TagRelativePointInSpace(thisTagInTagCentricCoords.xInches,
                     thisTagInTagCentricCoords.yInches, thisTagInTagCentricCoords.headingDegrees)
 
             return aprilTagAndData(aprilTag, resultPosition)
@@ -167,7 +177,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
 
         val theTargetAprilTag: AprilTagDetection? = returnTargetAprilTag(currentDetections)?.anAprilTag
-        val theTargetAprilTagData = returnTargetAprilTag(currentDetections)?.aPositionAndRotation
+        val theTargetAprilTagPosition = returnTargetAprilTag(currentDetections)?.aTagRelativePointInSpace
         if (theTargetAprilTag != null) {
             telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag.id, "WAS YOUR SELECTED TAG, AND I FOUND IT!"))
 
@@ -181,16 +191,17 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 //                    }}
 
                 val theTag: AprilTagDetection = detection
+                val idOfTargetTag = (currentDetections.first().id).toInt()
 
                 //elvis operator
-                val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(theTag ?: currentDetections.first()).posAndRot
+                val currentPositionOfRobot = aprilTagLocalization.getCameraPositionOnField(aprilTagID=idOfTargetTag, aprilTagInTagCentricCoords=theTargetAprilTagPosition!!).posAndRot
                 val currentRobotPositionRelativeToCamera = theTargetAprilTag.ftcPose.bearing
 
                 telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
 
-                println("Robot X: ${theTargetAprilTagData?.x}")
-                println("Robot Y: ${theTargetAprilTagData?.y}")
-                println("Robot Bearing: ${theTargetAprilTagData?.r}")
+                println("Robot X: ${theTargetAprilTagPosition?.xInches}")
+                println("Robot Y: ${theTargetAprilTagPosition?.yInches}")
+                println("Robot Bearing: ${theTargetAprilTagPosition?.headingDegrees}")
 
 
 
