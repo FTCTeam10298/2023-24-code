@@ -8,17 +8,32 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 fun main () {
-    val inputCamRelative = CameraRelativePointInSpace(xInches=88.0, yInches=0.0, yawDegrees= -1.0, rangeInches=88.0)
+    var aprilTagLocalization = AprilTagLocalizationOTron(
+            cameraXOffset=0.00,
+            cameraYOffset=0.00 //it's right on center! Yay!
+    )
+    val targetAprilTagID: Int = 2
+    val inputCamRelative = CameraRelativePointInSpace(xInches=22.0, yInches=67.0, yawDegrees= -10.0, rangeInches=88.0)
 
     val expectedOutputTagRelative = TagRelativePointInSpace(xInches=87.987, yInches=1.536, headingDegrees= 1.00)
 
     val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoords(inputCamRelative)
 
-    
+    val inputTagRelative = actualOutputTagRelative
 
-    println("input was $inputCamRelative" )
-    println("Our expected output was $expectedOutputTagRelative")
-    println("...but we got $actualOutputTagRelative")
+    val outputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
+
+
+    println("Our camera-relative input was $inputCamRelative" )
+    println("Our expected tag-relative output was $expectedOutputTagRelative")
+    println("...but we got this: $actualOutputTagRelative")
+
+    println("So we took that tag-relative position, $inputTagRelative.")
+    println("The position that we calculated our camera to be on the field is $outputFieldRelative.")
+
+
+
+
 
 
 }
