@@ -217,8 +217,8 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
         return FieldRelativePointInSpace(
                 xInches = anyOldTag.xInches,
-                yInches = anyOldTag.yInches,
-                headingDegrees = 360 - abs(anyOldTag.headingDegrees)
+                yInches = -(anyOldTag.yInches),
+                headingDegrees = 360 - abs(anyOldTag.headingDegrees) //have the angle decrease
         )
     }
 
