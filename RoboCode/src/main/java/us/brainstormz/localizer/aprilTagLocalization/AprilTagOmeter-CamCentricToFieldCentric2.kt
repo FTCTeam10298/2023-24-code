@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationOTron
 import us.brainstormz.localizer.aprilTagLocalization.Foo
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -217,7 +218,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
         return FieldRelativePointInSpace(
                 xInches = anyOldTag.xInches,
                 yInches = anyOldTag.yInches,
-                headingDegrees = -(anyOldTag.headingDegrees)
+                headingDegrees = 360 - abs(anyOldTag.headingDegrees)
         )
     }
 
