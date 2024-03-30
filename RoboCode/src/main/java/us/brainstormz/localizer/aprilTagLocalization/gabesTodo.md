@@ -4,7 +4,7 @@
 
 
 MAGICAL MYSTICAL APRILTAG PUBLISHING TRACK
-- James coords.
+- James coords. 
 - Pick Best Apriltag Function
 
 //Teague ask - function to find how many apriltags

@@ -169,8 +169,6 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
             val currentDetections = getListOfCurrentAprilTagsSeen()
             showAllAprilTagsInfo(currentDetections)
-            showTargetAprilTagInfo(currentDetections)
-
 
             // Share the CPU.
             sleep(20)
@@ -203,6 +201,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                     xInches=thisAprilTagPose.x,
                     yInches=thisAprilTagPose.y,
                     yawDegrees=thisAprilTagPose.yaw)
+
             val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoords(representationOfAprilTag)
             val resultPositionInTagCentric = TagRelativePointInSpace(
                     thisTagInTagCentricCoords.xInches,
@@ -227,10 +226,10 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
         )
     }
 
-    private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>): AprilTagAndData? {
+    private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>, idOfTargetAprilTag: Int): AprilTagDetection? {
         for (detection in currentDetections) {
-            if (detection.id == targetAprilTagID) {
-                return returnAprilTagInFieldCentricCoords(detection)
+            if (detection.id == idOfTargetAprilTag) {
+                return detection
             }
         }
 
@@ -264,18 +263,22 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                     println(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
                 }
             }
+            val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
+            showTargetAprilTagInfo(
+                    listOfAllAprilTagsDetected = currentDetections,
+                    leastDistortedAprilTag = closestAprilTag)
 
         }
 
 
     }
 
-        fun showTargetAprilTagInfo(currentDetections: List<AprilTagDetection>) {
+        fun showTargetAprilTagInfo(listOfAllAprilTagsDetected: List<AprilTagDetection>, leastDistortedAprilTag: AprilTagDetection) {
 
 
 
 
-        telemetry.addData("# AprilTags Detected", currentDetections.size)
+        telemetry.addData("# AprilTags Detected", listOfAllAprilTagsDetected.size)
 
         //Step through the list of detections and find the tag with the least x value,
         //meaning least distance from center of camera, meaning *most accurate* source of
@@ -283,34 +286,37 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
         //Find tag that is least rotated from being straight on (least off axis)
 
-        val leastDistortedAprilTag = aprilTagLocalization.chooseClosestAprilTagToBot(currentDetections).id
 
-        val theTargetAprilTag: AprilTagDetection = returnTargetAprilTag(currentDetections)!!.AprilTag
-        val theTargetAprilTagPositionCamRelative = returnTargetAprilTag(currentDetections)!!.CamRelativePointInSpace
-        val theTargetAprilTagPositionTagRelative = returnTargetAprilTag(currentDetections)!!.TagRelativePointInSpace
-        val theTargetAprilTagPositionFieldRelative = returnTargetAprilTag(currentDetections)!!.FieldRelativePointInSpace
+        val theTargetAprilTag: AprilTagDetection? = returnTargetAprilTag(
+                currentDetections = listOfAllAprilTagsDetected,
+                idOfTargetAprilTag = leastDistortedAprilTag.id)
+
+
         if (theTargetAprilTag != null) {
+            val theTargetAprilTagPositionInfo = returnAprilTagInFieldCentricCoords(theTargetAprilTag)
+            val theTargetAprilTagPositionTagRelative = theTargetAprilTagPositionInfo!!.TagRelativePointInSpace
+            val theTargetAprilTagPositionFieldRelative = theTargetAprilTagPositionInfo.FieldRelativePointInSpace
+
             telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag.id, "WAS YOUR SELECTED TAG, AND I FOUND IT!"))
 
             // Step through the list of detections and display info for each one.
 
-            if (currentDetections.isNotEmpty()) {
-                val detection: AprilTagDetection = theTargetAprilTag ?: currentDetections.first();
+            if (listOfAllAprilTagsDetected.isNotEmpty()) {
+                val detection: AprilTagDetection = theTargetAprilTag ?: listOfAllAprilTagsDetected.first();
 //                if (detection == tagWithLeastYawDistortion) {
 //                else {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection?.id, detection.metadata.name))
 //                    }}
 
                 val theTag: AprilTagDetection = detection
-                val idOfTargetTag = (currentDetections.first().id).toInt()
+                val idOfLeastDistortedTag = leastDistortedAprilTag.id
 
                 //elvis operator
-                val currentPositionOfRobot = returnCamCentricCoordsInTagCentricCoords(anyOldTag = theTargetAprilTagPositionCamRelative!!)
                 val currentRobotPositionRelativeToCamera = theTargetAprilTag.ftcPose.bearing
 
 
                 telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
-                telemetry.addLine("Least Distorted AprilTag: $leastDistortedAprilTag")
+                telemetry.addLine("Least Distorted AprilTag: $idOfLeastDistortedTag")
 
 //                println("Robot X: ${theTargetAprilTagPosition?.xInches}")
 //                println("Robot Y: ${theTargetAprilTagPosition?.yInches}")
@@ -319,7 +325,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 //                println("Field X: ${theTargetAprilTagPositionFieldRelative!!.xInches}")
 //                println("Robot Y: ${theTargetAprilTagPositionFieldRelative!!.yInches}")
 //                println("Robot Bearing: ${theTargetAprilTagPositionFieldRelative!!.headingDegrees}")
-                println("Least Distorted Apriltag: $leastDistortedAprilTag")
+                println("Least Distorted Apriltag: $idOfLeastDistortedTag")
 
 
 

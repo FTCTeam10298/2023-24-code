@@ -90,7 +90,7 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
         return AprilTagPositionOnField(tagRelativeToFieldOurCoordinateSystem)
     }
 
-    fun chooseClosestAprilTagToBot(allAprilTags: List<AprilTagDetection>): AprilTagDetection {
+    fun findClosestAprilTagToBot(allAprilTags: List<AprilTagDetection>): AprilTagDetection {
         val sortedByRange = allAprilTags.sortedBy {
             val rangeAbs = it.ftcPose.range.absoluteValue
 //            println("yawAbs: $yawAbs, tag ID: ${it.id}")
