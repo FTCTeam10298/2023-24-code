@@ -167,7 +167,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
             aprilTagThings.forEach { it.resumeStreaming() }
 
-            telemetryAprilTag()
+            showTargetAprilTagInfo()
             // Share the CPU.
             sleep(20)
             telemetry.update()
@@ -231,7 +231,41 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
        return null
     }
-    private fun telemetryAprilTag() {
+
+    private fun getListOfCurrentAprilTagsSeen(): List<AprilTagDetection> {
+        return aprilTagThings.flatMap { it.detections() }
+    }
+    private fun showAllAprilTagsInfo(){
+
+        val currentDetections = getListOfCurrentAprilTagsSeen()
+
+        if (currentDetections.isNotEmpty()) {
+
+            for (detection in currentDetections) {
+
+                val detectionFieldCoords = returnAprilTagInFieldCentricCoords(detection)!!.FieldRelativePointInSpace!!
+
+                if (currentDetections.isNotEmpty()) {
+
+                    println(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
+                    //
+                    println(String.format("XYH %6.1f %6.1f %6.1f  (inch, inch, deg)",
+                            detectionFieldCoords.xInches,
+                            detectionFieldCoords.yInches,
+                            detectionFieldCoords.headingDegrees))
+
+                    println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
+
+                    println(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+                }
+            }
+
+        }
+
+
+    }
+
+        fun showTargetAprilTagInfo() {
 
         val currentDetections: List<AprilTagDetection> = aprilTagThings.flatMap{it.detections()}
 
@@ -244,6 +278,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
         //Find tag that is least rotated from being straight on (least off axis)
 
+        val leastDistortedAprilTag = aprilTagLocalization.chooseBestAprilTag(currentDetections)
 
         val theTargetAprilTag: AprilTagDetection = returnTargetAprilTag(currentDetections)!!.AprilTag
         val theTargetAprilTagPositionCamRelative = returnTargetAprilTag(currentDetections)!!.CamRelativePointInSpace
@@ -277,6 +312,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                 println("Field X: ${theTargetAprilTagPositionFieldRelative!!.xInches}")
                 println("Robot Y: ${theTargetAprilTagPositionFieldRelative!!.yInches}")
                 println("Robot Bearing: ${theTargetAprilTagPositionFieldRelative!!.headingDegrees}")
+                println("Least Distorted Apriltag: $leastDistortedAprilTag")
 
 
 

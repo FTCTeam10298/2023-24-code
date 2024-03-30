@@ -2,6 +2,7 @@ package us.brainstormz.localizer.aprilTagLocalization
 
 import FieldRelativePointInSpace
 import TagRelativePointInSpace
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import us.brainstormz.localizer.PositionAndRotation
 import kotlin.math.atan
@@ -20,8 +21,6 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
         //This code is meant to be used 12-14 in. from the AprilTag, and will return coords.
         //based on the closest AprilTag, with an accuracy of +-1/2 inch.
 
-        val angle = 0
-
         val tagRelativeToCamera = aprilTagInTagCentricCoords
 
         val tagRelativeToCameraOurCoordinateSystem = PositionAndRotation(
@@ -39,12 +38,6 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
         //Has to be 12-14 inches from most on-center target for results accurate to +- one inch.
         val  robotRelativeToFieldX = tagRelativeToField.x + tagRelativeToCameraOurCoordinateSystem.x
         val robotRelativeToFieldY = tagRelativeToField.y + tagRelativeToCameraOurCoordinateSystem.y
-
-        val robotRelativeToFieldRotation = tagRelativeToCameraOurCoordinateSystem.r
-
-        fun convertToJamesCoordinateSystem() {
-
-        }
 
         //TODO: TRIGONOMETRYYYY IDK if this is complete :&
 //        //We're trying to find the angle between the AprilTag Y Axis and the bot. Draw this out:
@@ -98,6 +91,28 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
         return AprilTagPositionOnField(tagRelativeToFieldOurCoordinateSystem)
     }
 
+    fun chooseBestAprilTag(allAprilTags: List<AprilTagDetection>): AprilTagDetection {
+        val sortedByYaw = allAprilTags.sortedBy {
+            val yawAbs = it.ftcPose.yaw.absoluteValue
+            println("yawAbs: $yawAbs, tag ID: ${it.id}")
+            yawAbs
+        }
+        val topTwoYaw = listOf(sortedByYaw[0], sortedByYaw[1])
+        val differenceInYawBetweenTopChoices = (topTwoYaw[1].ftcPose.yaw - topTwoYaw[0].ftcPose.yaw).absoluteValue
+        val areTheYawValuesSuperClose:Boolean = differenceInYawBetweenTopChoices < 0.5 //too large... 0.5 worked better
+        return if (areTheYawValuesSuperClose) {
+            val closestToCenter: AprilTagDetection = topTwoYaw.minBy {
+                val bearing = it.ftcPose.bearing.absoluteValue
+                println("bearing: $bearing, tag ID: ${it.id}")
+                bearing
+            }
+            closestToCenter
+        }
+        else {
+            sortedByYaw[0]
+        }
+
+    }
 
     data class AprilTagPositionOnField(val posAndRot: PositionAndRotation)
 
