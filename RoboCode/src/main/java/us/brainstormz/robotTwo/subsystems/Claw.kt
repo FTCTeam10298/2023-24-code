@@ -23,7 +23,7 @@ import kotlin.math.sign
 
 class Claw(private val telemetry: Telemetry) {
     enum class ClawTarget(val angleDegrees: Double) {
-        Gripping(116.6),
+        Gripping(119.2),
         Retracted(0.0)
     }
 
