@@ -730,7 +730,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis
         }
 
-        /**Rollers*/
+        /**Gates*/
 //        val autoRollerState = transfer.getTransferSortingTarget(
 //                isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake,
 //                actualWorld = actualWorld,
@@ -745,9 +745,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             RollerInput.RightOut -> null to Transfer.RollerPositions.Open
             RollerInput.NoInput -> null to null
         }
+        val bothClawsAreAtTarget = wrist.wristIsAtPosition(WristTargets(ClawTarget.Gripping), actualRobot.depoState.wristAngles)
+        val gateTransferringTarget = if (handoffIsReadyCheck && bothClawsAreAtTarget) Transfer.RollerPositions.Open else Transfer.RollerPositions.Closed
         val rollerTargetState = Transfer.TransferTarget(
-                leftServoCollect = Transfer.RollerTarget(overrideRollerState.first ?: Transfer.RollerPositions.Closed, 0),
-                rightServoCollect = Transfer.RollerTarget(overrideRollerState.second ?: Transfer.RollerPositions.Closed, 0)
+                leftServoCollect = Transfer.RollerTarget(overrideRollerState.first ?: gateTransferringTarget, 0),
+                rightServoCollect = Transfer.RollerTarget(overrideRollerState.second ?: gateTransferringTarget, 0)
         )
 //        autoRollerState.copy(
 //                leftServoCollect = autoRollerState.leftServoCollect.copy(
@@ -758,7 +760,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 //        )
 
         /**Extendo*/
-
         val previousExtendoTargetPosition = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
         val extendoTargetState: SlideSubsystem.TargetSlideSubsystem = when (driverInput.extendo) {
             ExtendoInput.ExtendManual -> {
