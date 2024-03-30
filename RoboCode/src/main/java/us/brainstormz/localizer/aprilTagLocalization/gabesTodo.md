@@ -1,5 +1,12 @@
 ## Todo from James (Lovingly, -ya boi)
 
+
+
+
+MAGICAL MYSTICAL APRILTAG PUBLISHING TRACK
+- James coords.
+- Pick Best Apriltag Function
+
 //Teague ask - function to find how many apriltags
 
 //when angle between 0 and 1, subtract .4 or .5 from X

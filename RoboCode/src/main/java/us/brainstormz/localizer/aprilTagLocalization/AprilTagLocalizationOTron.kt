@@ -23,11 +23,14 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
         val angle = 0
 
         val tagRelativeToCamera = aprilTagInTagCentricCoords
+
         val tagRelativeToCameraOurCoordinateSystem = PositionAndRotation(
                 x= tagRelativeToCamera.xInches + cameraXOffset,
                 y= -tagRelativeToCamera.yInches + cameraYOffset,
-                r= tagRelativeToCamera.headingDegrees //originally bearing, WATCH OUT
+                r= tagRelativeToCamera.headingDegrees - 180 //originally bearing, WATCH OUT
         )
+
+        //TODO: Convert to James's coordinate system.
 
 
         val tagRelativeToField = getAprilTagLocation(aprilTagID).posAndRot
@@ -38,6 +41,10 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
         val robotRelativeToFieldY = tagRelativeToField.y + tagRelativeToCameraOurCoordinateSystem.y
 
         val robotRelativeToFieldRotation = tagRelativeToCameraOurCoordinateSystem.r
+
+        fun convertToJamesCoordinateSystem() {
+
+        }
 
         //TODO: TRIGONOMETRYYYY IDK if this is complete :&
 //        //We're trying to find the angle between the AprilTag Y Axis and the bot. Draw this out:
@@ -90,6 +97,7 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
         )
         return AprilTagPositionOnField(tagRelativeToFieldOurCoordinateSystem)
     }
+
 
     data class AprilTagPositionOnField(val posAndRot: PositionAndRotation)
 

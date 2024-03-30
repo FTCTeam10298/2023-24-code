@@ -193,20 +193,32 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
         if (aprilTag != null) {
             val thisAprilTagPose = aprilTag.ftcPose
-            val representationOfAprilTag = CameraRelativePointInSpace(xInches=thisAprilTagPose.x,
-                    yInches=thisAprilTagPose.y, yawDegrees=thisAprilTagPose.yaw)
+            val representationOfAprilTag = CameraRelativePointInSpace(
+                    xInches=thisAprilTagPose.x,
+                    yInches=thisAprilTagPose.y,
+                    yawDegrees=thisAprilTagPose.yaw)
             val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoords(representationOfAprilTag)
-            val resultPositionInTagCentric = TagRelativePointInSpace(thisTagInTagCentricCoords.xInches,
-                    thisTagInTagCentricCoords.yInches, thisTagInTagCentricCoords.headingDegrees)
+            val resultPositionInTagCentric = TagRelativePointInSpace(
+                    thisTagInTagCentricCoords.xInches,
+                    thisTagInTagCentricCoords.yInches,
+                    thisTagInTagCentricCoords.headingDegrees)
 
             val thisTagInFieldCentricCoords = aprilTagLocalization.getCameraPositionOnField(aprilTagID = aprilTag.id, thisTagInTagCentricCoords)
 
-            val resultPositionInFieldCentric = FieldRelativePointInSpace(thisTagInFieldCentricCoords.xInches,
-                    thisTagInFieldCentricCoords.yInches, thisTagInFieldCentricCoords.headingDegrees)
+            val resultPositionInJamesFieldCoords = returnFieldCentricCoordsInJamesFieldCoords(thisTagInFieldCentricCoords)
 
-            return AprilTagAndData(aprilTag, representationOfAprilTag!!, resultPositionInTagCentric, resultPositionInFieldCentric)
+            return AprilTagAndData(aprilTag, representationOfAprilTag!!, resultPositionInTagCentric, resultPositionInJamesFieldCoords)
         }
         else return null
+    }
+
+    fun returnFieldCentricCoordsInJamesFieldCoords(anyOldTag: FieldRelativePointInSpace): FieldRelativePointInSpace {
+
+        return FieldRelativePointInSpace(
+                xInches = anyOldTag.xInches,
+                yInches = anyOldTag.yInches,
+                headingDegrees = -(anyOldTag.headingDegrees)
+        )
     }
 
     private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>): AprilTagAndData? {
