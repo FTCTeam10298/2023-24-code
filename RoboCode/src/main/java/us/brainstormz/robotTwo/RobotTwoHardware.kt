@@ -224,8 +224,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         leftTransferServo = exHub.getCRServo(3)
 //        transferDirectorServo = exHub.getCRServo(2)
 
-        leftClawServo =     exHub.getCRServo(1)   // left/right from driver 2 perspective when depositing
-        rightClawServo =    exHub.getCRServo(0)
+        leftClawServo =     exHub.getCRServo(0)   // left/right from driver 2 perspective when depositing
+        rightClawServo =    exHub.getCRServo(1)
 
         hangReleaseServo = exHub.getCRServo(5)
 
