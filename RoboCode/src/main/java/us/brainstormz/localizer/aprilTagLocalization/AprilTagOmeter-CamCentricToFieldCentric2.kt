@@ -283,7 +283,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
         //Find tag that is least rotated from being straight on (least off axis)
 
-        val leastDistortedAprilTag = aprilTagLocalization.chooseBestAprilTag(currentDetections).id
+        val leastDistortedAprilTag = aprilTagLocalization.chooseClosestAprilTagToBot(currentDetections).id
 
         val theTargetAprilTag: AprilTagDetection = returnTargetAprilTag(currentDetections)!!.AprilTag
         val theTargetAprilTagPositionCamRelative = returnTargetAprilTag(currentDetections)!!.CamRelativePointInSpace
