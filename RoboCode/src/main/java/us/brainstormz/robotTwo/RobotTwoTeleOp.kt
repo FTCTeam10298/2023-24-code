@@ -745,11 +745,22 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             RollerInput.RightOut -> null to Transfer.RollerPositions.Open
             RollerInput.NoInput -> null to null
         }
-        val bothClawsAreAtTarget = wrist.wristIsAtPosition(WristTargets(ClawTarget.Gripping), actualRobot.depoState.wristAngles)
-        val gateTransferringTarget = if (handoffIsReadyCheck && bothClawsAreAtTarget) Transfer.RollerPositions.Open else Transfer.RollerPositions.Closed
+
+
+        fun gateTransferringTarget(side: Transfer.Side): Transfer.RollerPositions {
+            val claw = wrist.clawsAsMap[side]!!
+            val clawActualAngle = actualRobot.depoState.wristAngles.getBySide(side)
+            val clawIsGripping = claw.isClawAtAngle(ClawTarget.Gripping, clawActualAngle)
+
+            return if (handoffIsReadyCheck && clawIsGripping) {
+                Transfer.RollerPositions.Open
+            } else {
+                Transfer.RollerPositions.Closed
+            }
+        }
         val rollerTargetState = Transfer.TransferTarget(
-                leftServoCollect = Transfer.RollerTarget(overrideRollerState.first ?: gateTransferringTarget, 0),
-                rightServoCollect = Transfer.RollerTarget(overrideRollerState.second ?: gateTransferringTarget, 0)
+                leftServoCollect = Transfer.RollerTarget(overrideRollerState.first ?: gateTransferringTarget(Transfer.Side.Left), 0),
+                rightServoCollect = Transfer.RollerTarget(overrideRollerState.second ?: gateTransferringTarget(Transfer.Side.Right), 0)
         )
 //        autoRollerState.copy(
 //                leftServoCollect = autoRollerState.leftServoCollect.copy(
