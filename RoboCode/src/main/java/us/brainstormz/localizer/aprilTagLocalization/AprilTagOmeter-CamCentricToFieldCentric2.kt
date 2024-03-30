@@ -308,7 +308,9 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                 val currentPositionOfRobot = returnCamCentricCoordsInTagCentricCoords(anyOldTag = theTargetAprilTagPositionCamRelative!!)
                 val currentRobotPositionRelativeToCamera = theTargetAprilTag.ftcPose.bearing
 
+
                 telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
+                telemetry.addLine("Least Distorted AprilTag: $leastDistortedAprilTag")
 
 //                println("Robot X: ${theTargetAprilTagPosition?.xInches}")
 //                println("Robot Y: ${theTargetAprilTagPosition?.yInches}")

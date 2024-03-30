@@ -5,7 +5,6 @@ import TagRelativePointInSpace
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import us.brainstormz.localizer.PositionAndRotation
-import kotlin.math.atan
 import kotlin.math.*
 
 class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Double) {
@@ -92,26 +91,25 @@ class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Do
     }
 
     fun chooseBestAprilTag(allAprilTags: List<AprilTagDetection>): AprilTagDetection {
-        val sortedByYaw = allAprilTags.sortedBy {
-            val yawAbs = it.ftcPose.yaw.absoluteValue
-            println("yawAbs: $yawAbs, tag ID: ${it.id}")
-            yawAbs
+        val sortedByRange = allAprilTags.sortedBy {
+            val rangeAbs = it.ftcPose.range.absoluteValue
+//            println("yawAbs: $yawAbs, tag ID: ${it.id}")
+            rangeAbs
         }
-        val topTwoYaw = listOf(sortedByYaw[0], sortedByYaw[1])
-        val differenceInYawBetweenTopChoices = (topTwoYaw[1].ftcPose.yaw - topTwoYaw[0].ftcPose.yaw).absoluteValue
-        val areTheYawValuesSuperClose:Boolean = differenceInYawBetweenTopChoices < 0.5 //too large... 0.5 worked better
-        return if (areTheYawValuesSuperClose) {
-            val closestToCenter: AprilTagDetection = topTwoYaw.minBy {
-                val bearing = it.ftcPose.bearing.absoluteValue
-                println("bearing: $bearing, tag ID: ${it.id}")
-                bearing
-            }
-            closestToCenter
-        }
-        else {
-            sortedByYaw[0]
-        }
-
+//        val topTwoRange = listOf(sortedByRange[0], sortedByRange[1])
+//        val differenceInBetweenTopChoices = (topTwoRange[1].ftcPose.yaw - topTwoRange[0].ftcPose.yaw).absoluteValue
+//        val areTheYawValuesSuperClose:Boolean = differenceInBetweenTopChoices < 0.5 //too large... 0.5 worked better
+//        return if (areTheYawValuesSuperClose) {
+//            val closestToCenter: AprilTagDetection = topTwoRange.minBy {
+//                val bearing = it.ftcPose.bearing.absoluteValue
+////                println("bearing: $bearing, tag ID: ${it.id}")
+//                bearing
+//            }
+//            closestToCenter
+//        }
+//        else {
+        return sortedByRange[0]
+//        }
     }
 
     data class AprilTagPositionOnField(val posAndRot: PositionAndRotation)
