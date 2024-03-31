@@ -2,8 +2,8 @@ import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationOTron
-import us.brainstormz.localizer.aprilTagLocalization.Foo
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -40,7 +40,7 @@ LIST OF TESTS
  */
 
 fun main () {
-    var aprilTagLocalization = AprilTagLocalizationOTron(
+    var aprilTagLocalization = AprilTagLocalizationFunctions(
             cameraXOffset=0.00,
             cameraYOffset=0.00 //it's right on center! Yay!
     )
@@ -137,7 +137,7 @@ class AprilTagNoiseBounceOMeter: LinearOpMode() {
 
     //...but let's not
     val robotCameraYOffset = 0.0
-    var aprilTagLocalization = AprilTagLocalizationOTron(
+    var aprilTagLocalization = AprilTagLocalizationFunctions(
             cameraXOffset=robotCameraYOffset,
             cameraYOffset=0.00 //it's right on center! Yay!
     )
@@ -147,7 +147,7 @@ class AprilTagNoiseBounceOMeter: LinearOpMode() {
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
             //default is "Webcam 1", for 2023-24 it's...
-            Foo("Webcam 1", Size(640, 480)),
+            AprilTagPipelineForEachCamera("Webcam 1", Size(640, 480)),
 //            Foo("Webcam 2", Size(320, 240)),
 //            Foo("Webcam 3", Size(320, 240)),
 //          Foo("Webcam 4", Size(320, 240)) - Not working. Each bus seems to support 2 cameras.

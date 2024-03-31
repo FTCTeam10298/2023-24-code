@@ -7,7 +7,7 @@ import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 
 
-class Foo(private val name:String, val size:Size?) {
+class AprilTagPipelineForEachCamera(private val name:String, val size:Size?) {
     private var aprilTag: AprilTagProcessor? = null
     //aprilTagProcessor- builder for an AprilTag Processor
     //A processor is basically a pipeline—it implements an init, processFrame, and OnDrawFrame.

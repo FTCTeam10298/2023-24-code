@@ -7,7 +7,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
 import us.brainstormz.localizer.PositionAndRotation
 import kotlin.math.*
 
-class AprilTagLocalizationOTron(val cameraXOffset: Double, val cameraYOffset: Double) {
+class AprilTagLocalizationFunctions(val cameraXOffset: Double, val cameraYOffset: Double) {
     //distance of the camera from the bot's center so that we find position relative to bot center
     // not camera center.
     fun getCameraPositionOnField(aprilTagID: Int, aprilTagInTagCentricCoords: TagRelativePointInSpace): FieldRelativePointInSpace {
