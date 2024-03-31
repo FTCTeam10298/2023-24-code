@@ -4,8 +4,10 @@
 
 
 MAGICAL MYSTICAL APRILTAG PUBLISHING TRACK
-- James coords. 
-- Pick Best Apriltag Function
+- James coords. - done I think
+- Pick Best Apriltag Function - very done
+- Test & Retest to Get To 1/10th inch, 1 degree max error
+- Handle nulls ()
 
 //Teague ask - function to find how many apriltags
 
