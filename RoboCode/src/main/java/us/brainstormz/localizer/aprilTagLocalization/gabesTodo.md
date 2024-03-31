@@ -2,6 +2,10 @@
 
 
 
+(realistic error: sub 0.5)
+determine the bounds of accurate angles
+accept offset for x, y, and r
+(test function)
 
 MAGICAL MYSTICAL APRILTAG PUBLISHING TRACK
 - James coords. - done I think
