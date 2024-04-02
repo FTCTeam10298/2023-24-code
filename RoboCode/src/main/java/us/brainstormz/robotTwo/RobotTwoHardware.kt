@@ -4,12 +4,10 @@ import android.util.Size
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder
 import com.acmerobotics.roadrunner.ftc.RawEncoder
 import com.qualcomm.hardware.lynx.LynxModule
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.CRServo
-import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -129,11 +127,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
     lateinit var collectorServo1: CRServo
     lateinit var collectorServo2: CRServo
+    lateinit var dropDownServo: Servo
 
 
     lateinit var leftTransferServo: CRServo
     lateinit var rightTransferServo: CRServo
-
 
     lateinit var leftTransferUpperSensorWrapped:WrappedColorSensor
     lateinit var leftTransferUpperSensor: NormalizedColorSensor
@@ -222,10 +220,11 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         rightTransferServo = ctrlHub.getCRServo(5)
         leftTransferServo = exHub.getCRServo(3)
-//        transferDirectorServo = exHub.getCRServo(2)
+        dropDownServo = exHub.getServo(2)
+        dropDownServo.position = 0.0
 
-        leftClawServo =     exHub.getCRServo(0)   // left/right from driver 2 perspective when depositing
-        rightClawServo =    exHub.getCRServo(1)
+        leftClawServo =     exHub.getCRServo(1)   // left/right from driver 2 perspective when depositing
+        rightClawServo =    exHub.getCRServo(0)
 
         hangReleaseServo = exHub.getCRServo(5)
 
@@ -239,12 +238,13 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         rightTransferLowerSensor = hwMap["leftSensor"] as NormalizedColorSensor
         rightTransferLowerSensorWrapped = WrappedColorSensor(2, rightTransferLowerSensor)
 
-        leftClawEncoder = exHub.getAnalogInput(3)
-        rightClawEncoder = exHub.getAnalogInput(2)
+        leftClawEncoder = exHub.getAnalogInput(2)
+        rightClawEncoder = exHub.getAnalogInput(3)
         leftClawEncoderReader =     AxonEncoderReader(leftClawEncoder, angleOffsetDegrees = -80.0,  AxonEncoderReader.Direction.Reverse)//260.0)
-        rightClawEncoderReader =    AxonEncoderReader(rightClawEncoder, angleOffsetDegrees = -80.0, AxonEncoderReader.Direction.Reverse)
+        rightClawEncoderReader =    AxonEncoderReader(rightClawEncoder, angleOffsetDegrees = -80.0, AxonEncoderReader.Direction.Forward)
 
         liftMagnetLimit = ctrlHub.getDigitalController(6) as DigitalChannel
+        liftMagnetLimit.mode = DigitalChannel.Mode.INPUT
 
         extendoMagnetLimit = ctrlHub.getDigitalController(0) as DigitalChannel
 
@@ -317,7 +317,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         //Claw
         leftClawServo.direction = DcMotorSimple.Direction.FORWARD
-        rightClawServo.direction = DcMotorSimple.Direction.FORWARD
+        rightClawServo.direction = DcMotorSimple.Direction.REVERSE
 
         //IMU
         val parameters:IMU.Parameters = IMU.Parameters(RevHubOrientationOnRobot(

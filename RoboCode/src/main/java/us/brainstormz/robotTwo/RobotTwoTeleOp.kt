@@ -752,15 +752,15 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val clawActualAngle = actualRobot.depoState.wristAngles.getBySide(side)
             val clawIsGripping = claw.isClawAtAngle(ClawTarget.Gripping, clawActualAngle)
 
-            return if (handoffIsReadyCheck && clawIsGripping) {
+            return if (clawIsGripping) {
                 Transfer.RollerPositions.Open
             } else {
                 Transfer.RollerPositions.Closed
             }
         }
         val rollerTargetState = Transfer.TransferTarget(
-                leftServoCollect = Transfer.RollerTarget(overrideRollerState.first ?: gateTransferringTarget(Transfer.Side.Left), 0),
-                rightServoCollect = Transfer.RollerTarget(overrideRollerState.second ?: gateTransferringTarget(Transfer.Side.Right), 0)
+                leftServoCollect = Transfer.RollerTarget(overrideRollerState.first ?: gateTransferringTarget(Transfer.Side.Right), 0),
+                rightServoCollect = Transfer.RollerTarget(overrideRollerState.second ?: gateTransferringTarget(Transfer.Side.Left), 0)
         )
 //        autoRollerState.copy(
 //                leftServoCollect = autoRollerState.leftServoCollect.copy(
@@ -1179,6 +1179,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         measured("expensiveTelemetryLines-addLine"){
             stateDumper.lines().forEach(telemetry::addLine)
         }
+
+        telemetry.addLine("Lift Limit: ${hardware.liftMagnetLimit.state}")
         
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = {getActualState(it, gamepad1, gamepad2, hardware)},
