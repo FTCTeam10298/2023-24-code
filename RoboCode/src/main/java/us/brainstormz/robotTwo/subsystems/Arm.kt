@@ -1,9 +1,16 @@
 package us.brainstormz.robotTwo.subsystems
 
+import com.qualcomm.hardware.lynx.LynxModule
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.hardware.AnalogInput
+import com.qualcomm.robotcore.hardware.configuration.LynxConstants
+import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.AxonEncoderReader
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.aprilTagDetectionToString
 import kotlin.math.cos
 
 class Arm: Subsystem, DualMovementModeSubsystem {
@@ -27,7 +34,6 @@ class Arm: Subsystem, DualMovementModeSubsystem {
         OutButUnderTwelve(50.0),
         Out(60.0),
         DroppingWithHighPrecision(65.0),
-//        Manual(0.0),
     }
 
 
@@ -63,11 +69,19 @@ class Arm: Subsystem, DualMovementModeSubsystem {
         hardware.armServo1.power = power
         hardware.armServo2.power = power
     }
+
+    private fun getEncoderReader(hardware: RobotTwoHardware) = AxonEncoderReader(hardware.armEncoder, angleOffsetDegrees = -4.0)
     fun getArmAngleDegrees(hardware: RobotTwoHardware): Double {
         //20
         //180
-        val encoderReader: AxonEncoderReader = AxonEncoderReader(hardware.armEncoder, -341 + 90.0)
+        val encoderReader = getEncoderReader(hardware)
         return  encoderReader.getPositionDegrees()
+    }
+    fun getArmRawAngleDegrees(hardware: RobotTwoHardware): Double {
+        //20
+        //180
+        val encoderReader = getEncoderReader(hardware)
+        return  encoderReader.getRawPositionDegrees()
     }
 
     private val armAngleMidpointDegrees = 150.0
@@ -116,28 +130,23 @@ class Arm: Subsystem, DualMovementModeSubsystem {
 
 }
 
-//@Autonomous
-//class ArmTest: OpMode() {
-//    private val hardware = RobotTwoHardware(telemetry, this)
-//    val movement = MecanumDriveTrain(hardware)
-//    private lateinit var arm: Arm
-//
-//    override fun init() {
-//        /** INIT PHASE */
-//        hardware.init(hardwareMap)
-//        arm = Arm(
-//                encoder= hardware.armEncoder,
-//                armServo1= hardware.armServo1,
-//                armServo2= hardware.armServo2, telemetry)
-//    }
-//
-//    override fun loop() {
-//
-//        arm.powerArm(arm.holdingConstant * cos(Math.toRadians(arm.getArmAngleDegrees() - arm.holdingConstantAngleOffset)))
-//
-//        telemetry.addLine("power: ${hardware.armServo1.power}")
-//        telemetry.addLine("angle: ${arm.getArmAngleDegrees()}")
-//        telemetry.addLine("voltage: ${hardware.armEncoder.voltage}")
-//        telemetry.update()
-//    }
-//}
+@Autonomous
+class ArmEncoderCalibrate: OpMode() {
+    private val hardware = RobotTwoHardware(telemetry, this)
+    private var arm: Arm = Arm()
+
+    override fun init() {
+        /** INIT PHASE */
+        hardware.init(hardwareMap)
+    }
+
+    override fun loop() {
+        val rawAngleDegrees = arm.getArmRawAngleDegrees(hardware)
+        val angleDegrees = arm.getArmAngleDegrees(hardware)
+
+        telemetry.addLine("angle degrees: $angleDegrees")
+        telemetry.addLine("raw angle degrees: $rawAngleDegrees")
+
+        telemetry.update()
+    }
+}
