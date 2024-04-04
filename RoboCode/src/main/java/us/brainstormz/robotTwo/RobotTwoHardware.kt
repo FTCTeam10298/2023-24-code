@@ -213,7 +213,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         //Servos
         collectorServo1 =   exHub.getCRServo(4)
-        collectorServo2 =   ctrlHub.getCRServo(1)
+        collectorServo2 =   exHub.getCRServo(1)
 
         armServo1 = ctrlHub.getCRServo(3)
         armServo2 = ctrlHub.getCRServo(4)
@@ -223,12 +223,12 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         dropDownServo = exHub.getServo(2)
         dropDownServo.position = 0.0
 
-        leftClawServo =     exHub.getCRServo(1)   // left/right from driver 2 perspective when depositing
-        rightClawServo =    exHub.getCRServo(0)
+        leftClawServo =     ctrlHub.getCRServo(1)   // left/right from driver 2 perspective when depositing
+        rightClawServo =    ctrlHub.getCRServo(0)
 
         hangReleaseServo = exHub.getCRServo(5)
 
-        launcherServo = ctrlHub.getServo(0)
+        launcherServo = exHub.getServo(0)
 
         //Sensors
         armEncoder = ctrlHub.getAnalogInput(3)
@@ -246,7 +246,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         liftMagnetLimit = ctrlHub.getDigitalController(6) as DigitalChannel
         liftMagnetLimit.mode = DigitalChannel.Mode.INPUT
 
-        extendoMagnetLimit = ctrlHub.getDigitalController(0) as DigitalChannel
+        extendoMagnetLimit = exHub.getDigitalController(6) as DigitalChannel
 
         imu = hwMap["imu"] as IMU
 
