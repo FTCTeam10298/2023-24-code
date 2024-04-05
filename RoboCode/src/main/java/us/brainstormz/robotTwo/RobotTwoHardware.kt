@@ -223,8 +223,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         dropDownServo = exHub.getServo(2)
         dropDownServo.position = 0.0
 
-        leftClawServo =     ctrlHub.getCRServo(1)   // left/right from driver 2 perspective when depositing
-        rightClawServo =    ctrlHub.getCRServo(0)
+        leftClawServo =     ctrlHub.getCRServo(0)   // left/right from driver 2 perspective when depositing
+        rightClawServo =    ctrlHub.getCRServo(1)
 
         hangReleaseServo = exHub.getCRServo(5)
 
@@ -238,8 +238,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         rightTransferLowerSensor = hwMap["leftSensor"] as NormalizedColorSensor
         rightTransferLowerSensorWrapped = WrappedColorSensor(2, rightTransferLowerSensor)
 
-        leftClawEncoder = exHub.getAnalogInput(2)
-        rightClawEncoder = exHub.getAnalogInput(3)
+        leftClawEncoder = ctrlHub.getAnalogInput(0)
+        rightClawEncoder = ctrlHub.getAnalogInput(1)
         leftClawEncoderReader =     AxonEncoderReader(leftClawEncoder, angleOffsetDegrees = -80.0,  AxonEncoderReader.Direction.Reverse)//260.0)
         rightClawEncoderReader =    AxonEncoderReader(rightClawEncoder, angleOffsetDegrees = -80.0, AxonEncoderReader.Direction.Forward)
 

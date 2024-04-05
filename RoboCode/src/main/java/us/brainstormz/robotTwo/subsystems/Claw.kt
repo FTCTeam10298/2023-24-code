@@ -40,8 +40,8 @@ class Claw(private val telemetry: Telemetry) {
 
         val needToTravelFar = actualAngleDegrees < (ClawTarget.Gripping.angleDegrees/2)
         val clawIsTooFarOut = actualAngleDegrees > ClawTarget.Gripping.angleDegrees
-        telemetry.addLine("needToTravelFar: $needToTravelFar")
-        telemetry.addLine("clawIsTooFarOut: $clawIsTooFarOut")
+
+//        telemetry.addLine("claw angle: ${actualAngleDegrees}")
 
         val power = if (target == ClawTarget.Gripping && !needToTravelFar && !clawIsTooFarOut) {
             toAnglePower.coerceAtLeast(holdingPower)
@@ -49,7 +49,6 @@ class Claw(private val telemetry: Telemetry) {
             toAnglePower
         }
 
-        telemetry.addLine("claw power: $power")
         servo.power = power
     }
 
