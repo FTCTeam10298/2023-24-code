@@ -1136,6 +1136,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             collectorSystem = collectorSystem,
             previousActualWorld= previousActualState,
         )
+        telemetry.addLine("lift: ${actualRobot.depoState.lift}")
+
         return ActualWorld(
             actualRobot = actualRobot,
             actualGamepad1 = currentGamepad1,

@@ -282,16 +282,18 @@ class DepoManager(
                     else -> previousDepoTarget.wristPosition
                 }
 
-        val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
-            Lift.TargetLift(lift.findLimitToReset(
-                    actualSlideSubsystem = actualDepo.lift,
-                    actualTimestampMilis = actualWorld.timestampMilis,
-                    previousSlideSubsystem = previousActualWorld.actualRobot.depoState.lift,
-                    previousTimestampMilis = previousActualWorld.timestampMilis,
-                    previousTargetSlideSubsystem = previousDepoTarget.lift))
-        } else {
-            movingArmAndLiftTarget.lift
-        }
+        val liftWithFindReset = movingArmAndLiftTarget.lift
+
+//        val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
+//            Lift.TargetLift(lift.findLimitToReset(
+//                    actualSlideSubsystem = actualDepo.lift,
+//                    actualTimestampMilis = actualWorld.timestampMilis,
+//                    previousSlideSubsystem = previousActualWorld.actualRobot.depoState.lift,
+//                    previousTimestampMilis = previousActualWorld.timestampMilis,
+//                    previousTargetSlideSubsystem = previousDepoTarget.lift))
+//        } else {
+//            movingArmAndLiftTarget.lift
+//        }
 //        val targetHasNotChanged = movingArmAndLiftTarget == previousDepoTarget
 //        val inputIsDownOrNone = depoInput == RobotTwoTeleOp.DepoInput.NoInput || depoInput == RobotTwoTeleOp.DepoInput.Down
 //        val previousLiftTargetWasReset = previousDepoTarget.liftPosition == Lift.LiftPositions.ResetEncoder

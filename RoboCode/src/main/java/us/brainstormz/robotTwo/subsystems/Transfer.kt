@@ -23,6 +23,7 @@ fun readColor(sensor: NormalizedColorSensor): ColorReading = measured("read-colo
 }
 
 class Transfer(private val telemetry: Telemetry) {
+    //Change to latch
     enum class RollerPositions(val power: Double) {
         Closed(0.0),
         Open(0.35),

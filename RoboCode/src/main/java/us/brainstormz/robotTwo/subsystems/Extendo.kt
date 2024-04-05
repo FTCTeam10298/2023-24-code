@@ -23,7 +23,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         val oldToNewMotorEncoderConversion: Double = (145.1) / (537.7)
     }
     enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
-        AllTheWayInTarget(-10),
+        AllTheWayInTarget(0),
         Min(0),
         Manual(0),
         PurpleFarSidePosition((700*oldToNewMotorEncoderConversion).toInt()),

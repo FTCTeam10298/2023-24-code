@@ -112,44 +112,44 @@ interface SlideSubsystem: DualMovementModeSubsystem {
 
         return if (resetIsNeeded) {
             telemetry.addLine("resetting slide system")
-            val velocityTicksPerMili = getVelocityTicksPerMili(actualSlideSubsystem, actualTimestampMilis, previousSlideSubsystem, actualTimestampMilis)
+//            val velocityTicksPerMili = getVelocityTicksPerMili(actualSlideSubsystem, actualTimestampMilis, previousSlideSubsystem, actualTimestampMilis)
+//
+//            val slideIsStalling = actualSlideSubsystem.currentAmps > stallCurrentAmps
+//
+//            val slideIsDefinitelyMoving = velocityTicksPerMili > definitelyMovingVelocityTicksPerMili
+//            val timeToSwitchMovementDirection = actualTimestampMilis - previousTargetSlideSubsystem.timeOfResetMoveDirectionStartMilis > 1500
+//
+//            telemetry.addLine("velocityTicksPerMili: $velocityTicksPerMili")
+//            telemetry.addLine("slideIsStalling: $slideIsStalling")
+//            telemetry.addLine("slideIsDefinitelyMoving: $slideIsDefinitelyMoving")
+//            telemetry.addLine("timeToSwitchMovementDirection: $timeToSwitchMovementDirection")
+//
+//            val power: Double = findResetPower * if (previousTargetSlideSubsystem.power.sign == 0.0) {-1.0} else when {
+//                !previousResetIsNeeded -> {
+//                    -1.0
+//                }
+//                slideIsStalling || !slideIsDefinitelyMoving-> {
+//                    -previousTargetSlideSubsystem.power.sign
+//                }
+//                timeToSwitchMovementDirection && (velocityTicksPerMili.sign > 0) -> {
+//                    +1.0
+//                }
+//                else -> {
+//                    previousTargetSlideSubsystem.power.sign
+//                }
+//            }
+//            telemetry.addLine("power: $power")
+//
+//
+//            val timeOfResetMoveDirectionStartMilis = if (power.sign != previousTargetSlideSubsystem.power.sign) {
+//                actualTimestampMilis
+//            } else {
+//                previousTargetSlideSubsystem.timeOfResetMoveDirectionStartMilis
+//            }
 
-            val slideIsStalling = actualSlideSubsystem.currentAmps > stallCurrentAmps
-
-            val slideIsDefinitelyMoving = velocityTicksPerMili > definitelyMovingVelocityTicksPerMili
-            val timeToSwitchMovementDirection = actualTimestampMilis - previousTargetSlideSubsystem.timeOfResetMoveDirectionStartMilis > 1500
-
-            telemetry.addLine("velocityTicksPerMili: $velocityTicksPerMili")
-            telemetry.addLine("slideIsStalling: $slideIsStalling")
-            telemetry.addLine("slideIsDefinitelyMoving: $slideIsDefinitelyMoving")
-            telemetry.addLine("timeToSwitchMovementDirection: $timeToSwitchMovementDirection")
-
-            val power: Double = findResetPower * if (previousTargetSlideSubsystem.power.sign == 0.0) {-1.0} else when {
-                !previousResetIsNeeded -> {
-                    -1.0
-                }
-                slideIsStalling || !slideIsDefinitelyMoving-> {
-                    -previousTargetSlideSubsystem.power.sign
-                }
-                timeToSwitchMovementDirection && (velocityTicksPerMili.sign > 0) -> {
-                    +1.0
-                }
-                else -> {
-                    previousTargetSlideSubsystem.power.sign
-                }
-            }
-            telemetry.addLine("power: $power")
-
-
-            val timeOfResetMoveDirectionStartMilis = if (power.sign != previousTargetSlideSubsystem.power.sign) {
-                actualTimestampMilis
-            } else {
-                previousTargetSlideSubsystem.timeOfResetMoveDirectionStartMilis
-            }
-
-            TargetSlideSubsystem(power = power,
-                                movementMode = DualMovementModeSubsystem.MovementMode.Power,
-                                timeOfResetMoveDirectionStartMilis = timeOfResetMoveDirectionStartMilis,
+            TargetSlideSubsystem(power = -0.5,
+                                movementMode = MovementMode.Power,
+                                timeOfResetMoveDirectionStartMilis = 0,
                                 targetPosition = previousTargetSlideSubsystem.targetPosition)
         } else {
             previousTargetSlideSubsystem
