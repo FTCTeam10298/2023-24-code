@@ -18,19 +18,18 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
                                 ki= 2.1E-7,
                                 kd= 0.08,
                         )
-    /*
-    "kp" : 0.0018,
-    "ki" : 2.0E-7,
-    "kd" : 0.08,*/
 
+    companion object {
+        val oldToNewMotorEncoderConversion: Double = (145.1) / (537.7)
+    }
     enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         AllTheWayInTarget(-10),
         Min(0),
         Manual(0),
-        PurpleFarSidePosition(700),
-        PurpleCloseSidePosition(800),
-        PurpleCenterPosition(2000),
-        Max(2000),
+        PurpleFarSidePosition((700*oldToNewMotorEncoderConversion).toInt()),
+        PurpleCloseSidePosition((800*oldToNewMotorEncoderConversion).toInt()),
+        PurpleCenterPosition((2000*oldToNewMotorEncoderConversion).toInt()),
+        Max((2000*oldToNewMotorEncoderConversion).toInt()),
     }
 
     val acceptablePositionErrorTicks = 100
@@ -62,7 +61,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.extendoMagnetLimit.state
     override fun getCurrentAmps(hardware: RobotTwoHardware): Double = hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS)
 
-    override val allowedMovementBeforeResetTicks: Int = 200
+    override val allowedMovementBeforeResetTicks: Int = 140
     override val allTheWayInPositionTicks: Int = 0
     override val stallCurrentAmps: Double = 6.0
     override val definitelyMovingVelocityTicksPerMili: Double = 0.01
