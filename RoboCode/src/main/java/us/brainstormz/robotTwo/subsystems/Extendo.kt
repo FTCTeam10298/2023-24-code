@@ -58,7 +58,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     }
 
     override fun getRawPositionTicks(hardware: RobotTwoHardware): Int = hardware.extendoMotorMaster.currentPosition
-    override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = !hardware.extendoMagnetLimit.state
+    override fun getIsLimitSwitchActivated(hardware: RobotTwoHardware): Boolean = hardware.extendoMagnetLimit.state
     override fun getCurrentAmps(hardware: RobotTwoHardware): Double = hardware.extendoMotorMaster.getCurrent(CurrentUnit.AMPS)
 
     override val allowedMovementBeforeResetTicks: Int = 140
