@@ -694,21 +694,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val timeSinceEjectionStartedMilis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis?:actualWorld.timestampMilis)
         val timeToStopEjecting = timeSinceEjectionStartedMilis > 1000
         val wasPreviouslyEjecting = previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.Eject
-//        val intakeNoodleTarget = intake.getCollectorState(
-//                driverInput = if (theRobotJustCollectedTwoPixels) {
-//                    Intake.CollectorPowers.Eject
-//                } else if (timeToStopEjecting && wasPreviouslyEjecting && doHandoffSequence) {
-//                    Intake.CollectorPowers.Off
-//                } else {
-//                    when (driverInput.collector) {
-//                        CollectorInput.Intake -> Intake.CollectorPowers.Intake
-//                        CollectorInput.Eject -> Intake.CollectorPowers.Eject
-//                        CollectorInput.Off -> Intake.CollectorPowers.Off
-//                        CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
-//                    }
-//                },
-//                isPixelInLeft = transferLeftSensorState,
-//                isPixelInRight= transferRightSensorState)
         val stopAutomaticEjection = timeToStopEjecting && wasPreviouslyEjecting && doHandoffSequence
         val intakeNoodleTarget = if (theRobotJustCollectedTwoPixels) {
                     Intake.CollectorPowers.Eject
@@ -731,13 +716,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Gates*/
-//        val autoRollerState = transfer.getTransferSortingTarget(
-//                isCollecting = intakeNoodleTarget == Intake.CollectorPowers.Intake,
-//                actualWorld = actualWorld,
-//                actualTransferState = transferState,
-//                previousTransferState = previousTargetState.targetRobot.collectorTarget.transferState,
-//                previousTransferTarget = previousTargetState.targetRobot.collectorTarget.rollers,
-//                )
         val overrideRollerState: Pair<Transfer.RollerPositions?, Transfer.RollerPositions?> = when (driverInput.rollers) {
             RollerInput.BothIn -> Transfer.RollerPositions.Open to Transfer.RollerPositions.Open
             RollerInput.BothOut -> Transfer.RollerPositions.Open to Transfer.RollerPositions.Open
@@ -745,14 +723,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             RollerInput.RightOut -> null to Transfer.RollerPositions.Open
             RollerInput.NoInput -> null to null
         }
-
-
         fun gateTransferringTarget(side: Transfer.Side): Transfer.RollerPositions {
             val claw = wrist.clawsAsMap[side]!!
             val clawActualAngle = actualRobot.depoState.wristAngles.getBySide(side)
             val clawIsGripping = claw.isClawAtAngle(ClawTarget.Gripping, clawActualAngle)
+            val extendoIsIn = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
 
-            return if (clawIsGripping) {
+            return if (clawIsGripping && extendoIsIn) {
                 Transfer.RollerPositions.Open
             } else {
                 Transfer.RollerPositions.Closed
