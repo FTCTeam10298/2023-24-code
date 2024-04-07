@@ -49,8 +49,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override val allowedMovementBeforeResetTicks: Int = 700
     override val allTheWayInPositionTicks: Int = 0
     override val stallCurrentAmps: Double = 5.0
-    override val definitelyMovingVelocityTicksPerMili: Double = 0.005
-    override val findResetPower: Double = 0.7
+    override val findResetPower: Double = 1.0
 
     data class ActualLift(override val currentPositionTicks: Int,
                      override val limitSwitchIsActivated: Boolean,
@@ -98,7 +97,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         hardware.liftMotorSlave.power = allowedPower
     }
 
-    override val pid = PID("lift", kp = 0.0025)
+    override val pid = PID("lift", kp = 0.0035)
     fun calculatePowerToMoveToPosition(targetPositionTicks: Int, currentPosition: Int): Double {
         val positionError = targetPositionTicks - currentPosition
         val gravityConstant = if (positionError.sign > 0) {
