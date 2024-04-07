@@ -361,27 +361,18 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         /**Extendo*/
         measured("extendo") {
             val extendoPower: Double = when (targetState.targetRobot.collectorTarget.extendo.movementMode) {
-                MovementMode.Position -> when (targetState.targetRobot.collectorTarget.extendo.targetPosition) {
-//                    Extendo.ExtendoPositions.AllTheWayInTarget -> {
-//                        extendo.findLimitToReset(
-//                                actualSlideSubsystem = actualState.actualRobot.collectorSystemState.extendo,
-//                                previousTargetSlideSubsystem = previousTargetState.targetRobot.collectorTarget.extendo,
-//                        ).power
-//                    }
-                    else -> {
-                        extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot)
-                    }
+                MovementMode.Position -> {
+                    extendo.calcPowerToMoveExtendo(targetState.targetRobot.collectorTarget.extendo.targetPosition.ticks, actualState.actualRobot, previousActualRobot = previousActualWorld.actualRobot)
                 }
-
                 MovementMode.Power -> {
                     targetState.targetRobot.collectorTarget.extendo.power
                 }
             }
             extendo.powerSubsystem(extendoPower, this)
         }
-        /**Collector*/
+        /**Intake*/
 
-        measured("collector") {
+        measured("intake") {
             intake.powerSubsystem(targetState.targetRobot.collectorTarget.intakeNoodles.power, this)
         }
 

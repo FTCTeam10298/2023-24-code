@@ -770,13 +770,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
             ExtendoInput.NoInput -> {
                 if (doHandoffSequence) {
-                    extendo.findLimitToReset(
-                            actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
-                            otherTarget = SlideSubsystem.TargetSlideSubsystem(
-                                    targetPosition = Extendo.ExtendoPositions.Min,
-                                    movementMode = MovementMode.Position,
-                                    power = 0.0)
-                    )
+//                    extendo.findLimitToReset(
+//                            actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
+//                            otherTarget =
+//                    )
+                    SlideSubsystem.TargetSlideSubsystem(
+                            targetPosition = Extendo.ExtendoPositions.Min,
+                            movementMode = MovementMode.Position,
+                            power = 0.0)
                 } else {
                     SlideSubsystem.TargetSlideSubsystem(
                             targetPosition = previousExtendoTargetPosition,
@@ -817,6 +818,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     )
                 },
         )
+
         val clawInputPerSide = Transfer.Side.entries.map { side ->
             val driverInputForThisSide = driverInput.wrist.bothClaws.entries.first {it.key == side}.value
             side to mapOfClawInputsToConditions.entries.fold(driverInputForThisSide) { acc, (clawInput, listOfConditions) ->
@@ -1117,17 +1119,18 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 hub.clearBulkCache()
             }
         }
-
         
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = {getActualState(it, gamepad1, gamepad2, hardware)},
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
+
+                    telemetry.addLine("extendo current draw: ${actualState.actualRobot.collectorSystemState.extendo.currentAmps}")
+
                     val previousActualState = previousActualState ?: actualState
                     val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
                     val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                     getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                 },
-//                    telemetry.addLine("\ntargetState: $targetState")
                 stateFulfiller = { targetState, previousTargetState, actualState, previousActualState ->
                     val previousActualState = previousActualState ?: actualState
                     measured("actuate robot"){
