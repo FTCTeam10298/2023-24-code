@@ -770,14 +770,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
             ExtendoInput.NoInput -> {
                 if (doHandoffSequence) {
-//                    extendo.findLimitToReset(
-//                            actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
-//                            otherTarget =
-//                    )
-                    SlideSubsystem.TargetSlideSubsystem(
-                            targetPosition = Extendo.ExtendoPositions.Min,
-                            movementMode = MovementMode.Position,
-                            power = 0.0)
+                    extendo.findLimitToReset(
+                            actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
+                            otherTarget = 
+                            SlideSubsystem.TargetSlideSubsystem(
+                                    targetPosition = Extendo.ExtendoPositions.Min,
+                                    movementMode = MovementMode.Position,
+                                    power = 0.0)
+                    )
                 } else {
                     SlideSubsystem.TargetSlideSubsystem(
                             targetPosition = previousExtendoTargetPosition,
