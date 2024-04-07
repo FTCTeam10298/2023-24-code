@@ -1,6 +1,5 @@
 package us.brainstormz.robotTwo
 
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Extendo
@@ -14,28 +13,7 @@ class HandoffManager(
         private val telemetry: Telemetry) {
 
 
-    enum class ExtendoStateFromHandoff {
-        MoveIn,
-        MoveOutOfTheWay
-    }
-    enum class LiftStateFromHandoff {
-        MoveDown,
-        None
-    }
-    enum class ClawStateFromHandoff {
-        Gripping,
-        Retracted
-    }
-    data class HandoffState(
-//            val rightClawPosition: RobotTwoHardware.RightClawPosition,
-//            val leftClawPosition: RobotTwoHardware.LeftClawPosition,
-            val clawPosition: ClawStateFromHandoff,
-            val collectorState: ExtendoStateFromHandoff,
-            val liftState: LiftStateFromHandoff,
-            val lights: BlinkinPattern,
-            val armState: Arm.Positions)
-
-    fun checkIfHandoffIsReady(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Boolean {
+    fun checkIfHandoffIsReadyToStart(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Boolean {
         val isExtendoAllTheWayIn = extendo.isSlideSystemAllTheWayIn(actualWorld.actualRobot.collectorSystemState.extendo)
         val extendoIsMovingInOrNotAtAll = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) <= 0
         val extendoIsReady = extendoIsMovingInOrNotAtAll && isExtendoAllTheWayIn
@@ -50,4 +28,18 @@ class HandoffManager(
         val readyToHandoff = extendoIsReady && liftExtensionIsAllTheWayDown && isArmReadyToTransfer
         return readyToHandoff
     }
+
+    fun checkIfLatchesShouldOpenForHandoff(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Boolean {
+        val isExtendoAllTheWayIn = extendo.isSlideSystemAllTheWayIn(actualWorld.actualRobot.collectorSystemState.extendo)
+        val extendoIsMovingInOrNotAtAll = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) <= 0
+        val extendoIsReady = extendoIsMovingInOrNotAtAll && isExtendoAllTheWayIn
+
+        val isArmReadyToTransfer = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)
+
+        val handOffIsHappening = extendoIsReady && isArmReadyToTransfer
+
+        val handoffIsReadyToStart = checkIfHandoffIsReadyToStart(actualWorld, previousActualWorld)
+        return handoffIsReadyToStart && handOffIsHappening
+    }
+
 }

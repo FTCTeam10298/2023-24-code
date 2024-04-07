@@ -73,7 +73,14 @@ class Transfer(private val telemetry: Telemetry) {
     data class LatchTarget(val target: LatchPositions, val timeStartedIntakingMillis: Long)
     data class TransferTarget(
             val leftLatchTarget: LatchTarget,
-            val rightLatchTarget: LatchTarget)
+            val rightLatchTarget: LatchTarget) {
+        fun getBySide(side: Side): LatchTarget {
+            return when (side) {
+                Side.Left -> leftLatchTarget
+                Side.Right -> rightLatchTarget
+            }
+        }
+    }
 
     fun powerSubsystem(transferState: TransferTarget, hardware: RobotTwoHardware, actualRobot: ActualRobot) {
         hardware.leftTransferServo.power = transferState.leftLatchTarget.target.power

@@ -690,7 +690,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
         // tell humans
-        val handoffIsReadyCheck = handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)
+        val handoffIsReadyCheck = handoffManager.checkIfHandoffIsReadyToStart(actualWorld, previousActualWorld)
         telemetry.addLine("doHandoffSequence: $doHandoffSequence")
         telemetry.addLine("handoffIsReadyCheck: $handoffIsReadyCheck")
 
@@ -727,21 +727,26 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             RollerInput.RightOut -> null to Transfer.LatchPositions.Open
             RollerInput.NoInput -> null to null
         }
-        fun gateTransferringTarget(side: Transfer.Side): Transfer.LatchPositions {
+
+        fun getGateTransferringTarget(side: Transfer.Side): Transfer.LatchPositions {
             val claw = wrist.clawsAsMap[side]!!
             val clawActualAngle = actualRobot.depoState.wristAngles.getBySide(side)
             val clawIsGripping = claw.isClawAtAngle(ClawTarget.Gripping, clawActualAngle)
-            val extendoIsIn = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
 
-            return if (clawIsGripping && extendoIsIn) {
+            val handingOffIsHappening = handoffIsReadyCheck || (
+                    previousTargetState.driverInput.rollers == RollerInput.NoInput &&
+                            previousTargetState.targetRobot.collectorTarget.latches.getBySide(side).target == Transfer.LatchPositions.Open)
+
+            return if (handingOffIsHappening && clawIsGripping) {
                 Transfer.LatchPositions.Open
             } else {
                 Transfer.LatchPositions.Closed
             }
         }
+
         val latchTarget = Transfer.TransferTarget(
-                leftLatchTarget = Transfer.LatchTarget(latchOverrideState.first ?: gateTransferringTarget(Transfer.Side.Right), 0),
-                rightLatchTarget = Transfer.LatchTarget(latchOverrideState.second ?: gateTransferringTarget(Transfer.Side.Left), 0)
+                leftLatchTarget = Transfer.LatchTarget(latchOverrideState.first ?: getGateTransferringTarget(Transfer.Side.Right), 0),
+                rightLatchTarget = Transfer.LatchTarget(latchOverrideState.second ?: getGateTransferringTarget(Transfer.Side.Left), 0)
         )
 
         /**Extendo*/
@@ -892,12 +897,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Lights*/
-//        fun neoPixelsToBothPixelsWeWant(halfTarget: Neopixels.HalfAndHalfTarget): BothPixelsWeWant {
-//            return BothPixelsWeWant(
-//                    leftPixel = halfTarget.left,
-//                    rightPixel = halfTarget.right)
-//        }
-
         val bothUnknownPattern = BothPixelsWeWant(PixelColor.Unknown, PixelColor.Unknown)
         val previousPattern = previousTargetState.targetRobot.lights.pattern
         val desiredPixelLightPattern: BothPixelsWeWant = when (driverInput.lightInput) {
@@ -941,25 +940,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
 
-//        val timeToDisplayColorMilis = 1000
-//        val timeWhenCurrentColorStartedBeingDisplayedMilis = previousTargetState.targetRobot.lights.timeOfColorChangeMilis
-//        val timeSinceCurrentColorWasDisplayedMilis = actualWorld.timestampMilis - timeWhenCurrentColorStartedBeingDisplayedMilis
-//        val isTimeToChangeColor = timeSinceCurrentColorWasDisplayedMilis >= timeToDisplayColorMilis
-//
-//        val isCurrentColorObsolete = desiredPixelLightPattern != previousPattern
-//
-//        val previousPixelToBeDisplayed = previousTargetState.targetRobot.lights.targetColor
-//        val currentPixelToBeDisplayed: RevBlinkinLedDriver.BlinkinPattern = when {
-//            isTimeToChangeColor || isCurrentColorObsolete -> {
-//                (desiredPixelLightPattern.asList.firstOrNull { color ->
-//                    color.blinkinPattern != previousPixelToBeDisplayed
-//                } ?: desiredPixelLightPattern.leftPixel).blinkinPattern
-//            }
-//            else -> {
-//                previousPixelToBeDisplayed
-//            }
-//        }
-
         val timeBeforeEndOfMatchToStartEndgameSeconds = 15.0
         val matchTimeSeconds = 2.0 * 60.0
         val timeSinceStartOfMatchToStartEndgameSeconds = matchTimeSeconds - timeBeforeEndOfMatchToStartEndgameSeconds
@@ -978,7 +958,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         /**Rumble*/
         //Need to only trigger on rising edge
-//        handoffIsReadyCheck
         val gamepad1RumbleEffectToCondition: Map<RumbleEffects, List<()->Boolean>> = mapOf(
                 RumbleEffects.Throb to listOf {
                     wrist.clawsAsMap.map {(side, claw) ->
@@ -991,15 +970,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     }
 //                    handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)
                 }
-//                RumbleEffects.OneTap to listOf(
-//                        { lift.isSlideSystemAllTheWayIn(actualRobot.depoState.lift) && lift.isSlideSystemAllTheWayIn(previousActualWorld.actualRobot.depoState.lift)},
-//                        { theRobotJustCollectedTwoPixels },
-//                ),
-//                RumbleEffects.TwoTap to listOf(
-//                        { handoffIsReadyCheck && !previousTargetState.doingHandoff },
-//                )
         )
-//
+
         val gamepad1RumbleRoutine = gamepad1RumbleEffectToCondition.toList().firstOrNull { (rumble, listOfConditions) ->
             listOfConditions.fold(false) { acc, it -> acc || it() }
         }?.first
