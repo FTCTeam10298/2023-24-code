@@ -761,15 +761,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
             ExtendoInput.NoInput -> {
                 val limitIsActivated = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
-//                val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Min
                 val extendoIsManual = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Manual
 
                 val retractBecauseJustCollected = theRobotJustCollectedTwoPixels// && timeToStopEjecting
 
                 if ((!extendoIsManual &&
                         !limitIsActivated ||
-                        doHandoffSequence) ||
-                        retractBecauseJustCollected) {
+                        doHandoffSequence)) {
                     if (!limitIsActivated) {
                         extendo.findLimitToReset(
                             actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
