@@ -78,9 +78,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     }
 
     fun isLiftAbovePosition(targetPositionTicks: Int, actualLiftPositionTicks: Int): Boolean {
-        val currentPositionTicks = actualLiftPositionTicks
-        val positionErrorTicks = targetPositionTicks - currentPositionTicks
-        return positionErrorTicks > 0
+        return actualLiftPositionTicks > targetPositionTicks
     }
 
 
