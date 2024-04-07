@@ -764,15 +764,17 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Min
                 val extendoIsManual = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Manual
                 if ((!(extendoIsAlreadyGoingIn || extendoIsManual) || !limitIsActivated) && doHandoffSequence && (!theRobotJustCollectedTwoPixels || timeToStopEjecting)) {
-                    val targetPosition = if (!limitIsActivated) {
-                        Extendo.ExtendoPositions.AllTheWayInTarget
+                    if (!limitIsActivated) {
+                        extendo.findLimitToReset(
+                            actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
+                            previousTargetSlideSubsystem = previousTargetState.targetRobot.collectorTarget.extendo,
+                        )
                     } else {
-                        Extendo.ExtendoPositions.Min
-                    }
                     SlideSubsystem.TargetSlideSubsystem(
-                            targetPosition = targetPosition,
+                                targetPosition = Extendo.ExtendoPositions.Min,
                             movementMode = MovementMode.Position,
                             power = 0.0)
+                    }
                 } else {
                     SlideSubsystem.TargetSlideSubsystem(
                             targetPosition = previousExtendoTargetPosition,
