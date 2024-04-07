@@ -761,19 +761,25 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
             ExtendoInput.NoInput -> {
                 val limitIsActivated = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
-                val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Min
+//                val extendoIsAlreadyGoingIn = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Min
                 val extendoIsManual = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition == Extendo.ExtendoPositions.Manual
-                if ((!(extendoIsAlreadyGoingIn || extendoIsManual) || !limitIsActivated) && doHandoffSequence && (!theRobotJustCollectedTwoPixels || timeToStopEjecting)) {
+
+                val retractBecauseJustCollected = theRobotJustCollectedTwoPixels// && timeToStopEjecting
+
+                if ((!extendoIsManual &&
+                        !limitIsActivated ||
+                        doHandoffSequence) ||
+                        retractBecauseJustCollected) {
                     if (!limitIsActivated) {
                         extendo.findLimitToReset(
                             actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
                             previousTargetSlideSubsystem = previousTargetState.targetRobot.collectorTarget.extendo,
                         )
                     } else {
-                    SlideSubsystem.TargetSlideSubsystem(
+                        SlideSubsystem.TargetSlideSubsystem(
                                 targetPosition = Extendo.ExtendoPositions.Min,
-                            movementMode = MovementMode.Position,
-                            power = 0.0)
+                                movementMode = MovementMode.Position,
+                                power = 0.0)
                     }
                 } else {
                     SlideSubsystem.TargetSlideSubsystem(
