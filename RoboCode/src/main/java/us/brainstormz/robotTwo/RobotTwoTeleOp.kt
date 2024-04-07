@@ -1116,10 +1116,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
 
-        measured("expensiveTelemetryLines-addLine"){
-            stateDumper.lines().forEach(telemetry::addLine)
-        }
-
         
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = {getActualState(it, gamepad1, gamepad2, hardware)},
@@ -1159,6 +1155,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         measured("telemetry"){
             telemetry.addLine("loop time: $loopTime milis")
             telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime()} milis")
+
+            measured("expensiveTelemetryLines-addLine"){
+                stateDumper.lines().forEach(telemetry::addLine)
+            }
 
             telemetry.update()
         }
