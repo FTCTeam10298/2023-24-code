@@ -23,8 +23,7 @@ fun readColor(sensor: NormalizedColorSensor): ColorReading = measured("read-colo
 }
 
 class Transfer(private val telemetry: Telemetry) {
-    //Change to latch
-    enum class RollerPositions(val power: Double) {
+    enum class LatchPositions(val power: Double) {
         Closed(0.0),
         Open(0.35),
     }
@@ -34,10 +33,8 @@ class Transfer(private val telemetry: Telemetry) {
         Right
     }
 
-//    fun checkIfPixelIsTransferred(actualWorld: ActualWorld, transferHalfState: TransferHalfState, previousRollerTarget: RollerTarget): Boolean {
     fun checkIfPixelIsTransferred(transferHalfState: SensorState): Boolean {
         return transferHalfState.hasPixelBeenSeen
-//        return transferHalfState.lowerSensor.hasPixelBeenSeen && checkIfRollerIsDoneTransferring(actualWorld.timestampMilis, previousRollerTarget.timeStartedIntakingMillis)
     }
 
     data class ActualTransfer(val left: ColorReading, val right: ColorReading)
@@ -73,93 +70,14 @@ class Transfer(private val telemetry: Telemetry) {
         )
     }
 
-
-    data class RollerTarget(val target: RollerPositions, val timeStartedIntakingMillis: Long)
+    data class LatchTarget(val target: LatchPositions, val timeStartedIntakingMillis: Long)
     data class TransferTarget(
-            val leftServoCollect: RollerTarget,
-            val rightServoCollect: RollerTarget)
-
-    private val timeToRunRollerToGetPixelAllTheWayUpMillis = 1200
-    private fun checkIfRollerIsDoneTransferring(timestampMillis: Long, previousTimeStartedMovingPixelToNextStageMillis: Long): Boolean {
-        val timeSinceRollerStartedMillis = timestampMillis - previousTimeStartedMovingPixelToNextStageMillis
-        return timeSinceRollerStartedMillis < timeToRunRollerToGetPixelAllTheWayUpMillis
-    }
-    fun getTransferHalfSortingTarget(
-            shouldFinishTransfer: Boolean,
-            timestampMillis: Long,
-            actualTransferHalfState: SensorState,
-            previousTransferHalfState: SensorState,
-            previousRollerTarget: RollerTarget
-            ): RollerTarget {
-
-        val sensorIsSeeingPixel = actualTransferHalfState.hasPixelBeenSeen
-
-        return RollerTarget(RollerPositions.Closed, 0)
-
-//        val targetPower: Pair<RollerPowers, Long?> = if (shouldFinishTransfer) {
-//            val previousTimeStartedMovingPixelToNextStageMillis = previousRollerTarget.timeStartedIntakingMillis
-//            if (sensorIsSeeingPixel) {
-//                if (0L == previousTimeStartedMovingPixelToNextStageMillis) {
-//                    RollerPowers.Intake to timestampMillis
-//                } else if (checkIfRollerIsDoneTransferring(timestampMillis, previousTimeStartedMovingPixelToNextStageMillis)) {
-//                    RollerPowers.Intake to previousTimeStartedMovingPixelToNextStageMillis
-//                } else {
-//                    RollerPowers.Off to previousTimeStartedMovingPixelToNextStageMillis
-//                }
-//            } else {
-//                RollerPowers.Off to null
-//            }
-//        } else {
-////            if (upperSensorHasBeenSeen) {
-////                RollerPowers.Off
-////            } else {
-//            if (sensorIsSeeingPixel) {
-//                RollerPowers.Off to null
-//            } else {
-//                RollerPowers.Intake to null
-//            }
-////            }
-//        }
-//
-//        return RollerTarget(targetPower.first, targetPower.second ?: 0L)
-    }
-
-    fun getTransferSortingTarget(
-            isCollecting: Boolean,
-            actualWorld: ActualWorld,
-            actualTransferState: TransferState,
-            previousTransferState: TransferState,
-            previousTransferTarget: TransferTarget): TransferTarget {
-        val timestampMillis = actualWorld.timestampMilis
-        val isPixelInLeft = actualTransferState.left.hasPixelBeenSeen
-        val isPixelInRight = actualTransferState.right.hasPixelBeenSeen
-
-        val shouldFinishTransfer = !isCollecting || (isPixelInLeft && isPixelInRight)
-
-        val leftServoTarget = getTransferHalfSortingTarget(
-                shouldFinishTransfer = shouldFinishTransfer,
-                timestampMillis = timestampMillis,
-                actualTransferHalfState = actualTransferState.left,
-                previousTransferHalfState = previousTransferState.left,
-                previousRollerTarget = previousTransferTarget.leftServoCollect,
-        )
-        val rightServoTarget = getTransferHalfSortingTarget(
-                shouldFinishTransfer = shouldFinishTransfer,
-                timestampMillis = timestampMillis,
-                actualTransferHalfState = actualTransferState.right,
-                previousTransferHalfState = previousTransferState.right,
-                previousRollerTarget = previousTransferTarget.rightServoCollect,
-        )
-
-        return TransferTarget(
-                leftServoCollect = leftServoTarget,
-                rightServoCollect = rightServoTarget
-        )
-    }
+            val leftLatchTarget: LatchTarget,
+            val rightLatchTarget: LatchTarget)
 
     fun powerSubsystem(transferState: TransferTarget, hardware: RobotTwoHardware, actualRobot: ActualRobot) {
-        hardware.leftTransferServo.power = transferState.leftServoCollect.target.power
-        hardware.rightTransferServo.power = transferState.rightServoCollect.target.power
+        hardware.leftTransferServo.power = transferState.leftLatchTarget.target.power
+        hardware.rightTransferServo.power = transferState.rightLatchTarget.target.power
     }
 
     /*

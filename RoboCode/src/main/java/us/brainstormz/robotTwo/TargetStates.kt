@@ -5,7 +5,6 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Drivetrain
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
@@ -24,7 +23,7 @@ data class CollectorTarget(
         val timeOfEjectionStartMilis: Long?,
         val intakeNoodles: Intake.CollectorPowers,
         val transferState: Transfer.TransferState,
-        val rollers: Transfer.TransferTarget,
+        val latches: Transfer.TransferTarget,
 )
 data class TargetRobot(
         val drivetrainTarget: Drivetrain.DrivetrainTarget,

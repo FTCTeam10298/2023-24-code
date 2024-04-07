@@ -38,7 +38,6 @@ import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSee
 import us.brainstormz.robotTwo.subsystems.readColor
 import java.lang.Thread.sleep
 import kotlin.math.PI
-import kotlin.math.max
 
 class WrappedColorSensor(val offset:Int, val sensor:NormalizedColorSensor){
     var lastReading: ColorReading? = null
@@ -388,7 +387,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         /**Rollers*/
 
         measured("rollers") {
-            transfer.powerSubsystem(targetState.targetRobot.collectorTarget.rollers, this, actualRobot = actualState.actualRobot)
+            transfer.powerSubsystem(targetState.targetRobot.collectorTarget.latches, this, actualRobot = actualState.actualRobot)
         }
 
         /**Lift*/

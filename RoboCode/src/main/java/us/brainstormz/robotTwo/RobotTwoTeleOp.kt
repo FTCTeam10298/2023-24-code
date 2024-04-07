@@ -720,28 +720,28 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Gates*/
-        val overrideRollerState: Pair<Transfer.RollerPositions?, Transfer.RollerPositions?> = when (driverInput.rollers) {
-            RollerInput.BothIn -> Transfer.RollerPositions.Open to Transfer.RollerPositions.Open
-            RollerInput.BothOut -> Transfer.RollerPositions.Open to Transfer.RollerPositions.Open
-            RollerInput.LeftOut -> Transfer.RollerPositions.Open to null
-            RollerInput.RightOut -> null to Transfer.RollerPositions.Open
+        val latchOverrideState: Pair<Transfer.LatchPositions?, Transfer.LatchPositions?> = when (driverInput.rollers) {
+            RollerInput.BothIn -> Transfer.LatchPositions.Open to Transfer.LatchPositions.Open
+            RollerInput.BothOut -> Transfer.LatchPositions.Open to Transfer.LatchPositions.Open
+            RollerInput.LeftOut -> Transfer.LatchPositions.Open to null
+            RollerInput.RightOut -> null to Transfer.LatchPositions.Open
             RollerInput.NoInput -> null to null
         }
-        fun gateTransferringTarget(side: Transfer.Side): Transfer.RollerPositions {
+        fun gateTransferringTarget(side: Transfer.Side): Transfer.LatchPositions {
             val claw = wrist.clawsAsMap[side]!!
             val clawActualAngle = actualRobot.depoState.wristAngles.getBySide(side)
             val clawIsGripping = claw.isClawAtAngle(ClawTarget.Gripping, clawActualAngle)
             val extendoIsIn = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
 
             return if (clawIsGripping && extendoIsIn) {
-                Transfer.RollerPositions.Open
+                Transfer.LatchPositions.Open
             } else {
-                Transfer.RollerPositions.Closed
+                Transfer.LatchPositions.Closed
             }
         }
-        val rollerTargetState = Transfer.TransferTarget(
-                leftServoCollect = Transfer.RollerTarget(overrideRollerState.first ?: gateTransferringTarget(Transfer.Side.Right), 0),
-                rightServoCollect = Transfer.RollerTarget(overrideRollerState.second ?: gateTransferringTarget(Transfer.Side.Left), 0)
+        val latchTarget = Transfer.TransferTarget(
+                leftLatchTarget = Transfer.LatchTarget(latchOverrideState.first ?: gateTransferringTarget(Transfer.Side.Right), 0),
+                rightLatchTarget = Transfer.LatchTarget(latchOverrideState.second ?: gateTransferringTarget(Transfer.Side.Left), 0)
         )
 
         /**Extendo*/
@@ -1018,7 +1018,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 intakeNoodles = intakeNoodleTarget,
                                 timeOfEjectionStartMilis = timeOfEjectionStartMilis,
                                 transferState = transferState,
-                                rollers = rollerTargetState,
+                                latches = latchTarget,
                                 extendo = extendoTargetState,
                         ),
                         hangPowers = hangTarget,
@@ -1076,9 +1076,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         left = initSensorState,
                                         right = initSensorState
                                 ),
-                                rollers = Transfer.TransferTarget(
-                                        leftServoCollect = Transfer.RollerTarget(Transfer.RollerPositions.Closed, 0L),
-                                        rightServoCollect = Transfer.RollerTarget(Transfer.RollerPositions.Closed, 0L)
+                                latches = Transfer.TransferTarget(
+                                        leftLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0L),
+                                        rightLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0L)
                                 ),
                                 extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, MovementMode.Position),
                         ),
