@@ -765,6 +765,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         movementMode = MovementMode.Power,
                         power = driverInput.extendoManualPower)
             }
+            ExtendoInput.RetractSetAmount -> {
+                SlideSubsystem.TargetSlideSubsystem(
+                        targetPosition = previousExtendoTargetPosition,
+                        movementMode = MovementMode.Power,
+                        power = -0.5)
+            }
             ExtendoInput.NoInput -> {
                 if (doHandoffSequence) {
                     extendo.findLimitToReset(
@@ -780,12 +786,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             movementMode = MovementMode.Power,
                             power = 0.0)
                 }
-            }
-            ExtendoInput.RetractSetAmount -> {
-                SlideSubsystem.TargetSlideSubsystem(
-                        targetPosition = previousExtendoTargetPosition,
-                        movementMode = MovementMode.Power,
-                        power = -0.5)
             }
         }
 
