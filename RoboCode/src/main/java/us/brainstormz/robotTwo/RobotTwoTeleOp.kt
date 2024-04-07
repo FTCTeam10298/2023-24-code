@@ -653,6 +653,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     fun getTargetWorld(driverInput: DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): TargetWorld {
         val actualRobot = actualWorld.actualRobot
 
+        telemetry.addLine("\nlift stuff: ${actualRobot.depoState.lift}")
+        telemetry.addLine("extendo stuff: ${actualRobot.collectorSystemState.extendo}")
+        telemetry.addLine("wrist angles: ${actualRobot.depoState.wristAngles}\n")
+
         /**Handoff*/
         val transferState = transfer.getTransferState(
                 actualWorld = actualWorld,
@@ -739,13 +743,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 leftServoCollect = Transfer.RollerTarget(overrideRollerState.first ?: gateTransferringTarget(Transfer.Side.Right), 0),
                 rightServoCollect = Transfer.RollerTarget(overrideRollerState.second ?: gateTransferringTarget(Transfer.Side.Left), 0)
         )
-//        autoRollerState.copy(
-//                leftServoCollect = autoRollerState.leftServoCollect.copy(
-//                        target = overrideRollerState.first ?: autoRollerState.leftServoCollect.target),
-//                rightServoCollect = autoRollerState.rightServoCollect.copy(
-//                        target = overrideRollerState.second ?: autoRollerState.rightServoCollect.target,),
-//                directorState = if ()
-//        )
 
         /**Extendo*/
         val previousExtendoTargetPosition = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
@@ -854,10 +851,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
 
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
-//        val depoWasManualLastLoop = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual
-//        val noAutomationTakingOver = !doingHandoff
-        val depoTarget: DepoTarget = if (driverInputIsManual) { //if ( (driverInputIsManual || (depoWasManualLastLoop && driverInput.depo == DepoInput.NoInput)) && noAutomationTakingOver) {
-//            val armPosition = Arm.Positions.Manual
+        val depoTarget: DepoTarget = if (driverInputIsManual) {
             DepoTarget(
                     lift = Lift.TargetLift(power = driverInput.depoScoringHeightAdjust, movementMode = MovementMode.Power, targetPosition = previousTargetState.targetRobot.depoTarget.lift.targetPosition),
                     armPosition = Arm.ArmTarget(
@@ -1146,7 +1140,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
     }
 
-
     fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) = measured("main loop"){
 
         measured("clear bulk cache"){
@@ -1159,7 +1152,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             stateDumper.lines().forEach(telemetry::addLine)
         }
 
-        telemetry.addLine("Lift Limit: ${hardware.liftMagnetLimit.state}")
         
         functionalReactiveAutoRunner.loop(
                 actualStateGetter = {getActualState(it, gamepad1, gamepad2, hardware)},
@@ -1170,6 +1162,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState ->
+
 //                    telemetry.addLine("\ntargetState: $targetState")
                     measured("actuate robot"){
                         hardware.actuateRobot(
