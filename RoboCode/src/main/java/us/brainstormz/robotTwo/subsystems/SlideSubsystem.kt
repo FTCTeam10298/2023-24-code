@@ -8,7 +8,13 @@ import kotlin.math.sign
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.utils.measured
 
+
+object SlideConversion {
+    val oldToNewMotorEncoderConversion: Double = (384.5) / (537.7)
+}
+
 interface SlideSubsystem: DualMovementModeSubsystem {
+
     open class ActualSlideSubsystem(
             open val currentPositionTicks: Int,
             open val limitSwitchIsActivated: Boolean,

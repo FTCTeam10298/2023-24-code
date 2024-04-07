@@ -19,17 +19,14 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
                                 kd= 0.08,
                         )
 
-    companion object {
-        val oldToNewMotorEncoderConversion: Double = (145.1) / (537.7)
-    }
     enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
 //        AllTheWayInTarget(0),
         Min(0),
         Manual(0),
-        PurpleFarSidePosition((700*oldToNewMotorEncoderConversion).toInt()),
-        PurpleCloseSidePosition((800*oldToNewMotorEncoderConversion).toInt()),
-        PurpleCenterPosition((2000*oldToNewMotorEncoderConversion).toInt()),
-        Max((2000*oldToNewMotorEncoderConversion).toInt()),
+        PurpleFarSidePosition((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        PurpleCloseSidePosition((800*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        PurpleCenterPosition((2000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        Max((2000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
     }
 
     val acceptablePositionErrorTicks = 100

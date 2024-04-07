@@ -10,24 +10,22 @@ import kotlin.math.absoluteValue
 import kotlin.math.sign
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 
+
 class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
-    companion object {
-        val oldToNewMotorEncoderConversion: Double = (384.5) / (537.7)
-    }
 
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         PastDown(0),
         Down(0),
-        AutoLowYellowPlacement((330*oldToNewMotorEncoderConversion).toInt()),
-        AutoAbovePartnerPlacement((500*oldToNewMotorEncoderConversion).toInt()),
-        ClearForArmToMove((547*oldToNewMotorEncoderConversion).toInt()),
-        WaitForArmToMove((800*oldToNewMotorEncoderConversion).toInt()),
-        SetLine1((500*oldToNewMotorEncoderConversion).toInt()),
-        SetLine2Other((700*oldToNewMotorEncoderConversion).toInt()),
-        SetLine2((1000*oldToNewMotorEncoderConversion).toInt()),
-        SetLine3((1800*oldToNewMotorEncoderConversion).toInt()),
-        Max((2100*oldToNewMotorEncoderConversion).toInt())
+        AutoLowYellowPlacement((330*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        AutoAbovePartnerPlacement((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        ClearForArmToMove((547*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        WaitForArmToMove((800*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        SetLine1((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        SetLine2Other((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        SetLine2((1000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        SetLine3((1800*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        Max((2100*SlideConversion.oldToNewMotorEncoderConversion).toInt())
     }
 
     fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, position: Double): SlideSubsystem.SlideTargetPosition {
