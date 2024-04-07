@@ -60,22 +60,36 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     override val allowedMovementBeforeResetTicks: Int = 140
     override val allTheWayInPositionTicks: Int = 0
-    override val stallCurrentAmps: Double = 6.0
+    override val stallCurrentAmps: Double = 4.0
     override val findResetPower: Double = 0.2
 
-    fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
-        val currentPosition = actualRobot.collectorSystemState.extendo.currentPositionTicks
-        val positionError = targetPositionTicks - currentPosition.toDouble()
+    fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot, previousActualRobot: ActualRobot): Double {
+        val actualExtendo = actualRobot.collectorSystemState.extendo
+
+        val justResetZero = actualExtendo.zeroPositionOffsetTicks != previousActualRobot.collectorSystemState.extendo.zeroPositionOffsetTicks
+        if (justResetZero) {
+            pid.reset()
+        }
+
+        val currentPosition = actualExtendo.currentPositionTicks
+        val positionError = (targetPositionTicks - currentPosition.toDouble())*SlideConversion.oldToNewMotorEncoderConversion
         val pidPower = pid.calcPID(
                 target = targetPositionTicks,
                 error = positionError)
 
+        telemetry.addLine("position error: $positionError")
+        telemetry.addLine("pidPower: $pidPower")
         telemetry.addLine(printPID(pid))
 
-        val power = if (actualRobot.collectorSystemState.extendo.currentAmps >= stallCurrentAmps) {
+        val isStalling = actualExtendo.currentAmps >= stallCurrentAmps
+        val power = if (isStalling) {
             0.0
         } else {
-            pidPower
+            if (pidPower.absoluteValue <= 0.05) {
+                0.0
+            } else {
+                pidPower
+            }
         }
 
         return power

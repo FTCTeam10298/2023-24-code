@@ -29,7 +29,7 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
 
     var deltaTimeMs:Long = 0
 
-    private fun reset(now:Long = System.currentTimeMillis()) {
+    fun reset(now:Long = System.currentTimeMillis()) {
 //        deltaTimeMs = 0
         lastTimeMs = now
         lastError = 0.0
