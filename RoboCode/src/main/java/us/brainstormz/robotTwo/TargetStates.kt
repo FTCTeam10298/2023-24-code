@@ -37,6 +37,7 @@ data class TargetWorld(
         val targetRobot: TargetRobot,
         val driverInput: RobotTwoTeleOp.DriverInput,
         val doingHandoff: Boolean,
+        val handoffState: HandoffManager.SideIsActivelyHandingOff,
         val getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?,
         val timeTargetStartedMilis: Long = 0,
         val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?

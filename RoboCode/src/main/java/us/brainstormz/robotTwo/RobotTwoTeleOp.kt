@@ -118,7 +118,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
-    val handoffManager: HandoffManager = HandoffManager(collectorSystem, lift, extendo, arm, telemetry)
+    val handoffManager: HandoffManager = HandoffManager(collectorSystem, wrist, lift, extendo, arm, telemetry)
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
@@ -694,6 +694,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("doHandoffSequence: $doHandoffSequence")
         telemetry.addLine("handoffIsReadyCheck: $handoffIsReadyCheck")
 
+        val handoffState = handoffManager.getHandoffState(actualRobot = actualRobot, previousTargetWorld = previousTargetState)
+        telemetry.addLine("handoffState: $handoffState")
+
         /**Intake Noodles*/
         val timeSinceEjectionStartedMilis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis?:actualWorld.timestampMilis)
         val timeToStopEjecting = timeSinceEjectionStartedMilis > 1000
@@ -729,15 +732,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         fun getGateTransferringTarget(side: Transfer.Side): Transfer.LatchPositions {
-            val claw = wrist.clawsAsMap[side]!!
-            val clawActualAngle = actualRobot.depoState.wristAngles.getBySide(side)
-            val clawIsGripping = claw.isClawAtAngle(ClawTarget.Gripping, clawActualAngle)
+//            val claw = wrist.clawsAsMap[side]!!
+//            val clawActualAngle = actualRobot.depoState.wristAngles.getBySide(side)
+//            val clawIsGripping = claw.isClawAtAngle(ClawTarget.Gripping, clawActualAngle)
 
-            val handingOffIsHappening = handoffIsReadyCheck || (
-                    previousTargetState.driverInput.rollers == RollerInput.NoInput &&
-                            previousTargetState.targetRobot.collectorTarget.latches.getBySide(side).target == Transfer.LatchPositions.Open)
+            val handingOffIsHappening = handoffState.getBySide(side)
 
-            return if (handingOffIsHappening && clawIsGripping) {
+            return if (handingOffIsHappening) {
                 Transfer.LatchPositions.Open
             } else {
                 Transfer.LatchPositions.Closed
@@ -998,6 +999,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         lights = lights,
                 ),
                 doingHandoff = doHandoffSequence,
+                handoffState = handoffState,
                 driverInput = spoofDriverInputForDepo,
                 getNextTask = { _, _, _-> null },
                 gamepad1Rumble = gamepad1RumbleRoutine
@@ -1063,6 +1065,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 doingHandoff = false,
                 driverInput = noInput,
                 getNextTask = { _, _, _ -> null },
+                handoffState = HandoffManager.SideIsActivelyHandingOff(false, false),
                 gamepad1Rumble = null
         )
     }

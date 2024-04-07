@@ -85,6 +85,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                 doingHandoff = false,
                 getNextTask = getNextTask,
                 timeTargetStartedMilis = timeTargetStartedMilis,
+                handoffState = HandoffManager.SideIsActivelyHandingOff(false, false),
                 gamepad1Rumble = null
         )
     }

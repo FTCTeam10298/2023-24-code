@@ -28,7 +28,6 @@ class Arm: Subsystem, DualMovementModeSubsystem {
         In(238.0),
         TransferringTarget(230.0),
         InsideTheBatteryBox(225.0),
-        Inish(230.0),
         AutoInitPosition(120.0),
         OkToDropPixels(90.0),
         OutButUnderTwelve(50.0),

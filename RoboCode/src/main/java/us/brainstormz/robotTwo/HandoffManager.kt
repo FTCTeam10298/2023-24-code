@@ -2,16 +2,63 @@ package us.brainstormz.robotTwo
 
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.robotTwo.subsystems.Wrist
 
 class HandoffManager(
         private val collectorSystem: CollectorSystem,
+        private val wrist: Wrist,
         private val lift: Lift,
         private val extendo: Extendo,
         private val arm: Arm,
         private val telemetry: Telemetry) {
 
+    data class SideIsActivelyHandingOff(
+            val left: Boolean,
+            val right: Boolean
+    ) {
+        fun getBySide(side: Transfer.Side): Boolean {
+            return when (side) {
+                Transfer.Side.Left -> left
+                Transfer.Side.Right -> right
+            }
+        }
+    }
+//    data class HandoffState(
+//            val handoffStarted: SideIsActivelyHandingOff
+//    )
+
+    fun getHandoffState(actualRobot: ActualRobot, previousTargetWorld: TargetWorld): SideIsActivelyHandingOff {
+
+        val liftIsAtAHeightWhereLatchesCouldConflict = !lift.isLiftAbovePosition(targetPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks, actualLiftPositionTicks = actualRobot.depoState.lift.currentPositionTicks)
+        val armIsInAPositionWhereLatchesCouldConflict = actualRobot.depoState.armAngleDegrees > Arm.Positions.InsideTheBatteryBox.angleDegrees
+
+        return if (liftIsAtAHeightWhereLatchesCouldConflict && armIsInAPositionWhereLatchesCouldConflict) {
+            fun checkIfIsActivelyHandingOffPerSide(side: Transfer.Side): Boolean {
+                val alreadyHandingOff = previousTargetWorld.handoffState.getBySide(side)
+
+                val claw = wrist.clawsAsMap[side]!!
+                val clawIsClosed = claw.isClawAtAngle(Claw.ClawTarget.Gripping, actualRobot.depoState.wristAngles.getBySide(side))
+//                val startingHandoff = claw.isClawAtAngle(Claw.ClawTarget.Gripping, actualRobot.depoState.wristAngles.getBySide(side))
+
+//                val isHandingOff = (startingHandoff || alreadyHandingOff)
+                return clawIsClosed
+            }
+
+            SideIsActivelyHandingOff(
+                    left = checkIfIsActivelyHandingOffPerSide(Transfer.Side.Left),
+                    right = checkIfIsActivelyHandingOffPerSide(Transfer.Side.Right)
+            )
+        } else {
+            SideIsActivelyHandingOff(
+                    left = false,
+                    right = false
+            )
+        }
+    }
 
     fun checkIfHandoffIsReadyToStart(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Boolean {
         val isExtendoAllTheWayIn = extendo.isSlideSystemAllTheWayIn(actualWorld.actualRobot.collectorSystemState.extendo)
