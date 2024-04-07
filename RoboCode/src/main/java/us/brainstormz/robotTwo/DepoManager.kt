@@ -209,37 +209,6 @@ class DepoManager(
             }
         }
 
-//        val liftTarget: Lift.LiftPositions = if (bothClawsAreAtTarget) {
-//            if (armIsAtTarget) {
-//                finalDepoTarget.liftPosition
-//            } else {
-//                //Waiting for arm
-//                when (finalDepoTarget.targetType) {
-//                    DepoTargetType.GoingOut -> {
-//                        telemetry.addLine("lift would wait for arm but it's not")
-//                        finalDepoTarget.liftPosition
-//                    }
-//                    DepoTargetType.GoingHome -> {
-//                        val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
-//                        val liftIsAlreadyDecentlyFarDown = actualDepo.lift.currentPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
-//                        telemetry.addLine("lift is waiting for the arm")
-//                        if (!eitherClawIsGripping && (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox)) {
-//                            finalDepoTarget.liftPosition
-//                        } else {
-//                            Lift.LiftPositions.ClearForArmToMove
-//                        }
-//                    }
-//                    else -> {
-//                        telemetry.addLine("lift is confused af (asinine and futile)")
-//                        previousTargetDepo.liftPosition
-//                    }
-//                }
-//            }
-//        } else {
-//            telemetry.addLine("lift is waiting for the claws")
-//            previousTargetDepo.liftPosition
-//        }
-
         return DepoTarget(
                 lift = Lift.TargetLift(liftTarget, movementMode = MovementMode.Position),
                 armPosition = Arm.ArmTarget(armTarget),
@@ -282,33 +251,17 @@ class DepoManager(
                     else -> previousDepoTarget.wristPosition
                 }
 
-        val liftWithFindReset = movingArmAndLiftTarget.lift
 
-//        val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
-//            Lift.TargetLift(lift.findLimitToReset(
-//                    actualSlideSubsystem = actualDepo.lift,
-//                    actualTimestampMilis = actualWorld.timestampMilis,
-//                    previousSlideSubsystem = previousActualWorld.actualRobot.depoState.lift,
-//                    previousTimestampMilis = previousActualWorld.timestampMilis,
-//                    previousTargetSlideSubsystem = previousDepoTarget.lift))
-//        } else {
-//            movingArmAndLiftTarget.lift
-//        }
-//        val targetHasNotChanged = movingArmAndLiftTarget == previousDepoTarget
-//        val inputIsDownOrNone = depoInput == RobotTwoTeleOp.DepoInput.NoInput || depoInput == RobotTwoTeleOp.DepoInput.Down
-//        val previousLiftTargetWasReset = previousDepoTarget.liftPosition == Lift.LiftPositions.ResetEncoder
-//
-//        val withApplicableLiftReset =
-//                if (actualDepo.lift.limitSwitchIsActivated && armAndLiftAreAtFinalRestingPlace && inputIsDownOrNone && targetHasNotChanged && !previousLiftTargetWasReset) {
-//                    movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.ResetEncoder)
-//                } else {
-//                    if (!actualDepo.lift.limitSwitchIsActivated && actualDepo.lift.currentPositionTicks <= 10 && !previousLiftTargetWasReset) {
-//                        movingArmAndLiftTarget.copy(liftPosition = Lift.LiftPositions.PastDown)
-//                    } else {
-//                        movingArmAndLiftTarget
-//                    }
-//                    movingArmAndLiftTarget
-//                }
+        val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
+            Lift.TargetLift(lift.findLimitToReset(
+                    actualSlideSubsystem = actualDepo.lift,
+                    actualTimestampMilis = actualWorld.timestampMilis,
+                    previousSlideSubsystem = previousActualWorld.actualRobot.depoState.lift,
+                    previousTimestampMilis = previousActualWorld.timestampMilis,
+                    previousTargetSlideSubsystem = previousDepoTarget.lift))
+        } else {
+            movingArmAndLiftTarget.lift
+        }
 
         return movingArmAndLiftTarget.copy(wristPosition = wristPosition, lift = liftWithFindReset)
     }
