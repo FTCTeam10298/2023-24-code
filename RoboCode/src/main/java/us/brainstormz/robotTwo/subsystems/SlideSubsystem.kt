@@ -106,9 +106,8 @@ interface SlideSubsystem: DualMovementModeSubsystem {
     val stallCurrentAmps: Double
     val definitelyMovingVelocityTicksPerMili: Double
     val findResetPower: Double
-    fun findLimitToReset(actualSlideSubsystem: ActualSlideSubsystem, actualTimestampMilis: Long, previousSlideSubsystem: ActualSlideSubsystem, previousTimestampMilis: Long, previousTargetSlideSubsystem: TargetSlideSubsystem): TargetSlideSubsystem {
+    fun findLimitToReset(actualSlideSubsystem: ActualSlideSubsystem, previousTargetSlideSubsystem: TargetSlideSubsystem): TargetSlideSubsystem {
         val resetIsNeeded = actualSlideSubsystem.ticksMovedSinceReset > allowedMovementBeforeResetTicks && !actualSlideSubsystem.limitSwitchIsActivated
-        val previousResetIsNeeded = previousSlideSubsystem.ticksMovedSinceReset > allowedMovementBeforeResetTicks
 
         return if (resetIsNeeded) {
             telemetry.addLine("resetting slide system")

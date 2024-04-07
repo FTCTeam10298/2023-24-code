@@ -255,9 +255,6 @@ class DepoManager(
         val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
             Lift.TargetLift(lift.findLimitToReset(
                     actualSlideSubsystem = actualDepo.lift,
-                    actualTimestampMilis = actualWorld.timestampMilis,
-                    previousSlideSubsystem = previousActualWorld.actualRobot.depoState.lift,
-                    previousTimestampMilis = previousActualWorld.timestampMilis,
                     previousTargetSlideSubsystem = previousDepoTarget.lift))
         } else {
             movingArmAndLiftTarget.lift
