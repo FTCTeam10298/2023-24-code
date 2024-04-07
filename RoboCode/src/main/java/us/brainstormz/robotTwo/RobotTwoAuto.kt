@@ -107,14 +107,8 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     data class TransferTarget(val left: LatchPositions, val right: LatchPositions) {
         fun toRealTransferTarget(): Transfer.TransferTarget {
             return TransferTarget(
-                    leftLatchTarget = Transfer.LatchTarget(
-                            left,
-                            0L
-                    ),
-                    rightLatchTarget = Transfer.LatchTarget(
-                            right,
-                            0L
-                    )
+                    leftLatchTarget = left,
+                    rightLatchTarget = right
             )
         }
     }
@@ -825,7 +819,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
         val odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         drivetrain = Drivetrain(hardware, odometryLocalizer, telemetry)
 
-        collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
+        collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
         lift = Lift(telemetry)
         arm = Arm()
         wrist = Wrist(left = Claw(telemetry), right = Claw(telemetry), telemetry= telemetry)

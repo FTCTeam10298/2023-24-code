@@ -9,7 +9,7 @@ import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 
 class CollectorSystem(
-//        private val intake: Intake,
+        private val intake: Intake,
         private val transfer: Transfer,
         private val extendo: Extendo,
         private val telemetry: Telemetry) {
@@ -18,8 +18,6 @@ class CollectorSystem(
     data class ActualCollector(
             val extendo: SlideSubsystem.ActualSlideSubsystem,
             val transferState: Transfer.ActualTransfer,
-//            val leftRollerAngleDegrees: Double,
-//            val rightRollerAngleDegrees: Double,
     )
 
     fun getCurrentState(hardware: RobotTwoHardware, previousActualWorld: ActualWorld?): ActualCollector = measured("collector-state"){
@@ -27,8 +25,6 @@ class CollectorSystem(
 
         val actualCollector = ActualCollector(
                 extendo= extendo.getActualSlideSubsystem(hardware, previousActualWorld?.actualRobot?.collectorSystemState?.extendo),
-//                leftRollerAngleDegrees= 0.0,//transfer.getFlapAngleDegrees(Transfer.Side.Left, hardware),
-//                rightRollerAngleDegrees= 0.0,//transfer.getFlapAngleDegrees(Transfer.Side.Right, hardware),
                 transferState= transfer.getActualTransfer(hardware),
         )
 

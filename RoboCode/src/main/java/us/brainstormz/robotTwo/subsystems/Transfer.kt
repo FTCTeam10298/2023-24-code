@@ -23,7 +23,7 @@ fun readColor(sensor: NormalizedColorSensor): ColorReading = measured("read-colo
 }
 
 class Transfer(private val telemetry: Telemetry) {
-    enum class LatchPositions(val power: Double) {
+    enum class LatchPositions(val position: Double) {
         Closed(0.0),
         Open(0.35),
     }
@@ -70,11 +70,11 @@ class Transfer(private val telemetry: Telemetry) {
         )
     }
 
-    data class LatchTarget(val target: LatchPositions, val timeStartedIntakingMillis: Long)
+//    data class LatchTarget(val target: LatchPositions, val timeStartedIntakingMillis: Long)
     data class TransferTarget(
-            val leftLatchTarget: LatchTarget,
-            val rightLatchTarget: LatchTarget) {
-        fun getBySide(side: Side): LatchTarget {
+            val leftLatchTarget: LatchPositions,
+            val rightLatchTarget: LatchPositions) {
+        fun getBySide(side: Side): LatchPositions {
             return when (side) {
                 Side.Left -> leftLatchTarget
                 Side.Right -> rightLatchTarget
@@ -83,8 +83,8 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
     fun powerSubsystem(transferState: TransferTarget, hardware: RobotTwoHardware, actualRobot: ActualRobot) {
-        hardware.leftTransferServo.power = transferState.leftLatchTarget.target.power
-        hardware.rightTransferServo.power = transferState.rightLatchTarget.target.power
+        hardware.leftTransferServo.power = transferState.leftLatchTarget.position
+        hardware.rightTransferServo.power = transferState.rightLatchTarget.position
     }
 
     /*

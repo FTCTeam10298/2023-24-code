@@ -732,9 +732,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         fun getGateTransferringTarget(side: Transfer.Side): Transfer.LatchPositions {
-//            val claw = wrist.clawsAsMap[side]!!
-//            val clawActualAngle = actualRobot.depoState.wristAngles.getBySide(side)
-//            val clawIsGripping = claw.isClawAtAngle(ClawTarget.Gripping, clawActualAngle)
 
             val handingOffIsHappening = handoffState.getBySide(side)
 
@@ -746,8 +743,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         val latchTarget = Transfer.TransferTarget(
-                leftLatchTarget = Transfer.LatchTarget(latchOverrideState.first ?: getGateTransferringTarget(Transfer.Side.Right), 0),
-                rightLatchTarget = Transfer.LatchTarget(latchOverrideState.second ?: getGateTransferringTarget(Transfer.Side.Left), 0)
+                leftLatchTarget = latchOverrideState.first ?: getGateTransferringTarget(Transfer.Side.Right),
+                rightLatchTarget = latchOverrideState.second ?: getGateTransferringTarget(Transfer.Side.Left),
         )
 
         /**Extendo*/
@@ -1039,8 +1036,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         right = initSensorState
                                 ),
                                 latches = Transfer.TransferTarget(
-                                        leftLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0L),
-                                        rightLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0L)
+                                        leftLatchTarget = Transfer.LatchPositions.Closed,
+                                        rightLatchTarget = Transfer.LatchPositions.Closed
                                 ),
                                 extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, MovementMode.Position),
                         ),

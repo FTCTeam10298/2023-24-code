@@ -72,7 +72,7 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
     val intake = Intake()
     val transfer = Transfer(telemetry)
     val extendo = Extendo(telemetry)
-    val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
+    val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
     val leftClaw: Claw = Claw(telemetry)
     val rightClaw: Claw = Claw(telemetry)
     val wrist = Wrist(leftClaw, rightClaw, telemetry= telemetry)

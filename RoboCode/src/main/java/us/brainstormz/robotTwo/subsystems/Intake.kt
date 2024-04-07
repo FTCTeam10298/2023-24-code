@@ -12,15 +12,6 @@ class Intake: Subsystem {
         EjectDraggedPixelPower(-0.1)
     }
 
-    fun getCollectorState(driverInput: CollectorPowers, isPixelInLeft: Boolean, isPixelInRight: Boolean): CollectorPowers {
-        val bothTransfersAreFull = isPixelInLeft && isPixelInRight
-        return if (bothTransfersAreFull && (driverInput == CollectorPowers.Intake)) {
-            CollectorPowers.Off
-        } else {
-            driverInput
-        }
-    }
-
     override fun powerSubsystem(power: Double, hardware: RobotTwoHardware) {
         hardware.collectorServo1.power = power
         hardware.collectorServo2.power = power

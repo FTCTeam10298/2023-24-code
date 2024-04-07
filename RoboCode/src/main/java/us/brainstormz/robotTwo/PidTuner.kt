@@ -17,6 +17,7 @@ import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
+import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.Transfer
@@ -107,7 +108,8 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
     private val transfer = Transfer(multipleTelemetry)
     private val extendo = Extendo(multipleTelemetry)
 
-    private val collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= multipleTelemetry)
+    private val intake = Intake()
+    private val collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, intake = intake, telemetry= multipleTelemetry)
     private val arm = Arm()
     private val lift = Lift(multipleTelemetry)
     private val wrist = Wrist(left = Claw(multipleTelemetry), right = Claw(multipleTelemetry), telemetry= multipleTelemetry)
