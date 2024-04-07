@@ -1,3 +1,4 @@
+import android.graphics.Point
 import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
@@ -8,6 +9,7 @@ import us.brainstormz.localizer.aprilTagLocalization.AverageAprilTagLocalization
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
 import kotlin.math.cos
 import kotlin.math.sin
+import org.opencv.core.Point as PointD
 
 /*
 LIST OF TESTS
@@ -32,7 +34,7 @@ LIST OF TESTS
  */
 
 fun main () {
-    var aprilTagLocalization = AprilTagLocalizationFunctions(
+    val aprilTagLocalization = AprilTagLocalizationFunctions(
             cameraXOffset=0.00,
             cameraYOffset=0.00 //it's right on center! Yay!
     )
@@ -97,6 +99,11 @@ fun returnCamCentricCoordsInTagCentricCoordsPartDeux(anyOldTag: CameraRelativePo
 
 }
 
+fun evaluateAprilTagAccuracy(detectedPoint: TagRelativePointInSpace) {
+    val square0_1 = org.opencv.core.Point(0.0, 0.0)
+
+}
+
 //private fun returnTagCentricCoordsInFieldCoords(cameraXOffset: Double, cameraYOffset: Double, targetAprilTagID: Int, inputTagRelative: TagRelativePointInSpace): FieldRelativePointInSpace {
 //
 //    var aprilTagLocalization = AprilTagLocalizationOTron(
@@ -142,7 +149,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
     val averageErrors = AverageAprilTagLocalizationError(
             xInches = 0.47,
             yInches = 2.58,
-            hDegrees = 2.68,
+            hDegrees = 2.68, //0
     )
 
     val localizer = ReusableAprilTagFieldLocalizer(aprilTagLocalization, averageErrors)
