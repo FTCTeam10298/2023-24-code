@@ -38,13 +38,8 @@ class HandoffManager(
 
         return if (liftIsAtAHeightWhereLatchesCouldConflict && armIsInAPositionWhereLatchesCouldConflict) {
             fun checkIfIsActivelyHandingOffPerSide(side: Transfer.Side): Boolean {
-                val alreadyHandingOff = previousTargetWorld.handoffState.getBySide(side)
-
                 val claw = wrist.clawsAsMap[side]!!
                 val clawIsClosed = claw.isClawAtAngle(Claw.ClawTarget.Gripping, actualRobot.depoState.wristAngles.getBySide(side))
-//                val startingHandoff = claw.isClawAtAngle(Claw.ClawTarget.Gripping, actualRobot.depoState.wristAngles.getBySide(side))
-
-//                val isHandingOff = (startingHandoff || alreadyHandingOff)
                 return clawIsClosed
             }
 
