@@ -66,11 +66,17 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot): Double {
         val currentPosition = actualRobot.collectorSystemState.extendo.currentPositionTicks
         val positionError = targetPositionTicks - currentPosition.toDouble()
-        val power = pid.calcPID(
+        val pidPower = pid.calcPID(
                 target = targetPositionTicks,
                 error = positionError)
 
         telemetry.addLine(printPID(pid))
+
+        val power = if (actualRobot.collectorSystemState.extendo.currentAmps >= stallCurrentAmps) {
+            0.0
+        } else {
+            pidPower
+        }
 
         return power
     }
