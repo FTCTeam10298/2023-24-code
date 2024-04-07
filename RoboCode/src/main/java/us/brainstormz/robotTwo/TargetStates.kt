@@ -36,7 +36,6 @@ data class TargetRobot(
 data class TargetWorld(
         val targetRobot: TargetRobot,
         val driverInput: RobotTwoTeleOp.DriverInput,
-        val isLiftEligableForReset: Boolean,
         val doingHandoff: Boolean,
         val getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?,
         val timeTargetStartedMilis: Long = 0,

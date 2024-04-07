@@ -997,7 +997,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         launcherPosition = launcherTarget,
                         lights = lights,
                 ),
-                isLiftEligableForReset = false,
                 doingHandoff = doHandoffSequence,
                 driverInput = spoofDriverInputForDepo,
                 getNextTask = { _, _, _-> null },
@@ -1061,7 +1060,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 stripTarget = Neopixels.HalfAndHalfTarget().compileStripState()
                         ),
                 ),
-                isLiftEligableForReset = false,
                 doingHandoff = false,
                 driverInput = noInput,
                 getNextTask = { _, _, _ -> null },

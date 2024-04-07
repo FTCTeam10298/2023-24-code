@@ -82,7 +82,6 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
 //                        ),
                 ),
                 driverInput = RobotTwoTeleOp.noInput,
-                isLiftEligableForReset = false,
                 doingHandoff = false,
                 getNextTask = getNextTask,
                 timeTargetStartedMilis = timeTargetStartedMilis,
