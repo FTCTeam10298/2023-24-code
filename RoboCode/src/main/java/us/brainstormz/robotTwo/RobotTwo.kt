@@ -114,6 +114,7 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
                             targetState,
                             previousTargetState ?: targetState,
                             actualState,
+                            previousActualWorld = previousActualState,
                             drivetrain = drivetrain,
                             wrist= wrist,
                             arm= arm,

@@ -37,6 +37,7 @@ fun main() {
                 ),
                 previousTargetState = RobotTwoTeleOp.initialPreviousTargetState,
                 actualState = TeleopTest.emptyWorld,
+                previousActualWorld = TeleopTest.emptyWorld,
                 drivetrain = Drivetrain(hardware, RRTwoWheelLocalizer(hardware, inchesPerTick = hardware.inchesPerTick), telemetry),
                 wrist = Wrist(Claw(telemetry), Claw(telemetry), telemetry),
                 arm = Arm(),

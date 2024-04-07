@@ -1135,6 +1135,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             targetState,
                             previousTargetState ?: targetState,
                             actualState,
+                            previousActualWorld = previousActualState,
                             drivetrain = drivetrain,
                             wrist= wrist,
                             arm= arm,

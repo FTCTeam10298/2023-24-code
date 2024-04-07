@@ -918,6 +918,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                             universalTargetWorld,
                             previousTargetState?: targetState,
                             actualState,
+                            previousActualWorld = previousActualState,
                             drivetrain = drivetrain,
                             wrist= wrist,
                             arm= arm,

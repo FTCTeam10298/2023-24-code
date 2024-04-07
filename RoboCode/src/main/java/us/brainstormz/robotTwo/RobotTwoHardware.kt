@@ -340,6 +340,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             targetState: TargetWorld,
             previousTargetState: TargetWorld,
             actualState: ActualWorld,
+            previousActualWorld: ActualWorld,
             drivetrain: Drivetrain,
             extendo: Extendo,
             intake: Intake,
