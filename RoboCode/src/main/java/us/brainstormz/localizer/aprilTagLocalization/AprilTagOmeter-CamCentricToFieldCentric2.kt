@@ -227,15 +227,17 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
             for (detection in currentDetections) {
 
                 val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)!!
+                val detectionTagCoords =
+                        localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
                 if (currentDetections.isNotEmpty()) {
 
                     println(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
                     //
                     println(String.format("XYH %6.1f %6.1f %6.1f  (inch, inch, deg)",
-                            detectionFieldCoords.xInches,
-                            detectionFieldCoords.yInches,
-                            detectionFieldCoords.headingDegrees))
+                            detectionTagCoords?.xInches,
+                            detectionTagCoords?.yInches,
+                            detectionTagCoords?.headingDegrees))
 
                     println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
 
