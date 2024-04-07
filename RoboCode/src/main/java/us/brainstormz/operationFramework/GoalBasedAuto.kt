@@ -29,7 +29,7 @@ class GoalBasedAuto<ScoringStrategy,
         actualStateGetter: (ActualWorld?)->ActualWorld,
         strategySetter: (actualWorld: ActualWorld, previousActualWorld: ActualWorld?, currentTimeMilis: Long) -> ScoringStrategy,
         nextStepFinder: (scoringStrategy: ScoringStrategy, actualWorld: ActualWorld, previousTargetWorld: TargetWorld?, currentTimeMilis: Long) -> TargetWorld,
-        stateFulfiller: (targetWorld: TargetWorld, previousTargetWorld: TargetWorld?, actualWorld: ActualWorld)->Unit
+        stateFulfiller: (targetWorld: TargetWorld, previousTargetWorld: TargetWorld?, actualWorld: ActualWorld, previousActualWorld: ActualWorld?)->Unit
     ) {
         functionalReactiveAutoRunner.loop(
             actualStateGetter = actualStateGetter,

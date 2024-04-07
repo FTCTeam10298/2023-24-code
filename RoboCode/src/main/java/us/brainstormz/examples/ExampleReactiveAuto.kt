@@ -22,7 +22,8 @@ class ExampleReactiveAuto : OpMode(){
             targetStateFetcher = { previousTargetState, actualState, previousActualState ->
                 ExampleTargetRobot(driveMotorPositions = previousTargetState?.driveMotorPositions?.map { it + 1 } ?: listOf(0, 0, 0, 0))
             },
-            stateFulfiller = { targetState, previousTargetState, actualState ->
+            stateFulfiller = { targetState, previousTargetState, actualState, previousActualState ->
+                val previousActualState = previousActualState ?: actualState
                 targetState.driveMotorPositions.forEachIndexed { i, it ->
                     hardware.driveMotors[i].targetPosition = it
                 }

@@ -904,7 +904,8 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                 targetStateFetcher = { previousTargetState, actualState, previousActualState ->
                     nextTargetState(previousTargetState, actualState, previousActualState)
                 },
-                stateFulfiller = { targetState, previousTargetState, actualState ->
+                stateFulfiller = { targetState, previousTargetState, actualState, previousActualState ->
+                    val previousActualState = previousActualState ?: actualState
 
                     measured("fulfillState"){
 

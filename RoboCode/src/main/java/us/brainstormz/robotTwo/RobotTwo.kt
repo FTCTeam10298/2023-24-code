@@ -106,7 +106,9 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
                     val previousTargetState: TargetWorld = previousTargetState ?: RobotTwoTeleOp.initialPreviousTargetState
                     targetStateFetcher(previousTargetState, actualState, previousActualState)
                 },
-                stateFulfiller = { targetState, previousTargetState, actualState ->
+                stateFulfiller = { targetState, previousTargetState, actualState, previousActualState ->
+                    val previousActualState = previousActualState ?: actualState
+
                     telemetry.addLine("\ntargetState: $targetState")
                     hardware.actuateRobot(
                             targetState,

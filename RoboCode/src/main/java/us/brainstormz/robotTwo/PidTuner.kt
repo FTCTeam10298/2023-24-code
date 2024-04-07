@@ -251,7 +251,8 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                     previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(drivetrainTarget = Drivetrain.DrivetrainTarget(targetPosition = newTargetPosition.first ?: PositionAndRotation(), power = Drivetrain.DrivetrainPower(y=newTargetPosition.second?.toDouble()?:0.0,x= 0.0, r=0.0), movementMode = DualMovementModeSubsystem.MovementMode.Position), lights = RobotTwoTeleOp.LightTarget(ligths.compileStripState())))
                             ?: RobotTwoTeleOp.initialPreviousTargetState
                 },
-                stateFulfiller = { targetState, previousTargetState, actualState ->
+                stateFulfiller = { targetState, previousTargetState, actualState, previousActualState ->
+                    val previousActualState = previousActualState ?: actualState
                     multipleTelemetry.addLine("target position: ${targetState.targetRobot.drivetrainTarget.targetPosition}")
                     multipleTelemetry.addLine("current position: ${drivetrain.localizer.currentPositionAndRotation()}")
 
