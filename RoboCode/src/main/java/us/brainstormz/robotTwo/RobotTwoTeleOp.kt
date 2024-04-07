@@ -111,7 +111,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val intake = Intake()
     val transfer = Transfer(telemetry)
     val extendo = Extendo(telemetry)
-    val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, telemetry= telemetry)
+    val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
     val leftClaw: Claw = Claw(telemetry)
     val rightClaw: Claw = Claw(telemetry)
     val wrist = Wrist(leftClaw, rightClaw, telemetry= telemetry)
@@ -964,6 +964,17 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }?.first
 //        val gamepad1RumbleRoutine = null
 
+        /** Coordinated Collector */
+        val coordinatedCollector = collectorSystem.coordinateCollector(
+                uncoordinatedTarget = CollectorTarget(
+                        intakeNoodles = intakeNoodleTarget,
+                        timeOfEjectionStartMilis = timeOfEjectionStartMilis,
+                        transferState = transferState,
+                        latches = latchTarget,
+                        extendo = extendoTargetState,
+                ),
+                previousTargetWorld = previousTargetState
+        )
 
         return TargetWorld(
                 targetRobot = TargetRobot(
@@ -973,13 +984,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 targetPosition = PositionAndRotation()
                         ),
                         depoTarget = depoTarget,
-                        collectorTarget = CollectorTarget(
-                                intakeNoodles = intakeNoodleTarget,
-                                timeOfEjectionStartMilis = timeOfEjectionStartMilis,
-                                transferState = transferState,
-                                latches = latchTarget,
-                                extendo = extendoTargetState,
-                        ),
+                        collectorTarget = coordinatedCollector,
                         hangPowers = hangTarget,
                         launcherPosition = launcherTarget,
                         lights = lights,

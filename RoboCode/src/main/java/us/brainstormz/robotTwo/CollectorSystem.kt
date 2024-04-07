@@ -33,4 +33,31 @@ class CollectorSystem(
         telemetry.addLine("timeToReadCollector: $timeToReadCollector")
         actualCollector
     }
+
+    fun coordinateCollector(uncoordinatedTarget: CollectorTarget, previousTargetWorld: TargetWorld): CollectorTarget {
+
+        val actuallyIsIntaking = Intake.CollectorPowers.Intake == previousTargetWorld.targetRobot.collectorTarget.intakeNoodles
+        val coordinatedLatchTarget = if (actuallyIsIntaking) {
+            Transfer.TransferTarget(
+                    leftLatchTarget = Transfer.LatchPositions.Closed,
+                    rightLatchTarget = Transfer.LatchPositions.Closed
+            )
+        } else {
+            uncoordinatedTarget.latches
+        }
+
+        val eitherLatchIsOpen = Transfer.Side.entries.fold(true) { acc, side ->
+            acc && Transfer.LatchPositions.Open == previousTargetWorld.targetRobot.collectorTarget.latches.getBySide(side)
+        }
+        val coordinatedIntakeTarget = if (eitherLatchIsOpen && uncoordinatedTarget.intakeNoodles == Intake.CollectorPowers.Intake) {
+            Intake.CollectorPowers.Off
+        } else {
+            uncoordinatedTarget.intakeNoodles
+        }
+
+        return uncoordinatedTarget.copy(
+                latches = coordinatedLatchTarget,
+                intakeNoodles = coordinatedIntakeTarget
+        )
+    }
 }
