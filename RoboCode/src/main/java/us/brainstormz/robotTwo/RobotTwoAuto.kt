@@ -324,7 +324,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
         return listOf(
                         AutoTargetWorld(
                                 targetRobot = RobotState(
-                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPositions.Closed, RollerPositions.Closed)),
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPositions.Closed, RollerPositions.Closed)),
                                         positionAndRotation = depositingPosition,
                                         depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                                 ),
@@ -337,7 +337,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                                 },).asTargetWorld,
                         AutoTargetWorld(
                                 targetRobot = RobotState(
-                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPositions.Closed, RollerPositions.Closed)),
+                                        collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPositions.Closed, RollerPositions.Closed)),
                                         positionAndRotation = depositingPosition,
                                         depoState = DepoState(Arm.Positions.AutoInitPosition, scoringLiftPosition, ClawTarget.Gripping, ClawTarget.Gripping)
                                 ),
@@ -519,7 +519,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
         val moveToBackboard = listOf(
                 AutoTargetWorld(
                         targetRobot = RobotState(
-                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.AllTheWayInTarget, TransferTarget(RollerPositions.Closed, RollerPositions.Closed)),
+                                collectorSystemState = CollectorState(CollectorPowers.Off, ExtendoPositions.Min, TransferTarget(RollerPositions.Closed, RollerPositions.Closed)),
                                 positionAndRotation = depositingPosition,
                                 depoState = DepoState(Arm.Positions.AutoInitPosition, Lift.LiftPositions.Down, ClawTarget.Gripping, ClawTarget.Gripping)
                         ),
