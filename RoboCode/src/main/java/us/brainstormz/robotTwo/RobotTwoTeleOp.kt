@@ -172,7 +172,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Off,
         NoInput
     }
-    enum class RollerInput {
+    enum class LatchInput {
         BothIn,
         BothOut,
         LeftOut,
@@ -219,7 +219,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val hang: HangInput,
             val launcher: LauncherInput,
             val handoff: HandoffInput,
-            val rollers: RollerInput,
+            val rollers: LatchInput,
             val driveVelocity: Drivetrain.DrivetrainPower
     )
     fun getDriverInput(actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): DriverInput {
@@ -487,26 +487,26 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Rollers*/
         val rollers = when {
             gamepad1.b && !previousGamepad1.b-> {
-                if (previousTargetState.driverInput.rollers != RollerInput.BothIn) {
-                    RollerInput.BothIn
+                if (previousTargetState.driverInput.rollers != LatchInput.BothIn) {
+                    LatchInput.BothIn
                 } else {
-                    RollerInput.NoInput
+                    LatchInput.NoInput
                 }
             }
             gamepad1.right_stick_button && gamepad1.left_stick_button -> {
-                RollerInput.BothOut
+                LatchInput.BothOut
             }
             gamepad1.right_stick_button -> {
-                RollerInput.RightOut
+                LatchInput.RightOut
             }
             gamepad1.left_stick_button -> {
-                RollerInput.LeftOut
+                LatchInput.LeftOut
             }
             else -> {
-                if (previousTargetState.driverInput.rollers == RollerInput.BothIn) {
-                    RollerInput.BothIn
+                if (previousTargetState.driverInput.rollers == LatchInput.BothIn) {
+                    LatchInput.BothIn
                 } else {
-                    RollerInput.NoInput
+                    LatchInput.NoInput
                 }
             }
         }
@@ -724,11 +724,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         /**Gates*/
         val latchOverrideState: Pair<Transfer.LatchPositions?, Transfer.LatchPositions?> = when (driverInput.rollers) {
-            RollerInput.BothIn -> Transfer.LatchPositions.Open to Transfer.LatchPositions.Open
-            RollerInput.BothOut -> Transfer.LatchPositions.Open to Transfer.LatchPositions.Open
-            RollerInput.LeftOut -> Transfer.LatchPositions.Open to null
-            RollerInput.RightOut -> null to Transfer.LatchPositions.Open
-            RollerInput.NoInput -> null to null
+            LatchInput.BothIn -> Transfer.LatchPositions.Open to Transfer.LatchPositions.Open
+            LatchInput.BothOut -> Transfer.LatchPositions.Open to Transfer.LatchPositions.Open
+            LatchInput.LeftOut -> Transfer.LatchPositions.Open to null
+            LatchInput.RightOut -> null to Transfer.LatchPositions.Open
+            LatchInput.NoInput -> null to null
         }
 
         fun getGateTransferringTarget(side: Transfer.Side): Transfer.LatchPositions {
@@ -1015,7 +1015,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 armOverridePower = 0.0,
                 wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
                 collector = CollectorInput.NoInput,
-                rollers = RollerInput.NoInput,
+                rollers = LatchInput.NoInput,
                 extendo = ExtendoInput.NoInput,
                 extendoManualPower = 0.0,
                 handoff = HandoffInput.NoInput,
