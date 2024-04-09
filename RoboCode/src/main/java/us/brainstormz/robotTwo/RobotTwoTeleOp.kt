@@ -759,8 +759,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 } else {
                     Transfer.LatchPositions.Closed
                 }
-
-
             } else {
                 override
             }

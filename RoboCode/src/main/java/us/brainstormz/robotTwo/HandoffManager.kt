@@ -35,7 +35,6 @@ class HandoffManager(
     //Brody, while robot is backing up turn on extendo motors to hold position
 
     fun getHandoffState(actualRobot: ActualRobot, previousTargetWorld: TargetWorld): SideIsActivelyHandingOff {
-
         val liftIsAtAHeightWhereLatchesCouldConflict = !lift.isLiftAbovePosition(targetPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks, actualLiftPositionTicks = actualRobot.depoState.lift.currentPositionTicks)
         val armIsInAPositionWhereLatchesCouldConflict = actualRobot.depoState.armAngleDegrees > Arm.Positions.InsideTheBatteryBox.angleDegrees
 
@@ -43,9 +42,9 @@ class HandoffManager(
             fun checkIfIsActivelyHandingOffPerSide(side: Transfer.Side): Boolean {
                 val claw = wrist.clawsAsMap[side]!!
                 val clawIsClosed = claw.isClawAtAngle(Claw.ClawTarget.Gripping, actualRobot.depoState.wristAngles.getBySide(side))
+//                val extendoIsIn = extendo.isSlideSystemAllTheWayIn(actualRobot.collectorSystemState.extendo)
 
-
-                return clawIsClosed
+                return clawIsClosed// && extendoIsIn
             }
 
             SideIsActivelyHandingOff(
