@@ -31,6 +31,9 @@ class HandoffManager(
 //            val handoffStarted: SideIsActivelyHandingOff
 //    )
 
+    //Latches need to close before claws release
+    //Brody, while robot is backing up turn on extendo motors to hold position
+
     fun getHandoffState(actualRobot: ActualRobot, previousTargetWorld: TargetWorld): SideIsActivelyHandingOff {
 
         val liftIsAtAHeightWhereLatchesCouldConflict = !lift.isLiftAbovePosition(targetPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks, actualLiftPositionTicks = actualRobot.depoState.lift.currentPositionTicks)
