@@ -1,16 +1,11 @@
 package us.brainstormz.robotTwo.subsystems
 
-import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.hardware.AnalogInput
-import com.qualcomm.robotcore.hardware.configuration.LynxConstants
-import us.brainstormz.hardwareClasses.SmartLynxModule
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.AxonEncoderReader
 import us.brainstormz.robotTwo.RobotTwoHardware
-import us.brainstormz.robotTwo.aprilTagDetectionToString
 import kotlin.math.cos
 
 class Arm: Subsystem, DualMovementModeSubsystem {

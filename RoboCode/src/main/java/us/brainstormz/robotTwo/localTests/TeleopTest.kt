@@ -1,4 +1,4 @@
-package us.brainstormz.robotTwo.tests
+package us.brainstormz.robotTwo.localTests
 
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.faux.FauxOpMode

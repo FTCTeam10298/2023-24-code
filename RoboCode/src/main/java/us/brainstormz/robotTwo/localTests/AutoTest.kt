@@ -1,25 +1,13 @@
-package us.brainstormz.robotTwo.tests
+package us.brainstormz.robotTwo.localTests
 
-import android.graphics.Path.Op
 import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.FauxOpenCvAbstraction
 import us.brainstormz.faux.PrintlnTelemetry
-import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.openCvAbstraction.OpenCvAbstraction
-import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
-import us.brainstormz.robotTwo.AprilTagPipeline
-import us.brainstormz.robotTwo.Autonomous
-import us.brainstormz.robotTwo.CollectorSystem
-import us.brainstormz.robotTwo.DepoManager
+import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
 import us.brainstormz.robotTwo.RobotTwoAuto
-import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetWorld
-import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem
-import us.brainstormz.robotTwo.subsystems.Transfer
-import us.brainstormz.robotTwo.subsystems.Wrist
 
 fun main() {
     val tester = AutoTest()

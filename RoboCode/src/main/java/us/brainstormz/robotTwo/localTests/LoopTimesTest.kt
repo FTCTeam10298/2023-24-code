@@ -1,4 +1,4 @@
-package us.brainstormz.robotTwo.tests
+package us.brainstormz.robotTwo.localTests
 
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry

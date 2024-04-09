@@ -13,6 +13,8 @@ import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropColors
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropPosition
+import us.brainstormz.robotTwo.onRobotTests.AprilTagLineup
+import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget

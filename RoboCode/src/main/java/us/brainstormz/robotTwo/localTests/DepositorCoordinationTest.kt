@@ -1,4 +1,4 @@
-package us.brainstormz.robotTwo.tests
+package us.brainstormz.robotTwo.localTests
 
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.robotTwo.DepoManager

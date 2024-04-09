@@ -1,4 +1,4 @@
-package us.brainstormz.robotTwo
+package us.brainstormz.robotTwo.onRobotTests
 
 import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -14,6 +14,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.pid.PID
+import us.brainstormz.robotTwo.tuningAndCalibration.PidConfig
+import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.RobotTwoPropDetector
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 
 fun formatFtcPose(ftcPose: AprilTagPoseFtc): String = """

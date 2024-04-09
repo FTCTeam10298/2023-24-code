@@ -6,7 +6,7 @@ import fi.iki.elonen.NanoHTTPD
 import org.firstinspires.ftc.robotcore.external.Func
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.PrintlnTelemetry
-import us.brainstormz.robotTwo.PidConfig
+import us.brainstormz.robotTwo.tuningAndCalibration.PidConfig
 import java.io.ByteArrayOutputStream
 
 

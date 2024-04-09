@@ -7,7 +7,7 @@ import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
-import us.brainstormz.robotTwo.printPID
+import us.brainstormz.robotTwo.tuningAndCalibration.printPID
 import kotlin.math.absoluteValue
 
 class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {

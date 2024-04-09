@@ -1,4 +1,4 @@
-package us.brainstormz.robotTwo
+package us.brainstormz.robotTwo.tuningAndCalibration
 
 import us.brainstormz.pid.PID
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
@@ -8,6 +8,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.robotTwo.Robot
+import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Neopixels
@@ -136,7 +139,7 @@ fun printPID(pid: PID): String {
 @TeleOp
 class ExtendoPidTunerOpMode: OpMode() {
     private lateinit var pidTuner: ExtendoPIDTuner
-    private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= telemetry, opmode = this)
+    private val hardware: RobotTwoHardware = RobotTwoHardware(telemetry= telemetry, opmode = this)
 
     override fun init() {
         hardware.init(hardwareMap)

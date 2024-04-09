@@ -1,4 +1,4 @@
-package us.brainstormz.robotTwo.tests
+package us.brainstormz.robotTwo.localTests
 
 sealed interface TestResult
 data object Passed:TestResult

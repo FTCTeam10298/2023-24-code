@@ -1,10 +1,8 @@
 package us.brainstormz.robotTwo
 
-import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
-import us.brainstormz.robotTwo.tests.FauxRobotTwoHardware
-import us.brainstormz.robotTwo.tests.TeleopTest
+import us.brainstormz.robotTwo.localTests.FauxRobotTwoHardware
 
 class SensorReadManager(private val sensorReads: List<(RobotTwoHardware) -> Unit>) {
 
