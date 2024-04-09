@@ -745,20 +745,40 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             LatchInput.NoInput -> null to null
         }
 
-        fun getGateTransferringTarget(side: Transfer.Side): Transfer.LatchPositions {
+        fun getLatchTransferringTarget(side: Transfer.Side): Transfer.LatchTarget {
+            val override = when (side) {
+                Transfer.Side.Left -> latchOverrideState.second
+                Transfer.Side.Right -> latchOverrideState.first
+            }
 
-            val handingOffIsHappening = handoffState.getBySide(side)
+            val target = if (override == null) {
+                val handingOffIsHappening = handoffState.getBySide(side)
 
-            return if (handingOffIsHappening) {
-                Transfer.LatchPositions.Open
+                if (handingOffIsHappening) {
+                    Transfer.LatchPositions.Open
+                } else {
+                    Transfer.LatchPositions.Closed
+                }
+
+
             } else {
-                Transfer.LatchPositions.Closed
+                override
+            }
+
+            val previousLatchTarget = previousTargetState.targetRobot.collectorTarget.latches.getBySide(side)
+
+            return if (target != previousLatchTarget.target) {
+                Transfer.LatchTarget(
+                        target= target,
+                        timeTargetChangedMillis= actualWorld.timestampMilis)
+            } else {
+                previousLatchTarget
             }
         }
 
         val latchTarget = Transfer.TransferTarget(
-                leftLatchTarget = latchOverrideState.first ?: getGateTransferringTarget(Transfer.Side.Right),
-                rightLatchTarget = latchOverrideState.second ?: getGateTransferringTarget(Transfer.Side.Left),
+                leftLatchTarget = getLatchTransferringTarget(Transfer.Side.Left),
+                rightLatchTarget = getLatchTransferringTarget(Transfer.Side.Right),
         )
 
         /**Extendo*/
@@ -1046,6 +1066,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 timeOfSeeingMilis = 0L,
         )
 
+        val initLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0)
+
         val initialPreviousTargetState = TargetWorld(
                 targetRobot = TargetRobot(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(), MovementMode.Power, Drivetrain.DrivetrainPower()),
@@ -1059,8 +1081,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         right = initSensorState
                                 ),
                                 latches = Transfer.TransferTarget(
-                                        leftLatchTarget = Transfer.LatchPositions.Closed,
-                                        rightLatchTarget = Transfer.LatchPositions.Closed
+                                        leftLatchTarget = initLatchTarget,
+                                        rightLatchTarget = initLatchTarget
                                 ),
                                 extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, MovementMode.Position),
                         ),

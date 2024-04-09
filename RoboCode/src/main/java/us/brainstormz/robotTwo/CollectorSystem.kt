@@ -39,15 +39,15 @@ class CollectorSystem(
         val actuallyIsIntaking = Intake.CollectorPowers.Intake == previousTargetWorld.targetRobot.collectorTarget.intakeNoodles
         val coordinatedLatchTarget = if (actuallyIsIntaking) {
             Transfer.TransferTarget(
-                    leftLatchTarget = Transfer.LatchPositions.Closed,
-                    rightLatchTarget = Transfer.LatchPositions.Closed
+                    leftLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0),
+                    rightLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0)
             )
         } else {
             uncoordinatedTarget.latches
         }
 
         val eitherLatchIsOpen = Transfer.Side.entries.fold(true) { acc, side ->
-            acc && Transfer.LatchPositions.Open == previousTargetWorld.targetRobot.collectorTarget.latches.getBySide(side)
+            acc && Transfer.LatchPositions.Open == previousTargetWorld.targetRobot.collectorTarget.latches.getBySide(side).target
         }
         val coordinatedIntakeTarget = if (eitherLatchIsOpen && uncoordinatedTarget.intakeNoodles == Intake.CollectorPowers.Intake) {
             Intake.CollectorPowers.Off
