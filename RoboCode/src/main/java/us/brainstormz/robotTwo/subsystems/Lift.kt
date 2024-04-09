@@ -19,7 +19,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         Down(0),
         AutoLowYellowPlacement((330*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         AutoAbovePartnerPlacement((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
-        ClearForArmToMove(450),
+        ClearForArmToMove(500),
         SetLine1(360),
         SetLine2Other((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         SetLine2((1000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
