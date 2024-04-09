@@ -71,7 +71,8 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                                         left = RobotTwoTeleOp.initSensorState,
                                         right = RobotTwoTeleOp.initSensorState
                                 ),
-                                timeOfEjectionStartMilis = timeTargetStartedMilis),
+                                timeOfEjectionStartMilis = timeTargetStartedMilis,
+                                timeOfTransferredMillis = 0),
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
                         lights = RobotTwoTeleOp.LightTarget(),

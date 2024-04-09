@@ -714,12 +714,19 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
                     }
                 }
-        val timeOfEjectionStartMilis = if (theRobotJustCollectedTwoPixels) {
+        val timeOfEjectionStartMillis = if (timeToStartEjection) {
             actualWorld.timestampMilis
         } else if (stopAutomaticEjection) {
             null
         } else {
             previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis
+        }
+        val timeOfTransferredMillis = if (theRobotJustCollectedTwoPixels) {
+            actualWorld.timestampMilis
+        } else if (stopAutomaticEjection) {
+            null
+        } else {
+            previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis
         }
 
         /**Gates*/
@@ -970,7 +977,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val coordinatedCollector = collectorSystem.coordinateCollector(
                 uncoordinatedTarget = CollectorTarget(
                         intakeNoodles = intakeNoodleTarget,
-                        timeOfEjectionStartMilis = timeOfEjectionStartMilis,
+                        timeOfEjectionStartMilis = timeOfEjectionStartMillis,
+                        timeOfTransferredMillis = timeOfTransferredMillis,
                         transferState = transferState,
                         latches = latchTarget,
                         extendo = extendoTargetState,
@@ -1038,6 +1046,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = Intake.CollectorPowers.Off,
                                 timeOfEjectionStartMilis = 0,
+                                timeOfTransferredMillis = 0,
                                 transferState = Transfer.TransferState(
                                         left = initSensorState,
                                         right = initSensorState
