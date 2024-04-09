@@ -81,8 +81,8 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
     fun powerSubsystem(transferState: TransferTarget, hardware: RobotTwoHardware, actualRobot: ActualRobot) {
-        hardware.leftTransferServo.position = transferState.leftLatchTarget.target.position
-        hardware.rightTransferServo.position = transferState.rightLatchTarget.target.position
+        hardware.leftTransferServo.power = transferState.leftLatchTarget.target.position
+        hardware.rightTransferServo.power = transferState.rightLatchTarget.target.position
     }
 
     /*
