@@ -217,8 +217,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         armServo1 = ctrlHub.getCRServo(3)
         armServo2 = ctrlHub.getCRServo(4)
 
-        rightTransferServo = ctrlHub.getServo(5)
-        leftTransferServo = exHub.getServo(3)
+        rightTransferServo = exHub.getServo(3)
+        leftTransferServo = ctrlHub.getServo(5)
         dropDownServo = exHub.getServo(2)
         dropDownServo.position = 0.0
 
@@ -293,8 +293,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         collectorServo2.direction = DcMotorSimple.Direction.REVERSE
 
         //Transfer
-        rightTransferServo.direction = Servo.Direction.REVERSE
-        leftTransferServo.direction = Servo.Direction.FORWARD
+        rightTransferServo.direction = Servo.Direction.FORWARD
+        leftTransferServo.direction = Servo.Direction.REVERSE
 
         //Lift
         liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
