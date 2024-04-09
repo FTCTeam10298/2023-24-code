@@ -217,8 +217,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         armServo1 = ctrlHub.getCRServo(3)
         armServo2 = ctrlHub.getCRServo(4)
 
-        rightTransferServo = exHub.getCRServo(3)
-        leftTransferServo = ctrlHub.getCRServo(5)
+        rightTransferServo = ctrlHub.getCRServo(5)
+        leftTransferServo = exHub.getCRServo(3)
         dropDownServo = exHub.getServo(2)
         dropDownServo.position = 0.0
 
