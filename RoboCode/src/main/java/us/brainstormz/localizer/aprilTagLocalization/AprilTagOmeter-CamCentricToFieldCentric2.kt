@@ -1,4 +1,3 @@
-import android.graphics.Point
 import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
@@ -9,7 +8,6 @@ import us.brainstormz.localizer.aprilTagLocalization.AverageAprilTagLocalization
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
 import kotlin.math.cos
 import kotlin.math.sin
-import org.opencv.core.Point as PointD
 
 /*
 LIST OF TESTS
@@ -146,13 +144,26 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
             cameraYOffset=0.00 //it's right on center! Yay!
     )
 
-    val averageErrors = AverageAprilTagLocalizationError(
+    //TODO: ignore values at y < 10 inches.. this means accuracy less than one inch.
+    //
+    //x is always
+
+    //TODO: Switch between alliance side error sets depending on recognization
+    //TODO: Return a Boolean for one-inch accurate measurement
+    //TODO: Remove Crashes
+    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
             xInches = 0.47,
             yInches = 2.58,
-            hDegrees = 2.68, //0
+            hDegrees = 2.68,
     )
 
-    val localizer = ReusableAprilTagFieldLocalizer(aprilTagLocalization, averageErrors)
+//    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
+//            xInches = 0.0,
+//            yInches = 3.455555556,
+//            hDegrees = 0.0, //0
+//    )
+
+    val localizer = ReusableAprilTagFieldLocalizer(aprilTagLocalization, RedAllianceBackboardAverageErrors)
 
     val targetAprilTagID = 2
 
@@ -227,17 +238,16 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
             for (detection in currentDetections) {
 
                 val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)!!
-                val detectionTagCoords =
-                        localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
+                val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
                 if (currentDetections.isNotEmpty()) {
 
                     println(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
                     //
                     println(String.format("XYH %6.1f %6.1f %6.1f  (inch, inch, deg)",
-                            detectionTagCoords?.xInches,
-                            detectionTagCoords?.yInches,
-                            detectionTagCoords?.headingDegrees))
+                            detectionFieldCoords.xInches,
+                            detectionFieldCoords.yInches,
+                            detectionFieldCoords.headingDegrees))
 
                     println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
 
