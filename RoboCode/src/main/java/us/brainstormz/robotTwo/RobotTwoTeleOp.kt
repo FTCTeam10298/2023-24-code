@@ -762,7 +762,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
             DropdownInput.NoInput -> {
                 if (intakeNoodleTarget == Intake.CollectorPowers.Intake) {
-                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.OnePixel)
+                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.TwoPixels)
                 } else {
                     Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up)
                 }
