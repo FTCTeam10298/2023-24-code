@@ -700,13 +700,15 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Intake Noodles*/
 
         val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis?:actualWorld.timestampMilis)
-        val timeToStartEjection = theRobotJustCollectedTwoPixels && (timeSincePixelsTransferredMillis > 200)
+        val waitBeforeEjectingMillis = 200
+        val timeToStartEjection = theRobotJustCollectedTwoPixels && (timeSincePixelsTransferredMillis > waitBeforeEjectingMillis)
 
         val timeSinceEjectionStartedMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis?:actualWorld.timestampMilis)
-        val timeToStopEjecting = timeSinceEjectionStartedMillis > 1000
+        val ejectionTimeMillis = 1000
+        val timeToStopEjecting = timeSinceEjectionStartedMillis > ejectionTimeMillis
 
         val wasPreviouslyEjecting = previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.Eject
-        val stopAutomaticEjection = timeToStopEjecting && wasPreviouslyEjecting && doHandoffSequence
+        val stopAutomaticEjection = timeToStopEjecting && wasPreviouslyEjecting// && doHandoffSequence
         val intakeNoodleTarget = if (timeToStartEjection) {
                     Intake.CollectorPowers.Eject
                 } else if (stopAutomaticEjection) {
