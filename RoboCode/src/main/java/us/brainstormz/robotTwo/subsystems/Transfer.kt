@@ -30,7 +30,12 @@ class Transfer(private val telemetry: Telemetry) {
 
     enum class Side {
         Left,
-        Right
+        Right;
+        fun otherSide(): Side =
+            when (this) {
+                Left -> Right
+                Right -> Left
+            }
     }
 
     fun checkIfPixelIsTransferred(transferHalfState: SensorState): Boolean {
