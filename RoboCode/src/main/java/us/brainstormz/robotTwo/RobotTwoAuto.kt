@@ -17,6 +17,7 @@ import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Drivetrain
+import us.brainstormz.robotTwo.subsystems.Dropdown
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
@@ -66,6 +67,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                                         movementMode = MovementMode.Position
                                 ),
                                 intakeNoodles = targetRobot.collectorSystemState.collectorState,
+                                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 latches = targetRobot.collectorSystemState.transferRollersState.toRealTransferTarget(),
                                 transferState = Transfer.TransferState(
                                         left = RobotTwoTeleOp.initSensorState,

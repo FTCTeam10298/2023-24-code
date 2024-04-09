@@ -18,6 +18,7 @@ import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Drivetrain
+import us.brainstormz.robotTwo.subsystems.Dropdown
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
@@ -220,6 +221,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val wrist: WristInput,
             val collector: CollectorInput,
             val dropdown: DropdownInput,
+            val dropdownPositionOverride: Double,
             val extendo: ExtendoInput,
             val extendoManualPower: Double,
             val hang: HangInput,
@@ -470,7 +472,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Dropdown*/
-//        val dropdown = when
+        val dropdown = if (gamepad1.left_stick_y != 0f) {
+            DropdownInput.NoInput
+        } else if (gamepad1.x) {
+            DropdownInput.Five
+        } else {
+            DropdownInput.NoInput
+        }
 
         /**Extendo*/
         val extendoTriggerActivation = 0.1
@@ -605,7 +613,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 armOverridePower = armOverridePower,
                 wrist = WristInput(leftClaw, rightClaw),
                 collector = inputCollectorStateSystem,
-                dropdown = DropdownInput.NoInput,
+                dropdown = dropdown,
+                dropdownPositionOverride= gamepad1.left_stick_y.toDouble(),
                 rollers = rollers,
                 extendo = extendo,
                 extendoManualPower = gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble(),
@@ -708,7 +717,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("handoffState: $handoffState")
 
         /**Intake Noodles*/
-
         val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis?:actualWorld.timestampMilis)
         val waitBeforeEjectingMillis = 200
         val timeToStartEjection = theRobotJustCollectedTwoPixels && (timeSincePixelsTransferredMillis > waitBeforeEjectingMillis)
@@ -744,6 +752,23 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             null
         } else {
             previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis
+        }
+
+        /**Dropdown*/
+        val dropdownTarget = when (driverInput.dropdown) {
+            DropdownInput.Five -> {
+                Dropdown.DropdownTarget(Dropdown.DropdownPresets.FivePixels)
+            }
+            DropdownInput.NoInput -> {
+                if (intakeNoodleTarget == Intake.CollectorPowers.Intake) {
+                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.OnePixel)
+                } else {
+                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up)
+                }
+            }
+            DropdownInput.Manual -> {
+                Dropdown.DropdownTarget(power = driverInput.dropdownPositionOverride, movementMode = MovementMode.Power, targetPosition = previousTargetState.targetRobot.collectorTarget.dropDown.targetPosition)
+            }
         }
 
         /**Gates*/
@@ -1013,6 +1038,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val coordinatedCollector = collectorSystem.coordinateCollector(
                 uncoordinatedTarget = CollectorTarget(
                         intakeNoodles = intakeNoodleTarget,
+                        dropDown = dropdownTarget,
                         timeOfEjectionStartMilis = timeOfEjectionStartMillis,
                         timeOfTransferredMillis = timeOfTransferredMillis,
                         transferState = transferState,
@@ -1053,6 +1079,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
                 collector = CollectorInput.NoInput,
                 dropdown = DropdownInput.NoInput,
+                dropdownPositionOverride= 0.0,
                 rollers = LatchInput.NoInput,
                 extendo = ExtendoInput.NoInput,
                 extendoManualPower = 0.0,
@@ -1084,6 +1111,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         depoTarget = initDepoTarget,
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = Intake.CollectorPowers.Off,
+                                dropDown= Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 timeOfEjectionStartMilis = 0,
                                 timeOfTransferredMillis = 0,
                                 transferState = Transfer.TransferState(
