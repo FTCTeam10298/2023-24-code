@@ -845,10 +845,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     )
                 },
                 ClawInput.Drop to {side ->
+                    val areLatchesReady = handoffManager.checkIfLatchHasSecuredPixelsFromClaw(side, actualWorld, previousTargetState)
                     listOf(
                             !areDepositing && intakeNoodleTarget == Intake.CollectorPowers.Intake,
                             doingHandoff && !handoffIsReadyCheck,
-                            !areDepositing && collectorIsMovingOut
+                            !areDepositing && areLatchesReady && collectorIsMovingOut
                     )
                 },
         )

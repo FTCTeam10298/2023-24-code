@@ -43,6 +43,8 @@ class HandoffManager(
             fun checkIfIsActivelyHandingOffPerSide(side: Transfer.Side): Boolean {
                 val claw = wrist.clawsAsMap[side]!!
                 val clawIsClosed = claw.isClawAtAngle(Claw.ClawTarget.Gripping, actualRobot.depoState.wristAngles.getBySide(side))
+
+
                 return clawIsClosed
             }
 
@@ -74,17 +76,15 @@ class HandoffManager(
         return readyToHandoff
     }
 
-    fun checkIfLatchesShouldOpenForHandoff(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Boolean {
-        val isExtendoAllTheWayIn = extendo.isSlideSystemAllTheWayIn(actualWorld.actualRobot.collectorSystemState.extendo)
-        val extendoIsMovingInOrNotAtAll = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) <= 0
-        val extendoIsReady = extendoIsMovingInOrNotAtAll && isExtendoAllTheWayIn
+    fun checkIfLatchHasSecuredPixelsFromClaw(side: Transfer.Side, actualWorld: ActualWorld, previousTargetWorld: TargetWorld): Boolean {
+        val latchTarget = previousTargetWorld.targetRobot.collectorTarget.latches.getBySide(side)
 
-        val isArmReadyToTransfer = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)
+        val latchIsClosed = Transfer.LatchPositions.Closed == latchTarget.target
 
-        val handOffIsHappening = extendoIsReady && isArmReadyToTransfer
+        val timeSinceLatchChangedTarget = actualWorld.timestampMilis - latchTarget.timeTargetChangedMillis
+        val timeLatchHasToBeClosedToSecurePixelMillis = 500
+        val latchTargetChangeWasLongEnoughAgo = timeSinceLatchChangedTarget >= timeLatchHasToBeClosedToSecurePixelMillis
 
-        val handoffIsReadyToStart = checkIfHandoffIsReadyToStart(actualWorld, previousActualWorld)
-        return handoffIsReadyToStart && handOffIsHappening
+        return latchIsClosed && latchTargetChangeWasLongEnoughAgo
     }
-
 }
