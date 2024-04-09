@@ -172,6 +172,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Off,
         NoInput
     }
+    enum class DropdownInput {
+        Five,
+        Manual,
+        NoInput
+    }
     enum class LatchInput {
         BothIn,
         BothOut,
@@ -214,6 +219,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             val armOverridePower: Double,
             val wrist: WristInput,
             val collector: CollectorInput,
+            val dropdown: DropdownInput,
             val extendo: ExtendoInput,
             val extendoManualPower: Double,
             val hang: HangInput,
@@ -463,6 +469,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             CollectorInput.NoInput
         }
 
+        /**Dropdown*/
+//        val dropdown = when
+
         /**Extendo*/
         val extendoTriggerActivation = 0.1
         val rightTrigger: Boolean = gamepad1.right_trigger > extendoTriggerActivation
@@ -596,6 +605,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 armOverridePower = armOverridePower,
                 wrist = WristInput(leftClaw, rightClaw),
                 collector = inputCollectorStateSystem,
+                dropdown = DropdownInput.NoInput,
                 rollers = rollers,
                 extendo = extendo,
                 extendoManualPower = gamepad1.right_trigger.toDouble() - gamepad1.left_trigger.toDouble(),
@@ -1042,6 +1052,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 armOverridePower = 0.0,
                 wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
                 collector = CollectorInput.NoInput,
+                dropdown = DropdownInput.NoInput,
                 rollers = LatchInput.NoInput,
                 extendo = ExtendoInput.NoInput,
                 extendoManualPower = 0.0,
