@@ -175,16 +175,7 @@ class DepoManager(
         val armIsAtTarget = checkIfArmIsAtTarget(armTarget, actualDepo.armAngleDegrees)
         telemetry.addLine("armIsAtTarget: $armIsAtTarget")
 
-        val liftTarget: SlideSubsystem.SlideTargetPosition = when (finalDepoTarget.targetType) {
-            DepoTargetType.GoingOut -> {
-                if (clawsArentMoving) {
-                    finalDepoTarget.lift.targetPosition
-                } else {
-                    telemetry.addLine("lift is waiting for the claws")
-                    previousTargetDepo.lift.targetPosition
-                }
-            }
-            DepoTargetType.GoingHome -> {
+        val liftTarget: SlideSubsystem.SlideTargetPosition =
                 if (bothClawsAreAtTarget) {
                     if (armIsAtTarget) {
                         finalDepoTarget.lift.targetPosition
@@ -202,12 +193,6 @@ class DepoManager(
                     telemetry.addLine("lift is waiting for the claws")
                     previousTargetDepo.lift.targetPosition
                 }
-            }
-            else -> {
-                telemetry.addLine("lift is confused af (asinine and futile)")
-                previousTargetDepo.lift.targetPosition
-            }
-        }
 
         return DepoTarget(
                 lift = Lift.TargetLift(liftTarget, movementMode = MovementMode.Position),
