@@ -1165,8 +1165,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         )
                     }
                     measured("rumble"){
-                        if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
-                            gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                        if (targetState.gamepad1Rumble != null) {
+                            if (!gamepad1.isRumbling) {
+                                gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                            }
+                            if (!gamepad2.isRumbling) {
+                                gamepad2.runRumbleEffect(targetState.gamepad1Rumble.effect)
+                            }
                         }
                     }
 //                    hardware.lights.setPattern(targetState.targetRobot.lights.stripTarget)
