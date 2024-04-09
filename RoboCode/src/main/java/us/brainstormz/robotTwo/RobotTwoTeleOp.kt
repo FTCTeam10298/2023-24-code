@@ -110,6 +110,7 @@ class StatsDumper(val reportingIntervalMillis:Long, context: Context){
 }
 class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val intake = Intake()
+    val dropdown = Dropdown()
     val transfer = Transfer(telemetry)
     val extendo = Extendo(telemetry)
     val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
@@ -1221,6 +1222,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             lift= lift,
                             extendo= extendo,
                             intake= intake,
+                            dropdown = dropdown,
                             transfer= transfer
                         )
                     }

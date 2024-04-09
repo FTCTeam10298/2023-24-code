@@ -27,6 +27,7 @@ import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.ColorReading
 import us.brainstormz.robotTwo.subsystems.Drivetrain
+import us.brainstormz.robotTwo.subsystems.Dropdown
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
@@ -220,7 +221,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         rightTransferServo = exHub.getServo(3)
         leftTransferServo = ctrlHub.getServo(5)
         dropDownServo = exHub.getServo(2)
-        dropDownServo.position = 0.0
 
         leftClawServo =     ctrlHub.getCRServo(0)   // left/right from driver 2 perspective when depositing
         rightClawServo =    ctrlHub.getCRServo(1)
@@ -344,6 +344,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             drivetrain: Drivetrain,
             extendo: Extendo,
             intake: Intake,
+            dropdown: Dropdown,
             transfer: Transfer,
             lift: Lift,
             arm: Arm,
@@ -370,20 +371,31 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
             }
             extendo.powerSubsystem(extendoPower, this)
         }
-        /**Intake*/
 
+        /**Intake*/
         measured("intake") {
             intake.powerSubsystem(targetState.targetRobot.collectorTarget.intakeNoodles.power, this)
         }
 
-        /**Rollers*/
+        /**Dropdown*/
+        measured("dropdown") {
+            val dropdownPower: Double = when (targetState.targetRobot.collectorTarget.dropDown.movementMode) {
+                MovementMode.Position -> {
+                    targetState.targetRobot.collectorTarget.dropDown.targetPosition.position
+                }
+                MovementMode.Power -> {
+                    targetState.targetRobot.collectorTarget.dropDown.power
+                }
+            }
+            dropdown.powerSubsystem(dropdownPower, this)
+        }
 
+        /**Rollers*/
         measured("rollers") {
             transfer.powerSubsystem(targetState.targetRobot.collectorTarget.latches, this, actualRobot = actualState.actualRobot)
         }
 
         /**Lift*/
-
         measured("lift") {
             val liftPower: Double = when (targetState.targetRobot.depoTarget.lift.movementMode) {
                 MovementMode.Position -> {

@@ -805,6 +805,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     private lateinit var drivetrain: Drivetrain
 
     private val intake = Intake()
+    private val dropdown = Dropdown()
     private val transfer = Transfer(telemetry)
     private val extendo = Extendo(telemetry)
 
@@ -928,6 +929,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                             lift= lift,
                             extendo= extendo,
                             intake= intake,
+                            dropdown = dropdown,
                             transfer= transfer
                         )
 

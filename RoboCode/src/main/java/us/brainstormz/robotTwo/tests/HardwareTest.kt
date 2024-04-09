@@ -7,6 +7,7 @@ import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Drivetrain
+import us.brainstormz.robotTwo.subsystems.Dropdown
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
@@ -44,6 +45,7 @@ fun main() {
                 lift = Lift(telemetry),
                 extendo = Extendo(telemetry),
                 intake = Intake(),
+                dropdown = Dropdown(),
                 transfer = Transfer(telemetry)
         )
     }

@@ -8,6 +8,7 @@ import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Drivetrain
+import us.brainstormz.robotTwo.subsystems.Dropdown
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
@@ -70,6 +71,7 @@ abstract class RobotTwoOpMode: OpMode() {
 
 class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHardware) {
     val intake = Intake()
+    val dropdown = Dropdown()
     val transfer = Transfer(telemetry)
     val extendo = Extendo(telemetry)
     val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
@@ -121,6 +123,7 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
                             lift= lift,
                             extendo= extendo,
                             intake= intake,
+                            dropdown = dropdown,
                             transfer= transfer
                     )
                     if (targetState.gamepad1Rumble != null && !gamepad1.isRumbling) {
