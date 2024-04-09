@@ -10,6 +10,8 @@ import us.brainstormz.utils.measured
 
 
 object SlideConversion {
+    //384.5 / 537.7
+    //0.715082759903292
     val oldToNewMotorEncoderConversion: Double = (384.5) / (537.7)
 }
 
