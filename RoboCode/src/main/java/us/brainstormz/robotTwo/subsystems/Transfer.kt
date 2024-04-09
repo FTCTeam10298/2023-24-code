@@ -39,8 +39,6 @@ class Transfer(private val telemetry: Telemetry) {
 
     data class ActualTransfer(val left: ColorReading, val right: ColorReading)
 
-
-
     fun getActualTransfer(hardware: RobotTwoHardware): ActualTransfer {
         return ActualTransfer(
                 left = hardware.leftTransferLowerSensorWrapped.read(),
