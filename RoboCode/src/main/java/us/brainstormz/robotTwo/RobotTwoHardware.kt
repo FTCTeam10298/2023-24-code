@@ -218,8 +218,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         armServo1 = ctrlHub.getCRServo(3)
         armServo2 = ctrlHub.getCRServo(4)
 
-        rightTransferServo = exHub.getCRServo(3)
-        leftTransferServo =     ctrlHub.getCRServo(5)
+        rightTransferServo =    ctrlHub.getCRServo(5)
+        leftTransferServo =     exHub.getCRServo(3)
         dropDownServo = exHub.getServo(2)
 
         leftClawServo =     ctrlHub.getCRServo(0)   // left/right from driver 2 perspective when depositing
@@ -293,8 +293,8 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         collectorServo2.direction = DcMotorSimple.Direction.REVERSE
 
         //Transfer
-        rightTransferServo.direction = DcMotorSimple.Direction.FORWARD
-        leftTransferServo.direction = DcMotorSimple.Direction.REVERSE
+        rightTransferServo.direction = DcMotorSimple.Direction.REVERSE
+        leftTransferServo.direction = DcMotorSimple.Direction.FORWARD
 
         //Lift
         liftMotorMaster.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER

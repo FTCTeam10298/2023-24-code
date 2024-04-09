@@ -770,7 +770,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         fun getLatchHandingOffTarget(side: Transfer.Side): Transfer.LatchTarget {
-            val handingOffIsHappening = handoffState.getBySide(side)
+            val handingOffIsHappening = handoffState.getBySide(side.otherSide())
 
             return getLatchTarget(side = side,
                     targetPosition = if (handingOffIsHappening) {
@@ -785,13 +785,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             LatchInput.Open -> Transfer.LatchPositions.Open
             LatchInput.NoInput -> null
         }
-
-//        val latchOverrideState: Pair<Transfer.LatchPositions?, Transfer.LatchPositions?> = when (driverInput.latches) {
-//            LatchInput.BothOpen -> Transfer.LatchPositions.Open to Transfer.LatchPositions.Open
-//            LatchInput.LeftOpen -> Transfer.LatchPositions.Open to null
-//            LatchInput.RightOpen -> null to Transfer.LatchPositions.Open
-//            LatchInput.NoInput -> null to null
-//        }
 
         val latchTarget = Transfer.TransferTarget(
                 leftLatchTarget = getLatchHandingOffTarget(Transfer.Side.Left),
