@@ -180,12 +180,26 @@ class DepoManager(
                     if (armIsAtTarget) {
                         finalDepoTarget.lift.targetPosition
                     } else {
-                        val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
-                        val liftIsAlreadyDecentlyFarDown = actualDepo.lift.currentPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
-                        telemetry.addLine("lift is waiting for the arm")
-                        if (!eitherClawIsGripping && (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox)) {
+                        val goToFinalAnyway = when (finalDepoTarget.targetType) {
+                            DepoTargetType.GoingHome -> {
+                                val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
+                                val liftIsAlreadyDecentlyFarDown = actualDepo.lift.currentPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
+
+                                !eitherClawIsGripping && (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox)
+                            }
+                            else -> {
+                                //When going out arm doesn't have to be at position just out enough
+                                val liftTargetIsAboveArmClearanceHeight = finalDepoTarget.lift.targetPosition.ticks > Lift.LiftPositions.ClearForArmToMove.ticks
+                                val armIsOutEnough = actualDepo.armAngleDegrees <= (Arm.Positions.InsideTheBatteryBox.angleDegrees-10)
+
+                                liftTargetIsAboveArmClearanceHeight || armIsOutEnough
+                            }
+                        }
+
+                        if (goToFinalAnyway) {
                             finalDepoTarget.lift.targetPosition
                         } else {
+                            telemetry.addLine("lift is waiting for the arm")
                             Lift.LiftPositions.ClearForArmToMove
                         }
                     }
