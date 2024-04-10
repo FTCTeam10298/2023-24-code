@@ -120,7 +120,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
-    val handoffManager: HandoffManager = HandoffManager(collectorSystem, wrist, lift, extendo, arm, telemetry)
+    val handoffManager: HandoffManager = HandoffManager(collectorSystem, wrist, lift, extendo, arm, transfer, telemetry)
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
@@ -855,7 +855,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     )
                 },
                 ClawInput.Drop to {side ->
-                    val areLatchesReady = handoffManager.checkIfLatchHasSecuredPixelsFromClaw(side, actualWorld, previousTargetState)
+                    val areLatchesReady = handoffManager.checkIfLatchHasSecuredPixelsFromClaw(side, actualWorld, previousTargetState.targetRobot.collectorTarget.latches)
                     listOf(
                             !areDepositing && intakeNoodleTarget == Intake.CollectorPowers.Intake,
                             doingHandoff && !handoffIsReadyCheck,

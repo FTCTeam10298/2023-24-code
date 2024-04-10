@@ -21,13 +21,13 @@ class Arm: Subsystem, DualMovementModeSubsystem {
         TooFarIn(285.0),
         ClearLiftMovement(240.0),
         In(238.0),
-        TransferringTarget(230.0),
+//        TransferringTarget(230.0),
         InsideTheBatteryBox(225.0),
         AutoInitPosition(120.0),
         OkToDropPixels(90.0),
         OutButUnderTwelve(50.0),
         Out(60.0),
-        DroppingWithHighPrecision(65.0),
+//        DroppingWithHighPrecision(65.0),
     }
 
 

@@ -6,6 +6,12 @@ import kotlin.math.absoluteValue
 
 class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
     val clawsAsMap = mapOf(Transfer.Side.Left to left, Transfer.Side.Right to right)
+    fun getClawBySide(side: Transfer.Side): Claw {
+        return when(side) {
+            Transfer.Side.Left -> left
+            Transfer.Side.Right -> right
+        }
+    }
 
     data class WristTargets(val left: Claw.ClawTarget, val right: Claw.ClawTarget) {
         val bothOrNull: Claw.ClawTarget? = if (left == right) left else null

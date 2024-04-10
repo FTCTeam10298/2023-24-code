@@ -51,9 +51,38 @@ class Transfer(private val telemetry: Telemetry) {
         )
     }
 
+    fun getLatchTarget(side: Side, targetPosition: LatchPositions, previousTransferTarget: TransferTarget): LatchTarget {
+        val previousLatchTarget = previousTransferTarget.getBySide(side)
+
+        return if (targetPosition != previousLatchTarget.target) {
+            LatchTarget(
+                    target= targetPosition,
+                    timeTargetChangedMillis= System.currentTimeMillis())
+        } else {
+            previousLatchTarget
+        }
+    }
+
+    val timeSinceTargetChangeToAchieveTargetMillis = 500
+    fun checkIfLatchHasActuallyAchievedTarget(side: Side, latchTarget: LatchPositions, previousTransferTarget: TransferTarget): Boolean {
+        val previousLatchTarget = previousTransferTarget.getBySide(side)
+
+        val timeSinceTargetChangeMillis = System.currentTimeMillis() - previousLatchTarget.timeTargetChangedMillis
+        val beenEnoughTimeSinceTargetChange = timeSinceTargetChangeMillis >= timeSinceTargetChangeToAchieveTargetMillis
+
+        val targetMatches = latchTarget == previousLatchTarget.target
+        return targetMatches && beenEnoughTimeSinceTargetChange
+    }
 
     data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
-    data class TransferState(val left: SensorState, val right: SensorState)
+    data class TransferState(val left: SensorState, val right: SensorState) {
+        fun getBySide(side: Side): SensorState {
+            return when(side) {
+                Side.Left -> left
+                Side.Right -> right
+            }
+        }
+    }
 
     fun getTransferState(actualWorld: ActualWorld, previousTransferState: TransferState): TransferState {
 
