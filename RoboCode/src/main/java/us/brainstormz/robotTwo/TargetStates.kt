@@ -6,7 +6,6 @@ import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.Dropdown
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
@@ -59,7 +58,7 @@ data class TargetWorld(
 data class ActualRobot(
         val positionAndRotation: PositionAndRotation,
         val depoState: DepoManager.ActualDepo,
-        val collectorSystemState: CollectorSystem.ActualCollector,
+        val collectorSystemState: CollectorManager.ActualCollector,
         val neopixelState: Neopixels.StripState
 )
 data class ActualWorld(

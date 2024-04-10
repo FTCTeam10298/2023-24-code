@@ -6,7 +6,7 @@ import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
-import us.brainstormz.robotTwo.CollectorSystem
+import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetWorld
@@ -185,7 +185,7 @@ class TeleopTest {
                                         limitSwitchIsActivated = false),
                                 wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
                         ),
-                        collectorSystemState = CollectorSystem.ActualCollector(
+                        collectorSystemState = CollectorManager.ActualCollector(
                                 extendo = SlideSubsystem.ActualSlideSubsystem(
                                         currentPositionTicks = 0,
                                         ticksMovedSinceReset = 0,

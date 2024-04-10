@@ -811,7 +811,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     private val transfer = Transfer(telemetry)
     private val extendo = Extendo(telemetry)
 
-    private lateinit var collectorSystem: CollectorSystem
+    private lateinit var collectorSystem: CollectorManager
     private lateinit var arm: Arm
     private lateinit var lift: Lift
     private lateinit var wrist: Wrist
@@ -825,7 +825,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
         val odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         drivetrain = Drivetrain(hardware, odometryLocalizer, telemetry)
 
-        collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
+        collectorSystem = CollectorManager(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
         lift = Lift(telemetry)
         arm = Arm()
         wrist = Wrist(left = Claw(telemetry), right = Claw(telemetry), telemetry= telemetry)

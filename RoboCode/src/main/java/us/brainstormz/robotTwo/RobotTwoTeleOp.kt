@@ -113,7 +113,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val dropdown = Dropdown()
     val transfer = Transfer(telemetry)
     val extendo = Extendo(telemetry)
-    val collectorSystem: CollectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
+    val collectorSystem: CollectorManager = CollectorManager(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
     val leftClaw: Claw = Claw(telemetry)
     val rightClaw: Claw = Claw(telemetry)
     val wrist = Wrist(leftClaw, rightClaw, telemetry= telemetry)
@@ -141,9 +141,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Depo
     }
     enum class DepoInput {
-//        SetLine1,
-//        SetLine2,
-//        SetLine3,
         Preset1,
         Preset2,
         Preset3,

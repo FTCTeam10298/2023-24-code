@@ -12,7 +12,7 @@ import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.ActualWorld
-import us.brainstormz.robotTwo.CollectorSystem
+import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
@@ -114,7 +114,7 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
     private val extendo = Extendo(multipleTelemetry)
 
     private val intake = Intake()
-    private val collectorSystem = CollectorSystem(transfer= transfer, extendo= extendo, intake = intake, telemetry= multipleTelemetry)
+    private val collectorSystem = CollectorManager(transfer= transfer, extendo= extendo, intake = intake, telemetry= multipleTelemetry)
     private val arm = Arm()
     private val lift = Lift(multipleTelemetry)
     private val wrist = Wrist(left = Claw(multipleTelemetry), right = Claw(multipleTelemetry), telemetry= multipleTelemetry)

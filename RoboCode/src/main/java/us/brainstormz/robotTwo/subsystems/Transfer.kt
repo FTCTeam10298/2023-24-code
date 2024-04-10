@@ -6,6 +6,7 @@ import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.Side
 
 data class ColorReading(val red: Float, val green: Float, val blue: Float, val alpha: Float) {
     val asList = listOf(red, green, blue, alpha)
@@ -26,16 +27,6 @@ class Transfer(private val telemetry: Telemetry) {
     enum class LatchPositions(val position: Double) {
         Closed(0.0),
         Open(0.35),
-    }
-
-    enum class Side {
-        Left,
-        Right;
-        fun otherSide(): Side =
-            when (this) {
-                Left -> Right
-                Right -> Left
-            }
     }
 
     fun checkIfPixelIsTransferred(transferHalfState: SensorState): Boolean {

@@ -28,6 +28,14 @@ class DepoManager(
             val wristAngles: Wrist.ActualWrist
     )
 
+    enum class ArmInput {
+        In,
+        Out
+    }
+    data class WristInput(
+            val left: Claw.ClawTarget,
+            val right: Claw.ClawTarget
+    )
 
     enum class DepoTargetType {
         GoingHome,

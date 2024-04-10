@@ -2,14 +2,15 @@ package us.brainstormz.robotTwo.subsystems
 
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.Side
 import kotlin.math.absoluteValue
 
 class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
-    val clawsAsMap = mapOf(Transfer.Side.Left to left, Transfer.Side.Right to right)
-    fun getClawBySide(side: Transfer.Side): Claw {
+    val clawsAsMap = mapOf(Side.Left to left, Side.Right to right)
+    fun getClawBySide(side: Side): Claw {
         return when(side) {
-            Transfer.Side.Left -> left
-            Transfer.Side.Right -> right
+            Side.Left -> left
+            Side.Right -> right
         }
     }
 
@@ -17,26 +18,26 @@ class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
         val bothOrNull: Claw.ClawTarget? = if (left == right) left else null
         constructor(both: Claw.ClawTarget) : this(both, both)
 
-        val asMap = mapOf(Transfer.Side.Left to left, Transfer.Side.Right to right)
+        val asMap = mapOf(Side.Left to left, Side.Right to right)
 
-        fun getClawTargetBySide(side: Transfer.Side): Claw.ClawTarget {
+        fun getClawTargetBySide(side: Side): Claw.ClawTarget {
             return when (side) {
-                Transfer.Side.Left -> left
-                Transfer.Side.Right -> right
+                Side.Left -> left
+                Side.Right -> right
             }
         }
     }
 
     data class ActualWrist(val leftClawAngleDegrees: Double, val rightClawAngleDegrees: Double) {
-        fun getBySide(side: Transfer.Side): Double {
+        fun getBySide(side: Side): Double {
             return when (side) {
-                Transfer.Side.Left -> leftClawAngleDegrees
-                Transfer.Side.Right -> rightClawAngleDegrees
+                Side.Left -> leftClawAngleDegrees
+                Side.Right -> rightClawAngleDegrees
             }
         }
-        fun mapToSide(): Map<Transfer.Side, Double> = mapOf(
-                Transfer.Side.Left to leftClawAngleDegrees,
-                Transfer.Side.Right to rightClawAngleDegrees
+        fun mapToSide(): Map<Side, Double> = mapOf(
+                Side.Left to leftClawAngleDegrees,
+                Side.Right to rightClawAngleDegrees
         )
     }
     fun getWristActualState(hardware: RobotTwoHardware): ActualWrist {

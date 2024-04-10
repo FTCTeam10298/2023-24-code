@@ -3,15 +3,14 @@ package us.brainstormz.robotTwo
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
-import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
+import us.brainstormz.robotTwo.subsystems.Transfer.*
 import us.brainstormz.robotTwo.subsystems.Wrist
 
 class HandoffManager(
-        private val collectorSystem: CollectorSystem,
+        private val collectorManager: CollectorManager,
+        private val depoManager: DepoManager,
         private val wrist: Wrist,
         private val lift: Lift,
         private val extendo: Extendo,
@@ -19,174 +18,266 @@ class HandoffManager(
         private val transfer: Transfer,
         private val telemetry: Telemetry) {
 
-    data class SideIsActivelyHandingOff(
-            val left: Boolean,
-            val right: Boolean
+    enum class Extendo {
+        Out,
+        Retracted
+    }
+    enum class Depo {
+        TakePixelsUp,
+        NoPixelsUp,
+        Retracted
+    }
+    data class HandoffConstrainingInputs(
+            val extendo: Extendo,
+            val depo: Depo
+    )
+    data class HandoffCoordinatedOutput(
+            val extendo: Extendo,
+            val latches: Latches,
+
+            val depo: Depo,
+            val wrist: Wrist,
     ) {
-        fun getBySide(side: Transfer.Side): Boolean {
-            return when (side) {
-                Transfer.Side.Left -> left
-                Transfer.Side.Right -> right
+        enum class PixelHolder {
+            Holding,
+            Released
+        }
+
+        data class Latches(
+                override val left: PixelHolder,
+                override val right: PixelHolder
+        ): Side.ThingWithSides<PixelHolder>
+
+        data class Wrist(
+                override val left: PixelHolder,
+                override val right: PixelHolder
+        ): Side.ThingWithSides<PixelHolder>
+    }
+
+
+    private fun checkIfActualRobotAllowsForHandoff(actualRobot: ActualRobot): Boolean {
+        val liftIsDown = actualRobot.depoState.lift.limitSwitchIsActivated
+        val extendoIsIn = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
+        val armIsAtHandoffPosition = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualRobot.depoState.armAngleDegrees)
+        return liftIsDown && armIsAtHandoffPosition && extendoIsIn
+    }
+
+    private fun checkIfInputAllowsForHandoff(handoffInput: HandoffConstrainingInputs): Boolean {
+        val liftIsDown = handoffInput.depo == Depo.Retracted
+        val extendoIsIn = handoffInput.extendo == Extendo.Retracted
+        return liftIsDown && extendoIsIn
+    }
+
+    private enum class PixelController {
+        Depo,
+        Collector,
+        Both,
+        NoPixel,
+    }
+    private fun determinePixelControllerForSinglePixel(side: Side, transferSensorState: TransferState, actualWristAngles: Wrist.ActualWrist, previousTransferTarget: TransferTarget): PixelController {
+        val pixelIsDetected = transferSensorState.getBySide(side).hasPixelBeenSeen
+
+        return if (pixelIsDetected) {
+            val clawIsGripping = wrist.getClawBySide(side).isClawAtAngle(Claw.ClawTarget.Gripping, actualWristAngles.getBySide(side))
+            val latchIsClosed = transfer.checkIfLatchHasActuallyAchievedTarget(side, LatchPositions.Closed, previousTransferTarget)
+
+            when {
+                clawIsGripping && latchIsClosed -> PixelController.Both
+                clawIsGripping -> PixelController.Depo
+                else -> PixelController.Collector
             }
+        } else {
+            PixelController.NoPixel
+        }
+    }
+
+    private data class OneSideCoordinatedExtremeties(
+            val latch: HandoffCoordinatedOutput.PixelHolder,
+            val claw: HandoffCoordinatedOutput.PixelHolder
+    )
+
+    fun coordinateHandoff(handoffInput: HandoffConstrainingInputs, actualRobot: ActualRobot, transferSensorState: TransferState, previousTransferTarget: TransferTarget, ): HandoffCoordinatedOutput {
+
+        val actualRobotAllowsForHandoff = checkIfActualRobotAllowsForHandoff(actualRobot)
+        val inputAllowsForHandoff = checkIfInputAllowsForHandoff(handoffInput)
+        val liftWantsToGoUpWithoutPixels = handoffInput.depo == Depo.NoPixelsUp
+        val startHandoff = inputAllowsForHandoff && actualRobotAllowsForHandoff && !liftWantsToGoUpWithoutPixels
+
+        val finalPixelController = if (startHandoff) {
+            PixelController.Depo
+        } else {
+            PixelController.Collector
+        }
+
+        val actualController = { side: Side ->
+            determinePixelControllerForSinglePixel(side, transferSensorState, actualRobot.depoState.wristAngles, previousTransferTarget)
+        }
+
+        val bothActualControllersAreAtFinal = Side.entries.fold(true) { acc, side ->
+            val controller = actualController(side)
+
+            val noPixelToControl = PixelController.NoPixel == controller
+            val controllerIsAtFinal = finalPixelController == controller
+            acc && (controllerIsAtFinal || noPixelToControl)
+        }
+
+
+        fun determineOutputFromController(targetPixelController: PixelController): OneSideCoordinatedExtremeties = when (targetPixelController) {
+            PixelController.Depo -> OneSideCoordinatedExtremeties(
+                    latch = HandoffCoordinatedOutput.PixelHolder.Released,
+                    claw = HandoffCoordinatedOutput.PixelHolder.Holding,
+            )
+            PixelController.Both -> OneSideCoordinatedExtremeties(
+                    latch = HandoffCoordinatedOutput.PixelHolder.Holding,
+                    claw = HandoffCoordinatedOutput.PixelHolder.Holding
+            )
+            else -> OneSideCoordinatedExtremeties(
+                    latch = HandoffCoordinatedOutput.PixelHolder.Holding,
+                    claw = HandoffCoordinatedOutput.PixelHolder.Released,
+            )
+        }
+
+
+        return if (bothActualControllersAreAtFinal) {
+            val outputs = {side: Side ->
+                val controller = actualController(side)
+                determineOutputFromController(controller)
+            }
+            val left = outputs(Side.Left)
+            val right = outputs(Side.Right)
+
+            HandoffCoordinatedOutput(
+                    extendo = handoffInput.extendo,
+                    depo = handoffInput.depo,
+
+                    latches = HandoffCoordinatedOutput.Latches(
+                            left = left.latch,
+                            right = right.latch
+                    ),
+                    wrist = HandoffCoordinatedOutput.Wrist(
+                        left = left.claw,
+                        right = right.claw
+                    )
+            )
+        } else {
+            fun resolveControllerDifference(finalController: PixelController, actualController: PixelController): PixelController {
+                val controlByTarget = if (finalController == PixelController.Depo) {
+                    PixelController.Depo
+                } else {
+                    PixelController.Collector
+                }
+
+                return if (actualController == finalController) {
+                    controlByTarget
+                } else {
+                    when (actualController) {
+                        PixelController.Depo -> PixelController.Both
+                        PixelController.Collector -> PixelController.Both
+                        PixelController.Both -> controlByTarget
+                        PixelController.NoPixel -> PixelController.NoPixel
+                    }
+                }
+            }
+
+            val outputs = {side: Side ->
+                determineOutputFromController(
+                        targetPixelController = resolveControllerDifference(
+                                finalController = finalPixelController,
+                                actualController = actualController(side)
+                        )
+                )
+            }
+
+            val left = outputs(Side.Left)
+            val right = outputs(Side.Right)
+
+            //Extensions must be in
+            HandoffCoordinatedOutput(
+                    extendo = Extendo.Retracted,
+                    depo = Depo.Retracted,
+
+                    latches = HandoffCoordinatedOutput.Latches(
+                            left = left.latch,
+                            right = right.latch
+                    ),
+                    wrist = HandoffCoordinatedOutput.Wrist(
+                            left = left.claw,
+                            right = right.claw
+                    )
+            )
         }
     }
 
     data class HandoffTarget(
-            val collectorTarget: CollectorTarget,
-            val depoTarget: DepoTarget,
+            val collector: CollectorTarget,
+            val depo: DepoTarget
     )
+    fun manageHandoff(): HandoffTarget {
+        val coordinatedForHandoff = coordinateHandoff()
 
-    private fun getTransferTargetBasedOnRule(rule: (side: Transfer.Side)->Transfer.LatchTarget): Transfer.TransferTarget {
-        return Transfer.TransferTarget(
-                leftLatchTarget = rule(Transfer.Side.Left),
-                rightLatchTarget = rule(Transfer.Side.Right)
+        val coordinatedCollector = collectorManager.coordinateCollector()
+        val coordinatedDepo = depoManager.fullyManageDepo()
+
+        return HandoffTarget(
+                coordinatedCollector,
+                coordinatedDepo
         )
     }
-    private fun getWristTargetBasedOnRule(rule: (side: Transfer.Side)->Claw.ClawTarget): Wrist.WristTargets {
-        return Wrist.WristTargets(
-                left = rule(Transfer.Side.Left),
-                right = rule(Transfer.Side.Right)
-        )
-    }
-
-    fun coordinateHandoff(actualRobot: ActualRobot, uncoordinatedHandoffTarget: HandoffTarget, previousHandoffTarget: HandoffTarget): HandoffTarget {
-
-        val liftIsDown = actualRobot.depoState.lift.limitSwitchIsActivated
-        val extendoIsIn = actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
-        val armIsAtHandoffPosition = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualRobot.depoState.armAngleDegrees)
-        val startHandoff = liftIsDown && armIsAtHandoffPosition && extendoIsIn
-
-        return if (startHandoff) {
-            fun gripClawIfPixelInSide(side: Transfer.Side): Claw.ClawTarget {
-                val transferSensorState = uncoordinatedHandoffTarget.collectorTarget.transferState.getBySide(side.otherSide())
-                val pixelIsInSide = transferSensorState.hasPixelBeenSeen
-                return if (pixelIsInSide) {
-                    Claw.ClawTarget.Gripping
-                } else {
-                    previousHandoffTarget.depoTarget.wristPosition.getClawTargetBySide(side)
-                }
-            }
-
-            fun openLatchIfClawHasControl(side: Transfer.Side): Transfer.LatchTarget {
-                val matchingClaw = wrist.getClawBySide(side.otherSide())
-                val matchingClawActualAngle = actualRobot.depoState.wristAngles.getBySide(side.otherSide())
-                val clawIsGripping = matchingClaw.isClawAtAngle(Claw.ClawTarget.Gripping, matchingClawActualAngle)
-                val latchTarget = if (clawIsGripping) {
-                    Transfer.LatchPositions.Open
-                } else {
-                    Transfer.LatchPositions.Closed
-                }
-                return transfer.getLatchTarget(side, latchTarget, previousHandoffTarget.collectorTarget.latches)
-            }
-
-            HandoffTarget(
-                    collectorTarget = uncoordinatedHandoffTarget.collectorTarget.copy(
-                            latches = getTransferTargetBasedOnRule(::openLatchIfClawHasControl),
-                            extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Min, DualMovementModeSubsystem.MovementMode.Position),
-                    ),
-                    depoTarget = uncoordinatedHandoffTarget.depoTarget.copy(
-                            lift = Lift.TargetLift(targetPosition = Lift.LiftPositions.Down),
-                            armPosition = Arm.ArmTarget(targetPosition = Arm.Positions.In),
-                            wristPosition = getWristTargetBasedOnRule(::gripClawIfPixelInSide),
-                    ),
-            )
-        } else {
-            //Handle ending the handoff
-
-            fun retractClawIfTransferHasPixel(side: Transfer.Side): Claw.ClawTarget {
-                val latchHasActuallyAchievedTarget = transfer.checkIfLatchHasActuallyAchievedTarget(side.otherSide(), Transfer.LatchPositions.Closed, previousHandoffTarget.collectorTarget.latches)
-
-                return if (latchHasActuallyAchievedTarget) {
-                    Claw.ClawTarget.Retracted
-                } else {
-                    previousHandoffTarget.depoTarget.wristPosition.getClawTargetBySide(side)
-                }
-            }
-
-            val bothLatchesAreClosed = Transfer.Side.entries.fold(true) {acc, it ->
-                acc && transfer.checkIfLatchHasActuallyAchievedTarget(it, Transfer.LatchPositions.Closed, previousHandoffTarget.collectorTarget.latches)
-            }
-
-            if (bothLatchesAreClosed) {
-                HandoffTarget(
-                        collectorTarget = uncoordinatedHandoffTarget.collectorTarget.copy(
-                                latches = getTransferTargetBasedOnRule{transfer.getLatchTarget(it, Transfer.LatchPositions.Closed, previousHandoffTarget.collectorTarget.latches)},
-                                extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Min, DualMovementModeSubsystem.MovementMode.Position),
-                        ),
-                        depoTarget = uncoordinatedHandoffTarget.depoTarget.copy(
-                                lift = Lift.TargetLift(targetPosition = Lift.LiftPositions.Down),
-                                armPosition = Arm.ArmTarget(targetPosition = Arm.Positions.In),
-                                wristPosition = getWristTargetBasedOnRule(::retractClawIfTransferHasPixel),
-                        ),
-                )
-            } else {
-                HandoffTarget(
-                        collectorTarget = uncoordinatedHandoffTarget.collectorTarget.copy(
-                                latches = getTransferTargetBasedOnRule{transfer.getLatchTarget(it, Transfer.LatchPositions.Closed, previousHandoffTarget.collectorTarget.latches)}
-                        ),
-                        depoTarget = uncoordinatedHandoffTarget.depoTarget.copy(
-                                wristPosition = getWristTargetBasedOnRule(::retractClawIfTransferHasPixel),
-                        ),
-                )
-            }
-        }
-    }
-
 
     //Latches need to close before claws release
     //Brody, while robot is backing up turn on extendo motors to hold position
     //drop down mapped to right joystick y. it auto goes up when intake is off or ejecting
 
-    fun getHandoffState(actualRobot: ActualRobot, previousTargetWorld: TargetWorld): SideIsActivelyHandingOff {
-        val liftIsAtAHeightWhereLatchesCouldConflict = !lift.isLiftAbovePosition(targetPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks, actualLiftPositionTicks = actualRobot.depoState.lift.currentPositionTicks)
-        val armIsInAPositionWhereLatchesCouldConflict = actualRobot.depoState.armAngleDegrees > Arm.Positions.InsideTheBatteryBox.angleDegrees
+//    fun getHandoffState(actualRobot: ActualRobot, previousTargetWorld: TargetWorld): SideIsActivelyHandingOff {
+//        val liftIsAtAHeightWhereLatchesCouldConflict = !lift.isLiftAbovePosition(targetPositionTicks = Lift.LiftPositions.ClearForArmToMove.ticks, actualLiftPositionTicks = actualRobot.depoState.lift.currentPositionTicks)
+//        val armIsInAPositionWhereLatchesCouldConflict = actualRobot.depoState.armAngleDegrees > Arm.Positions.InsideTheBatteryBox.angleDegrees
+//
+//        return if (liftIsAtAHeightWhereLatchesCouldConflict && armIsInAPositionWhereLatchesCouldConflict) {
+//            fun checkIfIsActivelyHandingOffPerSide(side: Side): Boolean {
+//                val claw = wrist.clawsAsMap[side]!!
+//                val clawIsClosed = claw.isClawAtAngle(Claw.ClawTarget.Gripping, actualRobot.depoState.wristAngles.getBySide(side))
+////                val extendoIsIn = extendo.isSlideSystemAllTheWayIn(actualRobot.collectorSystemState.extendo)
+//
+//                return clawIsClosed// && extendoIsIn
+//            }
+//
+//            SideIsActivelyHandingOff(
+//                    left = checkIfIsActivelyHandingOffPerSide(Side.Left),
+//                    right = checkIfIsActivelyHandingOffPerSide(Side.Right)
+//            )
+//        } else {
+//            SideIsActivelyHandingOff(
+//                    left = false,
+//                    right = false
+//            )
+//        }
+//    }
 
-        return if (liftIsAtAHeightWhereLatchesCouldConflict && armIsInAPositionWhereLatchesCouldConflict) {
-            fun checkIfIsActivelyHandingOffPerSide(side: Transfer.Side): Boolean {
-                val claw = wrist.clawsAsMap[side]!!
-                val clawIsClosed = claw.isClawAtAngle(Claw.ClawTarget.Gripping, actualRobot.depoState.wristAngles.getBySide(side))
-//                val extendoIsIn = extendo.isSlideSystemAllTheWayIn(actualRobot.collectorSystemState.extendo)
+//    fun checkIfHandoffIsReadyToStart(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Boolean {
+//        val isExtendoAllTheWayIn = extendo.isSlideSystemAllTheWayIn(actualWorld.actualRobot.collectorSystemState.extendo)
+//        val extendoIsMovingInOrNotAtAll = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) <= 0
+//        val extendoIsReady = extendoIsMovingInOrNotAtAll && isExtendoAllTheWayIn
+//
+//        val liftExtensionIsAllTheWayDown = lift.isSlideSystemAllTheWayIn(actualWorld.actualRobot.depoState.lift)//10 >= actualWorld.actualRobot.depoState.lift.currentPositionTicks//actualWorld.actualRobot.depoState.isLiftLimitActivated
+//        telemetry.addLine("isExtendoAllTheWayIn: $isExtendoAllTheWayIn")
+//        telemetry.addLine("liftExtensionIsAllTheWayDown: $liftExtensionIsAllTheWayDown")
+//
+//        val isArmReadyToTransfer = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)
+//        telemetry.addLine("isArmReadyToTransfer: $isArmReadyToTransfer")
+//
+//        val readyToHandoff = extendoIsReady && liftExtensionIsAllTheWayDown && isArmReadyToTransfer
+//        return readyToHandoff
+//    }
 
-                return clawIsClosed// && extendoIsIn
-            }
-
-            SideIsActivelyHandingOff(
-                    left = checkIfIsActivelyHandingOffPerSide(Transfer.Side.Left),
-                    right = checkIfIsActivelyHandingOffPerSide(Transfer.Side.Right)
-            )
-        } else {
-            SideIsActivelyHandingOff(
-                    left = false,
-                    right = false
-            )
-        }
-    }
-
-    fun checkIfHandoffIsReadyToStart(actualWorld: ActualWorld, previousActualWorld: ActualWorld): Boolean {
-        val isExtendoAllTheWayIn = extendo.isSlideSystemAllTheWayIn(actualWorld.actualRobot.collectorSystemState.extendo)
-        val extendoIsMovingInOrNotAtAll = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) <= 0
-        val extendoIsReady = extendoIsMovingInOrNotAtAll && isExtendoAllTheWayIn
-
-        val liftExtensionIsAllTheWayDown = lift.isSlideSystemAllTheWayIn(actualWorld.actualRobot.depoState.lift)//10 >= actualWorld.actualRobot.depoState.lift.currentPositionTicks//actualWorld.actualRobot.depoState.isLiftLimitActivated
-        telemetry.addLine("isExtendoAllTheWayIn: $isExtendoAllTheWayIn")
-        telemetry.addLine("liftExtensionIsAllTheWayDown: $liftExtensionIsAllTheWayDown")
-
-        val isArmReadyToTransfer = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)
-        telemetry.addLine("isArmReadyToTransfer: $isArmReadyToTransfer")
-
-        val readyToHandoff = extendoIsReady && liftExtensionIsAllTheWayDown && isArmReadyToTransfer
-        return readyToHandoff
-    }
-
-    fun checkIfLatchHasSecuredPixelsFromClaw(side: Transfer.Side, actualWorld: ActualWorld, previousTransferTarget: Transfer.TransferTarget): Boolean {
-        val latchTarget = previousTransferTarget.getBySide(side)
-
-        val latchIsClosed = Transfer.LatchPositions.Closed == latchTarget.target
-
-        val timeSinceLatchChangedTarget = actualWorld.timestampMilis - latchTarget.timeTargetChangedMillis
-        val timeLatchHasToBeClosedToSecurePixelMillis = 500
-        val latchTargetChangeWasLongEnoughAgo = timeSinceLatchChangedTarget >= timeLatchHasToBeClosedToSecurePixelMillis
-
-        return latchIsClosed && latchTargetChangeWasLongEnoughAgo
-    }
+//    fun checkIfLatchHasSecuredPixelsFromClaw(side: Side, actualWorld: ActualWorld, previousTransferTarget: TransferTarget): Boolean {
+//        val latchTarget = previousTransferTarget.getBySide(side)
+//
+//        val latchIsClosed = LatchPositions.Closed == latchTarget.target
+//
+//        val timeSinceLatchChangedTarget = actualWorld.timestampMilis - latchTarget.timeTargetChangedMillis
+//        val timeLatchHasToBeClosedToSecurePixelMillis = 500
+//        val latchTargetChangeWasLongEnoughAgo = timeSinceLatchChangedTarget >= timeLatchHasToBeClosedToSecurePixelMillis
+//
+//        return latchIsClosed && latchTargetChangeWasLongEnoughAgo
+//    }
 }
