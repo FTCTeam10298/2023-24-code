@@ -176,12 +176,19 @@ class DepoManager(
             val liftIsAboveClear = actualDepo.lift.currentPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
             when (finalDepoTarget.targetType) {
                 DepoTargetType.GoingHome -> {
-                    if (eitherClawIsGripping && liftIsAboveClear) {
-                        //If depo is going in and either claw is gripping then go out, drop then come in.
-                        Arm.Positions.Out
-                    } else {
-                        telemetry.addLine("arm is clearing lift because the claws are gripping and we need to go out and close them before going back in")
-                        Arm.Positions.ClearLiftMovement
+
+                    val liftIsAlreadyDown = !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualDepo.lift.currentPositionTicks)
+
+                    when {
+                        liftIsAlreadyDown -> finalDepoTarget.armPosition.targetPosition
+                        eitherClawIsGripping && liftIsAboveClear -> {
+                            //If depo is going in and either claw is gripping then go out, drop then come in.
+                            Arm.Positions.Out
+                        }
+                        else -> {
+                            telemetry.addLine("arm is clearing lift because the claws are gripping and we need to go out and close them before going back in")
+                            Arm.Positions.ClearLiftMovement
+                        }
                     }
                 }
                 DepoTargetType.GoingOut -> {
