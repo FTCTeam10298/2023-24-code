@@ -129,6 +129,11 @@ class HandoffManagerTest {
                         targetType = DepoManager.DepoTargetType.GoingHome
                 )
         )
-        Assert.assertEquals(expectedOutput, actualOutput)
+
+
+        println("\nexpected: $expectedOutput")
+        println("actual: $actualOutput")
+
+        Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
     }
 }

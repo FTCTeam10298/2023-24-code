@@ -18,15 +18,19 @@ class DepoFinalTargetTest {
 
         val depoInput = RobotTwoTeleOp.DepoInput.Down
         val depoScoringHeightAdjust = 0.0
+        val wristTarget = Wrist.WristTargets(Claw.ClawTarget.Gripping)
         val previousWristTarget = Wrist.WristTargets(Claw.ClawTarget.Gripping)
         val previousDepoTargetType = DepoManager.DepoTargetType.GoingHome
+        val actualLift = Lift.ActualLift(0, true, 0, 0, 0.0)
 
         // when
         val actualOutput = testSubject.getFinalDepoTarget(
                 depoInput = depoInput,
                 depoScoringHeightAdjust = depoScoringHeightAdjust,
+                wristInput = wristTarget,
                 previousWristTarget = previousWristTarget,
-                previousDepoTargetType = previousDepoTargetType
+                previousDepoTargetType = previousDepoTargetType,
+                actualLift = actualLift,
         )
 
         // then
