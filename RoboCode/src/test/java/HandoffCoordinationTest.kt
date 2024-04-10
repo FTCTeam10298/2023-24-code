@@ -133,8 +133,8 @@ class HandoffCoordinatorTest {
                                 0.0
                         ),
                         wristAngles = Wrist.ActualWrist(
-                                Claw.ClawTarget.Gripping.angleDegrees,
-                                Claw.ClawTarget.Gripping.angleDegrees,
+                                leftClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
+                                rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
                         )
                 ),
                 transferSensorState = Transfer.TransferSensorState(
@@ -216,8 +216,8 @@ class HandoffCoordinatorTest {
                                 0.0
                         ),
                         wristAngles = Wrist.ActualWrist(
-                                Claw.ClawTarget.Retracted.angleDegrees,
-                                Claw.ClawTarget.Gripping.angleDegrees,
+                                leftClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees,
+                                rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
                         )
                 ),
                 transferSensorState = Transfer.TransferSensorState(
@@ -231,11 +231,11 @@ class HandoffCoordinatorTest {
                         ),
                 ),
                 previousTransferTarget = Transfer.TransferTarget(
-                        Transfer.LatchTarget(
+                        leftLatchTarget = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed,
                                 timeTargetChangedMillis = transfer.timeSinceTargetChangeToAchieveTargetMillis * 2L
                         ),
-                        Transfer.LatchTarget(
+                        rightLatchTarget = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed,
                                 timeTargetChangedMillis = transfer.timeSinceTargetChangeToAchieveTargetMillis * 2L
                         ),
@@ -255,13 +255,13 @@ class HandoffCoordinatorTest {
         val expectedOutput = HandoffManager.HandoffCoordinatedOutput(
                 extendo = HandoffManager.Slides.Retracted,
                 latches = HandoffManager.HandoffCoordinatedOutput.Latches(
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Released,
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding
+                        left = HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
+                        right = HandoffManager.HandoffCoordinatedOutput.PixelHolder.Released
                 ),
                 depo = HandoffManager.Slides.Retracted,
                 wrist = HandoffManager.HandoffCoordinatedOutput.Wrist(
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
+                        left = HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
+                        right = HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
                 )
         )
         Assert.assertEquals(expectedOutput, actualOutput)
