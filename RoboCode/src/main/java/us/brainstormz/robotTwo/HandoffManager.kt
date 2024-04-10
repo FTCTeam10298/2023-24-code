@@ -2,6 +2,9 @@ package us.brainstormz.robotTwo
 
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.subsystems.Arm
+import us.brainstormz.robotTwo.subsystems.Claw
+import us.brainstormz.robotTwo.subsystems.Extendo
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Transfer.*
 import us.brainstormz.robotTwo.subsystems.Wrist
@@ -111,11 +114,6 @@ class HandoffManager(
                 handoffAllowedToStart -> PixelController.Both
                 else -> PixelController.Collector
             }
-//            if (handoffAllowedToStart || liftWantsThePixel) {
-//                PixelController.Depo
-//            } else {
-//                PixelController.Collector
-//            }
         }
 
         val actualController = { side: Side ->
@@ -218,21 +216,73 @@ class HandoffManager(
         }
     }
 
-//    data class HandoffTarget(
-//            val collector: CollectorTarget,
-//            val depo: DepoTarget
-//    )
-//    fun manageHandoff(): HandoffTarget {
-//        val coordinatedForHandoff = coordinateHandoff()
-//
-//        val coordinatedCollector = collectorManager.coordinateCollector()
-//        val coordinatedDepo = depoManager.fullyManageDepo()
-//
-//        return HandoffTarget(
-//                coordinatedCollector,
-//                coordinatedDepo
-//        )
-//    }
+    private fun correctSlideTargetWithHandoff(originalSlideTarget: SlideSubsystem.SlideTargetPosition, handoffSlideTarget: Slides): SlideSubsystem.SlideTargetPosition {
+        return if (handoffSlideTarget == Slides.Retracted) {
+            SlideSubsystem.VariableTargetPosition(0)
+        } else {
+            originalSlideTarget
+        }
+    }
+    private fun deriveLatchPositionFromPixelHolder(pixelHolder: HandoffCoordinated.PixelHolder): LatchPositions {
+        return when(pixelHolder) {
+            HandoffCoordinated.PixelHolder.Holding -> LatchPositions.Closed
+            HandoffCoordinated.PixelHolder.Released -> LatchPositions.Open
+        }
+    }
+
+    data class HandoffTarget(
+            val collector: CollectorTarget,
+            val depo: DepoTarget
+    )
+    fun manageHandoff(depoInput: RobotTwoTeleOp.DepoInput, collectorTarget: CollectorTarget, previousTargetWorld: TargetWorld, actualWorld: ActualWorld, previousActualWorld: ActualWorld): HandoffTarget {
+        val handoffCoordinated = coordinateHandoff(
+                inputConstraints = ,
+                actualState = ,
+                transferSensorState = collectorTarget.transferSensorState,
+        )
+
+        val coordinatedCollector = collectorManager.coordinateCollector(
+                uncoordinatedTarget = collectorTarget.copy(
+                        extendo = SlideSubsystem.TargetSlideSubsystem(
+                                correctSlideTargetWithHandoff(
+                                        collectorTarget.extendo.targetPosition,
+                                        handoffCoordinated.extendo
+                                )),
+                        latches = TransferTarget(
+                                leftLatchTarget = LatchTarget(deriveLatchPositionFromPixelHolder(handoffCoordinated.latches.left), 0),
+                                rightLatchTarget =LatchTarget(deriveLatchPositionFromPixelHolder(handoffCoordinated.latches.right), 0)
+                        ),
+                ),
+                previousTargetWorld = previousTargetWorld,
+        )
+
+        val depoDriverInput = RobotTwoTeleOp.noInput.copy(
+                depo = when (handoffCoordinated.depo) {
+                    Slides.Out -> {
+                        if (depoInput == RobotTwoTeleOp.DepoInput.NoInput) {
+                            RobotTwoTeleOp.DepoInput.Down
+                        } else {
+                            depoInput
+                        }
+                    }
+                    Slides.Retracted -> RobotTwoTeleOp.DepoInput.Down
+                },
+                wrist = handoffCoordinated.wrist,
+        )
+
+
+        val coordinatedDepo = depoManager.fullyManageDepo(
+                target = depoDriverInput,
+                previousDepoTarget = previousTargetWorld.targetRobot.depoTarget,
+                actualWorld = actualWorld,
+                previousActualWorld = previousActualWorld
+        )
+
+        return HandoffTarget(
+                coordinatedCollector,
+                coordinatedDepo
+        )
+    }
 
 
 

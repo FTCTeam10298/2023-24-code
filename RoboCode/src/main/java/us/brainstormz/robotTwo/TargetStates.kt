@@ -25,7 +25,7 @@ data class CollectorTarget(
         val timeOfTransferredMillis: Long?,
         val intakeNoodles: Intake.CollectorPowers,
         val dropDown: Dropdown.DropdownTarget,
-        val transferState: Transfer.TransferSensorState,
+        val transferSensorState: Transfer.TransferSensorState,
         val latches: Transfer.TransferTarget,
 )
 data class TargetRobot(
