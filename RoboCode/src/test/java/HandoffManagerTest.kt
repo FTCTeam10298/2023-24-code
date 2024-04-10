@@ -388,4 +388,91 @@ class HandoffManagerTest {
 
         Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
     }
+
+
+    @Test
+    fun `when pixel is controlled by depo and depo is off the limit and pixels are past the color sensor but still partially in the transfer, and extendo wants to go out, extendo slide won't move`() {
+        // given
+        val testSubject = createHandoffManager()
+
+        val handoff = HandoffManager.HandoffPixelsToLift(true)
+        val depoInput = RobotTwoTeleOp.DepoInput.Preset3
+        val collector = CollectorTarget(
+                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
+                timeOfEjectionStartMilis = 0,
+                timeOfTransferredMillis = 0,
+                intakeNoodles = Intake.CollectorPowers.Off,
+                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                transferSensorState = Transfer.TransferSensorState(
+                        left = Transfer.SensorState(hasPixelBeenSeen = false, 0),
+                        right = Transfer.SensorState(hasPixelBeenSeen = false, 0),
+                ),
+                latches = Transfer.TransferTarget(
+                        leftLatchTarget = Transfer.LatchTarget(
+                                target = Transfer.LatchPositions.Open, 0
+                        ),
+                        rightLatchTarget = Transfer.LatchTarget(
+                                target = Transfer.LatchPositions.Open, 0
+                        ),
+                )
+        )
+        val previousTargetWorld = createPreviousTargetStateChangeTransferAndIntake(
+                Transfer.LatchPositions.Open,
+                Transfer.LatchPositions.Open,
+                Intake.CollectorPowers.Off
+        )
+        val actualWorld = ActualWorld(
+                actualRobot = ActualRobot(
+                        positionAndRotation = PositionAndRotation(),
+                        depoState = DepoManager.ActualDepo(
+                                armAngleDegrees = Arm.Positions.In.angleDegrees,
+                                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.Down.ticks + 20, false, 0, 0, 0.0),
+                                wristAngles = Wrist.ActualWrist(
+                                        leftClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
+                                        rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees
+                                )
+                        ),
+                        collectorSystemState = CollectorManager.ActualCollector(
+                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks, true, 0, 0, 0.0),
+                                transferState = Transfer.ActualTransfer(
+                                        left = ColorReading(0f, 0f, 0f, 0f),
+                                        right = ColorReading(0f, 0f, 0f, 0f),
+                                )
+                        ),
+                        neopixelState = Neopixels.HalfAndHalfTarget().compileStripState()
+                ),
+                timestampMilis = 0,
+                actualGamepad1 = Gamepad(),
+                actualGamepad2 = Gamepad()
+        )
+
+        // when
+        val actualOutput = testSubject.manageHandoff(
+                handoff = handoff,
+                depoInput = depoInput,
+                collectorTarget = collector,
+                previousTargetWorld = previousTargetWorld,
+                actualWorld = actualWorld,
+        )
+
+        // then
+        val expectedOutput = HandoffManager.HandoffTarget(
+                collector = collector.copy(
+                        extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Min)
+                ),
+                depo = DepoTarget(
+                        armPosition = Arm.ArmTarget(Arm.Positions.ClearLiftMovement),
+                        lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
+                        wristPosition = Wrist.WristTargets(Claw.ClawTarget.Gripping),
+                        targetType = DepoManager.DepoTargetType.GoingOut
+                )
+        )
+
+
+        println("\nexpected : $expectedOutput")
+        println(  "actual   : $actualOutput")
+
+        Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
+
+    }
 }

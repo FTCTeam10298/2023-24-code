@@ -4,6 +4,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Extendo
+import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Transfer.*
@@ -14,6 +15,7 @@ class HandoffManager(
         private val depoManager: DepoManager,
         private val wrist: Wrist,
         private val arm: Arm,
+        private val lift: Lift,
         private val transfer: Transfer,
         private val telemetry: Telemetry) {
 
@@ -293,6 +295,7 @@ class HandoffManager(
                         },
                         depo = when {
                             actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated && arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)-> DepoCoordinationStates.ReadyToHandoff
+                            !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks) -> DepoCoordinationStates.PotentiallyBlockingExtendoMovement
                             else -> DepoCoordinationStates.NotReady
                         },
                         wrist = getWristFromRule {side ->

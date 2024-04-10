@@ -20,6 +20,7 @@ fun createHandoffManager(): HandoffManager {
     val telemetry = PrintlnTelemetry()
     val transfer = Transfer(telemetry)
     val arm = Arm()
+    val lift = Lift(telemetry)
     val wrist = Wrist(Claw(telemetry), Claw(telemetry), telemetry)
     val handoffManager = HandoffManager(
             collectorManager = CollectorManager(
@@ -36,6 +37,7 @@ fun createHandoffManager(): HandoffManager {
             ),
             wrist = wrist,
             arm = arm,
+            lift = lift,
             transfer = transfer,
             telemetry = telemetry
     )

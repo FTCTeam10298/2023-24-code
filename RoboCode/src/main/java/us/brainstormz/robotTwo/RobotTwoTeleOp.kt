@@ -120,7 +120,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
-    val handoffManager: HandoffManager = HandoffManager(collectorSystem, depoManager, wrist, arm, transfer, telemetry)
+    val handoffManager: HandoffManager = HandoffManager(collectorSystem, depoManager, wrist, arm, lift, transfer, telemetry)
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
