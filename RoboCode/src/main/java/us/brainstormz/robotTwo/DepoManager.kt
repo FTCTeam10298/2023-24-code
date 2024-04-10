@@ -122,31 +122,24 @@ class DepoManager(
                 finalDepoTarget.wristPosition
             }
             DepoTargetType.GoingHome -> {
-                val gripIfClawIsntFullyReleased = {side: Side ->
-                    val claw = wrist.getClawBySide(side)
-                    val clawIsFullyRetracted = claw.isClawAtAngle(Claw.ClawTarget.Retracted, actualDepo.wristAngles.getBySide(side))
-                    if (clawIsFullyRetracted) {
-                        Claw.ClawTarget.Retracted
-                    } else {
-                        Claw.ClawTarget.Gripping
+                //If depo is going in then go out and either claw is gripping, drop then come in.
+                val armIsOkToDrop = actualDepo.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees + 2
+                if (!armIsOkToDrop && eitherClawIsGripping) {
+                    val gripIfClawIsntFullyReleased = {side: Side ->
+                        val claw = wrist.getClawBySide(side)
+                        val clawIsFullyRetracted = claw.isClawAtAngle(Claw.ClawTarget.Retracted, actualDepo.wristAngles.getBySide(side))
+                        if (clawIsFullyRetracted) {
+                            Claw.ClawTarget.Retracted
+                        } else {
+                            Claw.ClawTarget.Gripping
+                        }
                     }
-                }
-
-                val liftIsAlreadyDown = !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualDepo.lift.currentPositionTicks)
-
-                if (liftIsAlreadyDown) {
-                    finalDepoTarget.wristPosition
+                    WristTargets(
+                            left = gripIfClawIsntFullyReleased(Side.Left),
+                            right = gripIfClawIsntFullyReleased(Side.Right)
+                    )
                 } else {
-                    //If depo is going in then go out and either claw is gripping, drop then come in.
-                    val armIsOkToDrop = actualDepo.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees + 2
-                    if (!armIsOkToDrop && eitherClawIsGripping) {
-                        WristTargets(
-                                left = gripIfClawIsntFullyReleased(Side.Left),
-                                right = gripIfClawIsntFullyReleased(Side.Right)
-                        )
-                    } else {
-                        WristTargets(Claw.ClawTarget.Retracted)
-                    }
+                    WristTargets(Claw.ClawTarget.Retracted)
                 }
             }
             else -> return previousTargetDepo
