@@ -106,11 +106,16 @@ class HandoffManager(
 
         val finalPixelController = { side: Side ->
             val liftWantsThePixel = inputConstraints.handoffPixelsToLift.getBySide(side) && extendoInputIsIn
-            if (handoffAllowedToStart || liftWantsThePixel) {
-                PixelController.Depo
-            } else {
-                PixelController.Collector
+            when {
+                liftWantsThePixel -> PixelController.Depo
+                handoffAllowedToStart -> PixelController.Both
+                else -> PixelController.Collector
             }
+//            if (handoffAllowedToStart || liftWantsThePixel) {
+//                PixelController.Depo
+//            } else {
+//                PixelController.Collector
+//            }
         }
 
         val actualController = { side: Side ->
@@ -166,10 +171,10 @@ class HandoffManager(
             )
         } else {
             fun resolveControllerDifference(finalController: PixelController, actualController: PixelController): PixelController {
-                val controlByTarget = if (finalController == PixelController.Depo) {
-                    PixelController.Depo
-                } else {
+                val controlByTarget = if (finalController == PixelController.NoPixel) {
                     PixelController.Collector
+                } else {
+                    finalController
                 }
 
                 return if (actualController == finalController) {
