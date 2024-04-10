@@ -15,6 +15,32 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 
 
+fun createHandoffManager(): HandoffManager {
+
+    val telemetry = PrintlnTelemetry()
+    val transfer = Transfer(telemetry)
+    val arm = Arm()
+    val wrist = Wrist(Claw(telemetry), Claw(telemetry), telemetry)
+    val handoffManager = HandoffManager(
+            collectorManager = CollectorManager(
+                    intake = Intake(),
+                    transfer = transfer,
+                    extendo = Extendo(telemetry),
+                    telemetry = telemetry
+            ),
+            depoManager = DepoManager(
+                    arm = arm,
+                    lift = Lift(telemetry),
+                    wrist = wrist,
+                    telemetry = telemetry
+            ),
+            wrist = wrist,
+            arm = arm,
+            transfer = transfer,
+            telemetry = telemetry
+    )
+    return handoffManager
+}
 class HandoffCoordinatorTest {
 
     @Test
@@ -664,31 +690,4 @@ class HandoffCoordinatorTest {
             val actualState: HandoffCoordinated,
             val transferSensorState: Transfer.TransferSensorState,
     )
-
-    fun createHandoffManager(): HandoffManager {
-
-        val telemetry = PrintlnTelemetry()
-        val transfer = Transfer(telemetry)
-        val arm = Arm()
-        val wrist = Wrist(Claw(telemetry), Claw(telemetry), telemetry)
-        val handoffManager = HandoffManager(
-                collectorManager = CollectorManager(
-                        intake = Intake(),
-                        transfer = transfer,
-                        extendo = Extendo(telemetry),
-                        telemetry = telemetry
-                ),
-                depoManager = DepoManager(
-                        arm = arm,
-                        lift = Lift(telemetry),
-                        wrist = wrist,
-                        telemetry = telemetry
-                ),
-                wrist = wrist,
-                arm = arm,
-                transfer = transfer,
-                telemetry = telemetry
-        )
-        return handoffManager
-    }
 }

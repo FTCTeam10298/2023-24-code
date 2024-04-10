@@ -224,7 +224,7 @@ class DepoManager(
         )
     }
 
-    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualWorld: ActualWorld, previousActualWorld: ActualWorld): DepoTarget {
+    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualWorld: ActualWorld): DepoTarget {
         val actualDepo: ActualDepo = actualWorld.actualRobot.depoState
         telemetry.addLine("\nDepo manager: ")
 

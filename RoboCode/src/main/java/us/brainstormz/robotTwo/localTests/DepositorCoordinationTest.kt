@@ -28,8 +28,7 @@ class DepoTest {
         val output = depoManager.fullyManageDepo(
                 dataForTest.input.target,
                 dataForTest.input.previousDepoTarget,
-                actualWorld= TeleopTest.emptyWorld.copy(actualRobot = TeleopTest.emptyWorld.actualRobot.copy(depoState = dataForTest.input.actualDepo)),
-                previousActualWorld= TeleopTest.emptyWorld.copy(actualRobot = TeleopTest.emptyWorld.actualRobot.copy(depoState = dataForTest.input.actualDepo)))
+                actualWorld= TeleopTest.emptyWorld.copy(actualRobot = TeleopTest.emptyWorld.actualRobot.copy(depoState = dataForTest.input.actualDepo)))
         val testPassed = output == dataForTest.expectedOutput
         return testPassed to output
     }

@@ -225,7 +225,7 @@ class HandoffManager(
             val collector: CollectorTarget,
             val depo: DepoTarget
     )
-    fun manageHandoff(handoff: HandoffPixelsToLift, depoInput: RobotTwoTeleOp.DepoInput, collectorTarget: CollectorTarget, previousTargetWorld: TargetWorld, actualWorld: ActualWorld, previousActualWorld: ActualWorld): HandoffTarget {
+    fun manageHandoff(handoff: HandoffPixelsToLift, depoInput: RobotTwoTeleOp.DepoInput, collectorTarget: CollectorTarget, previousTargetWorld: TargetWorld, actualWorld: ActualWorld): HandoffTarget {
 
         fun getPixelHolderFromIsHolding(isHolding: Boolean): HandoffCoordinated.PixelHolder {
             return if (isHolding) {
@@ -317,8 +317,7 @@ class HandoffManager(
         val coordinatedDepo = depoManager.fullyManageDepo(
                 target = depoDriverInput,
                 previousDepoTarget = previousTargetWorld.targetRobot.depoTarget,
-                actualWorld = actualWorld,
-                previousActualWorld = previousActualWorld
+                actualWorld = actualWorld
         )
 
         return HandoffTarget(
