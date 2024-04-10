@@ -139,8 +139,8 @@ class HandoffManager(
                     latch = HandoffCoordinated.PixelHolder.Holding,
                     claw = HandoffCoordinated.PixelHolder.Released,
             )
-            else -> OneSideCoordinatedExtremeties(
-                    latch = actualState.latches.getBySide(side),
+            PixelController.NoPixel -> OneSideCoordinatedExtremeties(
+                    latch = HandoffCoordinated.PixelHolder.Holding,
                     claw = actualState.wrist.getBySide(side)
             )
         }

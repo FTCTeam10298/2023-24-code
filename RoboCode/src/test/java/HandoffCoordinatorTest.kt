@@ -336,7 +336,7 @@ class HandoffCoordinatorTest {
     }
 
     @Test
-    fun `when pixel is controlled by depo, and extendo wants to go out, extendo will grab pixels, extendo slide won't move`() {
+    fun `when pixel is controlled by depo and depo is down, and extendo wants to go out, extendo will grab pixels, extendo slide won't move`() {
         // given
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
@@ -380,6 +380,64 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = Slides.ReadyToHandoff,
+                latches = Latches(
+                        left = PixelHolder.Holding,
+                        right = PixelHolder.Holding
+                ),
+                depo = Slides.ReadyToHandoff,
+                wrist = Wrist(
+                        left = PixelHolder.Holding,
+                        right = PixelHolder.Holding,
+                )
+        )
+        Assert.assertEquals(expectedOutput, actualOutput)
+    }
+
+    @Test
+    fun `when pixel is controlled by depo and depo is up, and extendo wants to go out, extendo slide will move`() {
+        // given
+        val testSubject = createHandoffManager()
+        val params = HandoffCoordinationParams(
+                inputConstraints = HandoffConstraints(
+                        extendo = Slides.NotReady,
+                        depo = Slides.ReadyToHandoff,
+                        handoffPixelsToLift = HandoffPixelsToLift(true)
+                ),
+                actualState = HandoffCoordinated(
+                        extendo = Slides.NotReady,
+                        depo = Slides.NotReady,
+
+                        latches = Latches(
+                                left = PixelHolder.Released,
+                                right = PixelHolder.Released
+                        ),
+                        wrist = Wrist(
+                                left = PixelHolder.Holding,
+                                right = PixelHolder.Holding,
+                        )
+                ),
+                transferSensorState = Transfer.TransferSensorState(
+                        Transfer.SensorState(
+                                hasPixelBeenSeen = false,
+                                timeOfSeeingMilis = 0
+                        ),
+                        Transfer.SensorState(
+                                hasPixelBeenSeen = false,
+                                timeOfSeeingMilis = 0
+                        ),
+                ),
+        )
+
+        // when
+        val actualOutput = testSubject.coordinateHandoff(
+                params.inputConstraints,
+                params.actualState,
+                params.transferSensorState
+        )
+
+        // then
+        val expectedOutput = HandoffCoordinated(
+                extendo = Slides.NotReady,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
