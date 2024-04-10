@@ -9,20 +9,19 @@ import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Wrist
 
+fun createDepoManager(): DepoManager {
+    val telemetry = PrintlnTelemetry()
+    val arm = Arm()
+    val wrist = Wrist(Claw(telemetry), Claw(telemetry), telemetry)
+    val depoManager = DepoManager(
+            arm = arm,
+            lift = Lift(telemetry),
+            wrist = wrist,
+            telemetry = telemetry
+    )
+    return depoManager
+}
 class DepoCoordinatorTest {
-
-    fun createDepoManager(): DepoManager {
-        val telemetry = PrintlnTelemetry()
-        val arm = Arm()
-        val wrist = Wrist(Claw(telemetry), Claw(telemetry), telemetry)
-        val depoManager = DepoManager(
-                arm = arm,
-                lift = Lift(telemetry),
-                wrist = wrist,
-                telemetry = telemetry
-        )
-        return depoManager
-    }
 
     @Test
     fun `when claws are gripping and depo is in handoff position, nothing moves`() {
