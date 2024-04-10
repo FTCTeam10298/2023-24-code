@@ -3,6 +3,7 @@ import org.junit.Test
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.DepoTarget
+import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Lift
@@ -58,22 +59,57 @@ class DepoCoordinatorTest {
         Assert.assertEquals(expectedOutput, actualOutput)
     }
 
+//    @Test
+//    fun `when claws are open but told to close and depo is in handoff position and told to stay, depo starts going out to close claws`() {
+//        // given
+//        val testSubject = createDepoManager()
+//
+//        val finalDepoTarget = DepoTarget(
+//                armPosition = Arm.ArmTarget(Arm.Positions.In),
+//                lift = Lift.TargetLift(Lift.LiftPositions.Down),
+//                wristPosition = Wrist.WristTargets(Claw.ClawTarget.Retracted),
+//                targetType = DepoManager.DepoTargetType.GoingHome
+//        )
+//        val previousTargetDepo = finalDepoTarget
+//        val actualDepo = DepoManager.ActualDepo(
+//                armAngleDegrees = Arm.Positions.In.angleDegrees,
+//                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.Down.ticks, true, 0 ,0  ,0.0),
+//                wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees, rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees)
+//        )
+//
+//        // when
+//        val actualOutput = testSubject.coordinateArmLiftAndClaws(
+//                finalDepoTarget = finalDepoTarget,
+//                previousTargetDepo = previousTargetDepo,
+//                actualDepo = actualDepo
+//        )
+//
+//        // then
+//        val expectedOutput = DepoTarget(
+//                armPosition = Arm.ArmTarget(Arm.Positions.ClearLiftMovement),
+//                lift = Lift.TargetLift(Lift.LiftPositions.Down),
+//                wristPosition = Wrist.WristTargets(Claw.ClawTarget.Gripping),
+//                targetType = DepoManager.DepoTargetType.GoingHome
+//        )
+//        Assert.assertEquals(expectedOutput, actualOutput)
+//    }
+
     @Test
-    fun `when claws are open but told to close and depo is in handoff position and told to stay, depo starts going out to close claws`() {
+    fun `when depo is starting handoff, depo stays down and lets claws open`() {
         // given
         val testSubject = createDepoManager()
 
         val finalDepoTarget = DepoTarget(
                 armPosition = Arm.ArmTarget(Arm.Positions.In),
                 lift = Lift.TargetLift(Lift.LiftPositions.Down),
-                wristPosition = Wrist.WristTargets(Claw.ClawTarget.Retracted),
+                wristPosition = Wrist.WristTargets(Claw.ClawTarget.Gripping),
                 targetType = DepoManager.DepoTargetType.GoingHome
         )
         val previousTargetDepo = finalDepoTarget
         val actualDepo = DepoManager.ActualDepo(
                 armAngleDegrees = Arm.Positions.In.angleDegrees,
                 lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.Down.ticks, true, 0 ,0  ,0.0),
-                wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees, rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees)
+                wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees, rightClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees)
         )
 
         // when
@@ -85,7 +121,7 @@ class DepoCoordinatorTest {
 
         // then
         val expectedOutput = DepoTarget(
-                armPosition = Arm.ArmTarget(Arm.Positions.ClearLiftMovement),
+                armPosition = Arm.ArmTarget(Arm.Positions.In),
                 lift = Lift.TargetLift(Lift.LiftPositions.Down),
                 wristPosition = Wrist.WristTargets(Claw.ClawTarget.Gripping),
                 targetType = DepoManager.DepoTargetType.GoingHome

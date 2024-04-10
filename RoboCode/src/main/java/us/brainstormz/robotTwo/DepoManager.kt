@@ -117,29 +117,36 @@ class DepoManager(
 
         val eitherClawIsGripping = !wrist.wristIsAtPosition(WristTargets(both= Claw.ClawTarget.Retracted), actualDepo.wristAngles)
 
+        val armAndLiftAreAtFinalRestingPlace: Boolean = checkIfArmAndLiftAreAtTarget(finalDepoTarget, actualDepo)
+
+
         val wristTarget = when (finalDepoTarget.targetType) {
             DepoTargetType.GoingOut -> {
                 finalDepoTarget.wristPosition
             }
             DepoTargetType.GoingHome -> {
-                //If depo is going in then go out and either claw is gripping, drop then come in.
-                val armIsOkToDrop = actualDepo.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees + 2
-                if (!armIsOkToDrop && eitherClawIsGripping) {
-                    val gripIfClawIsntFullyReleased = {side: Side ->
-                        val claw = wrist.getClawBySide(side)
-                        val clawIsFullyRetracted = claw.isClawAtAngle(Claw.ClawTarget.Retracted, actualDepo.wristAngles.getBySide(side))
-                        if (clawIsFullyRetracted) {
-                            Claw.ClawTarget.Retracted
-                        } else {
-                            Claw.ClawTarget.Gripping
-                        }
-                    }
-                    WristTargets(
-                            left = gripIfClawIsntFullyReleased(Side.Left),
-                            right = gripIfClawIsntFullyReleased(Side.Right)
-                    )
+                if (armAndLiftAreAtFinalRestingPlace) {
+                    finalDepoTarget.wristPosition
                 } else {
-                    WristTargets(Claw.ClawTarget.Retracted)
+                    //If depo is going in then go out and either claw is gripping, drop then come in.
+                    val armIsOkToDrop = actualDepo.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees + 2
+                    if (!armIsOkToDrop && eitherClawIsGripping) {
+                        val gripIfClawIsntFullyReleased = { side: Side ->
+                            val claw = wrist.getClawBySide(side)
+                            val clawIsFullyRetracted = claw.isClawAtAngle(Claw.ClawTarget.Retracted, actualDepo.wristAngles.getBySide(side))
+                            if (clawIsFullyRetracted) {
+                                Claw.ClawTarget.Retracted
+                            } else {
+                                Claw.ClawTarget.Gripping
+                            }
+                        }
+                        WristTargets(
+                                left = gripIfClawIsntFullyReleased(Side.Left),
+                                right = gripIfClawIsntFullyReleased(Side.Right)
+                        )
+                    } else {
+                        WristTargets(Claw.ClawTarget.Retracted)
+                    }
                 }
             }
             else -> return previousTargetDepo
@@ -177,10 +184,8 @@ class DepoManager(
             when (finalDepoTarget.targetType) {
                 DepoTargetType.GoingHome -> {
 
-                    val liftIsAlreadyDown = !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualDepo.lift.currentPositionTicks)
-
                     when {
-                        liftIsAlreadyDown -> finalDepoTarget.armPosition.targetPosition
+                        armAndLiftAreAtFinalRestingPlace -> finalDepoTarget.armPosition.targetPosition
                         eitherClawIsGripping && liftIsAboveClear -> {
                             //If depo is going in and either claw is gripping then go out, drop then come in.
                             Arm.Positions.Out
