@@ -4,6 +4,8 @@ import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.HandoffManager
+import us.brainstormz.robotTwo.HandoffManager.*
+import us.brainstormz.robotTwo.HandoffManager.HandoffCoordinated.*
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.ColorReading
@@ -20,37 +22,23 @@ class HandoffCoordinatorTest {
     @Test
     fun `handoff will start when both slides are in`() {
         // given
-        val (testSubject, transfer) = createHandoffManager()
+        val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
-                constrainingInputs = HandoffManager.HandoffConstrainingInputs(
-                        extendo = HandoffManager.Slides.Retracted,
-                        depo = HandoffManager.Slides.Retracted,
+                inputConstraints = HandoffConstraints(
+                        extendo = Slides.Retracted,
+                        depo = Slides.Retracted,
                 ),
-                actualCollector = CollectorManager.ActualCollector(
-                        extendo = SlideSubsystem.ActualSlideSubsystem(
-                                0,
-                                true,
-                                0,
-                                0,
-                                0.0
+                actualState = HandoffCoordinated(
+                        extendo = Slides.Retracted,
+                        depo = Slides.Retracted,
+
+                        latches = Latches(
+                                left = PixelHolder.Holding,
+                                right = PixelHolder.Holding
                         ),
-                        transferState = Transfer.ActualTransfer(
-                                ColorReading(1f, 1f, 1f, 1f),
-                                ColorReading(1f, 1f, 1f, 1f),
-                        ),
-                ),
-                actualDepo = DepoManager.ActualDepo(
-                        armAngleDegrees = Arm.Positions.In.angleDegrees,
-                        lift = SlideSubsystem.ActualSlideSubsystem(
-                                0,
-                                true,
-                                0,
-                                0,
-                                0.0
-                        ),
-                        wristAngles = Wrist.ActualWrist(
-                                Claw.ClawTarget.Retracted.angleDegrees,
-                                Claw.ClawTarget.Retracted.angleDegrees,
+                        wrist = Wrist(
+                                left = PixelHolder.Released,
+                                right = PixelHolder.Released,
                         )
                 ),
                 transferSensorState = Transfer.TransferSensorState(
@@ -63,39 +51,27 @@ class HandoffCoordinatorTest {
                                 timeOfSeeingMilis = 0
                         ),
                 ),
-                previousTransferTarget = Transfer.TransferTarget(
-                        Transfer.LatchTarget(
-                                target = Transfer.LatchPositions.Closed,
-                                timeTargetChangedMillis = transfer.timeSinceTargetChangeToAchieveTargetMillis * 2L
-                        ),
-                        Transfer.LatchTarget(
-                                target = Transfer.LatchPositions.Closed,
-                                timeTargetChangedMillis = transfer.timeSinceTargetChangeToAchieveTargetMillis * 2L
-                        ),
-                ),
         )
 
 
         // when
         val actualOutput = testSubject.coordinateHandoff(
-                params.constrainingInputs,
-                params.actualCollector,
-                params.actualDepo,
-                params.transferSensorState,
-                params.previousTransferTarget
+                inputConstraints = params.inputConstraints,
+                actualState = params.actualState,
+                transferSensorState = params.transferSensorState,
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffCoordinatedOutput(
-                extendo = HandoffManager.Slides.Retracted,
-                latches = HandoffManager.HandoffCoordinatedOutput.Latches(
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding
+        val expectedOutput = HandoffCoordinated(
+                extendo = Slides.Retracted,
+                latches = Latches(
+                        PixelHolder.Holding,
+                        PixelHolder.Holding
                 ),
-                depo = HandoffManager.Slides.Retracted,
-                wrist = HandoffManager.HandoffCoordinatedOutput.Wrist(
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
+                depo = Slides.Retracted,
+                wrist = Wrist(
+                        PixelHolder.Holding,
+                        PixelHolder.Holding,
                 )
         )
         Assert.assertEquals(expectedOutput, actualOutput)
@@ -104,37 +80,23 @@ class HandoffCoordinatorTest {
     @Test
     fun `handoff will finish when both slides are in and both controllers are holding pixel`() {
         // given
-        val (testSubject, transfer) = createHandoffManager()
+        val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
-                constrainingInputs = HandoffManager.HandoffConstrainingInputs(
-                        extendo = HandoffManager.Slides.Retracted,
-                        depo = HandoffManager.Slides.Retracted,
+                inputConstraints = HandoffConstraints(
+                        extendo = Slides.Retracted,
+                        depo = Slides.Retracted,
                 ),
-                actualCollector = CollectorManager.ActualCollector(
-                        extendo = SlideSubsystem.ActualSlideSubsystem(
-                                0,
-                                true,
-                                0,
-                                0,
-                                0.0
+                actualState = HandoffCoordinated(
+                        extendo = Slides.Retracted,
+                        depo = Slides.Retracted,
+
+                        latches = Latches(
+                                left = PixelHolder.Holding,
+                                right = PixelHolder.Holding
                         ),
-                        transferState = Transfer.ActualTransfer(
-                                ColorReading(1f, 1f, 1f, 1f),
-                                ColorReading(1f, 1f, 1f, 1f),
-                        ),
-                ),
-                actualDepo = DepoManager.ActualDepo(
-                        armAngleDegrees = Arm.Positions.In.angleDegrees,
-                        lift = SlideSubsystem.ActualSlideSubsystem(
-                                0,
-                                true,
-                                0,
-                                0,
-                                0.0
-                        ),
-                        wristAngles = Wrist.ActualWrist(
-                                leftClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
-                                rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
+                        wrist = Wrist(
+                                left = PixelHolder.Holding,
+                                right = PixelHolder.Holding,
                         )
                 ),
                 transferSensorState = Transfer.TransferSensorState(
@@ -147,38 +109,26 @@ class HandoffCoordinatorTest {
                                 timeOfSeeingMilis = 0
                         ),
                 ),
-                previousTransferTarget = Transfer.TransferTarget(
-                        Transfer.LatchTarget(
-                                target = Transfer.LatchPositions.Closed,
-                                timeTargetChangedMillis = transfer.timeSinceTargetChangeToAchieveTargetMillis * 2L
-                        ),
-                        Transfer.LatchTarget(
-                                target = Transfer.LatchPositions.Closed,
-                                timeTargetChangedMillis = transfer.timeSinceTargetChangeToAchieveTargetMillis * 2L
-                        ),
-                ),
         )
 
         // when
         val actualOutput = testSubject.coordinateHandoff(
-                params.constrainingInputs,
-                params.actualCollector,
-                params.actualDepo,
+                params.inputConstraints,
+                params.actualState,
                 params.transferSensorState,
-                params.previousTransferTarget
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffCoordinatedOutput(
-                extendo = HandoffManager.Slides.Retracted,
-                latches = HandoffManager.HandoffCoordinatedOutput.Latches(
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Released,
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Released
+        val expectedOutput = HandoffCoordinated(
+                extendo = Slides.Retracted,
+                latches = Latches(
+                        PixelHolder.Released,
+                        PixelHolder.Released
                 ),
-                depo = HandoffManager.Slides.Retracted,
-                wrist = HandoffManager.HandoffCoordinatedOutput.Wrist(
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
-                        HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
+                depo = Slides.Retracted,
+                wrist = Wrist(
+                        PixelHolder.Holding,
+                        PixelHolder.Holding,
                 )
         )
         Assert.assertEquals(expectedOutput, actualOutput)
@@ -187,37 +137,24 @@ class HandoffCoordinatorTest {
     @Test
     fun `when both slides are in gripping claw will finish handoff, released claw will start handoff`() {
         // given
-        val (testSubject, transfer) = createHandoffManager()
+        val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
-                constrainingInputs = HandoffManager.HandoffConstrainingInputs(
-                        extendo = HandoffManager.Slides.Retracted,
-                        depo = HandoffManager.Slides.Retracted,
+                inputConstraints = HandoffConstraints(
+                        extendo = Slides.Retracted,
+                        depo = Slides.Retracted,
                 ),
-                actualCollector = CollectorManager.ActualCollector(
-                        extendo = SlideSubsystem.ActualSlideSubsystem(
-                                0,
-                                true,
-                                0,
-                                0,
-                                0.0
+
+                actualState = HandoffCoordinated(
+                        extendo = Slides.Retracted,
+                        depo = Slides.Retracted,
+
+                        latches = Latches(
+                                left = PixelHolder.Holding,
+                                right = PixelHolder.Holding
                         ),
-                        transferState = Transfer.ActualTransfer(
-                                ColorReading(1f, 1f, 1f, 1f),
-                                ColorReading(1f, 1f, 1f, 1f),
-                        ),
-                ),
-                actualDepo = DepoManager.ActualDepo(
-                        armAngleDegrees = Arm.Positions.In.angleDegrees,
-                        lift = SlideSubsystem.ActualSlideSubsystem(
-                                0,
-                                true,
-                                0,
-                                0,
-                                0.0
-                        ),
-                        wristAngles = Wrist.ActualWrist(
-                                leftClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees,
-                                rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
+                        wrist = Wrist(
+                                left = PixelHolder.Released,
+                                right = PixelHolder.Holding,
                         )
                 ),
                 transferSensorState = Transfer.TransferSensorState(
@@ -230,53 +167,38 @@ class HandoffCoordinatorTest {
                                 timeOfSeeingMilis = 0
                         ),
                 ),
-                previousTransferTarget = Transfer.TransferTarget(
-                        leftLatchTarget = Transfer.LatchTarget(
-                                target = Transfer.LatchPositions.Closed,
-                                timeTargetChangedMillis = transfer.timeSinceTargetChangeToAchieveTargetMillis * 2L
-                        ),
-                        rightLatchTarget = Transfer.LatchTarget(
-                                target = Transfer.LatchPositions.Closed,
-                                timeTargetChangedMillis = transfer.timeSinceTargetChangeToAchieveTargetMillis * 2L
-                        ),
-                ),
         )
 
         // when
         val actualOutput = testSubject.coordinateHandoff(
-                params.constrainingInputs,
-                params.actualCollector,
-                params.actualDepo,
-                params.transferSensorState,
-                params.previousTransferTarget
+                params.inputConstraints,
+                params.actualState,
+                params.transferSensorState
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffCoordinatedOutput(
-                extendo = HandoffManager.Slides.Retracted,
-                latches = HandoffManager.HandoffCoordinatedOutput.Latches(
-                        left = HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
-                        right = HandoffManager.HandoffCoordinatedOutput.PixelHolder.Released
+        val expectedOutput = HandoffCoordinated(
+                extendo = Slides.Retracted,
+                latches = Latches(
+                        left = PixelHolder.Holding,
+                        right = PixelHolder.Released
                 ),
-                depo = HandoffManager.Slides.Retracted,
-                wrist = HandoffManager.HandoffCoordinatedOutput.Wrist(
-                        left = HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
-                        right = HandoffManager.HandoffCoordinatedOutput.PixelHolder.Holding,
+                depo = Slides.Retracted,
+                wrist = Wrist(
+                        left = PixelHolder.Holding,
+                        right = PixelHolder.Holding,
                 )
         )
         Assert.assertEquals(expectedOutput, actualOutput)
     }
 
     data class HandoffCoordinationParams(
-//        val expectedOutput: HandoffManager.HandoffCoordinatedOutput,
-            val constrainingInputs: HandoffManager.HandoffConstrainingInputs,
-            val actualCollector: CollectorManager.ActualCollector,
-            val actualDepo: DepoManager.ActualDepo,
+            val inputConstraints: HandoffConstraints,
+            val actualState: HandoffCoordinated,
             val transferSensorState: Transfer.TransferSensorState,
-            val previousTransferTarget: Transfer.TransferTarget,
     )
 
-    fun createHandoffManager(): Pair<HandoffManager, Transfer> {
+    fun createHandoffManager(): HandoffManager {
 
         val telemetry = PrintlnTelemetry()
         val transfer = Transfer(telemetry)
@@ -300,6 +222,6 @@ class HandoffCoordinatorTest {
                 transfer = transfer,
                 telemetry = telemetry
         )
-        return handoffManager to transfer
+        return handoffManager
     }
 }

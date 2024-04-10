@@ -1,17 +1,10 @@
 package us.brainstormz.robotTwo
 
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.robotTwo.subsystems.Arm
-import us.brainstormz.robotTwo.subsystems.Claw
-import us.brainstormz.robotTwo.subsystems.ColorReading
-import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Transfer.*
 import us.brainstormz.robotTwo.subsystems.Wrist
-import us.brainstormz.robotTwo.subsystems.Extendo
-import us.brainstormz.robotTwo.subsystems.Intake
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 
 class HandoffManager(
         private val collectorManager: CollectorManager,
@@ -25,11 +18,11 @@ class HandoffManager(
         Out,
         Retracted
     }
-    data class HandoffConstrainingInputs(
+    data class HandoffConstraints(
             val extendo: Slides,
             val depo: Slides
     )
-    data class HandoffCoordinatedOutput(
+    data class HandoffCoordinated(
             val extendo: Slides,
             val latches: Latches,
 
@@ -50,6 +43,11 @@ class HandoffManager(
                 override val left: PixelHolder,
                 override val right: PixelHolder
         ): Side.ThingWithSides<PixelHolder>
+
+        fun cutToHandoffConstraints(): HandoffConstraints = HandoffConstraints(
+                extendo = extendo,
+                depo = depo
+        )
     }
 
 
@@ -60,7 +58,7 @@ class HandoffManager(
         return liftIsDown && armIsAtHandoffPosition && extendoIsIn
     }
 
-    private fun checkIfInputAllowsForHandoff(handoffInput: HandoffConstrainingInputs): Boolean {
+    private fun checkIfConstraintsAllowForHandoff(handoffInput: HandoffConstraints): Boolean {
         val liftIsDown = handoffInput.depo == Slides.Retracted
         val extendoIsIn = handoffInput.extendo == Slides.Retracted
         return liftIsDown && extendoIsIn
@@ -72,12 +70,15 @@ class HandoffManager(
         Both,
         NoPixel,
     }
-    private fun determinePixelControllerForSinglePixel(side: Side, transferSensorState: TransferSensorState, actualWristAngles: Wrist.ActualWrist, previousTransferTarget: TransferTarget): PixelController {
+
+    //  .wrist.getClawBySide(side).isClawAtAngle(Claw.ClawTarget.Gripping, actualWristAngles.getBySide(side))
+    //transfer.checkIfLatchHasActuallyAchievedTarget(side, LatchPositions.Closed, previousTransferTarget)
+    private fun determinePixelControllerForSinglePixel(side: Side, actualState: HandoffCoordinated, transferSensorState: TransferSensorState): PixelController {
         val pixelIsDetected = transferSensorState.getBySide(side).hasPixelBeenSeen
 
         return if (pixelIsDetected) {
-            val clawIsGripping = wrist.getClawBySide(side).isClawAtAngle(Claw.ClawTarget.Gripping, actualWristAngles.getBySide(side))
-            val latchIsClosed = transfer.checkIfLatchHasActuallyAchievedTarget(side, LatchPositions.Closed, previousTransferTarget)
+            val clawIsGripping = HandoffCoordinated.PixelHolder.Holding == actualState.wrist.getBySide(side)
+            val latchIsClosed = HandoffCoordinated.PixelHolder.Holding == actualState.latches.getBySide(side)
 
             when {
                 clawIsGripping && latchIsClosed -> PixelController.Both
@@ -90,14 +91,15 @@ class HandoffManager(
     }
 
     private data class OneSideCoordinatedExtremeties(
-            val latch: HandoffCoordinatedOutput.PixelHolder,
-            val claw: HandoffCoordinatedOutput.PixelHolder
+            val latch: HandoffCoordinated.PixelHolder,
+            val claw: HandoffCoordinated.PixelHolder
     )
 
-    fun coordinateHandoff(handoffInput: HandoffConstrainingInputs, actualCollector: CollectorManager.ActualCollector, actualDepo: DepoManager.ActualDepo, transferSensorState: TransferSensorState, previousTransferTarget: TransferTarget, ): HandoffCoordinatedOutput {
+    fun coordinateHandoff(inputConstraints: HandoffConstraints, actualState: HandoffCoordinated, transferSensorState: TransferSensorState): HandoffCoordinated {
 
-        val actualRobotAllowsForHandoff = checkIfActualRobotAllowsForHandoff(actualDepo, actualCollector)
-        val inputAllowsForHandoff = checkIfInputAllowsForHandoff(handoffInput)
+//        val actualRobotAllowsForHandoff = checkIfActualRobotAllowsForHandoff(actualDepo, actualCollector)
+        val actualRobotAllowsForHandoff = checkIfConstraintsAllowForHandoff(actualState.cutToHandoffConstraints())
+        val inputAllowsForHandoff = checkIfConstraintsAllowForHandoff(inputConstraints)
         val startHandoff = inputAllowsForHandoff && actualRobotAllowsForHandoff
 
         val finalPixelController = { side: Side ->
@@ -109,8 +111,9 @@ class HandoffManager(
         }
 
         val actualController = { side: Side ->
-            determinePixelControllerForSinglePixel(side, transferSensorState, actualDepo.wristAngles, previousTransferTarget)
+            determinePixelControllerForSinglePixel(side, actualState, transferSensorState)
         }
+
 
         val bothActualControllersAreAtFinal = Side.entries.fold(true) { acc, side ->
             val controller = actualController(side)
@@ -123,16 +126,16 @@ class HandoffManager(
 
         fun determineOutputFromController(targetPixelController: PixelController): OneSideCoordinatedExtremeties = when (targetPixelController) {
             PixelController.Depo -> OneSideCoordinatedExtremeties(
-                    latch = HandoffCoordinatedOutput.PixelHolder.Released,
-                    claw = HandoffCoordinatedOutput.PixelHolder.Holding,
+                    latch = HandoffCoordinated.PixelHolder.Released,
+                    claw = HandoffCoordinated.PixelHolder.Holding,
             )
             PixelController.Both -> OneSideCoordinatedExtremeties(
-                    latch = HandoffCoordinatedOutput.PixelHolder.Holding,
-                    claw = HandoffCoordinatedOutput.PixelHolder.Holding
+                    latch = HandoffCoordinated.PixelHolder.Holding,
+                    claw = HandoffCoordinated.PixelHolder.Holding
             )
             else -> OneSideCoordinatedExtremeties(
-                    latch = HandoffCoordinatedOutput.PixelHolder.Holding,
-                    claw = HandoffCoordinatedOutput.PixelHolder.Released,
+                    latch = HandoffCoordinated.PixelHolder.Holding,
+                    claw = HandoffCoordinated.PixelHolder.Released,
             )
         }
 
@@ -145,15 +148,15 @@ class HandoffManager(
             val left = outputs(Side.Left)
             val right = outputs(Side.Right)
 
-            HandoffCoordinatedOutput(
-                    extendo = handoffInput.extendo,
-                    depo = handoffInput.depo,
+            HandoffCoordinated(
+                    extendo = inputConstraints.extendo,
+                    depo = inputConstraints.depo,
 
-                    latches = HandoffCoordinatedOutput.Latches(
+                    latches = HandoffCoordinated.Latches(
                             left = left.latch,
                             right = right.latch
                     ),
-                    wrist = HandoffCoordinatedOutput.Wrist(
+                    wrist = HandoffCoordinated.Wrist(
                         left = left.claw,
                         right = right.claw
                     )
@@ -191,15 +194,15 @@ class HandoffManager(
             val right = outputs(Side.Right)
 
             //Extensions must be in
-            HandoffCoordinatedOutput(
+            HandoffCoordinated(
                     extendo = Slides.Retracted,
                     depo = Slides.Retracted,
 
-                    latches = HandoffCoordinatedOutput.Latches(
+                    latches = HandoffCoordinated.Latches(
                             left = left.latch,
                             right = right.latch
                     ),
-                    wrist = HandoffCoordinatedOutput.Wrist(
+                    wrist = HandoffCoordinated.Wrist(
                             left = left.claw,
                             right = right.claw
                     )
