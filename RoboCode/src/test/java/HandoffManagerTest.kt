@@ -44,17 +44,17 @@ class HandoffManagerTest {
     }
 
     @Test
-    fun `handoff will start when both slides are in`() {
+    fun `when both slides are and and both pixels are controlled by both slides nothing changes`() {
         // given
         val testSubject = createHandoffManager()
 
-        val handoff = HandoffManager.HandoffPixelsToLift(true)
+        val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
         val collector = CollectorTarget(
                 extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
-                intakeNoodles = Intake.CollectorPowers.Intake,
+                intakeNoodles = Intake.CollectorPowers.Off,
                 dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                 transferSensorState = Transfer.TransferSensorState(
                         left = Transfer.SensorState(hasPixelBeenSeen = true, 0),
@@ -72,7 +72,7 @@ class HandoffManagerTest {
         val previousTargetWorld = createPreviousTargetStateChangeTransferAndIntake(
                 Transfer.LatchPositions.Closed,
                 Transfer.LatchPositions.Closed,
-                Intake.CollectorPowers.Intake
+                Intake.CollectorPowers.Off
         )
         val actualWorld = ActualWorld(
                 actualRobot = ActualRobot(
@@ -99,7 +99,6 @@ class HandoffManagerTest {
                 actualGamepad2 = Gamepad()
         )
 
-
         // when
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
@@ -111,23 +110,24 @@ class HandoffManagerTest {
 
         // then
         val expectedOutput = HandoffManager.HandoffTarget(
-            collector = collector.copy(
-                    extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Min),
-                    latches = Transfer.TransferTarget(
-                            leftLatchTarget = Transfer.LatchTarget(
-                                    target = Transfer.LatchPositions.Closed, 0
-                            ),
-                            rightLatchTarget = Transfer.LatchTarget(
-                                    target = Transfer.LatchPositions.Closed, 0
-                            ),
-                    )
-            ),
-            depo = DepoTarget(
-                    armPosition = Arm.ArmTarget(Arm.Positions.In),
-                    lift = Lift.TargetLift(Lift.LiftPositions.Down),
-                    wristPosition = Wrist.WristTargets(Claw.ClawTarget.Gripping),
-                    targetType = DepoManager.DepoTargetType.GoingHome
-            )
+                collector = collector,
+//            collector = collector.copy(
+//                    extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Min),
+//                    latches = Transfer.TransferTarget(
+//                            leftLatchTarget = Transfer.LatchTarget(
+//                                    target = Transfer.LatchPositions.Closed, 0
+//                            ),
+//                            rightLatchTarget = Transfer.LatchTarget(
+//                                    target = Transfer.LatchPositions.Closed, 0
+//                            ),
+//                    )
+//            ),
+                depo = DepoTarget(
+                        armPosition = Arm.ArmTarget(Arm.Positions.In),
+                        lift = Lift.TargetLift(Lift.LiftPositions.Down),
+                        wristPosition = Wrist.WristTargets(Claw.ClawTarget.Gripping),
+                        targetType = DepoManager.DepoTargetType.GoingHome
+                )
         )
         Assert.assertEquals(expectedOutput, actualOutput)
     }

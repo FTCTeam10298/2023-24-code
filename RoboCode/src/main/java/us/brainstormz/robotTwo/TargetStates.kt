@@ -43,16 +43,7 @@ data class TargetWorld(
         val getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?,
         val timeTargetStartedMilis: Long = 0,
         val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
-) {
-    override fun equals(other: Any?): Boolean {
-        return if (other is TargetWorld) {
-            super.equals(other)
-        } else {
-            false
-        }
-    }
-}
-
+)
 
 data class ActualRobot(
         val positionAndRotation: PositionAndRotation,

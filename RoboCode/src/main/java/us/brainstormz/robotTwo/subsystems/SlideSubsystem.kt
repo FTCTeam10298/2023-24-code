@@ -109,13 +109,18 @@ interface SlideSubsystem: DualMovementModeSubsystem {
             override val targetPosition: SlideTargetPosition,
             override val movementMode: MovementMode,
             override val power: Double = 0.0,
-            open val timeOfResetMoveDirectionStartMilis: Long = 0): TargetMovementSubsystem {
-                constructor(targetPosition: SlideTargetPosition): this(
-                        targetPosition= targetPosition,
-                        movementMode = MovementMode.Position,
-                        power = 0.0
-                )
-            }
+            open val timeOfResetMoveDirectionStartMilis: Long = 0
+    ): TargetMovementSubsystem {
+        constructor(targetPosition: SlideTargetPosition): this(
+                targetPosition= targetPosition,
+                movementMode = MovementMode.Position,
+                power = 0.0
+        )
+
+        override fun toString(): String = """
+            TargetSlideSubsystem(targetPosition=$targetPosition, movementMode=$movementMode, power=$power)
+        """.trimIndent()
+    }
 
     val stallCurrentAmps: Double
     val findResetPower: Double
