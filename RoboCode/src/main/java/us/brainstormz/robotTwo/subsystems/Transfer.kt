@@ -66,7 +66,7 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
     data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
-    data class TransferState(val left: SensorState, val right: SensorState) {
+    data class TransferSensorState(val left: SensorState, val right: SensorState) {
         fun getBySide(side: Side): SensorState {
             return when(side) {
                 Side.Left -> left
@@ -75,7 +75,7 @@ class Transfer(private val telemetry: Telemetry) {
         }
     }
 
-    fun getTransferState(actualWorld: ActualWorld, previousTransferState: TransferState): TransferState {
+    fun getTransferState(actualWorld: ActualWorld, previousTransferState: TransferSensorState): TransferSensorState {
 
         fun getSensorState(actualReading: ColorReading, previousSensorState: SensorState): SensorState {
             val isSeeingPixel = isPixelIn(actualReading)
@@ -87,7 +87,7 @@ class Transfer(private val telemetry: Telemetry) {
             return SensorState(isSeeingPixel, timeOfSeeingRightPixelMilis)
         }
 
-        return TransferState(
+        return TransferSensorState(
                 left = getSensorState(actualWorld.actualRobot.collectorSystemState.transferState.left, previousTransferState.left),
                 right = getSensorState(actualWorld.actualRobot.collectorSystemState.transferState.right, previousTransferState.right)
         )

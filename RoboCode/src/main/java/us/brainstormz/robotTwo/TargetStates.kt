@@ -25,7 +25,7 @@ data class CollectorTarget(
         val timeOfTransferredMillis: Long?,
         val intakeNoodles: Intake.CollectorPowers,
         val dropDown: Dropdown.DropdownTarget,
-        val transferState: Transfer.TransferState,
+        val transferState: Transfer.TransferSensorState,
         val latches: Transfer.TransferTarget,
 )
 data class TargetRobot(
@@ -40,7 +40,6 @@ data class TargetWorld(
         val targetRobot: TargetRobot,
         val driverInput: RobotTwoTeleOp.DriverInput,
         val doingHandoff: Boolean,
-        val handoffState: HandoffManager.SideIsActivelyHandingOff,
         val getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?,
         val timeTargetStartedMilis: Long = 0,
         val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?

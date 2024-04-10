@@ -120,7 +120,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
-    val handoffManager: HandoffManager = HandoffManager(collectorSystem, wrist, lift, extendo, arm, transfer, telemetry)
+    val handoffManager: HandoffManager = HandoffManager(collectorSystem, depoManager, wrist, arm, transfer, telemetry)
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(RumbleEffect.Builder().addStep(1.0, 1.0, 400).addStep(0.0, 0.0, 200).addStep(1.0, 1.0, 400).build()),//.addStep(0.0, 0.0, 0)
@@ -151,7 +151,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         NoInput
     }
     data class WristInput(val left: ClawInput, val right: ClawInput) {
-        val bothClaws = mapOf(Transfer.Side.Left to left, Transfer.Side.Right to right)
+        val bothClaws = mapOf(Side.Left to left, Side.Right to right)
     }
     enum class ClawInput {
         Drop,
@@ -691,12 +691,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
         // tell humans
-        val handoffIsReadyCheck = handoffManager.checkIfHandoffIsReadyToStart(actualWorld, previousActualWorld)
+        val handoffIsReadyCheck = false
         telemetry.addLine("doHandoffSequence: $doHandoffSequence")
         telemetry.addLine("handoffIsReadyCheck: $handoffIsReadyCheck")
-
-        val handoffState = handoffManager.getHandoffState(actualRobot = actualRobot, previousTargetWorld = previousTargetState)
-        telemetry.addLine("handoffState: $handoffState")
 
         /**Intake Noodles*/
         val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis?:actualWorld.timestampMilis)
@@ -754,7 +751,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Gates*/
-        fun getLatchTarget(side: Transfer.Side, targetPosition: Transfer.LatchPositions): Transfer.LatchTarget {
+        fun getLatchTarget(side: Side, targetPosition: Transfer.LatchPositions): Transfer.LatchTarget {
             val previousLatchTarget = previousTargetState.targetRobot.collectorTarget.latches.getBySide(side)
 
             return if (targetPosition != previousLatchTarget.target) {
@@ -766,8 +763,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
 
-        fun getLatchHandingOffTarget(side: Transfer.Side): Transfer.LatchTarget {
-            val handingOffIsHappening = handoffState.getBySide(side.otherSide())
+        fun getLatchHandingOffTarget(side: Side): Transfer.LatchTarget {
+            val handingOffIsHappening = false//handoffState.getBySide(side.otherSide())
 
             return getLatchTarget(side = side,
                     targetPosition = if (handingOffIsHappening) {
@@ -784,8 +781,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         val latchTarget = Transfer.TransferTarget(
-                leftLatchTarget = getLatchHandingOffTarget(Transfer.Side.Left),
-                rightLatchTarget = getLatchHandingOffTarget(Transfer.Side.Right),
+                leftLatchTarget = getLatchHandingOffTarget(Side.Left),
+                rightLatchTarget = getLatchHandingOffTarget(Side.Right),
         )
 
         /**Extendo*/
@@ -836,23 +833,23 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val areDepositing = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.GoingOut
 
-        fun isPixelInSide(side: Transfer.Side): Boolean {
+        fun isPixelInSide(side: Side): Boolean {
             return when (side) {
-                Transfer.Side.Left -> transfer.checkIfPixelIsTransferred(transferState.left)
-                Transfer.Side.Right -> transfer.checkIfPixelIsTransferred(transferState.right)
+                Side.Left -> transfer.checkIfPixelIsTransferred(transferState.left)
+                Side.Right -> transfer.checkIfPixelIsTransferred(transferState.right)
             }
         }
 
         val doingHandoff = doHandoffSequence && previousTargetState.targetRobot.depoTarget.targetType != DepoTargetType.GoingOut
         val collectorIsMovingOut = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) > 0.1
-        val mapOfClawInputsToConditions: Map<ClawInput, (Transfer.Side) -> List<Boolean>> = mapOf(
+        val mapOfClawInputsToConditions: Map<ClawInput, (Side) -> List<Boolean>> = mapOf(
                 ClawInput.Hold to {side ->
                     listOf(
-                            doingHandoff && handoffIsReadyCheck && isPixelInSide(Transfer.Side.entries.first{it != side} /*claws Are Flipped when down*/),
+                            doingHandoff && handoffIsReadyCheck && isPixelInSide(Side.entries.first{it != side} /*claws Are Flipped when down*/),
                     )
                 },
                 ClawInput.Drop to {side ->
-                    val areLatchesReady = handoffManager.checkIfLatchHasSecuredPixelsFromClaw(side, actualWorld, previousTargetState.targetRobot.collectorTarget.latches)
+                    val areLatchesReady = transfer.checkIfLatchHasActuallyAchievedTarget(side, Transfer.LatchPositions.Closed, previousTargetState.targetRobot.collectorTarget.latches)
                     listOf(
                             !areDepositing && intakeNoodleTarget == Intake.CollectorPowers.Intake,
                             doingHandoff && !handoffIsReadyCheck,
@@ -861,7 +858,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 },
         )
 
-        val clawInputPerSide = Transfer.Side.entries.map { side ->
+        val clawInputPerSide = Side.entries.map { side ->
             val driverInputForThisSide = driverInput.wrist.bothClaws.entries.first {it.key == side}.value
             side to mapOfClawInputsToConditions.entries.fold(driverInputForThisSide) { acc, (clawInput, listOfConditions) ->
                 val doesValueMatch: Boolean = listOfConditions(side).fold(false) {acc, it -> acc || it}
@@ -889,7 +886,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         } else {
                             driverInput.depo
                         },
-                wrist = WristInput(clawInputPerSide[Transfer.Side.Left]!!,  clawInputPerSide[Transfer.Side.Right]!!)
+                wrist = WristInput(clawInputPerSide[Side.Left]!!,  clawInputPerSide[Side.Right]!!)
         )
 
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
@@ -942,10 +939,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 val previousWasNotThisColor = previousTargetState.driverInput.lightInput != driverInput.lightInput
                 if (previousWasNoInput && previousWasNotThisColor) {
 
-                    val mapToSide = mapOf(  Transfer.Side.Left to previousPattern.leftPixel,
-                                            Transfer.Side.Right to previousPattern.rightPixel)
+                    val mapToSide = mapOf(  Side.Left to previousPattern.leftPixel,
+                                            Side.Right to previousPattern.rightPixel)
 
-                    val side = mapToSide.entries.fold(Transfer.Side.Left) {acc, (side, it) ->
+                    val side = mapToSide.entries.fold(Side.Left) {acc, (side, it) ->
                         if (it == PixelColor.Unknown) {
                             side
                         } else {
@@ -962,8 +959,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     }
 
                     when (side) {
-                        Transfer.Side.Left -> previousPattern.copy(leftPixel = color)
-                        Transfer.Side.Right -> previousPattern.copy(rightPixel = color)
+                        Side.Left -> previousPattern.copy(leftPixel = color)
+                        Side.Right -> previousPattern.copy(rightPixel = color)
                     }
                 } else {
                     previousPattern
@@ -1023,8 +1020,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
 
         val finalLatchesTarget = Transfer.TransferTarget(
-                leftLatchTarget = getLatchTarget(Transfer.Side.Left, latchInputToLatchPosition(driverInput.leftLatch) ?: coordinatedCollector.latches.leftLatchTarget.target),
-                rightLatchTarget = getLatchTarget(Transfer.Side.Right, latchInputToLatchPosition(driverInput.rightLatch) ?: coordinatedCollector.latches.rightLatchTarget.target)
+                leftLatchTarget = getLatchTarget(Side.Left, latchInputToLatchPosition(driverInput.leftLatch) ?: coordinatedCollector.latches.leftLatchTarget.target),
+                rightLatchTarget = getLatchTarget(Side.Right, latchInputToLatchPosition(driverInput.rightLatch) ?: coordinatedCollector.latches.rightLatchTarget.target)
         )
         val finalCollector = coordinatedCollector.copy(latches = finalLatchesTarget)
 
@@ -1043,7 +1040,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         lights = lights,
                 ),
                 doingHandoff = doHandoffSequence,
-                handoffState = handoffState,
                 driverInput = spoofDriverInputForDepo,
                 getNextTask = { _, _, _-> null },
                 gamepad1Rumble = gamepad1RumbleRoutine
@@ -1096,7 +1092,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 dropDown= Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 timeOfEjectionStartMilis = 0,
                                 timeOfTransferredMillis = 0,
-                                transferState = Transfer.TransferState(
+                                transferState = Transfer.TransferSensorState(
                                         left = initSensorState,
                                         right = initSensorState
                                 ),
@@ -1116,7 +1112,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 doingHandoff = false,
                 driverInput = noInput,
                 getNextTask = { _, _, _ -> null },
-                handoffState = HandoffManager.SideIsActivelyHandingOff(false, false),
                 gamepad1Rumble = null
         )
     }

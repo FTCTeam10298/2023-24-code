@@ -71,7 +71,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                                 intakeNoodles = targetRobot.collectorSystemState.collectorState,
                                 dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 latches = targetRobot.collectorSystemState.transferRollersState.toRealTransferTarget(),
-                                transferState = Transfer.TransferState(
+                                transferState = Transfer.TransferSensorState(
                                         left = RobotTwoTeleOp.initSensorState,
                                         right = RobotTwoTeleOp.initSensorState
                                 ),
@@ -90,7 +90,6 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                 doingHandoff = false,
                 getNextTask = getNextTask,
                 timeTargetStartedMilis = timeTargetStartedMilis,
-                handoffState = HandoffManager.SideIsActivelyHandingOff(false, false),
                 gamepad1Rumble = null
         )
     }
