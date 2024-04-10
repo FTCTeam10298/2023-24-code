@@ -684,6 +684,65 @@ class HandoffCoordinatorTest {
     }
 
 
+    @Test
+    fun `when depo is depositing pixels, handoff won't engage`() {
+        // given
+        val testSubject = createHandoffManager()
+        val params = HandoffCoordinationParams(
+                inputConstraints = HandoffConstraints(
+                        extendo = Slides.NotReady,
+                        depo = Slides.NotReady,
+                        handoffPixelsToLift = HandoffPixelsToLift(false)
+                ),
+                actualState = HandoffCoordinated(
+                        extendo = Slides.NotReady,
+                        depo = Slides.NotReady,
+
+                        latches = Latches(
+                                left = PixelHolder.Holding,
+                                right = PixelHolder.Holding
+                        ),
+                        wrist = Wrist(
+                                left = PixelHolder.Holding,
+                                right = PixelHolder.Holding,
+                        )
+                ),
+                transferSensorState = Transfer.TransferSensorState(
+                        Transfer.SensorState(
+                                hasPixelBeenSeen = false,
+                                timeOfSeeingMilis = 0
+                        ),
+                        Transfer.SensorState(
+                                hasPixelBeenSeen = false,
+                                timeOfSeeingMilis = 0
+                        ),
+                ),
+        )
+
+        // when
+        val actualOutput = testSubject.coordinateHandoff(
+                params.inputConstraints,
+                params.actualState,
+                params.transferSensorState
+        )
+
+        // then
+        val expectedOutput = HandoffCoordinated(
+                extendo = Slides.NotReady,
+                latches = Latches(
+                        left = PixelHolder.Holding,
+                        right = PixelHolder.Holding
+                ),
+                depo = Slides.NotReady,
+                wrist = Wrist(
+                        left = PixelHolder.Holding,
+                        right = PixelHolder.Holding,
+                )
+        )
+        Assert.assertEquals(expectedOutput, actualOutput)
+    }
+
+
 
     data class HandoffCoordinationParams(
             val inputConstraints: HandoffConstraints,

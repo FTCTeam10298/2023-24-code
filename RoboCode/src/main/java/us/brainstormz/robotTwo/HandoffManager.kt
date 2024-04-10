@@ -101,11 +101,16 @@ class HandoffManager(
         val handoffAllowedToStart = inputAllowsForHandoff && actualRobotAllowsForHandoff
 
         val finalPixelController = { side: Side ->
-            val liftWantsThePixel = inputConstraints.handoffPixelsToLift.getBySide(side) && extendoInputIsIn
-            when {
-                liftWantsThePixel -> PixelController.Depo
-                handoffAllowedToStart -> PixelController.Both
-                else -> PixelController.Collector
+            val thereIsAPixel = transferSensorState.getBySide(side).hasPixelBeenSeen
+            if (thereIsAPixel) {
+                val liftWantsThePixel = inputConstraints.handoffPixelsToLift.getBySide(side) && extendoInputIsIn
+                when {
+                    liftWantsThePixel -> PixelController.Depo
+                    handoffAllowedToStart -> PixelController.Both
+                    else -> PixelController.Collector
+                }
+            } else {
+                PixelController.NoPixel
             }
         }
 
@@ -113,17 +118,15 @@ class HandoffManager(
             determinePixelControllerForSinglePixel(side, actualState, transferSensorState)
         }
 
-
         val bothActualControllersAreAtFinal = Side.entries.fold(true) { acc, side ->
             val controller = actualController(side)
 
-            val noPixelToControl = PixelController.NoPixel == controller
             val controllerIsAtFinal = finalPixelController(side) == controller
-            acc && (controllerIsAtFinal || noPixelToControl)
+            acc && controllerIsAtFinal
         }
 
 
-        fun determineOutputFromController(targetPixelController: PixelController): OneSideCoordinatedExtremeties = when (targetPixelController) {
+        fun determineOutputFromController(side: Side, targetPixelController: PixelController): OneSideCoordinatedExtremeties = when (targetPixelController) {
             PixelController.Depo -> OneSideCoordinatedExtremeties(
                     latch = HandoffCoordinated.PixelHolder.Released,
                     claw = HandoffCoordinated.PixelHolder.Holding,
@@ -132,9 +135,13 @@ class HandoffManager(
                     latch = HandoffCoordinated.PixelHolder.Holding,
                     claw = HandoffCoordinated.PixelHolder.Holding
             )
-            else -> OneSideCoordinatedExtremeties(
+            PixelController.Collector -> OneSideCoordinatedExtremeties(
                     latch = HandoffCoordinated.PixelHolder.Holding,
                     claw = HandoffCoordinated.PixelHolder.Released,
+            )
+            else -> OneSideCoordinatedExtremeties(
+                    latch = actualState.latches.getBySide(side),
+                    claw = actualState.wrist.getBySide(side)
             )
         }
 
@@ -142,7 +149,7 @@ class HandoffManager(
         return if (bothActualControllersAreAtFinal) {
             val outputs = {side: Side ->
                 val controller = actualController(side)
-                determineOutputFromController(controller)
+                determineOutputFromController(side, controller)
             }
             val left = outputs(Side.Left)
             val right = outputs(Side.Right)
@@ -181,7 +188,7 @@ class HandoffManager(
             }
 
             val outputs = {side: Side ->
-                determineOutputFromController(
+                determineOutputFromController(side,
                         targetPixelController = resolveControllerDifference(
                                 finalController = finalPixelController(side),
                                 actualController = actualController(side)
