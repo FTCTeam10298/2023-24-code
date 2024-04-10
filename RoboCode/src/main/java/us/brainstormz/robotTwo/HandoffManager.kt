@@ -20,8 +20,16 @@ class HandoffManager(
     }
     data class HandoffConstraints(
             val extendo: Slides,
-            val depo: Slides
-    )
+            val depo: Slides,
+            val handoffPixelsToLift: HandoffPixelsToLift
+    ) {
+        data class HandoffPixelsToLift(
+            override val left: Boolean,
+            override val right: Boolean
+        ): Side.ThingWithSides<Boolean> {
+            constructor(both: Boolean): this(both, both)
+        }
+    }
     data class HandoffCoordinated(
             val extendo: Slides,
             val latches: Latches,
@@ -43,11 +51,6 @@ class HandoffManager(
                 override val left: PixelHolder,
                 override val right: PixelHolder
         ): Side.ThingWithSides<PixelHolder>
-
-        fun cutToHandoffConstraints(): HandoffConstraints = HandoffConstraints(
-                extendo = extendo,
-                depo = depo
-        )
     }
 
 
@@ -56,12 +59,6 @@ class HandoffManager(
         val extendoIsIn = actualCollector.extendo.limitSwitchIsActivated
         val armIsAtHandoffPosition = arm.checkIfArmIsAtTarget(Arm.Positions.In, actualDepo.armAngleDegrees)
         return liftIsDown && armIsAtHandoffPosition && extendoIsIn
-    }
-
-    private fun checkIfConstraintsAllowForHandoff(handoffInput: HandoffConstraints): Boolean {
-        val liftIsDown = handoffInput.depo == Slides.Retracted
-        val extendoIsIn = handoffInput.extendo == Slides.Retracted
-        return liftIsDown && extendoIsIn
     }
 
     private enum class PixelController {
@@ -97,13 +94,19 @@ class HandoffManager(
 
     fun coordinateHandoff(inputConstraints: HandoffConstraints, actualState: HandoffCoordinated, transferSensorState: TransferSensorState): HandoffCoordinated {
 
-//        val actualRobotAllowsForHandoff = checkIfActualRobotAllowsForHandoff(actualDepo, actualCollector)
-        val actualRobotAllowsForHandoff = checkIfConstraintsAllowForHandoff(actualState.cutToHandoffConstraints())
-        val inputAllowsForHandoff = checkIfConstraintsAllowForHandoff(inputConstraints)
-        val startHandoff = inputAllowsForHandoff && actualRobotAllowsForHandoff
+        val liftIsDown = actualState.depo == Slides.Retracted
+        val extendoIsIn = actualState.extendo == Slides.Retracted
+        val actualRobotAllowsForHandoff = liftIsDown && extendoIsIn
+
+        val liftInputIsDown = inputConstraints.depo == Slides.Retracted
+        val extendoInputIsIn = inputConstraints.extendo == Slides.Retracted
+        val inputAllowsForHandoff = liftInputIsDown && extendoInputIsIn
+
+        val handoffAllowedToStart = inputAllowsForHandoff && actualRobotAllowsForHandoff
 
         val finalPixelController = { side: Side ->
-            if (startHandoff) {
+            val liftWantsThePixel = inputConstraints.handoffPixelsToLift.getBySide(side) && extendoInputIsIn
+            if (handoffAllowedToStart || liftWantsThePixel) {
                 PixelController.Depo
             } else {
                 PixelController.Collector
