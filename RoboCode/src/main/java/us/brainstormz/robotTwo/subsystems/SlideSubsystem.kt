@@ -103,6 +103,9 @@ interface SlideSubsystem: DualMovementModeSubsystem {
                 false
             }
         }
+        override fun toString(): String = """
+            VariableTargetPosition(ticks=$ticks)
+        """.trimIndent()
     }
 
     open class TargetSlideSubsystem (

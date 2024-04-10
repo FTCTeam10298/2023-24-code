@@ -118,7 +118,20 @@ class DepoManager(
                 //If depo is going in then go out and either claw is gripping, drop then come in.
                 val armIsOkToDrop = actualDepo.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees + 2
                 if (!armIsOkToDrop && eitherClawIsGripping) {
-                    previousTargetDepo.wristPosition
+                    val gripClawIfItsNotFullyReleased = {side: Side ->
+                        val claw = wrist.getClawBySide(side)
+                        val clawIsFullyRetracted = claw.isClawAtAngle(Claw.ClawTarget.Retracted, actualDepo.wristAngles.getBySide(side))
+                        if (clawIsFullyRetracted) {
+                            Claw.ClawTarget.Retracted
+                        } else {
+                            Claw.ClawTarget.Gripping
+                        }
+                    }
+                    WristTargets(
+                            left = gripClawIfItsNotFullyReleased(Side.Left),
+                            right = gripClawIfItsNotFullyReleased(Side.Right)
+                    )
+//                    previousTargetDepo.wristPosition
                 } else {
                     WristTargets(Claw.ClawTarget.Retracted)
                 }
@@ -154,9 +167,9 @@ class DepoManager(
                 }
             }
         } else {
+            val liftIsAboveClear = actualDepo.lift.currentPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
             when (finalDepoTarget.targetType) {
                 DepoTargetType.GoingHome -> {
-                    val liftIsAboveClear = actualDepo.lift.currentPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
                     if (eitherClawIsGripping && liftIsAboveClear) {
                         //If depo is going in and either claw is gripping then go out, drop then come in.
                         Arm.Positions.Out
@@ -166,7 +179,6 @@ class DepoManager(
                     }
                 }
                 DepoTargetType.GoingOut -> {
-                    val liftIsAboveClear = actualDepo.lift.currentPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
                     if (clawsArentMoving && liftIsAboveClear) {
                         finalDepoTarget.armPosition.targetPosition
                     } else {
@@ -213,6 +225,7 @@ class DepoManager(
                     }
                 } else {
                     telemetry.addLine("lift is waiting for the claws")
+//                    SlideSubsystem.VariableTargetPosition(actualDepo.lift.currentPositionTicks)
                     previousTargetDepo.lift.targetPosition
                 }
 
