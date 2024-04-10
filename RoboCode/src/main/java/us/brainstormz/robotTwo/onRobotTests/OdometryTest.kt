@@ -9,7 +9,7 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 
 @Autonomous
-class PIDTuningTest: OpMode() {
+class OdomLocalizationTest: OpMode() {
     val hardware = RobotTwoHardware(opmode= this, telemetry= telemetry)
     lateinit var localizer: RRTwoWheelLocalizer
     override fun init() {
