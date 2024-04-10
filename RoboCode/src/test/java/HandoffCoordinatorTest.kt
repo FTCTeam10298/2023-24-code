@@ -49,13 +49,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
                         handoffPixelsToLift = HandoffPixelsToLift(false)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -88,12 +88,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         PixelHolder.Holding,
                         PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         PixelHolder.Holding,
                         PixelHolder.Holding,
@@ -108,13 +108,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
                         handoffPixelsToLift = HandoffPixelsToLift(false)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -146,12 +146,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         PixelHolder.Holding,
                         PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         PixelHolder.Holding,
                         PixelHolder.Holding,
@@ -166,13 +166,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
                         handoffPixelsToLift = HandoffPixelsToLift(true)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -204,12 +204,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         PixelHolder.Released,
                         PixelHolder.Released
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         PixelHolder.Holding,
                         PixelHolder.Holding,
@@ -224,14 +224,14 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
                         handoffPixelsToLift = HandoffPixelsToLift(false)
                 ),
 
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -263,12 +263,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding,
@@ -283,13 +283,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.NotReady,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
                         handoffPixelsToLift = HandoffPixelsToLift(false)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -321,12 +321,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released,
@@ -341,13 +341,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.NotReady,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
                         handoffPixelsToLift = HandoffPixelsToLift(false)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Released,
@@ -379,12 +379,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding,
@@ -399,13 +399,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.NotReady,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
                         handoffPixelsToLift = HandoffPixelsToLift(true)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.NotReady,
-                        depo = Slides.NotReady,
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.NotReady,
 
                         latches = Latches(
                                 left = PixelHolder.Released,
@@ -437,12 +437,70 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.NotReady,
+                extendo = ExtendoCoordinationStates.NotReady,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
+                wrist = Wrist(
+                        left = PixelHolder.Holding,
+                        right = PixelHolder.Holding,
+                )
+        )
+        Assert.assertEquals(expectedOutput, actualOutput)
+    }
+
+    @Test
+    fun `when pixel is controlled by depo and depo is off the limit and pixels are past the color sensor but still partially in the transfer, and extendo wants to go out, extendo slide won't move`() {
+        // given
+        val testSubject = createHandoffManager()
+        val params = HandoffCoordinationParams(
+                inputConstraints = HandoffConstraints(
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.NotReady,
+                        handoffPixelsToLift = HandoffPixelsToLift(true)
+                ),
+                actualState = HandoffCoordinated(
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.PotentiallyBlockingExtendoMovement,
+
+                        latches = Latches(
+                                left = PixelHolder.Released,
+                                right = PixelHolder.Released
+                        ),
+                        wrist = Wrist(
+                                left = PixelHolder.Holding,
+                                right = PixelHolder.Holding,
+                        )
+                ),
+                transferSensorState = Transfer.TransferSensorState(
+                        Transfer.SensorState(
+                                hasPixelBeenSeen = false,
+                                timeOfSeeingMilis = 0
+                        ),
+                        Transfer.SensorState(
+                                hasPixelBeenSeen = false,
+                                timeOfSeeingMilis = 0
+                        ),
+                ),
+        )
+
+        // when
+        val actualOutput = testSubject.coordinateHandoff(
+                params.inputConstraints,
+                params.actualState,
+                params.transferSensorState
+        )
+
+        // then
+        val expectedOutput = HandoffCoordinated(
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                latches = Latches(
+                        left = PixelHolder.Released,
+                        right = PixelHolder.Released
+                ),
+                depo = DepoCoordinationStates.NotReady,
                 wrist = Wrist(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding,
@@ -457,13 +515,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.NotReady,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.NotReady,
                         handoffPixelsToLift = HandoffPixelsToLift(false)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -495,12 +553,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released,
@@ -515,13 +573,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.NotReady,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.NotReady,
                         handoffPixelsToLift = HandoffPixelsToLift(true)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -553,12 +611,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding,
@@ -573,13 +631,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.NotReady,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
                         handoffPixelsToLift = HandoffPixelsToLift(true)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -611,12 +669,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released,
@@ -631,13 +689,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.NotReady,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
                         handoffPixelsToLift = HandoffPixelsToLift(false)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -669,12 +727,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.NotReady,
+                extendo = ExtendoCoordinationStates.NotReady,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released,
@@ -689,13 +747,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.NotReady,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.NotReady,
                         handoffPixelsToLift = HandoffPixelsToLift(true)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Released,
@@ -727,12 +785,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released
                 ),
-                depo = Slides.NotReady,
+                depo = DepoCoordinationStates.NotReady,
                 wrist = Wrist(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding,
@@ -747,13 +805,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.NotReady,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.NotReady,
                         handoffPixelsToLift = HandoffPixelsToLift(false)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.ReadyToHandoff,
-                        depo = Slides.ReadyToHandoff,
+                        extendo = ExtendoCoordinationStates.ReadyToHandoff,
+                        depo = DepoCoordinationStates.ReadyToHandoff,
 
                         latches = Latches(
                                 left = PixelHolder.Released,
@@ -785,12 +843,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.ReadyToHandoff,
+                extendo = ExtendoCoordinationStates.ReadyToHandoff,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
-                depo = Slides.ReadyToHandoff,
+                depo = DepoCoordinationStates.ReadyToHandoff,
                 wrist = Wrist(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding,
@@ -806,13 +864,13 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val params = HandoffCoordinationParams(
                 inputConstraints = HandoffConstraints(
-                        extendo = Slides.NotReady,
-                        depo = Slides.NotReady,
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.NotReady,
                         handoffPixelsToLift = HandoffPixelsToLift(false)
                 ),
                 actualState = HandoffCoordinated(
-                        extendo = Slides.NotReady,
-                        depo = Slides.NotReady,
+                        extendo = ExtendoCoordinationStates.NotReady,
+                        depo = DepoCoordinationStates.NotReady,
 
                         latches = Latches(
                                 left = PixelHolder.Holding,
@@ -844,12 +902,12 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-                extendo = Slides.NotReady,
+                extendo = ExtendoCoordinationStates.NotReady,
                 latches = Latches(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
-                depo = Slides.NotReady,
+                depo = DepoCoordinationStates.NotReady,
                 wrist = Wrist(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding,
