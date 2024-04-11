@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo.localTests
 
 import com.qualcomm.robotcore.hardware.Gamepad
+import kotlinx.serialization.Serializable
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation

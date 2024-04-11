@@ -1,35 +1,25 @@
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.qualcomm.robotcore.hardware.Gamepad
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Test
-import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
-import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorManager
-import us.brainstormz.robotTwo.CollectorTarget
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.DepoTarget
-import us.brainstormz.robotTwo.RobotTwoAuto
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.noInput
-import us.brainstormz.robotTwo.TargetRobot
-import us.brainstormz.robotTwo.TargetWorld
-import us.brainstormz.robotTwo.localTests.FauxRobotTwoHardware
 import us.brainstormz.robotTwo.localTests.TeleopTest
 import us.brainstormz.robotTwo.localTests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.ColorReading
-import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.Dropdown
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
@@ -514,13 +504,29 @@ class TeleOpHandoffTest {
 //        Assert.assertEquals(expectedOutput.toString(), actualOutput.toString())
 //    }
 
+
+    @Serializable
+    data class Data(val a: Int, val b: String)
+
+    @Test
+    fun heyImANormalTest() {
+        val file = File("/Users/jamespenrose/ftc/jsonTest/asdf.json")
+        file.createNewFile()
+
+        val json = Json { isLenient = true; ignoreUnknownKeys = true }
+        val jsonEncoded = json.encodeToString(Data(3, "hi"))
+        println("json: $jsonEncoded")
+
+        file.printWriter().use {
+            it.print(jsonEncoded)
+        }
+
+        val newData = file.reader().readText()
+        println("newData: $newData")
+
+        val asObject = json.decodeFromString<Data>(newData)
+
+        println("asObject: $asObject")
+//    println("asObject.a: ${asObject.a}")
+    }
 }
-
-
-//fun main() {
-//    val file = File("/Users/jamespenrose/Downloads/Download/stateSnapshot-1.rtf")
-//    val writer = jacksonObjectMapper().createParser(file)
-//    val data = writer.text
-//    println("data:")
-//    println(data)
-//}
