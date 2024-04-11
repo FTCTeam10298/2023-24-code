@@ -106,7 +106,7 @@ class ExtendoPIDTuner(private val hardware: RobotTwoHardware, telemetry: Telemet
                         Neopixels.NeoPixelColors.Red
                     }
 
-                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(collectorTarget = previousTargetState.targetRobot.collectorTarget.copy(extendo= SlideSubsystem.TargetSlideSubsystem(targetPosition = newTargetPosition.first ?: Extendo.ExtendoPositions.Min , power = newTargetPosition.second.toDouble(), movementMode = DualMovementModeSubsystem.MovementMode.Position)), lights = RobotTwoTeleOp.LightTarget(RobotTwoTeleOp.BothPixelsWeWant(), Neopixels.HalfAndHalfTarget().compileStripState())))
+                    previousTargetState?.copy(targetRobot = previousTargetState.targetRobot.copy(collectorTarget = previousTargetState.targetRobot.collectorTarget.copy(extendo= Extendo.ExtendoTarget(targetPosition = newTargetPosition.first ?: Extendo.ExtendoPositions.Min , power = newTargetPosition.second.toDouble(), movementMode = DualMovementModeSubsystem.MovementMode.Position)), lights = RobotTwoTeleOp.LightTarget(RobotTwoTeleOp.BothPixelsWeWant(), Neopixels.HalfAndHalfTarget().compileStripState())))
                             ?: RobotTwoTeleOp.initialPreviousTargetState
                 }
         )

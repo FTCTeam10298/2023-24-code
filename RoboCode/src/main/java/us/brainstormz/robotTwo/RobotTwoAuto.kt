@@ -63,7 +63,7 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                                 targetType = DepoManager.DepoTargetType.GoingOut,
                         ),
                         collectorTarget = CollectorTarget(
-                                extendo = SlideSubsystem.TargetSlideSubsystem(
+                                extendo = Extendo.ExtendoTarget(
                                         targetPosition = targetRobot.collectorSystemState.extendoPosition,
                                         power = 0.0,
                                         movementMode = MovementMode.Position

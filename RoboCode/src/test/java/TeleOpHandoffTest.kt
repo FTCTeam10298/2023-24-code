@@ -1,6 +1,6 @@
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
+
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 import org.junit.Assert
 import org.junit.Test
 import us.brainstormz.faux.PrintlnTelemetry
@@ -11,7 +11,7 @@ import us.brainstormz.robotTwo.DepoTarget
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.noInput
-import us.brainstormz.robotTwo.localTests.TeleopTest
+import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.localTests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
@@ -68,7 +68,7 @@ class TeleOpHandoffTest {
         val expectedOutput = previousTargetWorld.copy(
                 targetRobot = previousTargetWorld.targetRobot.copy(
                         collectorTarget = previousTargetWorld.targetRobot.collectorTarget.copy(
-                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
+                                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                                 intakeNoodles = Intake.CollectorPowers.Eject,
                                 dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 transferSensorState = Transfer.TransferSensorState(
@@ -146,7 +146,7 @@ class TeleOpHandoffTest {
         val expectedOutput = previousTargetWorld.copy(
                 targetRobot = previousTargetWorld.targetRobot.copy(
                         collectorTarget = previousTargetWorld.targetRobot.collectorTarget.copy(
-                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Manual),
+                                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Manual),
                                 intakeNoodles = Intake.CollectorPowers.Eject,
                                 dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 transferSensorState = Transfer.TransferSensorState(
@@ -229,7 +229,7 @@ class TeleOpHandoffTest {
         val expectedOutput = previousTargetWorld.copy(
                 targetRobot = previousTargetWorld.targetRobot.copy(
                         collectorTarget = previousTargetWorld.targetRobot.collectorTarget.copy(
-                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Manual),
+                                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Manual),
                                 intakeNoodles = Intake.CollectorPowers.Eject,
                                 dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 transferSensorState = Transfer.TransferSensorState(
@@ -337,7 +337,7 @@ class TeleOpHandoffTest {
         val previousTargetWorld = initialPreviousTargetState.copy(
                 targetRobot = initialPreviousTargetState.targetRobot.copy(
                         collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
-                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Manual),
+                                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Manual),
                                 intakeNoodles = Intake.CollectorPowers.Off,
                                 dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 transferSensorState = Transfer.TransferSensorState(
@@ -360,7 +360,7 @@ class TeleOpHandoffTest {
         val expectedOutput = previousTargetWorld.copy(
                 targetRobot = previousTargetWorld.targetRobot.copy(
                         collectorTarget = previousTargetWorld.targetRobot.collectorTarget.copy(
-                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Manual),
+                                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Manual),
                                 intakeNoodles = Intake.CollectorPowers.Off,
                                 dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 transferSensorState = Transfer.TransferSensorState(
@@ -510,11 +510,11 @@ class TeleOpHandoffTest {
 
     @Test
     fun heyImANormalTest() {
-        val file = File("/Users/jamespenrose/ftc/jsonTest/asdf.json")
+        val file = File("/Users/jamespenrose/ftc/jsonTest/asdf.kt.json")
         file.createNewFile()
 
         val json = Json { ignoreUnknownKeys = true }
-        val jsonEncoded = json.encodeToString(emptyWorld)
+        val jsonEncoded = json.encodeToString()
         println("json: $jsonEncoded")
 
         file.printWriter().use {

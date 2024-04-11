@@ -28,7 +28,7 @@ fun main() {
                 targetState = RobotTwoTeleOp.initialPreviousTargetState.copy(
                         targetRobot = RobotTwoTeleOp.initialPreviousTargetState.targetRobot.copy(
                                 collectorTarget = RobotTwoTeleOp.initialPreviousTargetState.targetRobot.collectorTarget.copy(
-                                        extendo = SlideSubsystem.TargetSlideSubsystem(
+                                        extendo = Extendo.ExtendoTarget(
                                                 targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition,
                                                 power = 0.0,
                                                 movementMode = DualMovementModeSubsystem.MovementMode.Position

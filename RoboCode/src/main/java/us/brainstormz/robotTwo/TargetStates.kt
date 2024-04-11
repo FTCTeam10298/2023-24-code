@@ -9,6 +9,7 @@ import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.Dropdown
+import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
@@ -26,7 +27,7 @@ data class DepoTarget(
 )
 @Serializable
 data class CollectorTarget(
-        val extendo: SlideSubsystem.TargetSlideSubsystem,
+        val extendo: Extendo.ExtendoTarget,
         val timeOfEjectionStartMilis: Long?,
         val timeOfTransferredMillis: Long?,
         val intakeNoodles: Intake.CollectorPowers,

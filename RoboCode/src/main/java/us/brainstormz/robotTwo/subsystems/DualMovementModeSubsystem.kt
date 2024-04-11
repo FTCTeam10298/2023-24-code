@@ -1,6 +1,9 @@
 package us.brainstormz.robotTwo.subsystems
 
+import kotlinx.serialization.Serializable
+
 interface DualMovementModeSubsystem {
+    @Serializable
     enum class MovementMode {
         Position,
         Power

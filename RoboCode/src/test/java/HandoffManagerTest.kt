@@ -49,7 +49,7 @@ class HandoffManagerTest {
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
         val collector = CollectorTarget(
-                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 intakeNoodles = Intake.CollectorPowers.Off,
@@ -132,7 +132,7 @@ class HandoffManagerTest {
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
         val collector = CollectorTarget(
-                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 intakeNoodles = Intake.CollectorPowers.Intake,
@@ -215,7 +215,7 @@ class HandoffManagerTest {
         val handoff = HandoffManager.HandoffPixelsToLift(true)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
         val collector = CollectorTarget(
-                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 intakeNoodles = Intake.CollectorPowers.Intake,
@@ -301,7 +301,7 @@ class HandoffManagerTest {
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
         val collector = CollectorTarget(
-                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 intakeNoodles = Intake.CollectorPowers.Intake,
@@ -392,7 +392,7 @@ class HandoffManagerTest {
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
         val collector = CollectorTarget(
-                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 intakeNoodles = Intake.CollectorPowers.Off,
@@ -478,7 +478,7 @@ class HandoffManagerTest {
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
         val collector = CollectorTarget(
-                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 intakeNoodles = Intake.CollectorPowers.Off,
@@ -561,7 +561,7 @@ class HandoffManagerTest {
         val handoff = HandoffManager.HandoffPixelsToLift(true)
         val depoInput = RobotTwoTeleOp.DepoInput.Preset3
         val collector = CollectorTarget(
-                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 intakeNoodles = Intake.CollectorPowers.Off,
@@ -645,7 +645,7 @@ class HandoffManagerTest {
         val handoff = HandoffManager.HandoffPixelsToLift(true)
         val depoInput = RobotTwoTeleOp.DepoInput.Preset3
         val collector = CollectorTarget(
-                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 intakeNoodles = Intake.CollectorPowers.Off,
@@ -705,7 +705,7 @@ class HandoffManagerTest {
         // then
         val expectedOutput = HandoffManager.HandoffTarget(
                 collector = collector.copy(
-                        extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Min)
+                        extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Min)
                 ),
                 depo = DepoTarget(
                         armPosition = Arm.ArmTarget(Arm.Positions.ClearLiftMovement),
@@ -732,7 +732,7 @@ class HandoffManagerTest {
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Preset3
         val collector = CollectorTarget(
-                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 intakeNoodles = Intake.CollectorPowers.Off,
@@ -792,7 +792,7 @@ class HandoffManagerTest {
         // then
         val expectedOutput = HandoffManager.HandoffTarget(
                 collector = collector.copy(
-                        extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.PurpleCenterPosition)
+                        extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.PurpleCenterPosition)
                 ),
                 depo = DepoTarget(
                         armPosition = Arm.ArmTarget(Arm.Positions.ClearLiftMovement),

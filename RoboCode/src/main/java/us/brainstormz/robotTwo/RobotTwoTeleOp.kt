@@ -5,7 +5,6 @@ import android.app.ActivityManager.RunningAppProcessInfo
 import android.content.Context
 import android.os.Debug
 import android.os.Debug.MemoryInfo
-import android.os.Environment
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.Gamepad
@@ -807,37 +806,40 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         /**Extendo*/
         val previousExtendoTargetPosition = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
-        val extendoTargetState: SlideSubsystem.TargetSlideSubsystem = when (driverInput.extendo) {
+        val extendoTargetState: Extendo.ExtendoTarget = when (driverInput.extendo) {
             ExtendoInput.ExtendManual -> {
-                SlideSubsystem.TargetSlideSubsystem(
+                Extendo.ExtendoTarget(
                         targetPosition = previousExtendoTargetPosition,
                         movementMode = MovementMode.Power,
                         power = driverInput.extendoManualPower)
             }
             ExtendoInput.RetractManual -> {
-                SlideSubsystem.TargetSlideSubsystem(
+                Extendo.ExtendoTarget(
                         targetPosition = previousExtendoTargetPosition,
                         movementMode = MovementMode.Power,
                         power = driverInput.extendoManualPower)
             }
             ExtendoInput.RetractSetAmount -> {
-                SlideSubsystem.TargetSlideSubsystem(
+                Extendo.ExtendoTarget(
                         targetPosition = previousExtendoTargetPosition,
                         movementMode = MovementMode.Power,
                         power = -0.5)
             }
             ExtendoInput.NoInput -> {
                 if (doHandoffSequence) {
-                    extendo.findLimitToReset(
-                            actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
-                            otherTarget =
-                            SlideSubsystem.TargetSlideSubsystem(
-                                    targetPosition = Extendo.ExtendoPositions.Min,
-                                    movementMode = MovementMode.Position,
-                                    power = 0.0)
-                    )
+                    val slideThinksItsAtZero = actualRobot.collectorSystemState.extendo.currentPositionTicks <= 0
+
+                    if (slideThinksItsAtZero && !actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
+                        Extendo.ExtendoTarget(power = -extendo.findResetPower, movementMode = MovementMode.Power, targetPosition = Extendo.ExtendoPositions.Min)
+                    } else {
+                        Extendo.ExtendoTarget(
+                                targetPosition = Extendo.ExtendoPositions.Min,
+                                movementMode = MovementMode.Position,
+                                power = 0.0)
+                    }
+
                 } else {
-                    SlideSubsystem.TargetSlideSubsystem(
+                    Extendo.ExtendoTarget(
                             targetPosition = previousExtendoTargetPosition,
                             movementMode = MovementMode.Power,
                             power = 0.0)
@@ -981,25 +983,25 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             ),
                             extendo = when (driverInput.extendo) {
                                 ExtendoInput.ExtendManual -> {
-                                    SlideSubsystem.TargetSlideSubsystem(
+                                    Extendo.ExtendoTarget(
                                             targetPosition = previousExtendoTargetPosition,
                                             movementMode = MovementMode.Power,
                                             power = driverInput.extendoManualPower)
                                 }
                                 ExtendoInput.RetractManual -> {
-                                    SlideSubsystem.TargetSlideSubsystem(
+                                    Extendo.ExtendoTarget(
                                             targetPosition = previousExtendoTargetPosition,
                                             movementMode = MovementMode.Power,
                                             power = driverInput.extendoManualPower)
                                 }
                                 ExtendoInput.RetractSetAmount -> {
-                                    SlideSubsystem.TargetSlideSubsystem(
+                                    Extendo.ExtendoTarget(
                                             targetPosition = previousExtendoTargetPosition,
                                             movementMode = MovementMode.Power,
                                             power = -0.7)
                                 }
                                 ExtendoInput.NoInput -> {
-                                    SlideSubsystem.TargetSlideSubsystem(
+                                    Extendo.ExtendoTarget(
                                             targetPosition = Extendo.ExtendoPositions.Min,
                                             movementMode = MovementMode.Power,
                                             power = 0.0)
@@ -1181,7 +1183,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         left = initLatchTarget,
                                         right = initLatchTarget
                                 ),
-                                extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, MovementMode.Position),
+                                extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Manual, 0.0, MovementMode.Position),
                         ),
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
