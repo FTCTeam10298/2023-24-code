@@ -55,10 +55,10 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
     val timeSinceTargetChangeToAchieveTargetMillis = 500
-    fun checkIfLatchHasActuallyAchievedTarget(side: Side, latchTarget: LatchPositions, previousTransferTarget: TransferTarget): Boolean {
+    fun checkIfLatchHasActuallyAchievedTarget(side: Side, latchTarget: LatchPositions, timestampMilis: Long, previousTransferTarget: TransferTarget): Boolean {
         val previousLatchTarget = previousTransferTarget.getBySide(side)
 
-        val timeSinceTargetChangeMillis = System.currentTimeMillis() - previousLatchTarget.timeTargetChangedMillis
+        val timeSinceTargetChangeMillis = timestampMilis - previousLatchTarget.timeTargetChangedMillis
         val beenEnoughTimeSinceTargetChange = timeSinceTargetChangeMillis >= timeSinceTargetChangeToAchieveTargetMillis
 
         val targetMatches = latchTarget == previousLatchTarget.target
@@ -75,7 +75,7 @@ class Transfer(private val telemetry: Telemetry) {
         fun getSensorState(actualReading: ColorReading, previousSensorState: SensorState): SensorState {
             val isSeeingPixel = isPixelIn(actualReading)
             val timeOfSeeingRightPixelMilis = when {
-                !previousSensorState.hasPixelBeenSeen && isSeeingPixel -> System.currentTimeMillis()
+                !previousSensorState.hasPixelBeenSeen && isSeeingPixel -> actualWorld.timestampMilis
                 !isSeeingPixel -> 0
                 else -> previousSensorState.timeOfSeeingMilis
             }

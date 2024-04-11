@@ -291,7 +291,7 @@ class HandoffManager(
                             else -> ExtendoCoordinationStates.NotReady
                         },
                         latches = getLatchesFromRule {side ->
-                            transfer.checkIfLatchHasActuallyAchievedTarget(side, LatchPositions.Closed, previousTargetWorld.targetRobot.collectorTarget.latches)
+                            transfer.checkIfLatchHasActuallyAchievedTarget(side, LatchPositions.Closed, actualWorld.timestampMilis, previousTargetWorld.targetRobot.collectorTarget.latches)
                         },
                         depo = when {
                             actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated && arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)-> DepoCoordinationStates.ReadyToHandoff

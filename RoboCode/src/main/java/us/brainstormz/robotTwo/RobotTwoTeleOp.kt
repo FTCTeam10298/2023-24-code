@@ -849,7 +849,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     )
                 },
                 ClawInput.Drop to {side ->
-                    val areLatchesReady = transfer.checkIfLatchHasActuallyAchievedTarget(side, Transfer.LatchPositions.Closed, previousTargetState.targetRobot.collectorTarget.latches)
+                    val areLatchesReady = transfer.checkIfLatchHasActuallyAchievedTarget(side, Transfer.LatchPositions.Closed, actualWorld.timestampMilis, previousTargetState.targetRobot.collectorTarget.latches)
                     listOf(
                             !areDepositing && intakeNoodleTarget == Intake.CollectorPowers.Intake,
                             doingHandoff && !handoffIsReadyCheck,
