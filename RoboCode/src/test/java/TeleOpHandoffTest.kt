@@ -106,7 +106,7 @@ class TeleOpHandoffTest {
                 gamepad1Rumble = actualOutput.gamepad1Rumble
         )
 
-        Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
+        Assert.assertEquals(expectedOutput, actualOutput)
     }
 
     @Test
@@ -184,8 +184,51 @@ class TeleOpHandoffTest {
                 gamepad1Rumble = actualOutput.gamepad1Rumble
         )
 
-        Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
-//        Assert.assertEquals(expectedOutput, actualOutput,)
+        Assert.assertEquals(expectedOutput, actualOutput)
     }
 
+//    @Test
+//    fun x() {
+//
+//
+//        val a = initialPreviousTargetState.copy(
+//                targetRobot = initialPreviousTargetState.targetRobot.copy(
+//                        collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
+//                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Manual),
+//                                intakeNoodles = Intake.CollectorPowers.Eject,
+//                                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+//                                transferSensorState = Transfer.TransferSensorState(
+//                                        left = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+//                                        right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+//                                ),
+//                                latches = Transfer.TransferTarget(
+//                                        left = Transfer.LatchTarget(
+//                                                target = Transfer.LatchPositions.Closed, 0
+//                                        ),
+//                                        right = Transfer.LatchTarget(
+//                                                target = Transfer.LatchPositions.Closed, 0
+//                                        ),
+//                                ),
+//                                timeOfTransferredMillis = 0,
+//                                timeOfEjectionStartMilis = 0
+//                        ),
+//                        depoTarget = DepoTarget(
+//                                armPosition = Arm.ArmTarget(Arm.Positions.In),
+//                                lift = Lift.TargetLift(Lift.LiftPositions.Down),
+//                                wristPosition = Wrist.WristTargets(Claw.ClawTarget.Retracted),
+//                                targetType = DepoManager.DepoTargetType.GoingHome
+//                        ),
+//                ),
+//        )
+//        val b = a.copy(
+//                targetRobot = a.targetRobot.copy(
+//                        collectorTarget = a.targetRobot.collectorTarget.copy(
+//                                intakeNoodles = Intake.CollectorPowers.Intake,
+//                        ),
+//                )
+//        )
+//
+//
+//        Assert.assertEquals(a, b)
+//    }
 }
