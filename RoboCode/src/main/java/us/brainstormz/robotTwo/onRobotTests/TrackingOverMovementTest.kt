@@ -2,11 +2,19 @@ package us.brainstormz.robotTwo.onRobotTests
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.Gamepad
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.motion.MecanumMovement
+import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
+import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.subsystems.Drivetrain
+import java.io.File
+import java.io.FilenameFilter
+import java.lang.Exception
 import kotlin.math.hypot
 
 @TeleOp
@@ -31,6 +39,8 @@ class TrackingOverMovementTest: OpMode() {
 
     private var previousInchesMovedSinceStart = 0.0
     private var lastActualPosition = PositionAndRotation()
+
+    private var previousGamepad1 = Gamepad()
 
     override fun loop() {
         localizer.recalculatePositionAndRotation()
@@ -61,6 +71,10 @@ class TrackingOverMovementTest: OpMode() {
         } else {
             drivetrain.powerDrivetrain(Drivetrain.DrivetrainPower())
             telemetry.addLine("drivetrain power 0")
+
+            if (gamepad1.cross && !previousGamepad1.cross) {
+                saveAsJson(currentPosition)
+            }
         }
 
         telemetry.addLine("currentPosition: $currentPosition")
@@ -73,5 +87,64 @@ class TrackingOverMovementTest: OpMode() {
         previousInchesMovedSinceStart = newInchesMovedSinceStart
         previousTarget = newTarget
         lastActualPosition = currentPosition
+        previousGamepad1.copy(gamepad1)
     }
+
+    private fun saveAsJson(info: PositionAndRotation) {
+        val directoryPath = "/storage/emulated/0/Download"
+        val numberOfFilesInDirectory = File(directoryPath).listFiles().size
+
+        val file = File("$directoryPath/odomSnapshot$numberOfFilesInDirectory.json")
+        file.createNewFile()
+        if (file.exists() && file.isFile) {
+
+            telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
+
+            val json = Json { ignoreUnknownKeys = true }
+            val jsonEncoded = json.encodeToString(info)
+
+            file.printWriter().use {
+                it.print(jsonEncoded)
+            }
+        }
+    }
+}
+
+fun main() {
+
+    fun getPositionAndRotationFromFile(file: File): PositionAndRotation? {
+
+        val newData = file.reader().readText()
+
+        val json = Json { ignoreUnknownKeys = true }
+        return try {
+            json.decodeFromString<PositionAndRotation>(newData)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+
+    val directoryPath = "/Users/jamespenrose/Downloads/Download"
+    val allFiles = File(directoryPath).listFiles { file, name ->
+        name[0] != '.'
+    }
+
+    val positionAndRotationOrNull = allFiles.map {file ->
+        if (file.isFile) {
+            val fileName = file.name
+
+            val positionAndRotation = getPositionAndRotationFromFile(file)
+
+            if (positionAndRotation != null) {
+                fileName to positionAndRotation
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+    }
+
+    println(positionAndRotationOrNull)
 }
