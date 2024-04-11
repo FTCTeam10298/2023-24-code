@@ -136,9 +136,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Collector,
         Claws
     }
-    enum class Gamepad2RightStickMode {
-        Drivetrain,
-        Depo
+    enum class GamepadControlMode {
+        Normal,
+        Manual
     }
     enum class DepoInput {
         Preset1,
@@ -208,7 +208,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     }
     data class DriverInput (
             val bumperMode: Gamepad1BumperMode,
-            val gamepad2StickMode: Gamepad2RightStickMode,
+            val gamepad1ControlMode: GamepadControlMode,
+            val gamepad2ControlMode: GamepadControlMode,
             val lightInput: LightInput,
             val depo: DepoInput,
             val depoScoringHeightAdjust: Double,
@@ -234,6 +235,26 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val previousGamepad2 = previousActualWorld.actualGamepad2
         val previousRobot = previousActualWorld.actualRobot
         val previousRobotTarget = previousTargetState.targetRobot
+
+
+        /**Control Mode*/
+        val gamepad1ControlMode: GamepadControlMode = if (gamepad1.touchpad && !previousGamepad1.touchpad) {
+            when (previousTargetState.driverInput.gamepad1ControlMode) {
+                GamepadControlMode.Normal -> GamepadControlMode.Manual
+                GamepadControlMode.Manual -> GamepadControlMode.Normal
+            }
+        } else {
+            previousTargetState.driverInput.gamepad1ControlMode
+        }
+
+        val gamepad2ControlMode: GamepadControlMode = if (gamepad2.touchpad && !previousGamepad2.touchpad) {
+            when (previousTargetState.driverInput.gamepad2ControlMode) {
+                GamepadControlMode.Normal -> GamepadControlMode.Manual
+                GamepadControlMode.Manual -> GamepadControlMode.Normal
+            }
+        } else {
+            previousTargetState.driverInput.gamepad2ControlMode
+        }
 
         /**Depo*/
         val depoGamepad2Input: DepoInput? = when {
@@ -275,20 +296,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val dpadInput: DepoInput = depoGamepad2Input ?: depoGamepad1Input
 
-        val gamepad2RightStickMode: Gamepad2RightStickMode = if (gamepad2.touchpad && !previousGamepad2.touchpad) {
-            when (previousTargetState.driverInput.gamepad2StickMode) {
-                Gamepad2RightStickMode.Drivetrain -> Gamepad2RightStickMode.Depo
-                Gamepad2RightStickMode.Depo -> Gamepad2RightStickMode.Drivetrain
-            }
-        } else {
-            previousTargetState.driverInput.gamepad2StickMode
-        }
-
         val liftStickInput = -gamepad2.right_stick_y.toDouble()
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
-        val depoInput = if (gamepad2RightStickMode == Gamepad2RightStickMode.Depo) {
-            telemetry.addLine("gamepad2RightStickMode: $gamepad2RightStickMode")
+        val depoInput = if (gamepad2ControlMode == GamepadControlMode.Manual) {
+            telemetry.addLine("gamepad2RightStickMode: $gamepad2ControlMode")
 
             val isLiftControlActive = liftStickInput.absoluteValue > 0.2
 
@@ -541,11 +553,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val drive2Input = Drivetrain.DrivetrainPower(
                 y = gamepad2.left_stick_y.toDouble(),
                 x = -gamepad2.left_stick_x.toDouble(),
-                r = when (gamepad2RightStickMode) {
-                    Gamepad2RightStickMode.Drivetrain -> {
+                r = when (gamepad2ControlMode) {
+                    GamepadControlMode.Normal -> {
                         gamepad2.right_stick_x.toDouble()
                     }
-                    Gamepad2RightStickMode.Depo -> {
+                    GamepadControlMode.Manual -> {
                         0.0
                     }
                 }
@@ -604,7 +616,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 hang = hang,
                 launcher = launcher,
                 bumperMode = gamepadOneBumperMode,
-                gamepad2StickMode = gamepad2RightStickMode,
+                gamepad1ControlMode = gamepad1ControlMode,
+                gamepad2ControlMode = gamepad2ControlMode,
                 lightInput = lightColor
         )
     }
@@ -914,8 +927,15 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 actualWorld = actualWorld
         )
 
-        val overrideHandoff = driverInputIsManual
+        val overrideHandoff = driverInputIsManual || driverInput.gamepad1ControlMode == GamepadControlMode.Manual
         val handoffWithOverrides = if (overrideHandoff) {
+
+            fun latchInputToLatchPosition(latchInput: LatchInput): Transfer.LatchPositions =
+                    when (latchInput) {
+                        LatchInput.Open -> Transfer.LatchPositions.Open
+                        LatchInput.NoInput -> Transfer.LatchPositions.Closed
+                    }
+
             HandoffManager.HandoffTarget(
                     depo = DepoTarget(
                             lift = Lift.TargetLift(
@@ -932,13 +952,50 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             targetType = DepoTargetType.Manual
                     ),
                     collector = CollectorTarget(
-                            intakeNoodles = intakeNoodleTarget,
+                            intakeNoodles = when (driverInput.collector) {
+                                CollectorInput.Intake -> Intake.CollectorPowers.Intake
+                                CollectorInput.Eject -> Intake.CollectorPowers.Eject
+                                CollectorInput.Off -> Intake.CollectorPowers.Off
+                                CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
+                            },
                             dropDown = dropdownTarget,
-                            timeOfEjectionStartMilis = timeOfEjectionStartMillis,
-                            timeOfTransferredMillis = timeOfTransferredMillis,
+                            timeOfEjectionStartMilis = 0,
+                            timeOfTransferredMillis = 0,
                             transferSensorState = transferState,
-                            latches = latchTarget,
-                            extendo = extendoTargetState,
+                            latches = Transfer.TransferTarget(
+                                    left = Transfer.LatchTarget(
+                                            target = latchInputToLatchPosition(driverInput.leftLatch), 0
+                                    ),
+                                    right = Transfer.LatchTarget(
+                                            target = latchInputToLatchPosition(driverInput.rightLatch), 0
+                                    ),
+                            ),
+                            extendo = when (driverInput.extendo) {
+                                ExtendoInput.ExtendManual -> {
+                                    SlideSubsystem.TargetSlideSubsystem(
+                                            targetPosition = previousExtendoTargetPosition,
+                                            movementMode = MovementMode.Power,
+                                            power = driverInput.extendoManualPower)
+                                }
+                                ExtendoInput.RetractManual -> {
+                                    SlideSubsystem.TargetSlideSubsystem(
+                                            targetPosition = previousExtendoTargetPosition,
+                                            movementMode = MovementMode.Power,
+                                            power = driverInput.extendoManualPower)
+                                }
+                                ExtendoInput.RetractSetAmount -> {
+                                    SlideSubsystem.TargetSlideSubsystem(
+                                            targetPosition = previousExtendoTargetPosition,
+                                            movementMode = MovementMode.Power,
+                                            power = -0.5)
+                                }
+                                ExtendoInput.NoInput -> {
+                                    SlideSubsystem.TargetSlideSubsystem(
+                                            targetPosition = Extendo.ExtendoPositions.Min,
+                                            movementMode = MovementMode.Power,
+                                            power = 0.0)
+                                }
+                            },
                     )
             )
         } else {
@@ -1032,7 +1089,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     }.fold(false) { acc, it ->
                         acc || it
                     }
-//                    handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)
                 }
         )
 
@@ -1080,7 +1136,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 hang = HangInput.NoInput,
                 launcher = LauncherInput.NoInput,
                 bumperMode = Gamepad1BumperMode.Collector,
-                gamepad2StickMode = Gamepad2RightStickMode.Drivetrain,
+                gamepad1ControlMode = GamepadControlMode.Normal,
+                gamepad2ControlMode = GamepadControlMode.Normal,
                 lightInput = LightInput.NoInput
         )
 
