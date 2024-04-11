@@ -867,73 +867,22 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
 
-        val areDepositing = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.GoingOut
-
-        fun isPixelInSide(side: Side): Boolean {
-            return when (side) {
-                Side.Left -> transfer.checkIfPixelIsTransferred(transferState.left)
-                Side.Right -> transfer.checkIfPixelIsTransferred(transferState.right)
-            }
-        }
-
-        val doingHandoff = doHandoffSequence && previousTargetState.targetRobot.depoTarget.targetType != DepoTargetType.GoingOut
-        val collectorIsMovingOut = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) > 0.1
-        val mapOfClawInputsToConditions: Map<ClawInput, (Side) -> List<Boolean>> = mapOf(
-                ClawInput.Hold to {side ->
-                    listOf(
-                            doingHandoff && isPixelInSide(Side.entries.first{it != side} /*claws Are Flipped when down*/),
-                    )
-                },
-                ClawInput.Drop to {side ->
-                    val areLatchesReady = transfer.checkIfLatchHasActuallyAchievedTarget(side, Transfer.LatchPositions.Closed, actualWorld.timestampMilis, previousTargetState.targetRobot.collectorTarget.latches)
-                    listOf(
-                            !areDepositing && intakeNoodleTarget == Intake.CollectorPowers.Intake,
-                            !areDepositing && areLatchesReady && collectorIsMovingOut
-                    )
-                },
-        )
-
-        val clawInputPerSide = Side.entries.map { side ->
-            val driverInputForThisSide = driverInput.wrist.bothClaws.entries.first {it.key == side}.value
-            side to mapOfClawInputsToConditions.entries.fold(driverInputForThisSide) { acc, (clawInput, listOfConditions) ->
-                val doesValueMatch: Boolean = listOfConditions(side).fold(false) {acc, it -> acc || it}
-                if (doesValueMatch)
-                    clawInput
-                else
-                    acc
-            }
-        }.toMap()
-
-        telemetry.addLine("clawInputPerSide: $clawInputPerSide")
-
         val spoofDriverInputForDepo = driverInput.copy(
                 depo = if (driverInput.depo == DepoInput.NoInput) {
-                            val driverOneIsUsingTheClaws = previousTargetState.driverInput.bumperMode == Gamepad1BumperMode.Claws
-                            val isWristClosedOrBeingToldToClose = driverInput.wrist.bothClaws.toList().fold(true) {acc, (side, clawInput) ->
-                                acc && ((clawInput == ClawInput.Drop) || wrist.clawsAsMap[side]!!.isClawAtAngle(ClawTarget.Retracted, actualRobot.depoState.wristAngles.getBySide(side)))
-                            }
-                            val driverOneWantsToRetract = driverOneIsUsingTheClaws && isWristClosedOrBeingToldToClose
-                            if (weWantToStartHandoff || driverOneWantsToRetract) {
-                                DepoInput.Down
-                            } else {
-                                previousTargetState.driverInput.depo
-                            }
-                        } else {
-                            driverInput.depo
-                        },
-                wrist = WristInput(clawInputPerSide[Side.Left]!!,  clawInputPerSide[Side.Right]!!)
+                    previousTargetState.driverInput.depo
+                } else {
+                    driverInput.depo
+                },
         )
 
-        val driverInputIsManual = driverInput.depo == DepoInput.Manual
 
         val handoffPixelsToLift = HandoffManager.HandoffPixelsToLift(
-                left = driverInput.handoff == HandoffInput.StartHandoff,
-                right = driverInput.handoff == HandoffInput.StartHandoff
+                left = driverInput.handoff == HandoffInput.StartHandoff || driverInput.wrist.left == ClawInput.Hold,
+                right = driverInput.handoff == HandoffInput.StartHandoff || driverInput.wrist.right == ClawInput.Hold
         )
-        val uncoordinatedDepoInput = driverInput.depo
 
 //        Handoff Coordination
-
+        val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val overrideHandoff = driverInputIsManual || driverInput.gamepad1ControlMode == GamepadControlMode.Manual
         val handoffWithOverrides = if (overrideHandoff) {
 
@@ -1008,7 +957,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         } else {
             handoffManager.manageHandoff(
                     handoff = handoffPixelsToLift,
-                    depoInput = driverInput.depo,
+                    depoInput = spoofDriverInputForDepo.depo,
                     extendoInput = driverInput.extendo,
                     collectorTarget = uncoordinatedCollectorTarget,
                     previousTargetWorld = previousTargetState,
