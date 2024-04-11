@@ -867,7 +867,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val mapOfClawInputsToConditions: Map<ClawInput, (Side) -> List<Boolean>> = mapOf(
                 ClawInput.Hold to {side ->
                     listOf(
-                            doingHandoff && isPixelInSide(Side.entries.first{it != side} /*claws Are Flipped when down*/),
+                            doingHandoff && isPixelInSide(side.otherSide() /*claws Are Flipped when down*/),
                     )
                 },
                 ClawInput.Drop to {side ->

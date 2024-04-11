@@ -101,6 +101,10 @@ class HandoffManager(
 
     fun coordinateHandoff(inputConstraints: HandoffConstraints, actualState: HandoffCoordinated, transferSensorState: TransferSensorState): HandoffCoordinated {
 
+        telemetry.addLine("inputConstraints: $inputConstraints")
+        telemetry.addLine("actualState: $actualState")
+        telemetry.addLine("transferSensorState: $transferSensorState")
+
         val liftIsDown = actualState.depo == DepoCoordinationStates.ReadyToHandoff
         val extendoIsIn = actualState.extendo == ExtendoCoordinationStates.ReadyToHandoff
         val actualRobotAllowsForHandoff = liftIsDown && extendoIsIn
@@ -270,6 +274,8 @@ class HandoffManager(
                     right = getPixelHolderFromIsHolding(checkIfIsHolding(Side.Right))
             )
         }
+
+
         val handoffCoordinated = coordinateHandoff(
                 inputConstraints = HandoffConstraints(
                         extendo = when (collectorTarget.extendo.targetPosition) {
