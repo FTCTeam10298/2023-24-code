@@ -200,7 +200,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         NoInput,
     }
     enum class HandoffInput {
-        StartHandoff,
+        Handoff,
         NoInput
     }
     enum class LightInput {
@@ -511,7 +511,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Handoff*/
         val isHandoffButtonPressed = (gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start)
         val handoff = when {
-            isHandoffButtonPressed -> HandoffInput.StartHandoff
+            isHandoffButtonPressed -> HandoffInput.Handoff
             else -> HandoffInput.NoInput
         }
 
@@ -695,7 +695,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
 
-        val weWantToStartHandoff = driverInput.handoff == HandoffInput.StartHandoff || theRobotJustCollectedTwoPixels
+        val weWantToStartHandoff = driverInput.handoff == HandoffInput.Handoff || theRobotJustCollectedTwoPixels
 
         val inputsConflictWithTransfer = driverInput.extendo == ExtendoInput.ExtendManual || (driverInput.depo == DepoInput.Manual)
 
