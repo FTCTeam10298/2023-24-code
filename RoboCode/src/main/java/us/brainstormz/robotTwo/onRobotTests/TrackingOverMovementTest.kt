@@ -136,6 +136,9 @@ data class OdomOffsetDataPoint(
 )
 
 fun main() {
+//    val process = Runtime.getRuntime().exec("./Users/jamespenrose/ftc/2023-24-code/RoboCode/src/main/java/us/brainstormz/pullAndroidFiles.sh")
+//    val result = process.inputStream.reader().readText()
+//    println(result)
 
     fun getOdomOffsetDataPointFromFile(file: File): OdomOffsetDataPoint? {
 
@@ -148,7 +151,6 @@ fun main() {
             null
         }
     }
-
 
     val directoryPath = "/Users/jamespenrose/ftc/odomCalibrate/Download"
     val allFiles = File(directoryPath).listFiles { file, name ->
