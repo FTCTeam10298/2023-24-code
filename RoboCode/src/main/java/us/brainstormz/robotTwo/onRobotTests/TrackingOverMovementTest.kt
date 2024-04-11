@@ -47,6 +47,14 @@ class TrackingOverMovementTest: OpMode() {
         numberOfFilesInDirectory = getNumberOfFilesInDirectory(directoryPath)
     }
 
+    private val testTargets = listOf(
+            PositionAndRotation(),
+            PositionAndRotation(30.0, 0.0, 0.0),
+            PositionAndRotation(30.0, 20.0, 90.0),
+            PositionAndRotation(30.0, 20.0, 0.0),
+            PositionAndRotation(0.0, 0.0, 0.0),
+    )
+
     override fun loop() {
         localizer.recalculatePositionAndRotation()
         val currentPosition = localizer.currentPositionAndRotation()
@@ -61,11 +69,18 @@ class TrackingOverMovementTest: OpMode() {
             if (doneWithErrorAccumulationPhase) {
                 PositionAndRotation()
             } else {
-                PositionAndRotation(
-                        x = movementRectangleXInches * Math.random(),
-                        y = movementRectangleYInches * Math.random(),
-                        r = movementAngleDegrees * Math.random()
-                )
+                val initIndex = testTargets.indexOf(previousTarget) + 1
+                val index = if (initIndex > testTargets.size-1) {
+                    0
+                } else {
+                    initIndex
+                }
+                testTargets[index]
+//                PositionAndRotation(
+//                        x = movementRectangleXInches * Math.random(),
+//                        y = movementRectangleYInches * Math.random(),
+//                        r = movementAngleDegrees * Math.random()
+//                )
             }
         } else {
             previousTarget
@@ -82,7 +97,9 @@ class TrackingOverMovementTest: OpMode() {
             }
         }
 
-        telemetry.addLine("test number: $numberOfFilesInDirectory")
+        telemetry.addLine("test number: $numberOfFilesInDirectory\n")
+        telemetry.addLine("inches traveled: $previousInchesMovedSinceStart")
+        telemetry.addLine("inches left: ${inchesToMoveToAccumulateError-previousInchesMovedSinceStart}")
         telemetry.addLine("currentPosition: $currentPosition")
         telemetry.addLine("targetPosition: $newTarget")
         val deltaPosition = currentPosition - PositionAndRotation()
@@ -111,14 +128,16 @@ class TrackingOverMovementTest: OpMode() {
             telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
 
             val json = Json { ignoreUnknownKeys = true }
-            val jsonEncoded = json.encodeToString(OdomOffsetDataPoint(
-                    positionAndRotation = positionAndRotation,
-                    inchesToMoveToAccumulateError = inchesToMoveToAccumulateError,
-                    movementRectangleXInches = movementRectangleXInches.toDouble(),
-                    movementRectangleYInches = movementRectangleYInches.toDouble(),
-                    movementAngleDegrees = movementAngleDegrees.toDouble(),
-                    testDescription = "slower"
-            ))
+            val jsonEncoded = json.encodeToString(
+                    OdomOffsetDataPoint(
+                            positionAndRotation = positionAndRotation,
+                            inchesToMoveToAccumulateError = inchesToMoveToAccumulateError,
+                            movementRectangleXInches = movementRectangleXInches.toDouble(),
+                            movementRectangleYInches = movementRectangleYInches.toDouble(),
+                            movementAngleDegrees = movementAngleDegrees.toDouble(),
+                            testDescription = "setOfTargets"
+                    )
+            )
 
             file.printWriter().use {
                 it.print(jsonEncoded)
@@ -202,7 +221,6 @@ fun main() {
     }
 
     sortNewAllFilesIntoFolders(fileToDataPoint)
-
 
     val odomOffsetDataPoint = fileToDataPoint.mapNotNull { (file, dataPoint) ->
         dataPoint
