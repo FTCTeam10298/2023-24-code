@@ -30,8 +30,8 @@ class TrackingOverMovementTest: OpMode() {
     }
 
     private val inchesToMoveToAccumulateError: Double = 30 *12.0
-    private val movementRectangleXInches = 0
-    private val movementRectangleYInches = 20
+    private val movementRectangleXInches = 40
+    private val movementRectangleYInches = 0
     private val movementAngleDegrees = 0
 
     private var previousTarget = PositionAndRotation()
@@ -116,7 +116,8 @@ class TrackingOverMovementTest: OpMode() {
                     inchesToMoveToAccumulateError = inchesToMoveToAccumulateError,
                     movementRectangleXInches = movementRectangleXInches.toDouble(),
                     movementRectangleYInches = movementRectangleYInches.toDouble(),
-                    movementAngleDegrees = movementAngleDegrees.toDouble()
+                    movementAngleDegrees = movementAngleDegrees.toDouble(),
+                    testDescription = ""
             ))
 
             file.printWriter().use {
@@ -133,12 +134,40 @@ data class OdomOffsetDataPoint(
         val movementRectangleXInches: Double,
         val movementRectangleYInches: Double,
         val movementAngleDegrees: Double,
-)
+        val testDescription: String
+) {
+    fun getTestIdentifier(): String = "" + inchesToMoveToAccumulateError + movementRectangleXInches + movementRectangleYInches + movementAngleDegrees + testDescription
+}
+
+
+
 
 fun main() {
 //    val process = Runtime.getRuntime().exec("./Users/jamespenrose/ftc/2023-24-code/RoboCode/src/main/java/us/brainstormz/pullAndroidFiles.sh")
 //    val result = process.inputStream.reader().readText()
 //    println(result)
+
+    val directoryPath = "/Users/jamespenrose/ftc/odomCalibrate/allData"
+    fun sortNewAllFilesIntoFolders(fileToDataPoint: List<Pair<File, OdomOffsetDataPoint?>>) {
+        val groupedByTest = fileToDataPoint.groupBy {(file, dataPoint) ->
+            dataPoint?.getTestIdentifier()
+        }
+        groupedByTest.forEach { (testIdentifier, group) ->
+            val groupDirectoryPath = "$directoryPath/$testIdentifier"
+            val directory = File(groupDirectoryPath)
+            if (!directory.isDirectory) {
+                directory.mkdir()
+            }
+
+            group.forEachIndexed {i, (file, dataPoint) ->
+                val newFile = File("$groupDirectoryPath/$i.json")
+                newFile.createNewFile()
+                file.copyTo(newFile)
+                file.delete()
+            }
+        }
+
+    }
 
     fun getOdomOffsetDataPointFromFile(file: File): OdomOffsetDataPoint? {
 
@@ -152,24 +181,29 @@ fun main() {
         }
     }
 
-    val directoryPath = "/Users/jamespenrose/ftc/odomCalibrate/Download"
     val allFiles = File(directoryPath).listFiles { file, name ->
         name[0] != '.'
     }
 
-    val odomOffsetDataPoint = allFiles.map {file ->
-        if (file.isFile) {
+    val fileToDataPoint = allFiles.map {file ->
+        file to if (file.isFile) {
             val odomOffsetDataPoint = getOdomOffsetDataPointFromFile(file)
             odomOffsetDataPoint
         } else {
             null
         }
-    }.filterNotNull()
+    }
+
+    sortNewAllFilesIntoFolders(fileToDataPoint)
+
+
+    val odomOffsetDataPoint = fileToDataPoint.mapNotNull { (file, dataPoint) ->
+        dataPoint
+    }
     println("odomOffsetDataPoint: $odomOffsetDataPoint")
 
+
     val allPositionAndRotations = odomOffsetDataPoint.map { it.positionAndRotation }
-
-
 
     val summedAbs = allPositionAndRotations.fold(PositionAndRotation()) { acc, positionAndRotation ->
         PositionAndRotation(
