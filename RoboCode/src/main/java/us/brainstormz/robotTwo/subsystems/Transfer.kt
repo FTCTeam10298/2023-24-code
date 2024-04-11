@@ -42,16 +42,24 @@ class Transfer(private val telemetry: Telemetry) {
         )
     }
 
-    fun getLatchTarget(side: Side, targetPosition: LatchPositions, previousTransferTarget: TransferTarget): LatchTarget {
+    fun timestampTransferTargets(timestampMillis: Long, transferTarget: TransferTarget, previousTransferTarget: TransferTarget): TransferTarget {
+        return TransferTarget(
+                left = getLatchTarget(Side.Left, timestampMillis, transferTarget, previousTransferTarget),
+                right = getLatchTarget(Side.Right, timestampMillis, transferTarget, previousTransferTarget),
+        )
+    }
+    fun getLatchTarget(side: Side, timestampMillis: Long, targetPosition: TransferTarget, previousTransferTarget: TransferTarget): LatchTarget {
         val previousLatchTarget = previousTransferTarget.getBySide(side)
 
-        return if (targetPosition != previousLatchTarget.target) {
-            LatchTarget(
-                    target= targetPosition,
-                    timeTargetChangedMillis= System.currentTimeMillis())
-        } else {
-            previousLatchTarget
-        }
+        val latchTarget = targetPosition.getBySide(side).target
+
+        return previousLatchTarget.copy(
+                timeTargetChangedMillis= if (latchTarget != previousLatchTarget.target) {
+                    timestampMillis
+                } else {
+                    previousLatchTarget.timeTargetChangedMillis
+                }
+        )
     }
 
     val timeSinceTargetChangeToAchieveTargetMillis = 500

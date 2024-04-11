@@ -306,6 +306,7 @@ class HandoffManager(
         )
 
         val coordinatedCollector = collectorManager.coordinateCollector(
+                timestampMillis = actualWorld.timestampMilis,
                 uncoordinatedTarget = collectorTarget.copy(
                         extendo = SlideSubsystem.TargetSlideSubsystem(
                                 targetPosition = if (handoffCoordinated.extendo == ExtendoCoordinationStates.ReadyToHandoff) {

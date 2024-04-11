@@ -691,9 +691,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
         // tell humans
-        val handoffIsReadyCheck = false
         telemetry.addLine("doHandoffSequence: $doHandoffSequence")
-        telemetry.addLine("handoffIsReadyCheck: $handoffIsReadyCheck")
 
         /**Intake Noodles*/
         val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis?:actualWorld.timestampMilis)
@@ -856,14 +854,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val mapOfClawInputsToConditions: Map<ClawInput, (Side) -> List<Boolean>> = mapOf(
                 ClawInput.Hold to {side ->
                     listOf(
-                            doingHandoff && handoffIsReadyCheck && isPixelInSide(Side.entries.first{it != side} /*claws Are Flipped when down*/),
+                            doingHandoff && isPixelInSide(Side.entries.first{it != side} /*claws Are Flipped when down*/),
                     )
                 },
                 ClawInput.Drop to {side ->
                     val areLatchesReady = transfer.checkIfLatchHasActuallyAchievedTarget(side, Transfer.LatchPositions.Closed, actualWorld.timestampMilis, previousTargetState.targetRobot.collectorTarget.latches)
                     listOf(
                             !areDepositing && intakeNoodleTarget == Intake.CollectorPowers.Intake,
-                            doingHandoff && !handoffIsReadyCheck,
                             !areDepositing && areLatchesReady && collectorIsMovingOut
                     )
                 },
@@ -903,8 +900,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
 
         val handoffPixelsToLift = HandoffManager.HandoffPixelsToLift(
-                left = spoofDriverInputForDepo.wrist.left == ClawInput.Hold,
-                right = spoofDriverInputForDepo.wrist.right == ClawInput.Hold
+                left = clawInputPerSide[Side.Left]!! == ClawInput.Hold,
+                right = clawInputPerSide[Side.Right]!! == ClawInput.Hold
         )
         val uncoordinatedDepoInput = spoofDriverInputForDepo.depo
 
@@ -919,19 +916,31 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val overrideHandoff = driverInputIsManual
         val handoffWithOverrides = if (overrideHandoff) {
-
-//            DepoTarget(
-//                    lift = Lift.TargetLift(power = driverInput.depoScoringHeightAdjust, movementMode = MovementMode.Power, targetPosition = previousTargetState.targetRobot.depoTarget.lift.targetPosition),
-//                    armPosition = Arm.ArmTarget(
-//                            power = driverInput.armOverridePower,
-//                            movementMode = MovementMode.Power,
-//                            targetPosition = previousTargetState.targetRobot.depoTarget.armPosition.targetPosition
-//                    ),
-//                    wristPosition = driverInputWrist,
-//                    targetType = DepoTargetType.Manual
-//            )
-
-            handoffTarget.copy()
+            HandoffManager.HandoffTarget(
+                    depo = DepoTarget(
+                            lift = Lift.TargetLift(
+                                    power = driverInput.depoScoringHeightAdjust,
+                                    movementMode = MovementMode.Power,
+                                    targetPosition = previousTargetState.targetRobot.depoTarget.lift.targetPosition
+                            ),
+                            armPosition = Arm.ArmTarget(
+                                    power = driverInput.armOverridePower,
+                                    movementMode = MovementMode.Power,
+                                    targetPosition = previousTargetState.targetRobot.depoTarget.armPosition.targetPosition
+                            ),
+                            wristPosition = driverInputWrist,
+                            targetType = DepoTargetType.Manual
+                    ),
+                    collector = CollectorTarget(
+                            intakeNoodles = intakeNoodleTarget,
+                            dropDown = dropdownTarget,
+                            timeOfEjectionStartMilis = timeOfEjectionStartMillis,
+                            timeOfTransferredMillis = timeOfTransferredMillis,
+                            transferSensorState = transferState,
+                            latches = latchTarget,
+                            extendo = extendoTargetState,
+                    )
+            )
         } else {
             handoffTarget
         }

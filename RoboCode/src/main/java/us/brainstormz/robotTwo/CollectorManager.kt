@@ -33,17 +33,18 @@ class CollectorManager(
         actualCollector
     }
 
-    fun coordinateCollector(uncoordinatedTarget: CollectorTarget, previousTargetWorld: TargetWorld): CollectorTarget {
+    fun coordinateCollector(uncoordinatedTarget: CollectorTarget, timestampMillis: Long, previousTargetWorld: TargetWorld): CollectorTarget {
 
         val actuallyIsIntaking = Intake.CollectorPowers.Intake == previousTargetWorld.targetRobot.collectorTarget.intakeNoodles
         val coordinatedLatchTarget = if (actuallyIsIntaking) {
             Transfer.TransferTarget(
-                    left = Transfer.LatchTarget(Transfer.LatchPositions.Closed, System.currentTimeMillis()),
-                    right = Transfer.LatchTarget(Transfer.LatchPositions.Closed, System.currentTimeMillis())
+                    left = Transfer.LatchTarget(Transfer.LatchPositions.Closed, timestampMillis),
+                    right = Transfer.LatchTarget(Transfer.LatchPositions.Closed, timestampMillis)
             )
         } else {
             uncoordinatedTarget.latches
         }
+        val timestampedLatchTargets = transfer.timestampTransferTargets(timestampMillis, coordinatedLatchTarget, previousTargetWorld.targetRobot.collectorTarget.latches)
 
         val eitherLatchIsOpen = Side.entries.fold(true) { acc, side ->
             acc && Transfer.LatchPositions.Open == previousTargetWorld.targetRobot.collectorTarget.latches.getBySide(side).target
@@ -55,7 +56,7 @@ class CollectorManager(
         }
 
         return uncoordinatedTarget.copy(
-                latches = coordinatedLatchTarget,
+                latches = timestampedLatchTargets,
                 intakeNoodles = coordinatedIntakeTarget
         )
     }

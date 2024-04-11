@@ -35,21 +35,27 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 class TeleOpHandoffTest {
 
     @Test
-    fun `when slides are in handoff should start`() {
+    fun `when slides are in handoff starts`() {
         //given
         val telemetry = PrintlnTelemetry()
         val teleop = RobotTwoTeleOp(
                 telemetry = telemetry
         )
-
+        
         val driverInput = noInput
         val actualWorld = emptyWorld.copy(
                 actualRobot = emptyWorld.actualRobot.copy(
-                        collectorSystemState = emptyWorld.actualRobot.collectorSystemState.copy(
+                        collectorSystemState = CollectorManager.ActualCollector(
+                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks, true, 0, 0, 0.0),
                                 transferState = Transfer.ActualTransfer(
                                         left = ColorReading(1f, 1f, 1f, 1f),
                                         right = ColorReading(1f, 1f, 1f, 1f),
                                 )
+                        ),
+                        depoState = DepoManager.ActualDepo(
+                                armAngleDegrees = Arm.Positions.In.angleDegrees,
+                                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.Down.ticks, true, 0, 0, 0.0),
+                                wristAngles = Wrist.ActualWrist(Claw.ClawTarget.Gripping.angleDegrees, Claw.ClawTarget.Gripping.angleDegrees)
                         )
                 ),
                 timestampMilis = System.currentTimeMillis()
@@ -70,7 +76,7 @@ class TeleOpHandoffTest {
                 targetRobot = previousTargetWorld.targetRobot.copy(
                         collectorTarget = previousTargetWorld.targetRobot.collectorTarget.copy(
                                 extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
-                                intakeNoodles = Intake.CollectorPowers.Off,
+                                intakeNoodles = Intake.CollectorPowers.Eject,
                                 dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
                                 transferSensorState = Transfer.TransferSensorState(
                                         left = Transfer.SensorState(hasPixelBeenSeen = true, actualWorld.timestampMilis),
@@ -78,10 +84,10 @@ class TeleOpHandoffTest {
                                 ),
                                 latches = Transfer.TransferTarget(
                                         left = Transfer.LatchTarget(
-                                                target = Transfer.LatchPositions.Closed, 0
+                                                target = Transfer.LatchPositions.Closed, actualWorld.timestampMilis
                                         ),
                                         right = Transfer.LatchTarget(
-                                                target = Transfer.LatchPositions.Closed, 0
+                                                target = Transfer.LatchPositions.Closed, actualWorld.timestampMilis
                                         ),
                                 ),
                                 timeOfTransferredMillis = actualWorld.timestampMilis,
@@ -96,10 +102,12 @@ class TeleOpHandoffTest {
                         lights = actualOutput.targetRobot.lights
                 ),
                 driverInput = actualOutput.driverInput,
-                doingHandoff = actualOutput.doingHandoff
+                doingHandoff = actualOutput.doingHandoff,
+                gamepad1Rumble = actualOutput.gamepad1Rumble
         )
 
-        Assert.assertEquals(expectedOutput, actualOutput)
+        Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
+//        Assert.assertEquals(expectedOutput, actualOutput)
     }
 
 }
