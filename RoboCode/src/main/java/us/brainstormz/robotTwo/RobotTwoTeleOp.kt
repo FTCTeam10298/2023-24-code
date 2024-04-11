@@ -927,19 +927,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
 
         val handoffPixelsToLift = HandoffManager.HandoffPixelsToLift(
-                left = clawInputPerSide[Side.Left]!! == ClawInput.Hold,
-                right = clawInputPerSide[Side.Right]!! == ClawInput.Hold
+                left = driverInput.handoff == HandoffInput.StartHandoff,
+                right = driverInput.handoff == HandoffInput.StartHandoff
         )
-        val uncoordinatedDepoInput = spoofDriverInputForDepo.depo
+        val uncoordinatedDepoInput = driverInput.depo
 
 //        Handoff Coordination
-        val handoffTarget = handoffManager.manageHandoff(
-                handoff = handoffPixelsToLift,
-                depoInput = uncoordinatedDepoInput,
-                collectorTarget = uncoordinatedCollectorTarget,
-                previousTargetWorld = previousTargetState,
-                actualWorld = actualWorld
-        )
 
         val overrideHandoff = driverInputIsManual || driverInput.gamepad1ControlMode == GamepadControlMode.Manual
         val handoffWithOverrides = if (overrideHandoff) {
@@ -1013,7 +1006,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     )
             )
         } else {
-            handoffTarget
+            handoffManager.manageHandoff(
+                    handoff = handoffPixelsToLift,
+                    depoInput = driverInput.depo,
+                    extendoInput = driverInput.extendo,
+                    collectorTarget = uncoordinatedCollectorTarget,
+                    previousTargetWorld = previousTargetState,
+                    actualWorld = actualWorld
+            )
         }
 
         /**Drive*/

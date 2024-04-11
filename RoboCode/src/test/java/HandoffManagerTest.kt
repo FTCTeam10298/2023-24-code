@@ -48,6 +48,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
@@ -101,6 +102,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -131,6 +133,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
@@ -184,6 +187,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -214,6 +218,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(true)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
@@ -267,6 +272,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -300,6 +306,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
@@ -353,6 +360,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -391,6 +399,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
@@ -444,6 +453,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -477,6 +487,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Down
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
                 timeOfEjectionStartMilis = 0,
@@ -530,6 +541,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -560,6 +572,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(true)
         val depoInput = RobotTwoTeleOp.DepoInput.Preset3
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Min),
                 timeOfEjectionStartMilis = 0,
@@ -613,6 +626,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -644,6 +658,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(true)
         val depoInput = RobotTwoTeleOp.DepoInput.Preset3
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
                 timeOfEjectionStartMilis = 0,
@@ -697,6 +712,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -731,6 +747,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Preset3
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.PurpleCenterPosition),
                 timeOfEjectionStartMilis = 0,
@@ -784,6 +801,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -818,6 +836,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(true)
         val depoInput = RobotTwoTeleOp.DepoInput.Preset4
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Max),
                 timeOfEjectionStartMilis = 0,
@@ -871,6 +890,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -912,6 +932,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(true)
         val depoInput = RobotTwoTeleOp.DepoInput.Preset4
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Max),
                 timeOfEjectionStartMilis = 0,
@@ -965,6 +986,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
@@ -1005,6 +1027,7 @@ class HandoffManagerTest {
 
         val handoff = HandoffManager.HandoffPixelsToLift(false)
         val depoInput = RobotTwoTeleOp.DepoInput.Preset4
+        val extendoInput = RobotTwoTeleOp.ExtendoInput.RetractSetAmount
         val collector = CollectorTarget(
                 extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Max),
                 timeOfEjectionStartMilis = 0,
@@ -1055,6 +1078,7 @@ class HandoffManagerTest {
         val actualOutput = testSubject.manageHandoff(
                 handoff = handoff,
                 depoInput = depoInput,
+                extendoInput = extendoInput,
                 collectorTarget = collector,
                 previousTargetWorld = previousTargetWorld,
                 actualWorld = actualWorld,
