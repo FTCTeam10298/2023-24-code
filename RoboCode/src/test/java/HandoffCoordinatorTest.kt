@@ -59,7 +59,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -91,7 +91,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         PixelHolder.Holding,
                         PixelHolder.Holding
                 ),
@@ -118,7 +118,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -149,7 +149,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         PixelHolder.Holding,
                         PixelHolder.Holding
                 ),
@@ -176,7 +176,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -207,7 +207,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         PixelHolder.Released,
                         PixelHolder.Released
                 ),
@@ -235,7 +235,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -266,7 +266,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -293,7 +293,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -324,7 +324,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -351,7 +351,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.NotReady,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -382,7 +382,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -409,7 +409,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.NotReady,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -440,7 +440,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -467,7 +467,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Released,
                                 right = PixelHolder.Released
                         ),
@@ -498,7 +498,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -525,7 +525,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.NotReady,
                         depo = DepoCoordinationStates.NotReady,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Released,
                                 right = PixelHolder.Released
                         ),
@@ -556,7 +556,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.NotReady,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -583,7 +583,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.NotReady,
                         depo = DepoCoordinationStates.PotentiallyBlockingExtendoMovement,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Released,
                                 right = PixelHolder.Released
                         ),
@@ -614,7 +614,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released
                 ),
@@ -641,7 +641,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -672,7 +672,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -699,7 +699,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.NotReady,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -730,7 +730,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -759,7 +759,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.NotReady,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Released,
                                 right = PixelHolder.Released
                         ),
@@ -790,7 +790,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released
                 ),
@@ -817,7 +817,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -848,7 +848,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released
                 ),
@@ -875,7 +875,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -906,7 +906,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -933,7 +933,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -964,7 +964,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.NotReady,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -991,7 +991,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Released,
                                 right = PixelHolder.Released
                         ),
@@ -1022,7 +1022,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Released,
                         right = PixelHolder.Released
                 ),
@@ -1049,7 +1049,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Released,
                                 right = PixelHolder.Released
                         ),
@@ -1080,7 +1080,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.ReadyToHandoff,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -1108,7 +1108,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.NotReady,
                         depo = DepoCoordinationStates.NotReady,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -1139,7 +1139,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.NotReady,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -1167,7 +1167,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.NotReady,
                         depo = DepoCoordinationStates.NotReady,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -1198,7 +1198,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.NotReady,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),
@@ -1226,7 +1226,7 @@ class HandoffCoordinatorTest {
                         extendo = ExtendoCoordinationStates.ReadyToHandoff,
                         depo = DepoCoordinationStates.ReadyToHandoff,
 
-                        latches = Latches(
+                        latches = SidedPixelHolders(
                                 left = PixelHolder.Holding,
                                 right = PixelHolder.Holding
                         ),
@@ -1257,7 +1257,7 @@ class HandoffCoordinatorTest {
         // then
         val expectedOutput = HandoffCoordinated(
                 extendo = ExtendoCoordinationStates.NotReady,
-                latches = Latches(
+                latches = SidedPixelHolders(
                         left = PixelHolder.Holding,
                         right = PixelHolder.Holding
                 ),

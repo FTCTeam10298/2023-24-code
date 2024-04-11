@@ -155,7 +155,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         NoInput
     }
     @Serializable
-    data class WristInput(val left: ClawInput, val right: ClawInput) {
+    data class WristInput(override val left: ClawInput, override val right: ClawInput): Side.ThingWithSides<ClawInput> {
         val bothClaws = mapOf(Side.Left to left, Side.Right to right)
     }
     enum class ClawInput {
@@ -770,12 +770,24 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Handoff*/
+        fun repeatClaw(side: Side): ClawInput {
+            val unrepeatedInput = driverInput.wrist.getBySide(side)
+            return if (unrepeatedInput == ClawInput.NoInput) {
+                previousTargetState.driverInput.wrist.getBySide(side)
+            } else {
+                unrepeatedInput
+            }
+        }
         val repeatDriverInputForDepo = driverInput.copy(
                 depo = if (driverInput.depo == DepoInput.NoInput) {
                     previousTargetState.driverInput.depo
                 } else {
                     driverInput.depo
                 },
+//                wrist = WristInput(
+//                        left = repeatClaw(Side.Left),
+//                        right = repeatClaw(Side.Right)
+//                )
         )
 
         val driverInputWrist = WristTargets(
@@ -898,7 +910,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 }
             }
 
-
             val uncoordinatedCollectorTarget = CollectorTarget(
                     intakeNoodles = intakeNoodleTarget,
                     dropDown = dropdownTarget,
@@ -909,18 +920,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     extendo = extendoTargetState,
             )
 
-            val handoffPixelsToLift = HandoffManager.HandoffPixelsToLift(
-                    left = driverInput.handoff == HandoffInput.StartHandoff || driverInput.wrist.left == ClawInput.Hold,
-                    right = driverInput.handoff == HandoffInput.StartHandoff || driverInput.wrist.right == ClawInput.Hold
-            )
-
             handoffManager.manageHandoff(
-                handoff = handoffPixelsToLift,
-                depoInput = repeatDriverInputForDepo.depo,
-                extendoInput = driverInput.extendo,
-                collectorTarget = uncoordinatedCollectorTarget,
-                previousTargetWorld = previousTargetState,
-                actualWorld = actualWorld
+                    handoffInput = driverInput.handoff,
+                    wristInput = driverInput.wrist,
+                    depoInput = repeatDriverInputForDepo.depo,
+                    extendoInput = driverInput.extendo,
+                    collectorTarget = uncoordinatedCollectorTarget,
+                    previousTargetWorld = previousTargetState,
+                    actualWorld = actualWorld
             )
         }
 
