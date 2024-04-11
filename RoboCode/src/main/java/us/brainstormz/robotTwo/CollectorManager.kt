@@ -38,8 +38,8 @@ class CollectorManager(
         val actuallyIsIntaking = Intake.CollectorPowers.Intake == previousTargetWorld.targetRobot.collectorTarget.intakeNoodles
         val coordinatedLatchTarget = if (actuallyIsIntaking) {
             Transfer.TransferTarget(
-                    leftLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, System.currentTimeMillis()),
-                    rightLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, System.currentTimeMillis())
+                    left = Transfer.LatchTarget(Transfer.LatchPositions.Closed, System.currentTimeMillis()),
+                    right = Transfer.LatchTarget(Transfer.LatchPositions.Closed, System.currentTimeMillis())
             )
         } else {
             uncoordinatedTarget.latches

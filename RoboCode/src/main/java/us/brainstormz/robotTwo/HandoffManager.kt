@@ -299,7 +299,7 @@ class HandoffManager(
                             else -> DepoCoordinationStates.NotReady
                         },
                         wrist = getWristFromRule {side ->
-                            wrist.getClawBySide(side).isClawAtAngle(Claw.ClawTarget.Gripping, actualWorld.actualRobot.depoState.wristAngles.getBySide(side))
+                            wrist.getBySide(side).isClawAtAngle(Claw.ClawTarget.Gripping, actualWorld.actualRobot.depoState.wristAngles.getBySide(side))
                         }
                 ),
                 transferSensorState = collectorTarget.transferSensorState,
@@ -315,8 +315,8 @@ class HandoffManager(
                                 }
                         ),
                         latches = TransferTarget(
-                                leftLatchTarget = LatchTarget(deriveLatchPositionFromPixelHolder(handoffCoordinated.latches.left), 0),
-                                rightLatchTarget =LatchTarget(deriveLatchPositionFromPixelHolder(handoffCoordinated.latches.right), 0)
+                                left = LatchTarget(deriveLatchPositionFromPixelHolder(handoffCoordinated.latches.left), 0),
+                                right =LatchTarget(deriveLatchPositionFromPixelHolder(handoffCoordinated.latches.right), 0)
                         ),
                 ),
                 previousTargetWorld = previousTargetWorld,

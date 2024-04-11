@@ -1,7 +1,6 @@
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.junit.Assert
 import org.junit.Test
-import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
@@ -12,7 +11,6 @@ import us.brainstormz.robotTwo.DepoTarget
 import us.brainstormz.robotTwo.HandoffManager
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
-import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.ColorReading
@@ -32,9 +30,9 @@ class HandoffManagerTest {
                 targetRobot = initialPreviousTargetState.targetRobot.copy(
                         collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
                             latches = Transfer.TransferTarget(
-                                    leftLatchTarget = Transfer.LatchTarget(
+                                    left = Transfer.LatchTarget(
                                             target = leftLatch, 0),
-                                    rightLatchTarget = Transfer.LatchTarget(
+                                    right = Transfer.LatchTarget(
                                             target = rightLatch, 0)
                             ),
                             intakeNoodles = intake
@@ -61,10 +59,10 @@ class HandoffManagerTest {
                         right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
                 ),
                 latches = Transfer.TransferTarget(
-                        leftLatchTarget = Transfer.LatchTarget(
+                        left = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed, 0
                         ),
-                        rightLatchTarget = Transfer.LatchTarget(
+                        right = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed, 0
                         ),
                 )
@@ -144,10 +142,10 @@ class HandoffManagerTest {
                         right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
                 ),
                 latches = Transfer.TransferTarget(
-                        leftLatchTarget = Transfer.LatchTarget(
+                        left = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed, 0
                         ),
-                        rightLatchTarget = Transfer.LatchTarget(
+                        right = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed, 0
                         ),
                 )
@@ -227,10 +225,10 @@ class HandoffManagerTest {
                         right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
                 ),
                 latches = Transfer.TransferTarget(
-                        leftLatchTarget = Transfer.LatchTarget(
+                        left = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Open, 0
                         ),
-                        rightLatchTarget = Transfer.LatchTarget(
+                        right = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Open, 0
                         ),
                 )
@@ -313,10 +311,10 @@ class HandoffManagerTest {
                         right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
                 ),
                 latches = Transfer.TransferTarget(
-                        leftLatchTarget = Transfer.LatchTarget(
+                        left = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Open, 0
                         ),
-                        rightLatchTarget = Transfer.LatchTarget(
+                        right = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Open, 0
                         ),
                 )
@@ -364,8 +362,8 @@ class HandoffManagerTest {
         val expectedOutput = HandoffManager.HandoffTarget(
                 collector = collector.copy(
                         latches = Transfer.TransferTarget(
-                                leftLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0),
-                                rightLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0)
+                                left = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0),
+                                right = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0)
                         ),
                         intakeNoodles = Intake.CollectorPowers.Off
                 ),
@@ -403,10 +401,10 @@ class HandoffManagerTest {
                         right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
                 ),
                 latches = Transfer.TransferTarget(
-                        leftLatchTarget = Transfer.LatchTarget(
+                        left = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed, 0
                         ),
-                        rightLatchTarget = Transfer.LatchTarget(
+                        right = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed, 0
                         ),
                 )
@@ -488,10 +486,10 @@ class HandoffManagerTest {
                         right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
                 ),
                 latches = Transfer.TransferTarget(
-                        leftLatchTarget = Transfer.LatchTarget(
+                        left = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed, 0
                         ),
-                        rightLatchTarget = Transfer.LatchTarget(
+                        right = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Closed, 0
                         ),
                 )
@@ -571,10 +569,10 @@ class HandoffManagerTest {
                         right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
                 ),
                 latches = Transfer.TransferTarget(
-                        leftLatchTarget = Transfer.LatchTarget(
+                        left = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Open, 0
                         ),
-                        rightLatchTarget = Transfer.LatchTarget(
+                        right = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Open, 0
                         ),
                 )
@@ -655,10 +653,10 @@ class HandoffManagerTest {
                         right = Transfer.SensorState(hasPixelBeenSeen = false, 0),
                 ),
                 latches = Transfer.TransferTarget(
-                        leftLatchTarget = Transfer.LatchTarget(
+                        left = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Open, 0
                         ),
-                        rightLatchTarget = Transfer.LatchTarget(
+                        right = Transfer.LatchTarget(
                                 target = Transfer.LatchPositions.Open, 0
                         ),
                 )

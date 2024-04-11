@@ -111,8 +111,8 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
     data class TransferTarget(val left: LatchPositions, val right: LatchPositions) {
         fun toRealTransferTarget(): Transfer.TransferTarget {
             return TransferTarget(
-                    leftLatchTarget = Transfer.LatchTarget(left, 0),
-                    rightLatchTarget = Transfer.LatchTarget(right, 0)
+                    left = Transfer.LatchTarget(left, 0),
+                    right = Transfer.LatchTarget(right, 0)
             )
         }
     }

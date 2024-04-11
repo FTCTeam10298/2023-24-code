@@ -3,42 +3,20 @@ package us.brainstormz.robotTwo.subsystems
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.Side
-import kotlin.math.absoluteValue
 
-class Wrist(val left: Claw, val right: Claw, private val telemetry: Telemetry) {
+class Wrist(override val left: Claw, override val right: Claw, private val telemetry: Telemetry): Side.ThingWithSides<Claw> {
     val clawsAsMap = mapOf(Side.Left to left, Side.Right to right)
-    fun getClawBySide(side: Side): Claw {
-        return when(side) {
-            Side.Left -> left
-            Side.Right -> right
-        }
-    }
 
-    data class WristTargets(val left: Claw.ClawTarget, val right: Claw.ClawTarget) {
+    data class WristTargets(override val left: Claw.ClawTarget, override val right: Claw.ClawTarget): Side.ThingWithSides<Claw.ClawTarget> {
         val bothOrNull: Claw.ClawTarget? = if (left == right) left else null
         constructor(both: Claw.ClawTarget) : this(both, both)
 
         val asMap = mapOf(Side.Left to left, Side.Right to right)
-
-        fun getClawTargetBySide(side: Side): Claw.ClawTarget {
-            return when (side) {
-                Side.Left -> left
-                Side.Right -> right
-            }
-        }
     }
 
-    data class ActualWrist(val leftClawAngleDegrees: Double, val rightClawAngleDegrees: Double) {
-        fun getBySide(side: Side): Double {
-            return when (side) {
-                Side.Left -> leftClawAngleDegrees
-                Side.Right -> rightClawAngleDegrees
-            }
-        }
-        fun mapToSide(): Map<Side, Double> = mapOf(
-                Side.Left to leftClawAngleDegrees,
-                Side.Right to rightClawAngleDegrees
-        )
+    data class ActualWrist(val leftClawAngleDegrees: Double, val rightClawAngleDegrees: Double): Side.ThingWithSides<Double> {
+        override val left = leftClawAngleDegrees
+        override val right = rightClawAngleDegrees
     }
     fun getWristActualState(hardware: RobotTwoHardware): ActualWrist {
         return ActualWrist(

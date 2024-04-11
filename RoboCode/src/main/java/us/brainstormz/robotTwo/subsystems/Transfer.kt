@@ -66,14 +66,9 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
     data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
-    data class TransferSensorState(val left: SensorState, val right: SensorState) {
-        fun getBySide(side: Side): SensorState {
-            return when(side) {
-                Side.Left -> left
-                Side.Right -> right
-            }
-        }
-    }
+    data class TransferSensorState(
+            override val left: SensorState,
+            override val right: SensorState): Side.ThingWithSides<SensorState>
 
     fun getTransferState(actualWorld: ActualWorld, previousTransferState: TransferSensorState): TransferSensorState {
 
@@ -95,19 +90,12 @@ class Transfer(private val telemetry: Telemetry) {
 
     data class LatchTarget(val target: LatchPositions, val timeTargetChangedMillis: Long)
     data class TransferTarget(
-            val leftLatchTarget: LatchTarget,
-            val rightLatchTarget: LatchTarget) {
-        fun getBySide(side: Side): LatchTarget {
-            return when (side) {
-                Side.Left -> leftLatchTarget
-                Side.Right -> rightLatchTarget
-            }
-        }
-    }
+            override val left: LatchTarget,
+            override val right: LatchTarget): Side.ThingWithSides<LatchTarget>
 
     fun powerSubsystem(transferState: TransferTarget, hardware: RobotTwoHardware, actualRobot: ActualRobot) {
-        hardware.leftTransferServo.power = transferState.leftLatchTarget.target.position
-        hardware.rightTransferServo.power = transferState.rightLatchTarget.target.position
+        hardware.leftTransferServo.power = transferState.left.target.position
+        hardware.rightTransferServo.power = transferState.right.target.position
     }
 
     /*

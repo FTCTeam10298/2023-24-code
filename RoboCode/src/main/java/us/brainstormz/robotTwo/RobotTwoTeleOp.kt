@@ -781,8 +781,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         val latchTarget = Transfer.TransferTarget(
-                leftLatchTarget = getLatchHandingOffTarget(Side.Left),
-                rightLatchTarget = getLatchHandingOffTarget(Side.Right),
+                left = getLatchHandingOffTarget(Side.Left),
+                right = getLatchHandingOffTarget(Side.Right),
         )
 
         /**Extendo*/
@@ -1019,8 +1019,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
 
         val finalLatchesTarget = Transfer.TransferTarget(
-                leftLatchTarget = getLatchTarget(Side.Left, latchInputToLatchPosition(driverInput.leftLatch) ?: coordinatedCollector.latches.leftLatchTarget.target),
-                rightLatchTarget = getLatchTarget(Side.Right, latchInputToLatchPosition(driverInput.rightLatch) ?: coordinatedCollector.latches.rightLatchTarget.target)
+                left = getLatchTarget(Side.Left, latchInputToLatchPosition(driverInput.leftLatch) ?: coordinatedCollector.latches.left.target),
+                right = getLatchTarget(Side.Right, latchInputToLatchPosition(driverInput.rightLatch) ?: coordinatedCollector.latches.right.target)
         )
         val finalCollector = coordinatedCollector.copy(latches = finalLatchesTarget)
 
@@ -1096,8 +1096,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         right = initSensorState
                                 ),
                                 latches = Transfer.TransferTarget(
-                                        leftLatchTarget = initLatchTarget,
-                                        rightLatchTarget = initLatchTarget
+                                        left = initLatchTarget,
+                                        right = initLatchTarget
                                 ),
                                 extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, MovementMode.Position),
                         ),

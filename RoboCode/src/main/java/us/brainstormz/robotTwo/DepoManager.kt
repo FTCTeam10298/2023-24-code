@@ -132,7 +132,7 @@ class DepoManager(
                     val armIsOkToDrop = actualDepo.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees + 2
                     if (!armIsOkToDrop && eitherClawIsGripping) {
                         val gripIfClawIsntFullyReleased = { side: Side ->
-                            val claw = wrist.getClawBySide(side)
+                            val claw = wrist.getBySide(side)
                             val clawIsFullyRetracted = claw.isClawAtAngle(Claw.ClawTarget.Retracted, actualDepo.wristAngles.getBySide(side))
                             if (clawIsFullyRetracted) {
                                 Claw.ClawTarget.Retracted
@@ -156,7 +156,7 @@ class DepoManager(
         val liftIsAtFinalRestingPlace = lift.isLiftAtPosition(finalDepoTarget.lift.targetPosition.ticks, actualDepo.lift.currentPositionTicks)
 
         val clawsArentMoving = wristTarget.asMap.entries.fold(true) {acc, (side, claw) ->
-            acc && previousTargetDepo.wristPosition.getClawTargetBySide(side) == claw
+            acc && previousTargetDepo.wristPosition.getBySide(side) == claw
         }
         telemetry.addLine("clawsArentMoving: $clawsArentMoving")
         telemetry.addLine("wristTarget: ${wristTarget.asMap}")
