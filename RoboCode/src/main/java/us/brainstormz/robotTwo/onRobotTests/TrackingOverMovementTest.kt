@@ -117,7 +117,7 @@ class TrackingOverMovementTest: OpMode() {
                     movementRectangleXInches = movementRectangleXInches.toDouble(),
                     movementRectangleYInches = movementRectangleYInches.toDouble(),
                     movementAngleDegrees = movementAngleDegrees.toDouble(),
-                    testDescription = ""
+                    testDescription = "slower"
             ))
 
             file.printWriter().use {
@@ -140,8 +140,6 @@ data class OdomOffsetDataPoint(
 }
 
 
-
-
 fun main() {
 //    val process = Runtime.getRuntime().exec("./Users/jamespenrose/ftc/2023-24-code/RoboCode/src/main/java/us/brainstormz/pullAndroidFiles.sh")
 //    val result = process.inputStream.reader().readText()
@@ -153,17 +151,26 @@ fun main() {
             dataPoint?.getTestIdentifier()
         }
         groupedByTest.forEach { (testIdentifier, group) ->
-            val groupDirectoryPath = "$directoryPath/$testIdentifier"
-            val directory = File(groupDirectoryPath)
-            if (!directory.isDirectory) {
-                directory.mkdir()
-            }
+            if (testIdentifier!=null) {
+                val groupDirectoryPath = "$directoryPath/$testIdentifier"
+                val directory = File(groupDirectoryPath)
+                if (!directory.isDirectory) {
+                    directory.mkdir()
+                }
 
-            group.forEachIndexed {i, (file, dataPoint) ->
-                val newFile = File("$groupDirectoryPath/$i.json")
-                newFile.createNewFile()
-                file.copyTo(newFile)
-                file.delete()
+                group.forEachIndexed { i, (file, dataPoint) ->
+                    fun getFileToCopyTo(number: Int): File {
+                        val fileNumber = number + 1
+                        val newFile = File("$groupDirectoryPath/$fileNumber.json")
+                        return if (newFile.exists()) {
+                            getFileToCopyTo(fileNumber)
+                        } else {
+                            newFile
+                        }
+                    }
+                    file.copyTo(getFileToCopyTo(i))
+                    file.delete()
+                }
             }
         }
 
