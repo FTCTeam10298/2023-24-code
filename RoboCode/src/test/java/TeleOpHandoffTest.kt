@@ -10,7 +10,6 @@ import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.CollectorTarget
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.DepoTarget
-import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.noInput
@@ -62,20 +61,7 @@ class TeleOpHandoffTest {
                 timestampMilis = System.currentTimeMillis()
         )
         val previousActualWorld = emptyWorld
-        val previousTargetWorld = initialPreviousTargetState.copy(
-                targetRobot = initialPreviousTargetState.targetRobot.copy(
-                        collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
-                                latches = Transfer.TransferTarget(
-                                        left = Transfer.LatchTarget(
-                                                target = Transfer.LatchPositions.Closed, 0
-                                        ),
-                                        right = Transfer.LatchTarget(
-                                                target = Transfer.LatchPositions.Closed, 0
-                                        ),
-                                )
-                        )
-                )
-        )
+        val previousTargetWorld = initialPreviousTargetState
 
         //when
         val actualOutput = teleop.getTargetWorld(
@@ -120,87 +106,8 @@ class TeleOpHandoffTest {
                 gamepad1Rumble = actualOutput.gamepad1Rumble
         )
 
-        println()
-        println("expected   : $expectedOutput")
-        println("actual     : $actualOutput")
-        Assert.assertTrue(expectedOutput.toString() ==  actualOutput.toString())
-//        Assert.assertEquals(expectedOutput, actualOutput)
+        Assert.assertEquals(expectedOutput, actualOutput)
     }
-    
-//    @Test
-//    fun `when slides are in handoff starts`() {
-//        //given
-//        val telemetry = PrintlnTelemetry()
-//        val teleop = RobotTwoTeleOp(
-//                telemetry = telemetry
-//        )
-//
-//        val driverInput = noInput
-//        val actualWorld = emptyWorld.copy(
-//                actualRobot = emptyWorld.actualRobot.copy(
-//                        collectorSystemState = CollectorManager.ActualCollector(
-//                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks, true, 0, 0, 0.0),
-//                                transferState = Transfer.ActualTransfer(
-//                                        left = ColorReading(1f, 1f, 1f, 1f),
-//                                        right = ColorReading(1f, 1f, 1f, 1f),
-//                                )
-//                        ),
-//                        depoState = DepoManager.ActualDepo(
-//                                armAngleDegrees = Arm.Positions.In.angleDegrees,
-//                                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.Down.ticks, true, 0, 0, 0.0),
-//                                wristAngles = Wrist.ActualWrist(Claw.ClawTarget.Gripping.angleDegrees, Claw.ClawTarget.Gripping.angleDegrees)
-//                        )
-//                ),
-//                timestampMilis = System.currentTimeMillis()
-//        )
-//        val previousActualWorld = emptyWorld
-//        val previousTargetWorld = initialPreviousTargetState
-//
-//        //when
-//        val actualOutput = teleop.getTargetWorld(
-//                driverInput = driverInput,
-//                actualWorld = actualWorld,
-//                previousActualWorld = previousActualWorld,
-//                previousTargetState = previousTargetWorld
-//        )
-//
-//        //then
-//        val expectedOutput = previousTargetWorld.copy(
-//                targetRobot = previousTargetWorld.targetRobot.copy(
-//                        collectorTarget = previousTargetWorld.targetRobot.collectorTarget.copy(
-//                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Min),
-//                                intakeNoodles = Intake.CollectorPowers.Eject,
-//                                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
-//                                transferSensorState = Transfer.TransferSensorState(
-//                                        left = Transfer.SensorState(hasPixelBeenSeen = true, actualWorld.timestampMilis),
-//                                        right = Transfer.SensorState(hasPixelBeenSeen = true, actualWorld.timestampMilis),
-//                                ),
-//                                latches = Transfer.TransferTarget(
-//                                        left = Transfer.LatchTarget(
-//                                                target = Transfer.LatchPositions.Closed, actualWorld.timestampMilis
-//                                        ),
-//                                        right = Transfer.LatchTarget(
-//                                                target = Transfer.LatchPositions.Closed, actualWorld.timestampMilis
-//                                        ),
-//                                ),
-//                                timeOfTransferredMillis = actualWorld.timestampMilis,
-//                                timeOfEjectionStartMilis = actualWorld.timestampMilis
-//                        ),
-//                        depoTarget = DepoTarget(
-//                                armPosition = Arm.ArmTarget(Arm.Positions.In),
-//                                lift = Lift.TargetLift(Lift.LiftPositions.Down),
-//                                wristPosition = Wrist.WristTargets(Claw.ClawTarget.Gripping),
-//                                targetType = DepoManager.DepoTargetType.GoingHome
-//                        ),
-//                        lights = actualOutput.targetRobot.lights
-//                ),
-//                driverInput = actualOutput.driverInput,
-//                doingHandoff = actualOutput.doingHandoff,
-//                gamepad1Rumble = actualOutput.gamepad1Rumble
-//        )
-//
-//        Assert.assertEquals(expectedOutput, actualOutput)
-//    }
 
     @Test
     fun `when depo is in, extendo is out, and drivers retract extendo it retracts`() {
