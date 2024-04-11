@@ -296,7 +296,7 @@ class DepoManager(
             val slideThinksItsAtZero = actualDepo.lift.currentPositionTicks <= 0
 
             if (slideThinksItsAtZero && !actualDepo.lift.limitSwitchIsActivated) {
-                Lift.TargetLift(power = -lift.findResetPower)
+                Lift.TargetLift(power = -lift.findResetPower, movementMode = MovementMode.Power)
             } else {
                 movingArmAndLiftTarget.lift
             }

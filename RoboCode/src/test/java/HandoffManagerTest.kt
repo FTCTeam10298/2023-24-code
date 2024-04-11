@@ -810,4 +810,291 @@ class HandoffManagerTest {
         Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
 
     }
+
+    @Test
+    fun `when depo is just high enough to not block extendo, end extendo wants to go out, it does`() {
+        // given
+        val testSubject = createHandoffManager()
+
+        val handoff = HandoffManager.HandoffPixelsToLift(true)
+        val depoInput = RobotTwoTeleOp.DepoInput.Preset4
+        val collector = CollectorTarget(
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Max),
+                timeOfEjectionStartMilis = 0,
+                timeOfTransferredMillis = 0,
+                intakeNoodles = Intake.CollectorPowers.Off,
+                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                transferSensorState = Transfer.TransferSensorState(
+                        left = Transfer.SensorState(hasPixelBeenSeen = false, 0),
+                        right = Transfer.SensorState(hasPixelBeenSeen = false, 0),
+                ),
+                latches = Transfer.TransferTarget(
+                        left = Transfer.LatchTarget(
+                                target = Transfer.LatchPositions.Open, 0
+                        ),
+                        right = Transfer.LatchTarget(
+                                target = Transfer.LatchPositions.Open, 0
+                        ),
+                )
+        )
+        val previousTargetWorld = createPreviousTargetStateChangeTransferAndIntake(
+                Transfer.LatchPositions.Open,
+                Transfer.LatchPositions.Open,
+                Intake.CollectorPowers.Off
+        )
+        val actualWorld = ActualWorld(
+                actualRobot = ActualRobot(
+                        positionAndRotation = PositionAndRotation(),
+                        depoState = DepoManager.ActualDepo(
+                                armAngleDegrees = Arm.Positions.In.angleDegrees,
+                                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.ClearForArmToMove.ticks + 1, false, 0, 0, 0.0),
+                                wristAngles = Wrist.ActualWrist(
+                                        leftClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
+                                        rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees
+                                )
+                        ),
+                        collectorSystemState = CollectorManager.ActualCollector(
+                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks, true, 0, 0, 0.0),
+                                transferState = Transfer.ActualTransfer(
+                                        left = ColorReading(0f, 0f, 0f, 0f),
+                                        right = ColorReading(0f, 0f, 0f, 0f),
+                                )
+                        ),
+                        neopixelState = Neopixels.HalfAndHalfTarget().compileStripState()
+                ),
+                timestampMilis = System.currentTimeMillis(),
+                actualGamepad1 = Gamepad(),
+                actualGamepad2 = Gamepad()
+        )
+
+        // when
+        val actualOutput = testSubject.manageHandoff(
+                handoff = handoff,
+                depoInput = depoInput,
+                collectorTarget = collector,
+                previousTargetWorld = previousTargetWorld,
+                actualWorld = actualWorld,
+        )
+
+        // then
+        val expectedOutput = HandoffManager.HandoffTarget(
+                collector = collector.copy(
+                        extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Max),
+                        latches = Transfer.TransferTarget(
+                                left = Transfer.LatchTarget(
+                                        target = Transfer.LatchPositions.Closed, actualWorld.timestampMilis
+                                ),
+                                right = Transfer.LatchTarget(
+                                        target = Transfer.LatchPositions.Closed, actualWorld.timestampMilis
+                                ),
+                        )
+                ),
+                depo = DepoTarget(
+                        armPosition = Arm.ArmTarget(Arm.Positions.Out),
+                        lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
+                        wristPosition = Wrist.WristTargets(Claw.ClawTarget.Gripping),
+                        targetType = DepoManager.DepoTargetType.GoingOut
+                )
+        )
+
+
+        println("\nexpected : $expectedOutput")
+        println(  "actual   : $actualOutput")
+
+        Assert.assertEquals(expectedOutput, actualOutput)
+//        Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
+    }
+
+    @Test
+    fun `when depo is just high enough to not block extendo, and extendo limit isn't pressed, and extendo wants to go out, it does`() {
+        // given
+        val testSubject = createHandoffManager()
+
+        val handoff = HandoffManager.HandoffPixelsToLift(true)
+        val depoInput = RobotTwoTeleOp.DepoInput.Preset4
+        val collector = CollectorTarget(
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Max),
+                timeOfEjectionStartMilis = 0,
+                timeOfTransferredMillis = 0,
+                intakeNoodles = Intake.CollectorPowers.Off,
+                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                transferSensorState = Transfer.TransferSensorState(
+                        left = Transfer.SensorState(hasPixelBeenSeen = false, 0),
+                        right = Transfer.SensorState(hasPixelBeenSeen = false, 0),
+                ),
+                latches = Transfer.TransferTarget(
+                        left = Transfer.LatchTarget(
+                                target = Transfer.LatchPositions.Open, 0
+                        ),
+                        right = Transfer.LatchTarget(
+                                target = Transfer.LatchPositions.Open, 0
+                        ),
+                )
+        )
+        val previousTargetWorld = createPreviousTargetStateChangeTransferAndIntake(
+                Transfer.LatchPositions.Open,
+                Transfer.LatchPositions.Open,
+                Intake.CollectorPowers.Off
+        )
+        val actualWorld = ActualWorld(
+                actualRobot = ActualRobot(
+                        positionAndRotation = PositionAndRotation(),
+                        depoState = DepoManager.ActualDepo(
+                                armAngleDegrees = Arm.Positions.In.angleDegrees,
+                                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.ClearForArmToMove.ticks + 1, false, 0, 0, 0.0),
+                                wristAngles = Wrist.ActualWrist(
+                                        leftClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
+                                        rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees
+                                )
+                        ),
+                        collectorSystemState = CollectorManager.ActualCollector(
+                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks, false, 0, 0, 0.0),
+                                transferState = Transfer.ActualTransfer(
+                                        left = ColorReading(0f, 0f, 0f, 0f),
+                                        right = ColorReading(0f, 0f, 0f, 0f),
+                                )
+                        ),
+                        neopixelState = Neopixels.HalfAndHalfTarget().compileStripState()
+                ),
+                timestampMilis = System.currentTimeMillis(),
+                actualGamepad1 = Gamepad(),
+                actualGamepad2 = Gamepad()
+        )
+
+        // when
+        val actualOutput = testSubject.manageHandoff(
+                handoff = handoff,
+                depoInput = depoInput,
+                collectorTarget = collector,
+                previousTargetWorld = previousTargetWorld,
+                actualWorld = actualWorld,
+        )
+
+        // then
+        val expectedOutput = HandoffManager.HandoffTarget(
+                collector = collector.copy(
+                        extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Max),
+                        latches = Transfer.TransferTarget(
+                                left = Transfer.LatchTarget(
+                                        target = Transfer.LatchPositions.Closed, actualWorld.timestampMilis
+                                ),
+                                right = Transfer.LatchTarget(
+                                        target = Transfer.LatchPositions.Closed, actualWorld.timestampMilis
+                                ),
+                        )
+                ),
+                depo = DepoTarget(
+                        armPosition = Arm.ArmTarget(Arm.Positions.Out),
+                        lift = Lift.TargetLift(Lift.LiftPositions.SetLine3),
+                        wristPosition = Wrist.WristTargets(Claw.ClawTarget.Gripping),
+                        targetType = DepoManager.DepoTargetType.GoingOut
+                )
+        )
+
+
+        println("\nexpected : $expectedOutput")
+        println(  "actual   : $actualOutput")
+
+        Assert.assertEquals(expectedOutput, actualOutput)
+    }
+
+    @Test
+    fun `when depo and extendo are almost in but neither limit is pressed, and extendo and lift want to go out, they do`() {
+        // given
+        val testSubject = createHandoffManager()
+
+        val handoff = HandoffManager.HandoffPixelsToLift(false)
+        val depoInput = RobotTwoTeleOp.DepoInput.Preset4
+        val collector = CollectorTarget(
+                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Max),
+                timeOfEjectionStartMilis = 0,
+                timeOfTransferredMillis = 0,
+                intakeNoodles = Intake.CollectorPowers.Off,
+                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                transferSensorState = Transfer.TransferSensorState(
+                        left = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+                        right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+                ),
+                latches = Transfer.TransferTarget(
+                        left = Transfer.LatchTarget(
+                                target = Transfer.LatchPositions.Closed, 0
+                        ),
+                        right = Transfer.LatchTarget(
+                                target = Transfer.LatchPositions.Closed, 0
+                        ),
+                )
+        )
+        val previousTargetWorld = createPreviousTargetStateChangeTransferAndIntake(
+                Transfer.LatchPositions.Closed,
+                Transfer.LatchPositions.Closed,
+                Intake.CollectorPowers.Off
+        )
+        val actualWorld = ActualWorld(
+                actualRobot = ActualRobot(
+                        positionAndRotation = PositionAndRotation(),
+                        depoState = DepoManager.ActualDepo(
+                                armAngleDegrees = Arm.Positions.In.angleDegrees,
+                                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.Down.ticks + 1, false, 0, 0, 0.0),
+                                wristAngles = Wrist.ActualWrist(
+                                        leftClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees,
+                                        rightClawAngleDegrees = Claw.ClawTarget.Gripping.angleDegrees
+                                )
+                        ),
+                        collectorSystemState = CollectorManager.ActualCollector(
+                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks + 1, false, 0, 0, 0.0),
+                                transferState = transferReadingWithPixelsIn
+                        ),
+                        neopixelState = Neopixels.HalfAndHalfTarget().compileStripState()
+                ),
+                timestampMilis = System.currentTimeMillis(),
+                actualGamepad1 = Gamepad(),
+                actualGamepad2 = Gamepad()
+        )
+
+        // when
+        val actualOutput = testSubject.manageHandoff(
+                handoff = handoff,
+                depoInput = depoInput,
+                collectorTarget = collector,
+                previousTargetWorld = previousTargetWorld,
+                actualWorld = actualWorld,
+        )
+
+        // then
+        val expectedOutput = HandoffManager.HandoffTarget(
+                collector = collector.copy(
+                        extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Min),
+                        latches = Transfer.TransferTarget(
+                                left = Transfer.LatchTarget(
+                                        target = Transfer.LatchPositions.Closed, 0
+                                ),
+                                right = Transfer.LatchTarget(
+                                        target = Transfer.LatchPositions.Closed, 0
+                                ),
+                        )
+                ),
+                depo = DepoTarget(
+                        armPosition = Arm.ArmTarget(Arm.Positions.In),
+                        lift = Lift.TargetLift(Lift.LiftPositions.Down),
+                        wristPosition = Wrist.WristTargets(Claw.ClawTarget.Retracted),
+                        targetType = DepoManager.DepoTargetType.GoingHome
+                )
+        )
+
+
+        println("\nexpected : $expectedOutput")
+        println(  "actual   : $actualOutput")
+
+        Assert.assertEquals(expectedOutput, actualOutput)
+    }
+
+
+    val transferReadingWithoutPixels = Transfer.ActualTransfer(
+            left = ColorReading(0f, 0f, 0f, 0f),
+            right = ColorReading(0f, 0f, 0f, 0f),
+    )
+    val transferReadingWithPixelsIn = Transfer.ActualTransfer(
+            left = ColorReading(1f, 1f, 1f, 1f),
+            right = ColorReading(1f, 1f, 1f, 1f),
+    )
 }
