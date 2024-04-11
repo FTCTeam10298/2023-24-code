@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo.onRobotTests
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import us.brainstormz.localizer.PositionAndRotation
@@ -28,9 +29,10 @@ class TrackingOverMovementTest: OpMode() {
         drivetrain = Drivetrain(hardware, localizer, telemetry)
     }
 
-    private val inchesToMoveToAccumulateError: Double = 12*12.0
-    private val movementRectangleXInches = 20
+    private val inchesToMoveToAccumulateError: Double = 30 *12.0
+    private val movementRectangleXInches = 0
     private val movementRectangleYInches = 20
+    private val movementAngleDegrees = 180
 
     private var previousTarget = PositionAndRotation()
 
@@ -56,7 +58,7 @@ class TrackingOverMovementTest: OpMode() {
                 PositionAndRotation(
                         x = movementRectangleXInches * Math.random(),
                         y = movementRectangleYInches * Math.random(),
-                        r = 180 * Math.random()
+                        r = movementAngleDegrees * Math.random()
                 )
             }
         } else {
@@ -87,18 +89,24 @@ class TrackingOverMovementTest: OpMode() {
         previousGamepad1.copy(gamepad1)
     }
 
-    private fun saveAsJson(info: PositionAndRotation) {
+    private fun saveAsJson(positionAndRotation: PositionAndRotation) {
         val directoryPath = "/storage/emulated/0/Download"
         val numberOfFilesInDirectory = File(directoryPath).listFiles().size
 
-        val file = File("$directoryPath/odomSnapshot$numberOfFilesInDirectory.json")
+        val file = File("$directoryPath/savedData$numberOfFilesInDirectory.json")
         file.createNewFile()
         if (file.exists() && file.isFile) {
 
             telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
 
             val json = Json { ignoreUnknownKeys = true }
-            val jsonEncoded = json.encodeToString(info)
+            val jsonEncoded = json.encodeToString(OdomOffsetDataPoint(
+                    positionAndRotation = positionAndRotation,
+                    inchesToMoveToAccumulateError = inchesToMoveToAccumulateError,
+                    movementRectangleXInches = movementRectangleXInches.toDouble(),
+                    movementRectangleYInches = movementRectangleYInches.toDouble(),
+                    movementAngleDegrees = movementAngleDegrees.toDouble()
+            ))
 
             file.printWriter().use {
                 it.print(jsonEncoded)
@@ -107,15 +115,24 @@ class TrackingOverMovementTest: OpMode() {
     }
 }
 
+@Serializable
+data class OdomOffsetDataPoint(
+        val positionAndRotation: PositionAndRotation,
+        val inchesToMoveToAccumulateError: Double,
+        val movementRectangleXInches: Double,
+        val movementRectangleYInches: Double,
+        val movementAngleDegrees: Double,
+)
+
 fun main() {
 
-    fun getPositionAndRotationFromFile(file: File): PositionAndRotation? {
+    fun getOdomOffsetDataPointFromFile(file: File): OdomOffsetDataPoint? {
 
         val newData = file.reader().readText()
 
         val json = Json { ignoreUnknownKeys = true }
         return try {
-            json.decodeFromString<PositionAndRotation>(newData)
+            json.decodeFromString<OdomOffsetDataPoint>(newData)
         } catch (e: Exception) {
             null
         }
@@ -127,28 +144,28 @@ fun main() {
         name[0] != '.'
     }
 
-    val positionAndRotationOrNull = allFiles.map {file ->
+    val odomOffsetDataPoint = allFiles.map {file ->
         if (file.isFile) {
             val fileName = file.name
 
-            val positionAndRotation = getPositionAndRotationFromFile(file)
+            val odomOffsetDataPoint = getOdomOffsetDataPointFromFile(file)
 
-            if (positionAndRotation != null) {
-                fileName to positionAndRotation
+            if (odomOffsetDataPoint != null) {
+                odomOffsetDataPoint
             } else {
                 null
             }
         } else {
             null
         }
-    }
-    println("positionAndRotationOrNull: $positionAndRotationOrNull")
+    }.filterNotNull()
+    println("odomOffsetDataPoint: $odomOffsetDataPoint")
 
-    val allPositionAndRotations = positionAndRotationOrNull.filterNotNull()
+    val allPositionAndRotations = odomOffsetDataPoint.map { it.positionAndRotation }
 
 
 
-    val summedAbs = allPositionAndRotations.fold(PositionAndRotation()) { acc, (name, positionAndRotation) ->
+    val summedAbs = allPositionAndRotations.fold(PositionAndRotation()) { acc, positionAndRotation ->
         PositionAndRotation(
                 x = acc.x + positionAndRotation.x.absoluteValue,
                 y = acc.y + positionAndRotation.y.absoluteValue,
@@ -164,9 +181,9 @@ fun main() {
 
     println("averaged: $averaged")
 
-    val allX = allPositionAndRotations.map { it.second.x }
-    val allY = allPositionAndRotations.map { it.second.y }
-    val allR = allPositionAndRotations.map { it.second.r }
+    val allX = allPositionAndRotations.map { it.x }
+    val allY = allPositionAndRotations.map { it.y }
+    val allR = allPositionAndRotations.map { it.r }
 
     val biggestX = allX.maxBy {
         it.absoluteValue
