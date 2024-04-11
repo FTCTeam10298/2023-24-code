@@ -10,7 +10,8 @@ import kotlin.math.*
 class AprilTagLocalizationFunctions(val cameraXOffset: Double, val cameraYOffset: Double) {
     //distance of the camera from the bot's center so that we find position relative to bot center
     // not camera center.
-    fun getCameraPositionOnField(aprilTagID: Int, aprilTagInTagCentricCoords: TagRelativePointInSpace): FieldRelativePointInSpace {
+    fun getCameraPositionOnField(aprilTagID: Int, aprilTagInTagCentricCoords: TagRelativePointInSpace,
+                                 allianceSideFound: ReusableAprilTagFieldLocalizer.AllianceSide): FieldRelativePointInSpace {
 
         /** adds relative position to position of tags on field, because both are calculated with
          * the same origin (point with an x and y of 0), because then we reflect how much more/less the bot
@@ -21,6 +22,7 @@ class AprilTagLocalizationFunctions(val cameraXOffset: Double, val cameraYOffset
         //based on the closest AprilTag, with an accuracy of +-1/2 inch.
 
         val tagRelativeToCamera = aprilTagInTagCentricCoords
+
 
         val tagRelativeToCameraOurCoordinateSystem = PositionAndRotation(
                 x= tagRelativeToCamera.xInches + cameraXOffset,

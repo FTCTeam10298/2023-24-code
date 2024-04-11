@@ -49,7 +49,8 @@ fun main () {
 
     val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=46.995, yInches=52.138, headingDegrees = 10.0)
 
-    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
+    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative,
+            allianceSideFound = ReusableAprilTagFieldLocalizer.AllianceSide.Red)
 
 
     println("Our camera-relative input was $inputCamRelative" )
@@ -59,11 +60,6 @@ fun main () {
     println("So we took that tag-relative position, $inputTagRelative.")
     println("We expected to see a position of $expectedOutputFieldRelative")
     println("Instead, we calculated that our camera is at $actualOutputFieldRelative.")
-
-
-
-
-
 
 }
 
@@ -157,15 +153,16 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
             hDegrees = 2.68,
     )
 
-//    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = 0.0,
-//            yInches = 3.455555556,
-//            hDegrees = 0.0, //0
-//    )
+    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
+            xInches = 0.0,
+            yInches = 3.455555556,
+            hDegrees = 0.0, //0
+    )
 
-    val localizer = ReusableAprilTagFieldLocalizer(aprilTagLocalization, RedAllianceBackboardAverageErrors)
-
-    val targetAprilTagID = 2
+    val localizer = ReusableAprilTagFieldLocalizer(
+            aprilTagLocalization = aprilTagLocalization,
+            averageErrorRedSide = RedAllianceBackboardAverageErrors,
+            averageErrorBlueSide =  BlueAllianceBackboardAverageErrors)
 
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
@@ -237,7 +234,10 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
             for (detection in currentDetections) {
 
+                val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
+
                 val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)!!
+                val detectionAllianceSide = allDetectionData?.allianceSide
                 val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
                 if (currentDetections.isNotEmpty()) {
@@ -252,6 +252,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                     println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
 
                     println(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+                    println(String.format("We're on alliance side {$detectionAllianceSide}"))
                 }
             }
             val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
@@ -280,7 +281,8 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
         val theTargetAprilTag: AprilTagDetection? = returnTargetAprilTag(
                 currentDetections = listOfAllAprilTagsDetected,
-                idOfTargetAprilTag = leastDistortedAprilTag.id)
+                idOfTargetAprilTag = leastDistortedAprilTag.id
+        )
 
 
         if (theTargetAprilTag != null) {
@@ -308,6 +310,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
                 telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
                 telemetry.addLine("Least Distorted AprilTag: $idOfLeastDistortedTag")
+
 
 //                println("Robot X: ${theTargetAprilTagPosition?.xInches}")
 //                println("Robot Y: ${theTargetAprilTagPosition?.yInches}")

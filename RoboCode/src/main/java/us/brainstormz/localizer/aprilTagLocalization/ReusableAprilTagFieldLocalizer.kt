@@ -14,19 +14,32 @@ data class AverageAprilTagLocalizationError (
         val hDegrees: Double
 )
 
-class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLocalizationFunctions, private val averageError: AverageAprilTagLocalizationError){
+class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLocalizationFunctions,
+                                     private val averageErrorRedSide: AverageAprilTagLocalizationError,
+                                     private val averageErrorBlueSide: AverageAprilTagLocalizationError){
 
     fun getFieldPositionsForTag(detection: AprilTagDetection):FieldRelativePointInSpace? {
         return returnAprilTagInFieldCentricCoords(detection)?.FieldRelativePointInSpace
     }
 
-    private fun returnFieldCentricCoordsInJamesFieldCoords(anyOldTag: FieldRelativePointInSpace): FieldRelativePointInSpace {
+    private fun returnFieldCentricCoordsInJamesFieldCoords(anyOldTag: FieldRelativePointInSpace, allianceSide: AllianceSide): FieldRelativePointInSpace {
 
-        return FieldRelativePointInSpace(
-                xInches = anyOldTag.xInches - averageError.xInches,
-                yInches = -(anyOldTag.yInches) - averageError.yInches,
-                headingDegrees = (360 - abs(anyOldTag.headingDegrees)) - averageError.hDegrees //have the angle decrease
-        )
+        return if (allianceSide == AllianceSide.Red) {
+            FieldRelativePointInSpace(
+                    xInches = anyOldTag.xInches - averageErrorRedSide.xInches,
+                    yInches = -(anyOldTag.yInches) - averageErrorRedSide.yInches,
+                    headingDegrees = (360 - abs(anyOldTag.headingDegrees)) - averageErrorRedSide.hDegrees //have the angle decrease
+            )
+        }
+        else { //the side's blue
+            FieldRelativePointInSpace(
+                    xInches = anyOldTag.xInches - averageErrorBlueSide.xInches,
+                    yInches = -(anyOldTag.yInches) - averageErrorBlueSide.yInches,
+                    headingDegrees = (360 - abs(anyOldTag.headingDegrees)) - averageErrorBlueSide.hDegrees //have the angle decrease
+            )
+        }
+
+
     }
 
     fun returnAprilTagInFieldCentricCoords(aprilTag: AprilTagDetection): AprilTagAndData? {
@@ -49,16 +62,31 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
                     thisTagInTagCentricCoords.yInches,
                     thisTagInTagCentricCoords.headingDegrees)
 
-            val thisTagInFieldCentricCoords = aprilTagLocalization.getCameraPositionOnField(aprilTagID = aprilTag.id, thisTagInTagCentricCoords)
+            val alliancePositionOfTag: AllianceSide = when(aprilTag.id) {
+                1, 2, 3 -> AllianceSide.Blue
+                4, 5, 6 -> AllianceSide.Red
 
-            val resultPositionInJamesFieldCoords = returnFieldCentricCoordsInJamesFieldCoords(thisTagInFieldCentricCoords)
+                //this should never happen, but we have some weirdness
+                else -> AllianceSide.Blue
+            }
 
-            return AprilTagAndData(aprilTag, representationOfAprilTag!!, resultPositionInTagCentric, resultPositionInJamesFieldCoords)
+            val thisTagInFieldCentricCoords = aprilTagLocalization.getCameraPositionOnField(aprilTagID = aprilTag.id, thisTagInTagCentricCoords, alliancePositionOfTag)
+
+            val resultPositionInJamesFieldCoords = returnFieldCentricCoordsInJamesFieldCoords(thisTagInFieldCentricCoords, alliancePositionOfTag)
+
+            return AprilTagAndData(aprilTag, representationOfAprilTag!!, resultPositionInTagCentric, resultPositionInJamesFieldCoords, alliancePositionOfTag)
         }
         else return null
     }
 
+    enum class AllianceSide{
+        Red,
+        Blue
+    }
+
+
     data class AprilTagAndData(val AprilTag: AprilTagDetection, val CamRelativePointInSpace: CameraRelativePointInSpace?,
-                               val TagRelativePointInSpace: TagRelativePointInSpace?, val FieldRelativePointInSpace: FieldRelativePointInSpace?)
+                               val TagRelativePointInSpace: TagRelativePointInSpace?, val FieldRelativePointInSpace: FieldRelativePointInSpace?,
+                               val allianceSide: AllianceSide)
 
 }
