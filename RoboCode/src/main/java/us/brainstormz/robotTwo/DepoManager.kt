@@ -64,7 +64,7 @@ class DepoManager(
         val depoTargetType = getDepoTargetTypeFromDepoInput(depoInput) ?: return null
 
         if (previousDepoTargetType != depoTargetType) {
-            jankSave = WristTargets(previousWristTarget.left, previousWristTarget.right)
+            jankSave = WristTargets(wristInput.left, wristInput.right)
         }
 
         val wristTarget: WristTargets =

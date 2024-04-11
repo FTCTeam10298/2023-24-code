@@ -51,10 +51,10 @@ class Transfer(private val telemetry: Telemetry) {
     fun getLatchTarget(side: Side, timestampMillis: Long, targetPosition: TransferTarget, previousTransferTarget: TransferTarget): LatchTarget {
         val previousLatchTarget = previousTransferTarget.getBySide(side)
 
-        val latchTarget = targetPosition.getBySide(side).target
+        val latchTarget = targetPosition.getBySide(side)
 
-        return previousLatchTarget.copy(
-                timeTargetChangedMillis= if (latchTarget != previousLatchTarget.target) {
+        return latchTarget.copy(
+                timeTargetChangedMillis= if (latchTarget.target != previousLatchTarget.target) {
                     timestampMillis
                 } else {
                     previousLatchTarget.timeTargetChangedMillis
