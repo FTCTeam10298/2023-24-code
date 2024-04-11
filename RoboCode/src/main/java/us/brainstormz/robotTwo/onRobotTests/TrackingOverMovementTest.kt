@@ -7,14 +7,11 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
-import us.brainstormz.motion.MecanumMovement
-import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
-import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import java.io.File
-import java.io.FilenameFilter
 import java.lang.Exception
+import kotlin.math.absoluteValue
 import kotlin.math.hypot
 
 @TeleOp
@@ -125,7 +122,7 @@ fun main() {
     }
 
 
-    val directoryPath = "/Users/jamespenrose/ftc/odomCalibrate"
+    val directoryPath = "/Users/jamespenrose/ftc/odomCalibrate/Download"
     val allFiles = File(directoryPath).listFiles { file, name ->
         name[0] != '.'
     }
@@ -145,6 +142,43 @@ fun main() {
             null
         }
     }
+    println("positionAndRotationOrNull: $positionAndRotationOrNull")
 
-    println(positionAndRotationOrNull)
+    val allPositionAndRotations = positionAndRotationOrNull.filterNotNull()
+
+
+
+    val summedAbs = allPositionAndRotations.fold(PositionAndRotation()) { acc, (name, positionAndRotation) ->
+        PositionAndRotation(
+                x = acc.x + positionAndRotation.x.absoluteValue,
+                y = acc.y + positionAndRotation.y.absoluteValue,
+                r = acc.r + positionAndRotation.r.absoluteValue
+        )
+    }
+
+    val averaged = PositionAndRotation(
+            x = summedAbs.x/allPositionAndRotations.size,
+            y = summedAbs.y/allPositionAndRotations.size,
+            r = summedAbs.r/allPositionAndRotations.size
+    )
+
+    println("averaged: $averaged")
+
+    val allX = allPositionAndRotations.map { it.second.x }
+    val allY = allPositionAndRotations.map { it.second.y }
+    val allR = allPositionAndRotations.map { it.second.r }
+
+    val biggestX = allX.maxBy {
+        it.absoluteValue
+    }
+    val biggestY = allY.maxBy {
+        it.absoluteValue
+    }
+    val biggestR = allR.maxBy {
+        it.absoluteValue
+    }
+
+    println("biggestX: $biggestX")
+    println("biggestY: $biggestY")
+    println("biggestR: $biggestR")
 }
