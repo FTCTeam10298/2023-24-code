@@ -987,7 +987,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                     SlideSubsystem.TargetSlideSubsystem(
                                             targetPosition = previousExtendoTargetPosition,
                                             movementMode = MovementMode.Power,
-                                            power = -0.5)
+                                            power = -0.7)
                                 }
                                 ExtendoInput.NoInput -> {
                                     SlideSubsystem.TargetSlideSubsystem(
