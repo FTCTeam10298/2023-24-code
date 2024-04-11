@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.junit.Assert
 import org.junit.Test
@@ -10,6 +11,7 @@ import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.CollectorTarget
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.DepoTarget
+import us.brainstormz.robotTwo.RobotTwoAuto
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.noInput
@@ -31,6 +33,7 @@ import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
+import java.io.File
 
 class TeleOpHandoffTest {
 
@@ -214,8 +217,8 @@ class TeleOpHandoffTest {
                                 armAngleDegrees = Arm.Positions.In.angleDegrees,
                                 lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.Down.ticks, true, 0, 0, 0.0),
                                 wristAngles = Wrist.ActualWrist(
-                                        leftClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees,
-                                        rightClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees,
+                                        leftClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees+1,
+                                        rightClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees-1,
                                 )
                         )
                 ),
@@ -404,15 +407,78 @@ class TeleOpHandoffTest {
         Assert.assertEquals(expectedOutput.toString(), actualOutput.toString())
     }
 
+
 //    @Test
-//    fun x() {
+//    fun `when depo is in and extendo is in, and drivers extend extendo it extends`() {
+//        //given
+//        val telemetry = PrintlnTelemetry()
+//        val teleop = RobotTwoTeleOp(
+//                telemetry = telemetry
+//        )
 //
-//
-//        val a = initialPreviousTargetState.copy(
+//        val driverInput = noInput.copy(
+//                extendo = RobotTwoTeleOp.ExtendoInput.ExtendManual,
+//                extendoManualPower = 0.1
+//        )
+//        val actualWorld = emptyWorld.copy(
+//                actualRobot = emptyWorld.actualRobot.copy(
+//                        collectorSystemState = CollectorManager.ActualCollector(
+//                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks + 20, false, 0, 0, 0.0),
+//                                transferState = Transfer.ActualTransfer(
+//                                        left = ColorReading(1f, 1f, 1f, 1f),
+//                                        right = ColorReading(1f, 1f, 1f, 1f),
+//                                )
+//                        ),
+//                        depoState = DepoManager.ActualDepo(
+//                                armAngleDegrees = Arm.Positions.In.angleDegrees+2,
+//                                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.Down.ticks + 20, false, 0, 0, 0.0),
+//                                wristAngles = Wrist.ActualWrist(
+//                                        leftClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees,
+//                                        rightClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees,
+//                                )
+//                        )
+//                ),
+//                timestampMilis = System.currentTimeMillis()
+//        )
+//        val previousActualWorld = emptyWorld.copy(
+//                actualRobot = emptyWorld.actualRobot.copy(
+//                        collectorSystemState = CollectorManager.ActualCollector(
+//                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks + 20, false, 0, 0, 0.0),
+//                                transferState = Transfer.ActualTransfer(
+//                                        left = ColorReading(1f, 1f, 1f, 1f),
+//                                        right = ColorReading(1f, 1f, 1f, 1f),
+//                                )
+//                        )
+//                )
+//        )
+//        val previousTargetWorld = initialPreviousTargetState.copy(
 //                targetRobot = initialPreviousTargetState.targetRobot.copy(
 //                        collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
 //                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Manual),
-//                                intakeNoodles = Intake.CollectorPowers.Eject,
+//                                intakeNoodles = Intake.CollectorPowers.Off,
+//                                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+//                                transferSensorState = Transfer.TransferSensorState(
+//                                        left = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+//                                        right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+//                                ),
+//                        )
+//                )
+//        )
+//
+//        //when
+//        val actualOutput = teleop.getTargetWorld(
+//                driverInput = driverInput,
+//                actualWorld = actualWorld,
+//                previousActualWorld = previousActualWorld,
+//                previousTargetState = previousTargetWorld
+//        )
+//
+//        //then
+//        val expectedOutput = previousTargetWorld.copy(
+//                targetRobot = previousTargetWorld.targetRobot.copy(
+//                        collectorTarget = previousTargetWorld.targetRobot.collectorTarget.copy(
+//                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Manual),
+//                                intakeNoodles = Intake.CollectorPowers.Off,
 //                                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
 //                                transferSensorState = Transfer.TransferSensorState(
 //                                        left = Transfer.SensorState(hasPixelBeenSeen = true, 0),
@@ -435,17 +501,234 @@ class TeleOpHandoffTest {
 //                                wristPosition = Wrist.WristTargets(Claw.ClawTarget.Retracted),
 //                                targetType = DepoManager.DepoTargetType.GoingHome
 //                        ),
+//                        lights = actualOutput.targetRobot.lights
 //                ),
-//        )
-//        val b = a.copy(
-//                targetRobot = a.targetRobot.copy(
-//                        collectorTarget = a.targetRobot.collectorTarget.copy(
-//                                intakeNoodles = Intake.CollectorPowers.Intake,
-//                        ),
-//                )
+//                driverInput = actualOutput.driverInput,
+//                doingHandoff = actualOutput.doingHandoff,
+//                gamepad1Rumble = actualOutput.gamepad1Rumble
 //        )
 //
+////        println("expected : $expectedOutput")
+////        println("actual   : $actualOutput")
 //
-//        Assert.assertEquals(a, b)
+//        Assert.assertEquals(expectedOutput.toString(), actualOutput.toString())
 //    }
+
+}
+
+
+//fun main() {
+//    val file = File("/Users/jamespenrose/Downloads/Download/stateSnapshot-1.rtf")
+//    val writer = jacksonObjectMapper().createParser(file)
+//    val data = writer.text
+//    println("data:")
+//    println(data)
+//}
+
+
+object SnapshotData {
+    val actualWorld = ActualWorld(
+            actualRobot = ActualRobot(
+                    PositionAndRotation(
+                                x=0.0,
+                                y=0.0,
+                                r=0.0
+                    ),
+                    depoState = DepoManager.ActualDepo(
+
+                            armAngleDegrees=242.32727272727274,
+                            lift= Lift.ActualLift (
+                                    currentPositionTicks=0,
+                                    limitSwitchIsActivated=true,
+                                    zeroPositionOffsetTicks=0,
+                                    ticksMovedSinceReset=0,
+                                    currentAmps=0.0
+    ),
+
+                        ),
+        "wristAngles" : {
+        "leftClawAngleDegrees" : 20.581818181818164,
+        "rightClawAngleDegrees" : 346.54545454545456,
+        "left" : 20.581818181818164,
+        "right" : 346.54545454545456
+    }
+    },
+    "collectorSystemState" : {
+        "extendo" : {
+            "currentPositionTicks" : 0,
+            "limitSwitchIsActivated" : false,
+            "zeroPositionOffsetTicks" : 0,
+            "ticksMovedSinceReset" : 0,
+            "currentAmps" : 0.003
+        },
+        "transferState" : {
+            "left" : {
+            "red" : 0.0047851563,
+            "green" : 0.008007812,
+            "blue" : 0.011035156,
+            "alpha" : 0.023535157,
+            "asList" : [ 0.0047851563, 0.008007812, 0.011035156, 0.023535157 ]
+        },
+            "right" : {
+            "red" : 0.1381836,
+            "green" : 0.17031251,
+            "blue" : 0.12851563,
+            "alpha" : 0.43408203,
+            "asList" : [ 0.1381836, 0.17031251, 0.12851563, 0.43408203 ]
+        }
+        }
+            ),
+            actualGamepad1 = ,
+            actualGamepad2 = ,
+            timestampMilis =
+    )
+    /*
+    actualWorld: {
+  "actualRobot" : {
+    "positionAndRotation" : {
+      "x" : 0.0,
+      "y" : 0.0,
+      "r" : 0.0
+    },
+    "depoState" : {
+      "armAngleDegrees" : 242.32727272727274,
+      "lift" : {
+        "currentPositionTicks" : 0,
+        "limitSwitchIsActivated" : true,
+        "zeroPositionOffsetTicks" : 0,
+        "ticksMovedSinceReset" : 0,
+        "currentAmps" : 0.0
+      },
+      "wristAngles" : {
+        "leftClawAngleDegrees" : 20.581818181818164,
+        "rightClawAngleDegrees" : 346.54545454545456,
+        "left" : 20.581818181818164,
+        "right" : 346.54545454545456
+      }
+    },
+    "collectorSystemState" : {
+      "extendo" : {
+        "currentPositionTicks" : 0,
+        "limitSwitchIsActivated" : false,
+        "zeroPositionOffsetTicks" : 0,
+        "ticksMovedSinceReset" : 0,
+        "currentAmps" : 0.003
+      },
+      "transferState" : {
+        "left" : {
+          "red" : 0.0047851563,
+          "green" : 0.008007812,
+          "blue" : 0.011035156,
+          "alpha" : 0.023535157,
+          "asList" : [ 0.0047851563, 0.008007812, 0.011035156, 0.023535157 ]
+        },
+        "right" : {
+          "red" : 0.1381836,
+          "green" : 0.17031251,
+          "blue" : 0.12851563,
+          "alpha" : 0.43408203,
+          "asList" : [ 0.1381836, 0.17031251, 0.12851563, 0.43408203 ]
+        }
+      }
+    },
+  "actualGamepad1" : {
+    "sequenceNumber" : 10413,
+    "a" : false,
+    "b" : false,
+    "back" : false,
+    "circle" : false,
+    "cross" : false,
+    "dpad_down" : false,
+    "dpad_left" : false,
+    "dpad_right" : false,
+    "dpad_up" : false,
+    "guide" : false,
+    "id" : 1020,
+    "ledQueue" : [ ],
+    "left_bumper" : false,
+    "left_stick_button" : false,
+    "left_stick_x" : 0.0,
+    "left_stick_y" : 0.0,
+    "left_trigger" : 0.0,
+    "nextRumbleApproxFinishTime" : -1,
+    "options" : false,
+    "ps" : false,
+    "right_bumper" : false,
+    "right_stick_button" : false,
+    "right_stick_x" : 0.0,
+    "right_stick_y" : 0.0,
+    "right_trigger" : 0.0,
+    "rumbleQueue" : [ ],
+    "share" : false,
+    "square" : false,
+    "start" : false,
+    "timestamp" : 9787988,
+    "touchpad" : true,
+    "touchpad_finger_1" : true,
+    "touchpad_finger_1_x" : -0.22916669,
+    "touchpad_finger_1_y" : 0.29347825,
+    "touchpad_finger_2" : false,
+    "touchpad_finger_2_x" : -1.0,
+    "touchpad_finger_2_y" : 1.0,
+    "triangle" : false,
+    "type" : "SONY_PS4",
+    "user" : "ONE",
+    "x" : false,
+    "y" : false,
+    "gamepadId" : 1020,
+    "robocolMsgType" : "GAMEPAD",
+    "rumbling" : false
+  },
+  "actualGamepad2" : {
+    "sequenceNumber" : 5,
+    "a" : false,
+    "b" : false,
+    "back" : false,
+    "circle" : false,
+    "cross" : false,
+    "dpad_down" : false,
+    "dpad_left" : false,
+    "dpad_right" : false,
+    "dpad_up" : false,
+    "guide" : false,
+    "id" : -1,
+    "ledQueue" : [ ],
+    "left_bumper" : false,
+    "left_stick_button" : false,
+    "left_stick_x" : 0.0,
+    "left_stick_y" : 0.0,
+    "left_trigger" : 0.0,
+    "nextRumbleApproxFinishTime" : -1,
+    "options" : false,
+    "ps" : false,
+    "right_bumper" : false,
+    "right_stick_button" : false,
+    "right_stick_x" : 0.0,
+    "right_stick_y" : 0.0,
+    "right_trigger" : 0.0,
+    "rumbleQueue" : [ ],
+    "share" : false,
+    "square" : false,
+    "start" : false,
+    "timestamp" : 0,
+    "touchpad" : false,
+    "touchpad_finger_1" : false,
+    "touchpad_finger_1_x" : 0.0,
+    "touchpad_finger_1_y" : 0.0,
+    "touchpad_finger_2" : false,
+    "touchpad_finger_2_x" : 0.0,
+    "touchpad_finger_2_y" : 0.0,
+    "triangle" : false,
+    "type" : "UNKNOWN",
+    "user" : null,
+    "x" : false,
+    "y" : false,
+    "gamepadId" : -1,
+    "robocolMsgType" : "GAMEPAD",
+    "rumbling" : false
+  },
+  "timestampMilis" : 1712813758887
+}
+
+     */
 }

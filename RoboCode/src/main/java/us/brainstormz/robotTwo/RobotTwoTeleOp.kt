@@ -1308,8 +1308,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
     }
 
-    var numberOfSnapshotsMade = 0
-    fun saveStateSnapshot(actualWorld: ActualWorld, previousActualWorld: ActualWorld?, targetWorld: TargetWorld, previousActualTarget: TargetWorld?) {
+
+    private val writer = jacksonObjectMapper().writerWithDefaultPrettyPrinter()
+    private var numberOfSnapshotsMade = 0
+    private fun saveStateSnapshot(actualWorld: ActualWorld, previousActualWorld: ActualWorld?, targetWorld: TargetWorld, previousActualTarget: TargetWorld?) {
         val file = File("/storage/emulated/0/Download/stateSnapshot$numberOfSnapshotsMade.txt")
         file.createNewFile()
         if (file.exists() && file.isFile) {
@@ -1317,8 +1319,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
             telemetry.clearAll()
             telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
-            file.printWriter().use { out -> out.println("actualWorld: $actualWorld\n\npreviousActualWorld: $previousActualWorld\n\ntargetWorld: $targetWorld\n\npreviousActualTarget: $previousActualTarget") }
-            sleep(500)
+            file.printWriter().use { out -> out.println("actualWorld: ${writer.writeValueAsString(actualWorld)}\n\npreviousActualWorld: ${writer.writeValueAsString(previousActualWorld)}\n\ntargetWorld: ${writer.writeValueAsString(targetWorld)}\n\npreviousActualTarget: ${writer.writeValueAsString(previousActualTarget)}") }
+            sleep(1000)
         }
     }
 }
