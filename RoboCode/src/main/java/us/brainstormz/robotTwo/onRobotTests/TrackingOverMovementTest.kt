@@ -125,7 +125,7 @@ fun main() {
     }
 
 
-    val directoryPath = "/Users/jamespenrose/Downloads/Download"
+    val directoryPath = "/Users/jamespenrose/ftc/odomCalibrate"
     val allFiles = File(directoryPath).listFiles { file, name ->
         name[0] != '.'
     }
