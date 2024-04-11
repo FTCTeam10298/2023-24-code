@@ -6,9 +6,11 @@ import android.content.Context
 import android.os.Debug
 import android.os.Debug.MemoryInfo
 import android.os.Environment
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.FauxLocalizer
@@ -153,6 +155,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Manual,
         NoInput
     }
+    @Serializable
     data class WristInput(val left: ClawInput, val right: ClawInput) {
         val bothClaws = mapOf(Side.Left to left, Side.Right to right)
     }
@@ -209,6 +212,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         NoColor,
         NoInput
     }
+    @Serializable
     data class DriverInput (
             val bumperMode: Gamepad1BumperMode,
             val gamepad1ControlMode: GamepadControlMode,
@@ -643,6 +647,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 //            Unknown (Neopixels.NeoPixelColors.Off);
 //        }
 //    }
+    @Serializable
     data class BothPixelsWeWant(val leftPixel: PixelColor, val rightPixel: PixelColor) {
         constructor(): this(leftPixel = PixelColor.Unknown, rightPixel = PixelColor.Unknown)
 
@@ -662,6 +667,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
     }
+    @Serializable
     data class LightTarget(val pattern: BothPixelsWeWant, val stripTarget: Neopixels.StripState) {
         constructor(pattern: BothPixelsWeWant): this(pattern = pattern, stripTarget = pattern.toStripState())
         constructor(stripTarget: Neopixels.StripState): this(pattern = BothPixelsWeWant(), stripTarget = stripTarget)

@@ -2,6 +2,7 @@ package us.brainstormz.robotTwo.subsystems
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import kotlinx.serialization.Serializable
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
@@ -25,7 +26,9 @@ class Neopixels : Subsystem {
         Off(PixelState(0.0, 0.0, 0.0, 0.0)),
     }
 
+    @Serializable
     data class PixelState(val red: Double, val blue: Double, val white: Double, val green: Double)
+    @Serializable
     data class StripState(val wroteForward: Boolean = true, val pixels: List<PixelState>) {
 
         override fun toString(): String = """

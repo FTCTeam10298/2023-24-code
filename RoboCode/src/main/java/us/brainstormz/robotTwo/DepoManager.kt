@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.subsystems.Arm
@@ -19,6 +20,7 @@ class DepoManager(
 
 //    private val claws: List<Claw> = listOf(leftClaw, rightClaw)
 
+    @Serializable
     data class ActualDepo(
             val armAngleDegrees: Double,
             val lift: SlideSubsystem.ActualSlideSubsystem,

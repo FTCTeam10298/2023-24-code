@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.RobotTwoHardware
@@ -17,6 +18,7 @@ object SlideConversion {
 
 interface SlideSubsystem: DualMovementModeSubsystem {
 
+    @Serializable
     open class ActualSlideSubsystem(
             open val currentPositionTicks: Int,
             open val limitSwitchIsActivated: Boolean,
@@ -108,6 +110,7 @@ interface SlideSubsystem: DualMovementModeSubsystem {
         """.trimIndent()
     }
 
+    @Serializable
     open class TargetSlideSubsystem (
             override val targetPosition: SlideTargetPosition,
             override val movementMode: MovementMode,

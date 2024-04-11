@@ -1,5 +1,6 @@
 package us.brainstormz.localizer
 
+import kotlinx.serialization.Serializable
 import kotlin.math.hypot
 
 /**
@@ -9,6 +10,7 @@ import kotlin.math.hypot
  * @param r Angle, in degrees
  * Matches the official coordinate system
  */
+@Serializable
 data class PositionAndRotation(var x: Double = 0.0, var y: Double = 0.0, var r: Double = 0.0) {
 
     /**

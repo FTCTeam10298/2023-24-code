@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
@@ -14,6 +15,8 @@ import kotlin.math.hypot
 import kotlin.math.sin
 
 class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val telemetry: Telemetry): DualMovementModeSubsystem, MecanumMovement(localizer, hardware, telemetry) {
+
+    @Serializable
     data class DrivetrainPower(val x: Double, val y: Double, val r: Double) {
         constructor() : this(0.0, 0.0, 0.0)
         operator fun plus(other: DrivetrainPower): DrivetrainPower {
@@ -25,6 +28,7 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
         }
     }
 
+    @Serializable
     data class DrivetrainTarget(
             override val targetPosition: PositionAndRotation,
             override val movementMode: DualMovementModeSubsystem.MovementMode,

@@ -1,6 +1,7 @@
 package us.brainstormz.robotTwo.subsystems
 
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.ActualRobot
@@ -8,6 +9,7 @@ import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.Side
 
+@Serializable
 data class ColorReading(val red: Float, val green: Float, val blue: Float, val alpha: Float) {
     val asList = listOf(red, green, blue, alpha)
 }
@@ -33,6 +35,7 @@ class Transfer(private val telemetry: Telemetry) {
         return transferHalfState.hasPixelBeenSeen
     }
 
+    @Serializable
     data class ActualTransfer(val left: ColorReading, val right: ColorReading)
 
     fun getActualTransfer(hardware: RobotTwoHardware): ActualTransfer {
@@ -73,7 +76,9 @@ class Transfer(private val telemetry: Telemetry) {
         return targetMatches && beenEnoughTimeSinceTargetChange
     }
 
+    @Serializable
     data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
+    @Serializable
     data class TransferSensorState(
             override val left: SensorState,
             override val right: SensorState): Side.ThingWithSides<SensorState>
@@ -96,7 +101,9 @@ class Transfer(private val telemetry: Telemetry) {
         )
     }
 
+    @Serializable
     data class LatchTarget(val target: LatchPositions, val timeTargetChangedMillis: Long)
+    @Serializable
     data class TransferTarget(
             override val left: LatchTarget,
             override val right: LatchTarget): Side.ThingWithSides<LatchTarget>
