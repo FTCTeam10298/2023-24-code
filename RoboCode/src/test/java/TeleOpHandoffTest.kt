@@ -363,35 +363,32 @@ class TeleOpHandoffTest {
         println("expected : $expectedOutput")
         println("actual   : $actualOutput")
 
-        Assert.assertTrue(expectedOutput.toString() ==  actualOutput.toString())
+        Assert.assertEquals(expectedOutput.toString(), actualOutput.toString())
 //        Assert.assertEquals(expectedOutput, actualOutput)
-        val expectedCt = expectedOutput.targetRobot.collectorTarget
-        val actualCt = actualOutput.targetRobot.collectorTarget
-        Assert.assertEquals(
-                expectedOutput.targetRobot.collectorTarget.copy(
-
-                        extendo = expectedCt.extendo.copy(
-
-                        ),
-//                timeOfEjectionStartMilis = actualCt.timeOfEjectionStartMilis,
-//        timeOfTransferredMillis = actualCt.timeOfTransferredMillis,
-//        intakeNoodles = actualCt.intakeNoodles,
-//        dropDown = actualCt.dropDown,
-//        transferSensorState = actualCt.transferSensorState,
-//        latches = actualCt.latches,
-                ), 
-                actualCt)
-        Assert.assertEquals(expectedOutput.copy(
-                targetRobot = expectedOutput.targetRobot.copy(
-//                        drivetrainTarget = actualOutput.targetRobot.drivetrainTarget,
-//                        depoTarget = actualOutput.targetRobot.depoTarget,
-                        collectorTarget = actualOutput.targetRobot.collectorTarget,
-//                        hangPowers = actualOutput.targetRobot.hangPowers,
-//                        launcherPosition = actualOutput.targetRobot.launcherPosition,
-//                        lights = actualOutput.targetRobot.lights,
-                ),
-                getNextTask = actualOutput.getNextTask,
-        ), actualOutput)
+//        val expectedCt = expectedOutput.targetRobot.collectorTarget
+//        val actualCt = actualOutput.targetRobot.collectorTarget
+//        Assert.assertEquals(
+//                expectedOutput.targetRobot.collectorTarget.copy(
+//
+////                timeOfEjectionStartMilis = actualCt.timeOfEjectionStartMilis,
+////        timeOfTransferredMillis = actualCt.timeOfTransferredMillis,
+////        intakeNoodles = actualCt.intakeNoodles,
+////        dropDown = actualCt.dropDown,
+////        transferSensorState = actualCt.transferSensorState,
+////        latches = actualCt.latches,
+//                ),
+//                actualCt)
+//        Assert.assertEquals(expectedOutput.copy(
+//                targetRobot = expectedOutput.targetRobot.copy(
+////                        drivetrainTarget = actualOutput.targetRobot.drivetrainTarget,
+////                        depoTarget = actualOutput.targetRobot.depoTarget,
+//                        collectorTarget = actualOutput.targetRobot.collectorTarget,
+////                        hangPowers = actualOutput.targetRobot.hangPowers,
+////                        launcherPosition = actualOutput.targetRobot.launcherPosition,
+////                        lights = actualOutput.targetRobot.lights,
+//                ),
+//                getNextTask = actualOutput.getNextTask,
+//        ), actualOutput)
     }
 
 //    @Test
