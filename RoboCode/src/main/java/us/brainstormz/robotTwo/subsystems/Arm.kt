@@ -64,7 +64,7 @@ class Arm: Subsystem, DualMovementModeSubsystem {
         hardware.armServo2.power = power
     }
 
-    private fun getEncoderReader(hardware: RobotTwoHardware) = AxonEncoderReader(hardware.armEncoder, angleOffsetDegrees = -4.0)
+    private fun getEncoderReader(hardware: RobotTwoHardware) = AxonEncoderReader(hardware.armEncoder, angleOffsetDegrees = 86.0)
     fun getArmAngleDegrees(hardware: RobotTwoHardware): Double {
         //20
         //180
