@@ -12,11 +12,15 @@ import kotlin.math.hypot
 @TeleOp
 class TrackingOverMovementTest: OpMode() {
     private val hardware: RobotTwoHardware = RobotTwoHardware(telemetry= telemetry, opmode = this)
-    private val localizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
-    private val drivetrain = Drivetrain(hardware, localizer, telemetry)
+
+    private lateinit var localizer: RRTwoWheelLocalizer
+    private lateinit var drivetrain: Drivetrain
 
     override fun init() {
         hardware.init(hardwareMap)
+
+        localizer = RRTwoWheelLocalizer(hardware, hardware.inchesPerTick)
+        drivetrain = Drivetrain(hardware, localizer, telemetry)
     }
 
     private val inchesToMoveToAccumulateError: Double = 12*12.0
@@ -52,7 +56,19 @@ class TrackingOverMovementTest: OpMode() {
             previousTarget
         }
 
-        drivetrain.actuateDrivetrain(Drivetrain.DrivetrainTarget(newTarget), Drivetrain.DrivetrainTarget(previousTarget), currentPosition)
+        if (!(atTarget && newTarget == PositionAndRotation())) {
+            drivetrain.actuateDrivetrain(Drivetrain.DrivetrainTarget(newTarget), Drivetrain.DrivetrainTarget(previousTarget), currentPosition)
+        } else {
+            drivetrain.powerDrivetrain(Drivetrain.DrivetrainPower())
+            telemetry.addLine("drivetrain power 0")
+        }
+
+        telemetry.addLine("currentPosition: $currentPosition")
+        telemetry.addLine("targetPosition: $newTarget")
+        val deltaPosition = currentPosition - PositionAndRotation()
+        telemetry.addLine("deltaPosition: $deltaPosition")
+        telemetry.update()
+
 
         previousInchesMovedSinceStart = newInchesMovedSinceStart
         previousTarget = newTarget

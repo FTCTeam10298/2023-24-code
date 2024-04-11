@@ -1,6 +1,5 @@
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
 import org.junit.Assert
 import org.junit.Test
 import us.brainstormz.faux.PrintlnTelemetry
@@ -11,7 +10,6 @@ import us.brainstormz.robotTwo.DepoTarget
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.noInput
-import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.localTests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
