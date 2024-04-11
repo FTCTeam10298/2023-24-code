@@ -10,12 +10,15 @@ import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.DepoManager.*
+import us.brainstormz.robotTwo.localTests.TeleopTest
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
@@ -1317,17 +1320,23 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     }
 
 
-    private val writer = jacksonObjectMapper().writerWithDefaultPrettyPrinter()
     private var numberOfSnapshotsMade = 0
     private fun saveStateSnapshot(actualWorld: ActualWorld, previousActualWorld: ActualWorld?, targetWorld: TargetWorld, previousActualTarget: TargetWorld?) {
-        val file = File("/storage/emulated/0/Download/stateSnapshot$numberOfSnapshotsMade.txt")
+
+        val file = File("/storage/emulated/0/Download/stateSnapshot$numberOfSnapshotsMade.json")
         file.createNewFile()
         if (file.exists() && file.isFile) {
             numberOfSnapshotsMade++
 
             telemetry.clearAll()
             telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
-            file.printWriter().use { out -> out.println("actualWorld: ${writer.writeValueAsString(actualWorld)}\n\npreviousActualWorld: ${writer.writeValueAsString(previousActualWorld)}\n\ntargetWorld: ${writer.writeValueAsString(targetWorld)}\n\npreviousActualTarget: ${writer.writeValueAsString(previousActualTarget)}") }
+
+            val json = Json { ignoreUnknownKeys = true }
+            val jsonEncoded = json.encodeToString(actualWorld)
+
+            file.printWriter().use {
+                it.print(jsonEncoded)
+            }
             sleep(1000)
         }
     }

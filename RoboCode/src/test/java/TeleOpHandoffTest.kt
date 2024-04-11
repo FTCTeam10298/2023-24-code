@@ -398,6 +398,89 @@ class TeleOpHandoffTest {
     }
 
 
+    @Test
+    fun `actualData`() {
+        //given
+        val telemetry = PrintlnTelemetry()
+        val teleop = RobotTwoTeleOp(
+                telemetry = telemetry
+        )
+
+        val driverInput = noInput.copy(
+                extendo = RobotTwoTeleOp.ExtendoInput.ExtendManual,
+                extendoManualPower = 0.1
+        )
+        val actualWorld = getActualWorldFromFile("/Users/jamespenrose/Downloads/Download/stateSnapshot2.json")
+        val previousActualWorld = actualWorld
+        val previousTargetWorld = initialPreviousTargetState.copy(
+                targetRobot = initialPreviousTargetState.targetRobot.copy(
+                        collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
+                                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Manual),
+                                intakeNoodles = Intake.CollectorPowers.Off,
+                                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                                transferSensorState = Transfer.TransferSensorState(
+                                        left = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+                                        right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+                                ),
+                        )
+                )
+        )
+
+        //when
+        val actualOutput1 = teleop.getTargetWorld(
+                driverInput = driverInput,
+                actualWorld = actualWorld,
+                previousActualWorld = previousActualWorld,
+                previousTargetState = previousTargetWorld
+        )
+        val actualOutput = teleop.getTargetWorld(
+                driverInput = driverInput,
+                actualWorld = actualWorld,
+                previousActualWorld = previousActualWorld,
+                previousTargetState = actualOutput1
+        )
+
+        //then
+        val expectedOutput = previousTargetWorld.copy(
+                targetRobot = previousTargetWorld.targetRobot.copy(
+                        collectorTarget = previousTargetWorld.targetRobot.collectorTarget.copy(
+                                extendo = Extendo.ExtendoTarget(targetPosition = Extendo.ExtendoPositions.Manual),
+                                intakeNoodles = Intake.CollectorPowers.Off,
+                                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                                transferSensorState = Transfer.TransferSensorState(
+                                        left = Transfer.SensorState(hasPixelBeenSeen = false, 0),
+                                        right = Transfer.SensorState(hasPixelBeenSeen = false, 0),
+                                ),
+                                latches = Transfer.TransferTarget(
+                                        left = Transfer.LatchTarget(
+                                                target = Transfer.LatchPositions.Closed, 0
+                                        ),
+                                        right = Transfer.LatchTarget(
+                                                target = Transfer.LatchPositions.Closed, 0
+                                        ),
+                                ),
+                                timeOfTransferredMillis = 0,
+                                timeOfEjectionStartMilis = 0
+                        ),
+                        depoTarget = DepoTarget(
+                                armPosition = Arm.ArmTarget(Arm.Positions.In),
+                                lift = Lift.TargetLift(Lift.LiftPositions.Down),
+                                wristPosition = Wrist.WristTargets(Claw.ClawTarget.Retracted),
+                                targetType = DepoManager.DepoTargetType.GoingHome
+                        ),
+                        lights = actualOutput.targetRobot.lights
+                ),
+                driverInput = actualOutput.driverInput,
+                doingHandoff = actualOutput.doingHandoff,
+                gamepad1Rumble = actualOutput.gamepad1Rumble
+        )
+
+//        println("expected : $expectedOutput")
+//        println("actual   : $actualOutput")
+
+        Assert.assertEquals(expectedOutput.toString(), actualOutput.toString())
+    }
+
 //    @Test
 //    fun `when depo is in and extendo is in, and drivers extend extendo it extends`() {
 //        //given
@@ -508,25 +591,36 @@ class TeleOpHandoffTest {
 //    @Serializable
 //    data class Data(val a: Int, val b: String)
 
-    @Test
-    fun heyImANormalTest() {
-        val file = File("/Users/jamespenrose/ftc/jsonTest/asdf.kt.json")
-        file.createNewFile()
+//    @Test
+//    fun heyImANormalTest() {
+//        val file = File("/Users/jamespenrose/ftc/jsonTest/asdf.kt.json")
+//        file.createNewFile()
+//
+//        val json = Json { ignoreUnknownKeys = true }
+//        val jsonEncoded = json.encodeToString(emptyWorld)
+//        println("json: $jsonEncoded")
+//
+//        file.printWriter().use {
+//            it.print(jsonEncoded)
+//        }
+//
+//        val newData = file.reader().readText()
+//        println("newData: $newData")
+//
+//        val asObject = json.decodeFromString<ActualWorld>(newData)
+//
+//        println("asObject: $asObject")
+////    println("asObject.a: ${asObject.a}")
+//    }
 
-        val json = Json { ignoreUnknownKeys = true }
-        val jsonEncoded = json.encodeToString()
-        println("json: $jsonEncoded")
+    fun getActualWorldFromFile(pathname: String): ActualWorld {
+        val file = File(pathname)
 
-        file.printWriter().use {
-            it.print(jsonEncoded)
-        }
 
         val newData = file.reader().readText()
-        println("newData: $newData")
 
+        val json = Json { ignoreUnknownKeys = true }
         val asObject = json.decodeFromString<ActualWorld>(newData)
-
-        println("asObject: $asObject")
-//    println("asObject.a: ${asObject.a}")
+        return asObject
     }
 }
