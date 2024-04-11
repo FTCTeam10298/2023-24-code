@@ -435,7 +435,7 @@ class HandoffManagerTest {
                         ),
                         neopixelState = Neopixels.HalfAndHalfTarget().compileStripState()
                 ),
-                timestampMilis = 0,
+                timestampMilis = System.currentTimeMillis(),
                 actualGamepad1 = Gamepad(),
                 actualGamepad2 = Gamepad()
         )
@@ -464,8 +464,8 @@ class HandoffManagerTest {
         println("\nexpected : $expectedOutput")
         println(  "actual   : $actualOutput")
 
-        Assert.assertEquals(expectedOutput, actualOutput)
-//        Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
+//        Assert.assertEquals(expectedOutput, actualOutput)
+        Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
     }
 
 
