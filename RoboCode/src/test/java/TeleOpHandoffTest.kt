@@ -106,7 +106,7 @@ class TeleOpHandoffTest {
                 gamepad1Rumble = actualOutput.gamepad1Rumble
         )
 
-        Assert.assertEquals(expectedOutput, actualOutput)
+        Assert.assertEquals(expectedOutput.toString(), actualOutput.toString())
     }
 
     @Test
@@ -184,7 +184,7 @@ class TeleOpHandoffTest {
                 gamepad1Rumble = actualOutput.gamepad1Rumble
         )
 
-        Assert.assertTrue(expectedOutput.toString() == actualOutput.toString())
+        Assert.assertEquals(expectedOutput.toString(), actualOutput.toString())
 //        Assert.assertEquals(expectedOutput, actualOutput)
     }
 
@@ -296,6 +296,112 @@ class TeleOpHandoffTest {
 //                ),
 //                getNextTask = actualOutput.getNextTask,
 //        ), actualOutput)
+    }
+
+    @Test
+    fun `when depo is up and extendo is out, and drivers extend extendo it extends`() {
+        //given
+        val telemetry = PrintlnTelemetry()
+        val teleop = RobotTwoTeleOp(
+                telemetry = telemetry
+        )
+
+        val driverInput = noInput.copy(
+                extendo = RobotTwoTeleOp.ExtendoInput.ExtendManual,
+                extendoManualPower = 0.1
+        )
+        val actualWorld = emptyWorld.copy(
+                actualRobot = emptyWorld.actualRobot.copy(
+                        collectorSystemState = CollectorManager.ActualCollector(
+                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks + 20, false, 0, 0, 0.0),
+                                transferState = Transfer.ActualTransfer(
+                                        left = ColorReading(1f, 1f, 1f, 1f),
+                                        right = ColorReading(1f, 1f, 1f, 1f),
+                                )
+                        ),
+                        depoState = DepoManager.ActualDepo(
+                                armAngleDegrees = Arm.Positions.In.angleDegrees+2,
+                                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.Down.ticks + 20, false, 0, 0, 0.0),
+                                wristAngles = Wrist.ActualWrist(
+                                        leftClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees,
+                                        rightClawAngleDegrees = Claw.ClawTarget.Retracted.angleDegrees,
+                                )
+                        )
+                ),
+                timestampMilis = System.currentTimeMillis()
+        )
+        val previousActualWorld = emptyWorld.copy(
+                actualRobot = emptyWorld.actualRobot.copy(
+                        collectorSystemState = CollectorManager.ActualCollector(
+                                extendo = SlideSubsystem.ActualSlideSubsystem(Extendo.ExtendoPositions.Min.ticks + 20, false, 0, 0, 0.0),
+                                transferState = Transfer.ActualTransfer(
+                                        left = ColorReading(1f, 1f, 1f, 1f),
+                                        right = ColorReading(1f, 1f, 1f, 1f),
+                                )
+                        )
+                )
+        )
+        val previousTargetWorld = initialPreviousTargetState.copy(
+                targetRobot = initialPreviousTargetState.targetRobot.copy(
+                        collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
+                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Manual),
+                                intakeNoodles = Intake.CollectorPowers.Off,
+                                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                                transferSensorState = Transfer.TransferSensorState(
+                                        left = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+                                        right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+                                ),
+                        )
+                )
+        )
+
+        //when
+        val actualOutput = teleop.getTargetWorld(
+                driverInput = driverInput,
+                actualWorld = actualWorld,
+                previousActualWorld = previousActualWorld,
+                previousTargetState = previousTargetWorld
+        )
+
+        //then
+        val expectedOutput = previousTargetWorld.copy(
+                targetRobot = previousTargetWorld.targetRobot.copy(
+                        collectorTarget = previousTargetWorld.targetRobot.collectorTarget.copy(
+                                extendo = SlideSubsystem.TargetSlideSubsystem(targetPosition = Extendo.ExtendoPositions.Manual),
+                                intakeNoodles = Intake.CollectorPowers.Off,
+                                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                                transferSensorState = Transfer.TransferSensorState(
+                                        left = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+                                        right = Transfer.SensorState(hasPixelBeenSeen = true, 0),
+                                ),
+                                latches = Transfer.TransferTarget(
+                                        left = Transfer.LatchTarget(
+                                                target = Transfer.LatchPositions.Closed, 0
+                                        ),
+                                        right = Transfer.LatchTarget(
+                                                target = Transfer.LatchPositions.Closed, 0
+                                        ),
+                                ),
+                                timeOfTransferredMillis = 0,
+                                timeOfEjectionStartMilis = 0
+                        ),
+                        depoTarget = DepoTarget(
+                                armPosition = Arm.ArmTarget(Arm.Positions.In),
+                                lift = Lift.TargetLift(Lift.LiftPositions.Down),
+                                wristPosition = Wrist.WristTargets(Claw.ClawTarget.Retracted),
+                                targetType = DepoManager.DepoTargetType.GoingHome
+                        ),
+                        lights = actualOutput.targetRobot.lights
+                ),
+                driverInput = actualOutput.driverInput,
+                doingHandoff = actualOutput.doingHandoff,
+                gamepad1Rumble = actualOutput.gamepad1Rumble
+        )
+
+//        println("expected : $expectedOutput")
+//        println("actual   : $actualOutput")
+
+        Assert.assertEquals(expectedOutput.toString(), actualOutput.toString())
     }
 
 //    @Test

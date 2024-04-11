@@ -115,11 +115,13 @@ class HandoffManager(
             determinePixelControllerForSinglePixel(side, actualState, transferSensorState)
         }
 
+        val pixelFromLiftIsStillBlockingExtendo = actualState.depo == DepoCoordinationStates.PotentiallyBlockingExtendoMovement && (actualState.extendo == ExtendoCoordinationStates.ReadyToHandoff)
+
         val finalPixelController = { side: Side ->
             val thereIsAPixel = actualController(side) != PixelController.NoPixel
             if (thereIsAPixel) {
                 val liftWantsThePixel = inputConstraints.handoffPixelsToLift.getBySide(side) && extendoInputIsIn
-                val pixelFromLiftIsStillBlockingExtendo = actualState.depo == DepoCoordinationStates.PotentiallyBlockingExtendoMovement
+
                 when {
                     liftWantsThePixel && actualRobotAllowsForHandoff -> PixelController.Depo
                     autoStartHandoff -> PixelController.Both
@@ -167,7 +169,7 @@ class HandoffManager(
             val right = outputs(Side.Right)
 
             HandoffCoordinated(
-                    extendo = if (actualState.depo == DepoCoordinationStates.PotentiallyBlockingExtendoMovement) {
+                    extendo = if (pixelFromLiftIsStillBlockingExtendo) {
                         ExtendoCoordinationStates.ReadyToHandoff
                     } else {
                         inputConstraints.extendo
