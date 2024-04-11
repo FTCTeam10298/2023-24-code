@@ -32,7 +32,7 @@ class TrackingOverMovementTest: OpMode() {
     private val inchesToMoveToAccumulateError: Double = 30 *12.0
     private val movementRectangleXInches = 0
     private val movementRectangleYInches = 20
-    private val movementAngleDegrees = 180
+    private val movementAngleDegrees = 0
 
     private var previousTarget = PositionAndRotation()
 
@@ -40,6 +40,12 @@ class TrackingOverMovementTest: OpMode() {
     private var lastActualPosition = PositionAndRotation()
 
     private var previousGamepad1 = Gamepad()
+
+    private var numberOfFilesInDirectory: Int? = null
+
+    override fun start() {
+        numberOfFilesInDirectory = getNumberOfFilesInDirectory(directoryPath)
+    }
 
     override fun loop() {
         localizer.recalculatePositionAndRotation()
@@ -72,10 +78,11 @@ class TrackingOverMovementTest: OpMode() {
             telemetry.addLine("drivetrain power 0")
 
             if (gamepad1.cross && !previousGamepad1.cross) {
-                saveAsJson(currentPosition)
+                saveAsJson(currentPosition, numberOfFilesInDirectory ?: -1)
             }
         }
 
+        telemetry.addLine("test number: $numberOfFilesInDirectory")
         telemetry.addLine("currentPosition: $currentPosition")
         telemetry.addLine("targetPosition: $newTarget")
         val deltaPosition = currentPosition - PositionAndRotation()
@@ -89,9 +96,13 @@ class TrackingOverMovementTest: OpMode() {
         previousGamepad1.copy(gamepad1)
     }
 
-    private fun saveAsJson(positionAndRotation: PositionAndRotation) {
-        val directoryPath = "/storage/emulated/0/Download"
-        val numberOfFilesInDirectory = File(directoryPath).listFiles().size
+    val directoryPath = "/storage/emulated/0/Download"
+    private fun getNumberOfFilesInDirectory(pathname: String): Int {
+        return File(pathname).listFiles().size
+    }
+
+    private fun saveAsJson(positionAndRotation: PositionAndRotation, numberOfFilesInDirectory: Int) {
+//        val numberOfFilesInDirectory = getNumberOfFilesInDirectory(directoryPath)
 
         val file = File("$directoryPath/savedData$numberOfFilesInDirectory.json")
         file.createNewFile()
@@ -146,15 +157,8 @@ fun main() {
 
     val odomOffsetDataPoint = allFiles.map {file ->
         if (file.isFile) {
-            val fileName = file.name
-
             val odomOffsetDataPoint = getOdomOffsetDataPointFromFile(file)
-
-            if (odomOffsetDataPoint != null) {
-                odomOffsetDataPoint
-            } else {
-                null
-            }
+            odomOffsetDataPoint
         } else {
             null
         }
