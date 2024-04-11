@@ -505,16 +505,16 @@ class TeleOpHandoffTest {
 //    }
 
 
-    @Serializable
-    data class Data(val a: Int, val b: String)
+//    @Serializable
+//    data class Data(val a: Int, val b: String)
 
     @Test
     fun heyImANormalTest() {
         val file = File("/Users/jamespenrose/ftc/jsonTest/asdf.json")
         file.createNewFile()
 
-        val json = Json { isLenient = true; ignoreUnknownKeys = true }
-        val jsonEncoded = json.encodeToString(Data(3, "hi"))
+        val json = Json { ignoreUnknownKeys = true }
+        val jsonEncoded = json.encodeToString(emptyWorld)
         println("json: $jsonEncoded")
 
         file.printWriter().use {
@@ -524,7 +524,7 @@ class TeleOpHandoffTest {
         val newData = file.reader().readText()
         println("newData: $newData")
 
-        val asObject = json.decodeFromString<Data>(newData)
+        val asObject = json.decodeFromString<ActualWorld>(newData)
 
         println("asObject: $asObject")
 //    println("asObject.a: ${asObject.a}")
