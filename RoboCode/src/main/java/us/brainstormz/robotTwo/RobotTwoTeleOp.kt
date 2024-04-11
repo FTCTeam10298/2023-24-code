@@ -810,7 +810,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 if (doHandoffSequence) {
                     extendo.findLimitToReset(
                             actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
-                            otherTarget = 
+                            otherTarget =
                             SlideSubsystem.TargetSlideSubsystem(
                                     targetPosition = Extendo.ExtendoPositions.Min,
                                     movementMode = MovementMode.Position,
@@ -825,8 +825,19 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
 
+        /**Handoff*/
+//        Collector
+        val uncoordinatedCollectorTarget = CollectorTarget(
+                intakeNoodles = intakeNoodleTarget,
+                dropDown = dropdownTarget,
+                timeOfEjectionStartMilis = timeOfEjectionStartMillis,
+                timeOfTransferredMillis = timeOfTransferredMillis,
+                transferSensorState = transferState,
+                latches = latchTarget,
+                extendo = extendoTargetState,
+        )
 
-        /**Depo*/
+//        Depo
         val driverInputWrist = WristTargets(
                 left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
@@ -890,22 +901,39 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
 
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
-        val depoTarget: DepoTarget = if (driverInputIsManual) {
-            DepoTarget(
-                    lift = Lift.TargetLift(power = driverInput.depoScoringHeightAdjust, movementMode = MovementMode.Power, targetPosition = previousTargetState.targetRobot.depoTarget.lift.targetPosition),
-                    armPosition = Arm.ArmTarget(
-                            power = driverInput.armOverridePower,
-                            movementMode = MovementMode.Power,
-                            targetPosition = previousTargetState.targetRobot.depoTarget.armPosition.targetPosition
-                    ),
-                    wristPosition = driverInputWrist,
-                    targetType = DepoTargetType.Manual
-            )
+
+        val handoffPixelsToLift = HandoffManager.HandoffPixelsToLift(
+                left = spoofDriverInputForDepo.wrist.left == ClawInput.Hold,
+                right = spoofDriverInputForDepo.wrist.right == ClawInput.Hold
+        )
+        val uncoordinatedDepoInput = spoofDriverInputForDepo.depo
+
+//        Handoff Coordination
+        val handoffTarget = handoffManager.manageHandoff(
+                handoff = handoffPixelsToLift,
+                depoInput = uncoordinatedDepoInput,
+                collectorTarget = uncoordinatedCollectorTarget,
+                previousTargetWorld = previousTargetState,
+                actualWorld = actualWorld
+        )
+
+        val overrideHandoff = driverInputIsManual
+        val handoffWithOverrides = if (overrideHandoff) {
+
+//            DepoTarget(
+//                    lift = Lift.TargetLift(power = driverInput.depoScoringHeightAdjust, movementMode = MovementMode.Power, targetPosition = previousTargetState.targetRobot.depoTarget.lift.targetPosition),
+//                    armPosition = Arm.ArmTarget(
+//                            power = driverInput.armOverridePower,
+//                            movementMode = MovementMode.Power,
+//                            targetPosition = previousTargetState.targetRobot.depoTarget.armPosition.targetPosition
+//                    ),
+//                    wristPosition = driverInputWrist,
+//                    targetType = DepoTargetType.Manual
+//            )
+
+            handoffTarget.copy()
         } else {
-            depoManager.fullyManageDepo(
-                    target= spoofDriverInputForDepo,
-                    previousDepoTarget= previousTargetState.targetRobot.depoTarget,
-                    actualWorld= actualWorld)
+            handoffTarget
         }
 
         /**Drive*/
@@ -1004,27 +1032,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }?.first
 //        val gamepad1RumbleRoutine = null
 
-        /** Coordinated Collector */
-        val coordinatedCollector = collectorSystem.coordinateCollector(
-                uncoordinatedTarget = CollectorTarget(
-                        intakeNoodles = intakeNoodleTarget,
-                        dropDown = dropdownTarget,
-                        timeOfEjectionStartMilis = timeOfEjectionStartMillis,
-                        timeOfTransferredMillis = timeOfTransferredMillis,
-                        transferSensorState = transferState,
-                        latches = latchTarget,
-                        extendo = extendoTargetState,
-                ),
-                previousTargetWorld = previousTargetState
-        )
-
-        val finalLatchesTarget = Transfer.TransferTarget(
-                left = getLatchTarget(Side.Left, latchInputToLatchPosition(driverInput.leftLatch) ?: coordinatedCollector.latches.left.target),
-                right = getLatchTarget(Side.Right, latchInputToLatchPosition(driverInput.rightLatch) ?: coordinatedCollector.latches.right.target)
-        )
-        val finalCollector = coordinatedCollector.copy(latches = finalLatchesTarget)
-
-
         return TargetWorld(
                 targetRobot = TargetRobot(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(
@@ -1032,8 +1039,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 movementMode = MovementMode.Power,
                                 targetPosition = PositionAndRotation()
                         ),
-                        depoTarget = depoTarget,
-                        collectorTarget = finalCollector,
+                        depoTarget = handoffWithOverrides.depo,
+                        collectorTarget = handoffWithOverrides.collector,
                         hangPowers = hangTarget,
                         launcherPosition = launcherTarget,
                         lights = lights,
