@@ -1,0 +1,1 @@
+adb pull /storage/emulated/0/FIRST/ /Users/jamespenrose/Downloads/

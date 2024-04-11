@@ -5,6 +5,7 @@ import android.app.ActivityManager.RunningAppProcessInfo
 import android.content.Context
 import android.os.Debug
 import android.os.Debug.MemoryInfo
+import android.os.Environment
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
@@ -32,6 +33,8 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.utils.Utils.sqrKeepSign
 import us.brainstormz.utils.measured
 import us.brainstormz.utils.runOnDedicatedThread
+import java.io.File
+import java.lang.Thread.sleep
 import kotlin.math.absoluteValue
 
 class StatsDumper(val reportingIntervalMillis:Long, context: Context){
@@ -1254,7 +1257,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     val previousActualState = previousActualState ?: actualState
                     val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
                     val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
-                    getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
+                    val targetWorld = getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
+                    if (actualState.actualGamepad1.touchpad && !previousActualState.actualGamepad1.touchpad) {
+                        saveStateSnapshot(actualState, previousActualState, targetWorld, previousTargetState)
+                    }
+                    targetWorld
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState, previousActualState ->
                     val previousActualState = previousActualState ?: actualState
@@ -1298,6 +1305,20 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
 
             telemetry.update()
+        }
+    }
+
+    var numberOfSnapshotsMade = 0
+    fun saveStateSnapshot(actualWorld: ActualWorld, previousActualWorld: ActualWorld?, targetWorld: TargetWorld, previousActualTarget: TargetWorld?) {
+        val file = File("/storage/emulated/0/Download/stateSnapshot$numberOfSnapshotsMade.txt")
+        file.createNewFile()
+        if (file.exists() && file.isFile) {
+            numberOfSnapshotsMade++
+
+            telemetry.clearAll()
+            telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
+            file.printWriter().use { out -> out.println("actualWorld: $actualWorld\n\npreviousActualWorld: $previousActualWorld\n\ntargetWorld: $targetWorld\n\npreviousActualTarget: $previousActualTarget") }
+            sleep(500)
         }
     }
 }
