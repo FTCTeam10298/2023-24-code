@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import com.fasterxml.jackson.annotation.JsonTypeName
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -26,28 +27,21 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
 
 
-    @Serializable
     data class ExtendoTarget(
             override val targetPosition: SlideSubsystem.SlideTargetPosition,
             override val power: Double = 0.0,
-            override val movementMode: DualMovementModeSubsystem.MovementMode = DualMovementModeSubsystem.MovementMode.Position
+            override val movementMode: DualMovementModeSubsystem.MovementMode,
     ): DualMovementModeSubsystem.TargetMovementSubsystem
 
-    @Serializable
+    @JsonTypeName("ExtendoPositions")
     enum class ExtendoPositions( override val ticks: Int): SlideSubsystem.SlideTargetPosition {
 //        AllTheWayInTarget(0),
 
-        @SerialName("as")
         Min(0),
-        @SerialName("aasdfs")
-        Manual(0),
-        @SerialName("aasdffs")
+//        Manual(0),
         PurpleFarSidePosition((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
-        @SerialName("afdss")
         PurpleCloseSidePosition((800*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
-        @SerialName("asdfs")
         PurpleCenterPosition((2000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
-        @SerialName("aassdfs")
         Max((2000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
     }
 

@@ -9,7 +9,9 @@ import us.brainstormz.faux.hardware.FauxMotor
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.hardware.FauxAnalogInputController
 import us.brainstormz.faux.hardware.FauxColorSensor
+import us.brainstormz.faux.hardware.FauxDevice
 import us.brainstormz.faux.hardware.FauxDigitalChannel
+import us.brainstormz.faux.hardware.FauxI2cDeviceSynch
 import us.brainstormz.faux.hardware.FauxImu
 import us.brainstormz.faux.hardware.FauxServo
 import us.brainstormz.robotTwo.ActualRobot
@@ -19,6 +21,7 @@ import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.WrappedColorSensor
 import us.brainstormz.robotTwo.subsystems.Drivetrain
+import us.brainstormz.robotTwo.subsystems.ftcLEDs.FTC_Addons.AdafruitNeopixelSeesaw
 
 class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHardware(opmode = opmode, telemetry = telemetry) {
     init {
@@ -46,6 +49,10 @@ class FauxRobotTwoHardware(opmode: FauxOpMode, telemetry:Telemetry): RobotTwoHar
         leftClawServo = FauxCRServo()
         launcherServo = FauxServo()
 
+
+        dropDownServo = FauxServo()
+
+        neopixelDriver = AdafruitNeopixelSeesaw(FauxI2cDeviceSynch(), false)
 
         armEncoder = AnalogInput(FauxAnalogInputController(), 0)
 //        leftRollerEncoder = AnalogInput(FauxAnalogInputController(), 0)

@@ -24,7 +24,6 @@ data class DepoTarget(
         val wristPosition: Wrist.WristTargets,
         val targetType: DepoManager.DepoTargetType
 )
-@Serializable
 data class CollectorTarget(
         val extendo: Extendo.ExtendoTarget,
         val timeOfEjectionStartMilis: Long?,
@@ -34,7 +33,6 @@ data class CollectorTarget(
         val transferSensorState: Transfer.TransferSensorState,
         val latches: Transfer.TransferTarget,
 )
-@Serializable
 data class TargetRobot(
         val drivetrainTarget: Drivetrain.DrivetrainTarget,
         val depoTarget: DepoTarget,

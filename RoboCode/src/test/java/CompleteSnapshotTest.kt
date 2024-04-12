@@ -80,7 +80,7 @@ class CompleteSnapshotTest {
                                         left = RobotTwoTeleOp.initLatchTarget,
                                         right = RobotTwoTeleOp.initLatchTarget
                                 ),
-                                extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Manual, 0.0, DualMovementModeSubsystem.MovementMode.Position),
+                                extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Min, 0.0, DualMovementModeSubsystem.MovementMode.Position),
                         ),
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
@@ -101,8 +101,10 @@ class CompleteSnapshotTest {
                 null
         )
         // when
-        val json = jacksonObjectMapper().writeValueAsString(snapshot)
+        val json = snapshot.toJson()
         val foo:CompleteSnapshot = jacksonObjectMapper().readValue(json)
+
+        println(json)
 
         // then
         Assert.assertEquals(snapshot.copy(targetWorld = snapshot.targetWorld.copy(getNextTask = null)), foo)

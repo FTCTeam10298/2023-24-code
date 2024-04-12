@@ -1,8 +1,13 @@
+#!/bin/bash
 
-adb pull /storage/emulated/0/Download/ /Users/jamespenrose/ftc/odomCalibrate
+set -e
+
+mkdir -p ~/Desktop/ftc/odomCalibrate/allData/
+
+adb pull /storage/emulated/0/Download/ ~/Desktop/ftc/odomCalibrate
 echo Pulled files
 
-mv /Users/jamespenrose/ftc/odomCalibrate/Download/* /Users/jamespenrose/ftc/odomCalibrate/allData/
+mv ~/Desktop/ftc/odomCalibrate/Download/* ~/Desktop/ftc/odomCalibrate/allData/
 echo Moved files
 
 adb shell rm -r /storage/emulated/0/Download/

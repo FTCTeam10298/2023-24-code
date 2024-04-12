@@ -931,6 +931,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 collectorTarget = uncoordinatedCollectorTarget,
                 previousTargetWorld = previousTargetState,
                 actualWorld = actualWorld,
+                doingHandoff = doHandoffSequence,
             )
         }
 
@@ -1104,7 +1105,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         left = initLatchTarget,
                                         right = initLatchTarget
                                 ),
-                                extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Manual, 0.0, MovementMode.Position),
+                                extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Min, 0.0, MovementMode.Position),
                         ),
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
@@ -1124,8 +1125,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     lateinit var statsDumper:StatsDumper
     lateinit var drivetrain: Drivetrain
     fun init(hardware: RobotTwoHardware) {
-        statsDumper = StatsDumper(reportingIntervalMillis = 1000, FtcRobotControllerActivity.instance!!)
-        statsDumper.start()
+        FtcRobotControllerActivity.instance?.let{controller ->
+            statsDumper = StatsDumper(reportingIntervalMillis = 1000, controller)
+            statsDumper.start()
+        }
         stateDumper = StateDumper(reportingIntervalMillis = 1000, functionalReactiveAutoRunner)
         stateDumper.start()
 
@@ -1249,8 +1252,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             telemetry.clearAll()
             telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
 
-            val jsonEncoded = toJson(actualWorld)
+            val jsonEncoded = CompleteSnapshot(
+                actualWorld = actualWorld,
+                previousActualWorld = previousActualWorld,
+                targetWorld = targetWorld,
+                previousActualTarget = previousActualTarget,
+            ).toJson()
 
+            println("SAVING SNAPSHOT $numberOfSnapshotsMade: ${jsonEncoded}")
             file.printWriter().use {
                 it.print(jsonEncoded)
             }
@@ -1271,9 +1280,5 @@ data class CompleteSnapshot(
     val targetWorld: TargetWorld,
     val previousActualTarget: TargetWorld?,
 ){
-    fun toJson(): String {
-        val json = Json { ignoreUnknownKeys = true }
-        val jsonEncoded = json.encodeToString(this)
-        return jsonEncoded
-    }
+    fun toJson() = jacksonObjectMapper().writeValueAsString(this)
 }

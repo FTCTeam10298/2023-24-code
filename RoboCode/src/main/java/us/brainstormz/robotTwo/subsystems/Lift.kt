@@ -15,6 +15,7 @@ import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 
 class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
+    @JsonTypeName("LiftPositions")
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         PastDown(0),
         Down(0),

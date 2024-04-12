@@ -3,6 +3,7 @@ package us.brainstormz.robotTwo.subsystems
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.annotation.JsonValue
 import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -121,6 +122,7 @@ interface SlideSubsystem: DualMovementModeSubsystem {
     )
     sealed interface SlideTargetPosition { val ticks: Int }
 
+    @JsonTypeName("VariableTargetPosition")
     class VariableTargetPosition(override val ticks: Int): SlideTargetPosition {
         override fun equals(other: Any?): Boolean {
             return if (other is SlideTargetPosition) {
