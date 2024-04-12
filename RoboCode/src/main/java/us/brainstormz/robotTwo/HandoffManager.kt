@@ -128,9 +128,9 @@ class HandoffManager(
         return if (thereIsAPixel) {
             if(doingHandoff ){
 
-                val pixelHanoffDesire = inputConstraints.handoffPixelsToLift.getBySide(side)
+                val pixelHandoffDesire = inputConstraints.handoffPixelsToLift.getBySide(side)
 
-                when (pixelHanoffDesire) {
+                when (pixelHandoffDesire) {
                     HandoffReadiness.FinishHandoff -> PixelOwner.Depo
                     HandoffReadiness.StartHandoff -> PixelOwner.Both
                     HandoffReadiness.DontHandoff -> {
@@ -353,11 +353,11 @@ class HandoffManager(
 
         val handoffCoordinated = coordinateHandoff(
                 inputConstraints = HandoffConstraints(
-                        depo = driverDepositorHandoffReadiness,
-                        handoffPixelsToLift = HandoffPixelsToLift(
-                                left = deriveHandoffReadiness(handoffInput, wristInput.left),
-                                right = deriveHandoffReadiness(handoffInput, wristInput.right)
-                        )
+                    depo = driverDepositorHandoffReadiness,
+                    handoffPixelsToLift = HandoffPixelsToLift(
+                        left = deriveHandoffReadiness(handoffInput, wristInput.left),
+                        right = deriveHandoffReadiness(handoffInput, wristInput.right)
+                    )
                 ),
                 physicalExtendoReadiness =  when {
                     actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated -> ExtendoCoordinationStates.ReadyToHandoff
