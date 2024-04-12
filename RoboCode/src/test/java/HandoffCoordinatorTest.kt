@@ -87,7 +87,6 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
         )
 
         // then
@@ -150,7 +149,6 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
         )
 
         // then
@@ -215,7 +213,6 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
         )
 
         // then
@@ -280,7 +277,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -345,7 +342,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -410,7 +407,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -475,7 +472,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -539,7 +536,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
 
@@ -604,7 +601,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -668,7 +665,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -733,7 +730,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -800,7 +797,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -867,7 +864,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -932,7 +929,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -999,7 +996,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -1065,7 +1062,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -1130,7 +1127,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -1196,7 +1193,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -1262,7 +1259,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -1329,7 +1326,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
@@ -1395,7 +1392,7 @@ class HandoffCoordinatorTest {
             actualDepo = actualState.depo,
             actualWrist = actualState.wrist,
             transferSensorState = transferSensorState,
-            doingHandoff = doingHandoff,
+            
         )
 
         // then
