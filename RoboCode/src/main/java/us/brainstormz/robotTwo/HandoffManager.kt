@@ -111,7 +111,7 @@ class HandoffManager(
         val bothSlidesAreIn = liftIsIn && extendoIsIn
 
         return when {
-            bothSlidesAreIn && pixelIsDetectedBySensor && latchIsClosed && clawIsGripping -> PixelOwner.Both
+            bothSlidesAreIn && latchIsClosed && clawIsGripping -> PixelOwner.Both
             pixelIsDetectedBySensor && latchIsClosed -> PixelOwner.Collector
             clawIsGripping && ((pixelIsDetectedBySensor && !latchIsClosed && bothSlidesAreIn) || (!pixelIsDetectedBySensor && !bothSlidesAreIn)) -> PixelOwner.Depo
             else -> PixelOwner.NoPixel
