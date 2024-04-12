@@ -142,13 +142,28 @@ class HandoffManager(
             finalOwner
         } else {
             when (currentOwner) {
-                PixelOwner.Depo -> PixelOwner.Both
-                PixelOwner.Collector -> PixelOwner.Both
+                PixelOwner.Depo, PixelOwner.Collector -> PixelOwner.Both
                 PixelOwner.Both -> finalOwner
                 PixelOwner.NoPixel -> PixelOwner.NoPixel
             }
         }
-        return nextOwnerInAirlockProcess
+
+        val freezeIfExtendoAndDepoArentReady = if (actualExtendo != ExtendoCoordinationStates.ReadyToHandoff) {
+            when (currentOwner) {
+                PixelOwner.Both -> {
+                    when (actualDepo) {
+                        DepoCoordinationStates.NotReady -> PixelOwner.Depo
+                        DepoCoordinationStates.PotentiallyBlockingExtendoMovement -> PixelOwner.Both
+                        DepoCoordinationStates.ReadyToHandoff -> PixelOwner.Collector
+                    }
+                }
+                else -> currentOwner
+            }
+        } else {
+            nextOwnerInAirlockProcess
+        }
+
+        return freezeIfExtendoAndDepoArentReady
     }
 
     fun latchFromTargetController(targetPixelOwner: PixelOwner): HandoffCoordinated.PixelHolder = when (targetPixelOwner) {
