@@ -54,7 +54,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(TargetPixelControlState.ControlledByBoth)
+            targetPixelControlStates = TargetPixelControlStates(TargetPixelControlState.ControlledByBoth)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -116,7 +116,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -179,7 +179,7 @@ class HandoffCoordinatorTest {
 
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -244,7 +244,7 @@ class HandoffCoordinatorTest {
 
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -310,7 +310,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -374,7 +374,7 @@ class HandoffCoordinatorTest {
 
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.DriverControlledPosition,
@@ -440,7 +440,7 @@ class HandoffCoordinatorTest {
 
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.DriverControlledPosition,
@@ -505,7 +505,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -570,7 +570,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.DriverControlledPosition,// .NotReady,
@@ -634,7 +634,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.DriverControlledPosition, //.NotReady,
@@ -698,7 +698,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition , //.ReadyToHandoff,
@@ -765,7 +765,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition, //.ReadyToHandoff,
@@ -832,7 +832,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition, //.ReadyToHandoff,
@@ -897,7 +897,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition, //.ReadyToHandoff,
@@ -964,7 +964,7 @@ class HandoffCoordinatorTest {
         val inputConstraints = HandoffConstraints(
 
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition, //.ReadyToHandoff,
@@ -1030,7 +1030,7 @@ class HandoffCoordinatorTest {
         val inputConstraints = HandoffConstraints(
 
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition, //.ReadyToHandoff,
@@ -1095,7 +1095,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition, //.ReadyToHandoff,
@@ -1160,7 +1160,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
 
         val actualState = HandoffCoordinated(
@@ -1227,7 +1227,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -1294,7 +1294,7 @@ class HandoffCoordinatorTest {
         val inputConstraints = HandoffConstraints(
 
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -1360,7 +1360,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.NotReady,
-            handoffPixelsToLift = HandoffPixelsToLift(handoffPixelsToLift)
+            targetPixelControlStates = TargetPixelControlStates(handoffPixelsToLift)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition, //.ReadyToHandoff,

@@ -27,7 +27,7 @@ class HandoffManager(
         ControlledByBoth,
         ControlledByCollector,
     }
-    data class HandoffPixelsToLift(
+    data class TargetPixelControlStates(
         override val left: TargetPixelControlState,
         override val right: TargetPixelControlState
     ): Side.ThingWithSides<TargetPixelControlState> {
@@ -47,7 +47,7 @@ class HandoffManager(
     }
     data class HandoffConstraints(
             val depo: DepoCoordinationStates,
-            val handoffPixelsToLift: HandoffPixelsToLift
+            val targetPixelControlStates: TargetPixelControlStates
     )
     enum class ExtendoHandoffControlDecision{
         HandoffPosition, DriverControlledPosition
@@ -128,7 +128,7 @@ class HandoffManager(
         return if (thereIsAPixel) {
             if(doingHandoff){
 
-                val pixelHandoffDesire = inputConstraints.handoffPixelsToLift.getBySide(side)
+                val pixelHandoffDesire = inputConstraints.targetPixelControlStates.getBySide(side)
 
                 when (pixelHandoffDesire) {
                     TargetPixelControlState.ControlledByDepositor -> PixelOwner.Depo
@@ -333,7 +333,7 @@ class HandoffManager(
             else -> DepoCoordinationStates.NotReady
         }
 
-        fun deriveHandoffReadiness(handoffInput: RobotTwoTeleOp.HandoffInput, clawInput: RobotTwoTeleOp.ClawInput): TargetPixelControlState {
+        fun determineTargetPixelControlState(handoffInput: RobotTwoTeleOp.HandoffInput, clawInput: RobotTwoTeleOp.ClawInput): TargetPixelControlState {
             val liftInputIsDown = driverDepositorHandoffReadiness == DepoCoordinationStates.ReadyToHandoff
             val extendoInputIsIn = areDriversRetractingExtendo == ExtendoCoordinationStates.ReadyToHandoff
             val inputAllowsForHandoff = liftInputIsDown && extendoInputIsIn
@@ -362,9 +362,9 @@ class HandoffManager(
         val handoffCoordinated = coordinateHandoff(
                 inputConstraints = HandoffConstraints(
                     depo = driverDepositorHandoffReadiness,
-                    handoffPixelsToLift = HandoffPixelsToLift(
-                        left = deriveHandoffReadiness(handoffInput, wristInput.left),
-                        right = deriveHandoffReadiness(handoffInput, wristInput.right)
+                    targetPixelControlStates = TargetPixelControlStates(
+                        left = determineTargetPixelControlState(handoffInput, wristInput.left),
+                        right = determineTargetPixelControlState(handoffInput, wristInput.right)
                     )
                 ),
                 physicalExtendoReadiness =  when {
