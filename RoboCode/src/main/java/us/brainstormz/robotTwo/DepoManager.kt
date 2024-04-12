@@ -1,6 +1,5 @@
 package us.brainstormz.robotTwo
 
-import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.subsystems.Arm
@@ -256,16 +255,16 @@ class DepoManager(
         )
     }
 
-    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousDepoTarget: DepoTarget, actualWorld: ActualWorld): DepoTarget {
+    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousTarget: DepoTarget, actualWorld: ActualWorld): DepoTarget {
         val actualDepo: ActualDepo = actualWorld.actualRobot.depoState
         telemetry.addLine("\nDepo manager: ")
 
         val depoInput = target.depo
-        val wristInput = WristTargets(left= target.wrist.left.toClawTarget() ?: previousDepoTarget.wristPosition.left, right= target.wrist.right.toClawTarget()?:previousDepoTarget.wristPosition.right)
+        val wristInput = WristTargets(left= target.wrist.left.toClawTarget() ?: previousTarget.wristPosition.left, right= target.wrist.right.toClawTarget()?:previousTarget.wristPosition.right)
 
-        val finalDepoTarget = getFinalDepoTarget(depoInput, target.depoScoringHeightAdjust, wristInput, previousDepoTarget.wristPosition, previousDepoTarget.targetType, SlideSubsystem.ActualSlideSubsystem(actualDepo.lift)) ?: previousDepoTarget
+        val finalDepoTarget = getFinalDepoTarget(depoInput, target.depoScoringHeightAdjust, wristInput, previousTarget.wristPosition, previousTarget.targetType, SlideSubsystem.ActualSlideSubsystem(actualDepo.lift)) ?: previousTarget
 
-        val movingArmAndLiftTarget = coordinateArmLiftAndClaws(finalDepoTarget, previousDepoTarget, actualDepo)
+        val movingArmAndLiftTarget = coordinateArmLiftAndClaws(finalDepoTarget, previousTarget, actualDepo)
 
         val armAndLiftAreAtFinalRestingPlace: Boolean = checkIfArmAndLiftAreAtTarget(finalDepoTarget, actualDepo)
         val wristPosition: WristTargets =
@@ -287,7 +286,7 @@ class DepoManager(
                             movingArmAndLiftTarget.wristPosition
                         }
                     }
-                    else -> previousDepoTarget.wristPosition
+                    else -> previousTarget.wristPosition
                 }
 
 

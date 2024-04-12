@@ -418,7 +418,7 @@ class HandoffManager(
         )
         val coordinatedDepo = depoManager.fullyManageDepo(
                 target = depoDriverInput,
-                previousDepoTarget = previousTargetWorld.targetRobot.depoTarget,
+                previousTarget = previousTargetWorld.targetRobot.depoTarget,
                 actualWorld = actualWorld
         )
 
