@@ -34,7 +34,11 @@ class Wrist(override val left: Claw, override val right: Claw, private val telem
 
     fun wristIsAtPosition(target: WristTargets, actual: ActualWrist): Boolean {
         val wristIsAtPosition = target.asMap.toList().fold(true) {acc, (side, targetClaw) ->
-            acc && (clawsAsMap[side]?.isClawAtAngle(targetClaw, actual.getBySide(side))==true)
+            val actualClawAngleDegrees = actual.getBySide(side)
+            val thisClaw = clawsAsMap[side]
+            val clawIsAtAngle = thisClaw?.isClawAtAngle(targetClaw, actualClawAngleDegrees)
+
+            acc && clawIsAtAngle==true
         }
         telemetry.addLine("wristIsAtPosition: $wristIsAtPosition")
         return wristIsAtPosition
