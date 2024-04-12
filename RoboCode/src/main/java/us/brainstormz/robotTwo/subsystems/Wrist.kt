@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.Side
@@ -7,6 +8,7 @@ import us.brainstormz.robotTwo.Side
 class Wrist(override val left: Claw, override val right: Claw, private val telemetry: Telemetry): Side.ThingWithSides<Claw> {
     val clawsAsMap = mapOf(Side.Left to left, Side.Right to right)
 
+    @Serializable
     data class WristTargets(override val left: Claw.ClawTarget, override val right: Claw.ClawTarget): Side.ThingWithSides<Claw.ClawTarget> {
         val bothOrNull: Claw.ClawTarget? = if (left == right) left else null
         constructor(both: Claw.ClawTarget) : this(both, both)
@@ -14,6 +16,7 @@ class Wrist(override val left: Claw, override val right: Claw, private val telem
         val asMap = mapOf(Side.Left to left, Side.Right to right)
     }
 
+    @Serializable
     data class ActualWrist(val leftClawAngleDegrees: Double, val rightClawAngleDegrees: Double): Side.ThingWithSides<Double> {
         override val left = leftClawAngleDegrees
         override val right = rightClawAngleDegrees

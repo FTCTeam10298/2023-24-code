@@ -258,10 +258,9 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         neopixelDriver = hwMap["neopixels"] as AdafruitNeopixelSeesaw
         neopixelSystem.initialize(neopixelDriver)
 
-
         // Drivetrain
         parallelEncoder.direction = DcMotorSimple.Direction.REVERSE
-        perpendicularEncoder.direction = DcMotorSimple.Direction.FORWARD
+        perpendicularEncoder.direction = DcMotorSimple.Direction.REVERSE
         parallelOdomMotor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         perpendicularOdomMotor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
 

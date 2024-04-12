@@ -2,6 +2,7 @@ package us.brainstormz.robotTwo.subsystems
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import kotlinx.serialization.Serializable
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.AxonEncoderReader
@@ -10,6 +11,7 @@ import kotlin.math.cos
 
 class Arm: Subsystem, DualMovementModeSubsystem {
 
+    @Serializable
     data class ArmTarget(
             override val targetPosition: Positions,
             override val movementMode: DualMovementModeSubsystem.MovementMode,
@@ -64,7 +66,7 @@ class Arm: Subsystem, DualMovementModeSubsystem {
         hardware.armServo2.power = power
     }
 
-    private fun getEncoderReader(hardware: RobotTwoHardware) = AxonEncoderReader(hardware.armEncoder, angleOffsetDegrees = -4.0)
+    private fun getEncoderReader(hardware: RobotTwoHardware) = AxonEncoderReader(hardware.armEncoder, angleOffsetDegrees = 86.0)
     fun getArmAngleDegrees(hardware: RobotTwoHardware): Double {
         //20
         //180

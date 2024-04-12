@@ -1,5 +1,10 @@
 package us.brainstormz.robotTwo.subsystems
 
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.builtins.ArraySerializer
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.operationFramework.Subsystem
@@ -19,13 +24,30 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
                                 kd= 0.08,
                         )
 
-    enum class ExtendoPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
+
+
+    @Serializable
+    data class ExtendoTarget(
+            override val targetPosition: SlideSubsystem.SlideTargetPosition,
+            override val power: Double = 0.0,
+            override val movementMode: DualMovementModeSubsystem.MovementMode = DualMovementModeSubsystem.MovementMode.Position
+    ): DualMovementModeSubsystem.TargetMovementSubsystem
+
+    @Serializable
+    enum class ExtendoPositions( override val ticks: Int): SlideSubsystem.SlideTargetPosition {
 //        AllTheWayInTarget(0),
+
+        @SerialName("as")
         Min(0),
+        @SerialName("aasdfs")
         Manual(0),
+        @SerialName("aasdffs")
         PurpleFarSidePosition((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        @SerialName("afdss")
         PurpleCloseSidePosition((800*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        @SerialName("asdfs")
         PurpleCenterPosition((2000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        @SerialName("aassdfs")
         Max((2000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
     }
 

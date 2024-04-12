@@ -1,11 +1,11 @@
 package us.brainstormz.robotTwo.subsystems
 
+import com.fasterxml.jackson.annotation.JsonValue
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.pid.PID
 import us.brainstormz.robotTwo.RobotTwoHardware
 import kotlin.math.absoluteValue
-import kotlin.math.sign
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.utils.measured
 
 
@@ -17,6 +17,7 @@ object SlideConversion {
 
 interface SlideSubsystem: DualMovementModeSubsystem {
 
+    @Serializable
     open class ActualSlideSubsystem(
             open val currentPositionTicks: Int,
             open val limitSwitchIsActivated: Boolean,
@@ -93,7 +94,8 @@ interface SlideSubsystem: DualMovementModeSubsystem {
     }
 
 
-    interface SlideTargetPosition { val ticks: Int }
+    @Serializable
+    sealed interface SlideTargetPosition { val ticks: Int }
 
     class VariableTargetPosition(override val ticks: Int): SlideTargetPosition {
         override fun equals(other: Any?): Boolean {
@@ -108,35 +110,20 @@ interface SlideSubsystem: DualMovementModeSubsystem {
         """.trimIndent()
     }
 
-    open class TargetSlideSubsystem (
-            override val targetPosition: SlideTargetPosition,
-            override val movementMode: MovementMode,
-            override val power: Double = 0.0,
-            open val timeOfResetMoveDirectionStartMilis: Long = 0
-    ): TargetMovementSubsystem {
-        constructor(targetPosition: SlideTargetPosition): this(
-                targetPosition= targetPosition,
-                movementMode = MovementMode.Position,
-                power = 0.0
-        )
+//    @Serializable
+//    data class ExtendoTarget (
+//            override val targetPosition: SlideTargetPosition,
+//            override val movementMode: MovementMode,
+//            override val power: Double = 0.0,
+//    ): TargetMovementSubsystem {
+//        constructor(targetPosition: SlideTargetPosition): this(
+//                targetPosition= targetPosition,
+//                movementMode = MovementMode.Position,
+//                power = 0.0
+//        )
+//    }
 
-        override fun toString(): String = """
-            TargetSlideSubsystem(targetPosition=$targetPosition, movementMode=$movementMode, power=$power)
-        """.trimIndent()
-    }
 
     val stallCurrentAmps: Double
     val findResetPower: Double
-    fun findLimitToReset(actualSlideSubsystem: ActualSlideSubsystem, otherTarget: TargetSlideSubsystem): TargetSlideSubsystem {
-        val slideThinksItsAtZero = actualSlideSubsystem.currentPositionTicks <= 0
-
-        return if (slideThinksItsAtZero && !actualSlideSubsystem.limitSwitchIsActivated) {
-            TargetSlideSubsystem(power = -findResetPower,
-                                movementMode = MovementMode.Power,
-                                timeOfResetMoveDirectionStartMilis = 0,
-                                targetPosition = otherTarget.targetPosition)
-        } else {
-            otherTarget
-        }
-    }
 }

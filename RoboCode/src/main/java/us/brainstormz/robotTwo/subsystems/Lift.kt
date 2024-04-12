@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import us.brainstormz.operationFramework.Subsystem
@@ -12,7 +13,6 @@ import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 
 
 class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
-
 
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         PastDown(0),
@@ -58,15 +58,15 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
                          constructor(actualSlideSubsystem: SlideSubsystem.ActualSlideSubsystem): this(actualSlideSubsystem.currentPositionTicks, actualSlideSubsystem.limitSwitchIsActivated, actualSlideSubsystem.zeroPositionOffsetTicks, actualSlideSubsystem.ticksMovedSinceReset, actualSlideSubsystem.currentAmps)
                      }
 
+    @Serializable
     data class TargetLift(override val targetPosition: SlideSubsystem.SlideTargetPosition = LiftPositions.Down,
                           override val power: Double = 0.0,
-                          override val movementMode: MovementMode = MovementMode.Position,
-                          override val timeOfResetMoveDirectionStartMilis: Long = 0): SlideSubsystem.TargetSlideSubsystem(targetPosition, movementMode, power, timeOfResetMoveDirectionStartMilis) {
-                              constructor(targetSlideSubsystem: SlideSubsystem.TargetSlideSubsystem):
-                                    this(   targetPosition= targetSlideSubsystem.targetPosition,
-                                            power= targetSlideSubsystem.power,
-                                            movementMode= targetSlideSubsystem.movementMode,
-                                            timeOfResetMoveDirectionStartMilis= targetSlideSubsystem.timeOfResetMoveDirectionStartMilis,)
+                          override val movementMode: MovementMode = MovementMode.Position
+    ): TargetMovementSubsystem {
+//                              constructor(targetSlideSubsystem: SlideSubsystem.TargetSlideSubsystem):
+//                                    this(   targetPosition= targetSlideSubsystem.targetPosition,
+//                                            power= targetSlideSubsystem.power,
+//                                            movementMode= targetSlideSubsystem.movementMode, )
     }
 
 

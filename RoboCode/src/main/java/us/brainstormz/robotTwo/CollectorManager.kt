@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.subsystems.Extendo
@@ -14,6 +15,7 @@ class CollectorManager(
         private val telemetry: Telemetry) {
 
 
+    @Serializable
     data class ActualCollector(
             val extendo: SlideSubsystem.ActualSlideSubsystem,
             val transferState: Transfer.ActualTransfer,

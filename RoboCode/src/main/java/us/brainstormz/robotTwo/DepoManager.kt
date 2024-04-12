@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.subsystems.Arm
@@ -19,6 +20,7 @@ class DepoManager(
 
 //    private val claws: List<Claw> = listOf(leftClaw, rightClaw)
 
+    @Serializable
     data class ActualDepo(
             val armAngleDegrees: Double,
             val lift: SlideSubsystem.ActualSlideSubsystem,
@@ -64,7 +66,7 @@ class DepoManager(
         val depoTargetType = getDepoTargetTypeFromDepoInput(depoInput) ?: return null
 
         if (previousDepoTargetType != depoTargetType) {
-            jankSave = WristTargets(previousWristTarget.left, previousWristTarget.right)
+            jankSave = WristTargets(wristInput.left, wristInput.right)
         }
 
         val wristTarget: WristTargets =
@@ -291,9 +293,13 @@ class DepoManager(
 
 
         val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
-            Lift.TargetLift(lift.findLimitToReset(
-                    actualSlideSubsystem = actualDepo.lift,
-                    otherTarget = movingArmAndLiftTarget.lift))
+            val slideThinksItsAtZero = actualDepo.lift.currentPositionTicks <= 0
+
+            if (slideThinksItsAtZero && !actualDepo.lift.limitSwitchIsActivated) {
+                Lift.TargetLift(power = -lift.findResetPower, movementMode = MovementMode.Power)
+            } else {
+                movingArmAndLiftTarget.lift
+            }
         } else {
             movingArmAndLiftTarget.lift
         }

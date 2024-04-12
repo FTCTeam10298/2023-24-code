@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import kotlinx.serialization.Serializable
 import us.brainstormz.operationFramework.Subsystem
 import us.brainstormz.robotTwo.RobotTwoHardware
 
@@ -13,6 +14,7 @@ class Dropdown: Subsystem, DualMovementModeSubsystem {
         OnePixel(0.0)
     }
 
+    @Serializable
     data class DropdownTarget(
             override val targetPosition: DropdownPresets,
             override val movementMode: DualMovementModeSubsystem.MovementMode,

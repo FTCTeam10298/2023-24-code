@@ -8,6 +8,9 @@ import android.os.Debug.MemoryInfo
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.FauxLocalizer
@@ -24,7 +27,6 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
@@ -32,6 +34,8 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.utils.Utils.sqrKeepSign
 import us.brainstormz.utils.measured
 import us.brainstormz.utils.runOnDedicatedThread
+import java.io.File
+import java.lang.Thread.sleep
 import kotlin.math.absoluteValue
 
 class StatsDumper(val reportingIntervalMillis:Long, context: Context){
@@ -136,9 +140,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Collector,
         Claws
     }
-    enum class Gamepad2RightStickMode {
-        Drivetrain,
-        Depo
+    enum class GamepadControlMode {
+        Normal,
+        Manual
     }
     enum class DepoInput {
         Preset1,
@@ -150,7 +154,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         Manual,
         NoInput
     }
-    data class WristInput(val left: ClawInput, val right: ClawInput) {
+    @Serializable
+    data class WristInput(override val left: ClawInput, override val right: ClawInput): Side.ThingWithSides<ClawInput> {
         val bothClaws = mapOf(Side.Left to left, Side.Right to right)
     }
     enum class ClawInput {
@@ -195,7 +200,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         NoInput,
     }
     enum class HandoffInput {
-        StartHandoff,
+        Handoff,
         NoInput
     }
     enum class LightInput {
@@ -206,9 +211,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         NoColor,
         NoInput
     }
+    @Serializable
     data class DriverInput (
             val bumperMode: Gamepad1BumperMode,
-            val gamepad2StickMode: Gamepad2RightStickMode,
+            val gamepad1ControlMode: GamepadControlMode,
+            val gamepad2ControlMode: GamepadControlMode,
             val lightInput: LightInput,
             val depo: DepoInput,
             val depoScoringHeightAdjust: Double,
@@ -234,6 +241,26 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val previousGamepad2 = previousActualWorld.actualGamepad2
         val previousRobot = previousActualWorld.actualRobot
         val previousRobotTarget = previousTargetState.targetRobot
+
+
+        /**Control Mode*/
+        val gamepad1ControlMode: GamepadControlMode = if (gamepad1.touchpad && !previousGamepad1.touchpad) {
+            when (previousTargetState.driverInput.gamepad1ControlMode) {
+                GamepadControlMode.Normal -> GamepadControlMode.Manual
+                GamepadControlMode.Manual -> GamepadControlMode.Normal
+            }
+        } else {
+            previousTargetState.driverInput.gamepad1ControlMode
+        }
+
+        val gamepad2ControlMode: GamepadControlMode = if (gamepad2.touchpad && !previousGamepad2.touchpad) {
+            when (previousTargetState.driverInput.gamepad2ControlMode) {
+                GamepadControlMode.Normal -> GamepadControlMode.Manual
+                GamepadControlMode.Manual -> GamepadControlMode.Normal
+            }
+        } else {
+            previousTargetState.driverInput.gamepad2ControlMode
+        }
 
         /**Depo*/
         val depoGamepad2Input: DepoInput? = when {
@@ -275,20 +302,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val dpadInput: DepoInput = depoGamepad2Input ?: depoGamepad1Input
 
-        val gamepad2RightStickMode: Gamepad2RightStickMode = if (gamepad2.touchpad && !previousGamepad2.touchpad) {
-            when (previousTargetState.driverInput.gamepad2StickMode) {
-                Gamepad2RightStickMode.Drivetrain -> Gamepad2RightStickMode.Depo
-                Gamepad2RightStickMode.Depo -> Gamepad2RightStickMode.Drivetrain
-            }
-        } else {
-            previousTargetState.driverInput.gamepad2StickMode
-        }
-
         val liftStickInput = -gamepad2.right_stick_y.toDouble()
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
-        val depoInput = if (gamepad2RightStickMode == Gamepad2RightStickMode.Depo) {
-            telemetry.addLine("gamepad2RightStickMode: $gamepad2RightStickMode")
+        val depoInput = if (gamepad2ControlMode == GamepadControlMode.Manual) {
+            telemetry.addLine("gamepad2RightStickMode: $gamepad2ControlMode")
 
             val isLiftControlActive = liftStickInput.absoluteValue > 0.2
 
@@ -493,7 +511,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         /**Handoff*/
         val isHandoffButtonPressed = (gamepad2.a && !gamepad2.dpad_left) || (gamepad1.a && !gamepad1.start)
         val handoff = when {
-            isHandoffButtonPressed -> HandoffInput.StartHandoff
+            isHandoffButtonPressed -> HandoffInput.Handoff
             else -> HandoffInput.NoInput
         }
 
@@ -541,11 +559,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val drive2Input = Drivetrain.DrivetrainPower(
                 y = gamepad2.left_stick_y.toDouble(),
                 x = -gamepad2.left_stick_x.toDouble(),
-                r = when (gamepad2RightStickMode) {
-                    Gamepad2RightStickMode.Drivetrain -> {
+                r = when (gamepad2ControlMode) {
+                    GamepadControlMode.Normal -> {
                         gamepad2.right_stick_x.toDouble()
                     }
-                    Gamepad2RightStickMode.Depo -> {
+                    GamepadControlMode.Manual -> {
                         0.0
                     }
                 }
@@ -604,7 +622,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 hang = hang,
                 launcher = launcher,
                 bumperMode = gamepadOneBumperMode,
-                gamepad2StickMode = gamepad2RightStickMode,
+                gamepad1ControlMode = gamepad1ControlMode,
+                gamepad2ControlMode = gamepad2ControlMode,
                 lightInput = lightColor
         )
     }
@@ -627,6 +646,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 //            Unknown (Neopixels.NeoPixelColors.Off);
 //        }
 //    }
+    @Serializable
     data class BothPixelsWeWant(val leftPixel: PixelColor, val rightPixel: PixelColor) {
         constructor(): this(leftPixel = PixelColor.Unknown, rightPixel = PixelColor.Unknown)
 
@@ -646,6 +666,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
     }
+    @Serializable
     data class LightTarget(val pattern: BothPixelsWeWant, val stripTarget: Neopixels.StripState) {
         constructor(pattern: BothPixelsWeWant): this(pattern = pattern, stripTarget = pattern.toStripState())
         constructor(stripTarget: Neopixels.StripState): this(pattern = BothPixelsWeWant(), stripTarget = stripTarget)
@@ -674,7 +695,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
 
-        val weWantToStartHandoff = driverInput.handoff == HandoffInput.StartHandoff || theRobotJustCollectedTwoPixels
+        val weWantToStartHandoff = driverInput.handoff == HandoffInput.Handoff || theRobotJustCollectedTwoPixels
 
         val inputsConflictWithTransfer = driverInput.extendo == ExtendoInput.ExtendManual || (driverInput.depo == DepoInput.Manual)
 
@@ -748,174 +769,42 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         }
 
-        /**Gates*/
-        fun getLatchTarget(side: Side, targetPosition: Transfer.LatchPositions): Transfer.LatchTarget {
-            val previousLatchTarget = previousTargetState.targetRobot.collectorTarget.latches.getBySide(side)
-
-            return if (targetPosition != previousLatchTarget.target) {
-                Transfer.LatchTarget(
-                        target= targetPosition,
-                        timeTargetChangedMillis= actualWorld.timestampMilis)
-            } else {
-                previousLatchTarget
-            }
-        }
-
-        fun getLatchHandingOffTarget(side: Side): Transfer.LatchTarget {
-            val handingOffIsHappening = false//handoffState.getBySide(side.otherSide())
-
-            return getLatchTarget(side = side,
-                    targetPosition = if (handingOffIsHappening) {
-                        Transfer.LatchPositions.Open
-                    } else {
-                        Transfer.LatchPositions.Closed
-                    }
-            )
-        }
-
-        fun latchInputToLatchPosition(latchInput: LatchInput): Transfer.LatchPositions? = when (latchInput) {
-            LatchInput.Open -> Transfer.LatchPositions.Open
-            LatchInput.NoInput -> null
-        }
-
-        val latchTarget = Transfer.TransferTarget(
-                left = getLatchHandingOffTarget(Side.Left),
-                right = getLatchHandingOffTarget(Side.Right),
-        )
-
-        /**Extendo*/
-        val previousExtendoTargetPosition = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
-        val extendoTargetState: SlideSubsystem.TargetSlideSubsystem = when (driverInput.extendo) {
-            ExtendoInput.ExtendManual -> {
-                SlideSubsystem.TargetSlideSubsystem(
-                        targetPosition = previousExtendoTargetPosition,
-                        movementMode = MovementMode.Power,
-                        power = driverInput.extendoManualPower)
-            }
-            ExtendoInput.RetractManual -> {
-                SlideSubsystem.TargetSlideSubsystem(
-                        targetPosition = previousExtendoTargetPosition,
-                        movementMode = MovementMode.Power,
-                        power = driverInput.extendoManualPower)
-            }
-            ExtendoInput.RetractSetAmount -> {
-                SlideSubsystem.TargetSlideSubsystem(
-                        targetPosition = previousExtendoTargetPosition,
-                        movementMode = MovementMode.Power,
-                        power = -0.5)
-            }
-            ExtendoInput.NoInput -> {
-                if (doHandoffSequence) {
-                    extendo.findLimitToReset(
-                            actualSlideSubsystem = actualRobot.collectorSystemState.extendo,
-                            otherTarget =
-                            SlideSubsystem.TargetSlideSubsystem(
-                                    targetPosition = Extendo.ExtendoPositions.Min,
-                                    movementMode = MovementMode.Position,
-                                    power = 0.0)
-                    )
-                } else {
-                    SlideSubsystem.TargetSlideSubsystem(
-                            targetPosition = previousExtendoTargetPosition,
-                            movementMode = MovementMode.Power,
-                            power = 0.0)
-                }
-            }
-        }
-
         /**Handoff*/
-//        Collector
-        val uncoordinatedCollectorTarget = CollectorTarget(
-                intakeNoodles = intakeNoodleTarget,
-                dropDown = dropdownTarget,
-                timeOfEjectionStartMilis = timeOfEjectionStartMillis,
-                timeOfTransferredMillis = timeOfTransferredMillis,
-                transferSensorState = transferState,
-                latches = latchTarget,
-                extendo = extendoTargetState,
+        fun repeatClaw(side: Side): ClawInput {
+            val unrepeatedInput = driverInput.wrist.getBySide(side)
+            return if (unrepeatedInput == ClawInput.NoInput) {
+                previousTargetState.driverInput.wrist.getBySide(side)
+            } else {
+                unrepeatedInput
+            }
+        }
+        val repeatDriverInputForDepo = driverInput.copy(
+                depo = if (driverInput.depo == DepoInput.NoInput) {
+                    previousTargetState.driverInput.depo
+                } else {
+                    driverInput.depo
+                },
+//                wrist = WristInput(
+//                        left = repeatClaw(Side.Left),
+//                        right = repeatClaw(Side.Right)
+//                )
         )
 
-//        Depo
         val driverInputWrist = WristTargets(
                 left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
 
-        val areDepositing = previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.GoingOut
-
-        fun isPixelInSide(side: Side): Boolean {
-            return when (side) {
-                Side.Left -> transfer.checkIfPixelIsTransferred(transferState.left)
-                Side.Right -> transfer.checkIfPixelIsTransferred(transferState.right)
-            }
-        }
-
-        val doingHandoff = doHandoffSequence && previousTargetState.targetRobot.depoTarget.targetType != DepoTargetType.GoingOut
-        val collectorIsMovingOut = extendo.getVelocityTicksPerMili(actualWorld, previousActualWorld) > 0.1
-        val mapOfClawInputsToConditions: Map<ClawInput, (Side) -> List<Boolean>> = mapOf(
-                ClawInput.Hold to {side ->
-                    listOf(
-                            doingHandoff && isPixelInSide(Side.entries.first{it != side} /*claws Are Flipped when down*/),
-                    )
-                },
-                ClawInput.Drop to {side ->
-                    val areLatchesReady = transfer.checkIfLatchHasActuallyAchievedTarget(side, Transfer.LatchPositions.Closed, actualWorld.timestampMilis, previousTargetState.targetRobot.collectorTarget.latches)
-                    listOf(
-                            !areDepositing && intakeNoodleTarget == Intake.CollectorPowers.Intake,
-                            !areDepositing && areLatchesReady && collectorIsMovingOut
-                    )
-                },
-        )
-
-        val clawInputPerSide = Side.entries.map { side ->
-            val driverInputForThisSide = driverInput.wrist.bothClaws.entries.first {it.key == side}.value
-            side to mapOfClawInputsToConditions.entries.fold(driverInputForThisSide) { acc, (clawInput, listOfConditions) ->
-                val doesValueMatch: Boolean = listOfConditions(side).fold(false) {acc, it -> acc || it}
-                if (doesValueMatch)
-                    clawInput
-                else
-                    acc
-            }
-        }.toMap()
-
-        telemetry.addLine("clawInputPerSide: $clawInputPerSide")
-
-        val spoofDriverInputForDepo = driverInput.copy(
-                depo = if (driverInput.depo == DepoInput.NoInput) {
-                            val driverOneIsUsingTheClaws = previousTargetState.driverInput.bumperMode == Gamepad1BumperMode.Claws
-                            val isWristClosedOrBeingToldToClose = driverInput.wrist.bothClaws.toList().fold(true) {acc, (side, clawInput) ->
-                                acc && ((clawInput == ClawInput.Drop) || wrist.clawsAsMap[side]!!.isClawAtAngle(ClawTarget.Retracted, actualRobot.depoState.wristAngles.getBySide(side)))
-                            }
-                            val driverOneWantsToRetract = driverOneIsUsingTheClaws && isWristClosedOrBeingToldToClose
-                            if (weWantToStartHandoff || driverOneWantsToRetract) {
-                                DepoInput.Down
-                            } else {
-                                previousTargetState.driverInput.depo
-                            }
-                        } else {
-                            driverInput.depo
-                        },
-                wrist = WristInput(clawInputPerSide[Side.Left]!!,  clawInputPerSide[Side.Right]!!)
-        )
-
-        val driverInputIsManual = driverInput.depo == DepoInput.Manual
-
-        val handoffPixelsToLift = HandoffManager.HandoffPixelsToLift(
-                left = clawInputPerSide[Side.Left]!! == ClawInput.Hold,
-                right = clawInputPerSide[Side.Right]!! == ClawInput.Hold
-        )
-        val uncoordinatedDepoInput = spoofDriverInputForDepo.depo
-
 //        Handoff Coordination
-        val handoffTarget = handoffManager.manageHandoff(
-                handoff = handoffPixelsToLift,
-                depoInput = uncoordinatedDepoInput,
-                collectorTarget = uncoordinatedCollectorTarget,
-                previousTargetWorld = previousTargetState,
-                actualWorld = actualWorld
-        )
-
-        val overrideHandoff = driverInputIsManual
+        val driverInputIsManual = driverInput.depo == DepoInput.Manual
+        val overrideHandoff = driverInputIsManual || driverInput.gamepad1ControlMode == GamepadControlMode.Manual
         val handoffWithOverrides = if (overrideHandoff) {
+
+            fun latchInputToLatchPosition(latchInput: LatchInput): Transfer.LatchPositions =
+                    when (latchInput) {
+                        LatchInput.Open -> Transfer.LatchPositions.Open
+                        LatchInput.NoInput -> Transfer.LatchPositions.Closed
+                    }
+
             HandoffManager.HandoffTarget(
                     depo = DepoTarget(
                             lift = Lift.TargetLift(
@@ -932,17 +821,114 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             targetType = DepoTargetType.Manual
                     ),
                     collector = CollectorTarget(
-                            intakeNoodles = intakeNoodleTarget,
+                            intakeNoodles = when (driverInput.collector) {
+                                CollectorInput.Intake -> Intake.CollectorPowers.Intake
+                                CollectorInput.Eject -> Intake.CollectorPowers.Eject
+                                CollectorInput.Off -> Intake.CollectorPowers.Off
+                                CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
+                            },
                             dropDown = dropdownTarget,
-                            timeOfEjectionStartMilis = timeOfEjectionStartMillis,
-                            timeOfTransferredMillis = timeOfTransferredMillis,
+                            timeOfEjectionStartMilis = 0,
+                            timeOfTransferredMillis = 0,
                             transferSensorState = transferState,
-                            latches = latchTarget,
-                            extendo = extendoTargetState,
+                            latches = Transfer.TransferTarget(
+                                    left = Transfer.LatchTarget(
+                                            target = latchInputToLatchPosition(driverInput.leftLatch), 0
+                                    ),
+                                    right = Transfer.LatchTarget(
+                                            target = latchInputToLatchPosition(driverInput.rightLatch), 0
+                                    ),
+                            ),
+                            extendo = when (driverInput.extendo) {
+                                ExtendoInput.ExtendManual -> {
+                                    Extendo.ExtendoTarget(
+                                            targetPosition = Extendo.ExtendoPositions.Min,
+                                            movementMode = MovementMode.Power,
+                                            power = driverInput.extendoManualPower)
+                                }
+                                ExtendoInput.RetractManual -> {
+                                    Extendo.ExtendoTarget(
+                                            targetPosition = Extendo.ExtendoPositions.Min,
+                                            movementMode = MovementMode.Power,
+                                            power = driverInput.extendoManualPower)
+                                }
+                                ExtendoInput.RetractSetAmount -> {
+                                    Extendo.ExtendoTarget(
+                                            targetPosition = Extendo.ExtendoPositions.Min,
+                                            movementMode = MovementMode.Power,
+                                            power = -0.7)
+                                }
+                                ExtendoInput.NoInput -> {
+                                    Extendo.ExtendoTarget(
+                                            targetPosition = Extendo.ExtendoPositions.Min,
+                                            movementMode = MovementMode.Power,
+                                            power = 0.0)
+                                }
+                            },
                     )
             )
         } else {
-            handoffTarget
+            val previousExtendoTargetPosition = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition
+            val extendoTargetState: Extendo.ExtendoTarget = when (driverInput.extendo) {
+                ExtendoInput.ExtendManual -> {
+                    Extendo.ExtendoTarget(
+                            targetPosition = previousExtendoTargetPosition,
+                            movementMode = MovementMode.Power,
+                            power = driverInput.extendoManualPower)
+                }
+                ExtendoInput.RetractManual -> {
+                    Extendo.ExtendoTarget(
+                            targetPosition = previousExtendoTargetPosition,
+                            movementMode = MovementMode.Power,
+                            power = driverInput.extendoManualPower)
+                }
+                ExtendoInput.RetractSetAmount -> {
+                    Extendo.ExtendoTarget(
+                            targetPosition = previousExtendoTargetPosition,
+                            movementMode = MovementMode.Power,
+                            power = -0.5)
+                }
+                ExtendoInput.NoInput -> {
+                    if (doHandoffSequence) {
+                        val slideThinksItsAtZero = actualRobot.collectorSystemState.extendo.currentPositionTicks <= 0
+
+                        if (slideThinksItsAtZero && !actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
+                            Extendo.ExtendoTarget(power = -extendo.findResetPower, movementMode = MovementMode.Power, targetPosition = Extendo.ExtendoPositions.Min)
+                        } else {
+                            Extendo.ExtendoTarget(
+                                    targetPosition = Extendo.ExtendoPositions.Min,
+                                    movementMode = MovementMode.Position,
+                                    power = 0.0)
+                        }
+
+                    } else {
+                        Extendo.ExtendoTarget(
+                                targetPosition = previousExtendoTargetPosition,
+                                movementMode = MovementMode.Power,
+                                power = 0.0)
+                    }
+                }
+            }
+
+            val uncoordinatedCollectorTarget = CollectorTarget(
+                    intakeNoodles = intakeNoodleTarget,
+                    dropDown = dropdownTarget,
+                    timeOfEjectionStartMilis = timeOfEjectionStartMillis,
+                    timeOfTransferredMillis = timeOfTransferredMillis,
+                    transferSensorState = transferState,
+                    latches = Transfer.TransferTarget(initLatchTarget, initLatchTarget),
+                    extendo = extendoTargetState,
+            )
+
+            handoffManager.manageHandoff(
+                    handoffInput = driverInput.handoff,
+                    wristInput = driverInput.wrist,
+                    depoInput = repeatDriverInputForDepo.depo,
+                    extendoInput = driverInput.extendo,
+                    collectorTarget = uncoordinatedCollectorTarget,
+                    previousTargetWorld = previousTargetState,
+                    actualWorld = actualWorld
+            )
         }
 
         /**Drive*/
@@ -1032,7 +1018,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     }.fold(false) { acc, it ->
                         acc || it
                     }
-//                    handoffManager.checkIfHandoffIsReady(actualWorld, previousActualWorld)
                 }
         )
 
@@ -1055,7 +1040,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         lights = lights,
                 ),
                 doingHandoff = doHandoffSequence,
-                driverInput = spoofDriverInputForDepo,
+                driverInput = repeatDriverInputForDepo,
                 getNextTask = { _, _, _-> null },
                 gamepad1Rumble = gamepad1RumbleRoutine
         )
@@ -1080,7 +1065,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 hang = HangInput.NoInput,
                 launcher = LauncherInput.NoInput,
                 bumperMode = Gamepad1BumperMode.Collector,
-                gamepad2StickMode = Gamepad2RightStickMode.Drivetrain,
+                gamepad1ControlMode = GamepadControlMode.Normal,
+                gamepad2ControlMode = GamepadControlMode.Normal,
                 lightInput = LightInput.NoInput
         )
 
@@ -1115,7 +1101,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                         left = initLatchTarget,
                                         right = initLatchTarget
                                 ),
-                                extendo = SlideSubsystem.TargetSlideSubsystem(Extendo.ExtendoPositions.Manual, MovementMode.Position),
+                                extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Manual, 0.0, MovementMode.Position),
                         ),
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
@@ -1197,7 +1183,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     val previousActualState = previousActualState ?: actualState
                     val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
                     val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
-                    getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
+                    val targetWorld = getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
+                    if (actualState.actualGamepad1.touchpad && !previousActualState.actualGamepad1.touchpad) {
+                        saveStateSnapshot(actualState, previousActualState, targetWorld, previousTargetState)
+                    }
+                    targetWorld
                 },
                 stateFulfiller = { targetState, previousTargetState, actualState, previousActualState ->
                     val previousActualState = previousActualState ?: actualState
@@ -1241,6 +1231,28 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
 
             telemetry.update()
+        }
+    }
+
+
+    private var numberOfSnapshotsMade = 0
+    private fun saveStateSnapshot(actualWorld: ActualWorld, previousActualWorld: ActualWorld?, targetWorld: TargetWorld, previousActualTarget: TargetWorld?) {
+
+        val file = File("/storage/emulated/0/Download/stateSnapshot$numberOfSnapshotsMade.json")
+        file.createNewFile()
+        if (file.exists() && file.isFile) {
+            numberOfSnapshotsMade++
+
+            telemetry.clearAll()
+            telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
+
+            val json = Json { ignoreUnknownKeys = true }
+            val jsonEncoded = json.encodeToString(actualWorld)
+
+            file.printWriter().use {
+                it.print(jsonEncoded)
+            }
+            sleep(1000)
         }
     }
 }
