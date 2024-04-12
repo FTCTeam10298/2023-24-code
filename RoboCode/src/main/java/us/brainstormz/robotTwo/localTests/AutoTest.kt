@@ -7,6 +7,7 @@ import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
 import us.brainstormz.robotTwo.RobotTwoAuto
+import us.brainstormz.robotTwo.SerializableGamepad
 import us.brainstormz.robotTwo.TargetWorld
 
 fun main() {
@@ -16,7 +17,7 @@ fun main() {
     println("gamepadDpad_down: $gamepadDpad_down")
 
     val test = listOf(
-            TeleopTest.emptyWorld.copy(actualGamepad2 = gamepadDpad_down),
+            TeleopTest.emptyWorld.copy(actualGamepad2 = SerializableGamepad(gamepadDpad_down)),
 //            tester.emptyWorld.copy(actualGamepad2 = Gamepad()),
 //            tester.emptyWorld.copy(actualGamepad2 = Gamepad()),
     )
