@@ -20,7 +20,6 @@ class DepoManager(
 
 //    private val claws: List<Claw> = listOf(leftClaw, rightClaw)
 
-    @Serializable
     data class ActualDepo(
             val armAngleDegrees: Double,
             val lift: SlideSubsystem.ActualSlideSubsystem,
@@ -59,7 +58,7 @@ class DepoManager(
     }
 
     var jankSave = WristTargets(Claw.ClawTarget.Gripping)
-    fun getFinalDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, depoScoringHeightAdjust: Double, wristInput: WristTargets, previousWristTarget: WristTargets, previousDepoTargetType: DepoTargetType, actualLift: Lift.ActualLift): DepoTarget? {
+    fun getFinalDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, depoScoringHeightAdjust: Double, wristInput: WristTargets, previousWristTarget: WristTargets, previousDepoTargetType: DepoTargetType, actualLift: SlideSubsystem.ActualSlideSubsystem): DepoTarget? {
 
         //close applicable claws otherwise keep the same claw pos
         //If the depo is going out, then if handoff is yes then close applicable claws otherwise keep the same claw pos
@@ -264,7 +263,7 @@ class DepoManager(
         val depoInput = target.depo
         val wristInput = WristTargets(left= target.wrist.left.toClawTarget() ?: previousDepoTarget.wristPosition.left, right= target.wrist.right.toClawTarget()?:previousDepoTarget.wristPosition.right)
 
-        val finalDepoTarget = getFinalDepoTarget(depoInput, target.depoScoringHeightAdjust, wristInput, previousDepoTarget.wristPosition, previousDepoTarget.targetType, Lift.ActualLift(actualDepo.lift)) ?: previousDepoTarget
+        val finalDepoTarget = getFinalDepoTarget(depoInput, target.depoScoringHeightAdjust, wristInput, previousDepoTarget.wristPosition, previousDepoTarget.targetType, SlideSubsystem.ActualSlideSubsystem(actualDepo.lift)) ?: previousDepoTarget
 
         val movingArmAndLiftTarget = coordinateArmLiftAndClaws(finalDepoTarget, previousDepoTarget, actualDepo)
 

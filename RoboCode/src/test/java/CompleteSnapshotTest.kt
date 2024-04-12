@@ -40,7 +40,7 @@ class CompleteSnapshotTest {
                         positionAndRotation = PositionAndRotation(),
                         depoState = DepoManager.ActualDepo(
                                 armAngleDegrees = 0.0,
-                                lift = Lift.ActualLift(
+                                lift = SlideSubsystem.ActualSlideSubsystem(
                                         currentPositionTicks = 0,
                                         limitSwitchIsActivated = false),
                                 wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
@@ -105,6 +105,6 @@ class CompleteSnapshotTest {
         val foo:CompleteSnapshot = jacksonObjectMapper().readValue(json)
 
         // then
-        Assert.assertEquals(snapshot, foo)
+        Assert.assertEquals(snapshot.copy(targetWorld = snapshot.targetWorld.copy(getNextTask = null)), foo)
     }
 }

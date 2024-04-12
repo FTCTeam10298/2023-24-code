@@ -20,14 +20,30 @@ object SlideConversion {
 
 interface SlideSubsystem: DualMovementModeSubsystem {
 
-    @Serializable
-    open class ActualSlideSubsystem(
-            open val currentPositionTicks: Int,
-            open val limitSwitchIsActivated: Boolean,
-            open val zeroPositionOffsetTicks: Int,
-            open val ticksMovedSinceReset: Int,
-            open val currentAmps: Double
-    )
+
+//    @JsonTypeInfo(
+//        use = JsonTypeInfo.Id.NAME,
+//        property = "type")
+//    @JsonSubTypes(
+//        JsonSubTypes.Type(value = Lift.ActualLift::class),
+//    )
+    data class ActualSlideSubsystem(
+            val currentPositionTicks: Int,
+            val limitSwitchIsActivated: Boolean,
+            val zeroPositionOffsetTicks: Int = 0,
+            val ticksMovedSinceReset: Int = 0,
+            val currentAmps: Double = 0.0
+    ){
+        constructor(actualSlideSubsystem: SlideSubsystem.ActualSlideSubsystem): this(actualSlideSubsystem.currentPositionTicks, actualSlideSubsystem.limitSwitchIsActivated, actualSlideSubsystem.zeroPositionOffsetTicks, actualSlideSubsystem.ticksMovedSinceReset, actualSlideSubsystem.currentAmps)
+    }
+
+//        data class ActualLift(override val currentPositionTicks: Int,
+//                     override val limitSwitchIsActivated: Boolean,
+//                     override val zeroPositionOffsetTicks: Int = 0,
+//                     override val ticksMovedSinceReset: Int = 0,
+//                     override val currentAmps: Double = 0.0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset, currentAmps) {
+//                              }
+
 
     val telemetry: Telemetry
 
@@ -95,12 +111,14 @@ interface SlideSubsystem: DualMovementModeSubsystem {
         val velocityTicksPerMili: Double = (deltaTicks.toDouble())/(deltaTimeMilis)
         return velocityTicksPerMili
     }
-
-    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
-    @JsonSubTypes({
-        @JsonSubTypes.Type(value = VariableTargetPosition::class.java),
-//        @JsonSubTypes.Type(value = Vehicle.FuelVehicle.class, name = "FUEL_VEHICLE")
-    })
+    @JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "type")
+    @JsonSubTypes(
+        JsonSubTypes.Type(value = VariableTargetPosition::class),
+        JsonSubTypes.Type(value = Extendo.ExtendoPositions::class),
+        JsonSubTypes.Type(value = Lift.LiftPositions::class),
+    )
     sealed interface SlideTargetPosition { val ticks: Int }
 
     class VariableTargetPosition(override val ticks: Int): SlideTargetPosition {

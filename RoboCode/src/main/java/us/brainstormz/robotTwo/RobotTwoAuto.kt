@@ -763,7 +763,8 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
         } else {
             when {
                 autoListIterator.hasNext()-> {
-                    previousTargetState.getNextTask(previousTargetState, actualState, previousActualState ?: actualState) ?: previousTargetState
+                    previousTargetState.getNextTask?.let{
+                    it(previousTargetState, actualState, previousActualState ?: actualState)} ?: previousTargetState
                 }
                 else -> {
                     previousTargetState

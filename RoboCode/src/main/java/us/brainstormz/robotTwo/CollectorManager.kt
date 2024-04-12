@@ -15,7 +15,6 @@ class CollectorManager(
         private val telemetry: Telemetry) {
 
 
-    @Serializable
     data class ActualCollector(
             val extendo: SlideSubsystem.ActualSlideSubsystem,
             val transferState: Transfer.ActualTransfer,

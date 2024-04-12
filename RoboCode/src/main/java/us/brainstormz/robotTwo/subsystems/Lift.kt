@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo.subsystems
 
+import com.fasterxml.jackson.annotation.JsonTypeName
 import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
@@ -50,13 +51,14 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override val stallCurrentAmps: Double = 5.0
     override val findResetPower: Double = 1.0
 
-    data class ActualLift(override val currentPositionTicks: Int,
-                     override val limitSwitchIsActivated: Boolean,
-                     override val zeroPositionOffsetTicks: Int = 0,
-                     override val ticksMovedSinceReset: Int = 0,
-                     override val currentAmps: Double = 0.0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset, currentAmps) {
-                         constructor(actualSlideSubsystem: SlideSubsystem.ActualSlideSubsystem): this(actualSlideSubsystem.currentPositionTicks, actualSlideSubsystem.limitSwitchIsActivated, actualSlideSubsystem.zeroPositionOffsetTicks, actualSlideSubsystem.ticksMovedSinceReset, actualSlideSubsystem.currentAmps)
-                     }
+//    @JsonTypeName("actual-lift")
+//    data class ActualLift(override val currentPositionTicks: Int,
+//                     override val limitSwitchIsActivated: Boolean,
+//                     override val zeroPositionOffsetTicks: Int = 0,
+//                     override val ticksMovedSinceReset: Int = 0,
+//                     override val currentAmps: Double = 0.0): SlideSubsystem.ActualSlideSubsystem(currentPositionTicks, limitSwitchIsActivated, zeroPositionOffsetTicks, ticksMovedSinceReset, currentAmps) {
+//                         constructor(actualSlideSubsystem: SlideSubsystem.ActualSlideSubsystem): this(actualSlideSubsystem.currentPositionTicks, actualSlideSubsystem.limitSwitchIsActivated, actualSlideSubsystem.zeroPositionOffsetTicks, actualSlideSubsystem.ticksMovedSinceReset, actualSlideSubsystem.currentAmps)
+//                     }
 
     @Serializable
     data class TargetLift(override val targetPosition: SlideSubsystem.SlideTargetPosition = LiftPositions.Down,

@@ -21,7 +21,7 @@ class DepoFinalTargetTest {
         val wristTarget = Wrist.WristTargets(Claw.ClawTarget.Gripping)
         val previousWristTarget = Wrist.WristTargets(Claw.ClawTarget.Gripping)
         val previousDepoTargetType = DepoManager.DepoTargetType.GoingHome
-        val actualLift = Lift.ActualLift(0, true, 0, 0, 0.0)
+        val actualLift = SlideSubsystem.ActualSlideSubsystem(0, true, 0, 0, 0.0)
 
         // when
         val actualOutput = testSubject.getFinalDepoTarget(

@@ -183,7 +183,7 @@ class TeleopTest {
                         positionAndRotation = PositionAndRotation(),
                         depoState = DepoManager.ActualDepo(
                                 armAngleDegrees = 0.0,
-                                lift = Lift.ActualLift(
+                                lift = SlideSubsystem.ActualSlideSubsystem(
                                         currentPositionTicks = 0,
                                         limitSwitchIsActivated = false),
                                 wristAngles = Wrist.ActualWrist(leftClawAngleDegrees = 0.0, rightClawAngleDegrees = 0.0),
