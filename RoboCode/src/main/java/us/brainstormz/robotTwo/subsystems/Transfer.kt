@@ -77,7 +77,7 @@ class Transfer(private val telemetry: Telemetry) {
     }
 
     @Serializable
-    data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMilis: Long)
+    data class SensorState(val hasPixelBeenSeen: Boolean, val timeOfSeeingMillis: Long)
     @Serializable
     data class TransferSensorState(
             override val left: SensorState,
@@ -90,7 +90,7 @@ class Transfer(private val telemetry: Telemetry) {
             val timeOfSeeingRightPixelMilis = when {
                 !previousSensorState.hasPixelBeenSeen && isSeeingPixel -> actualWorld.timestampMilis
                 !isSeeingPixel -> 0
-                else -> previousSensorState.timeOfSeeingMilis
+                else -> previousSensorState.timeOfSeeingMillis
             }
             return SensorState(isSeeingPixel, timeOfSeeingRightPixelMilis)
         }

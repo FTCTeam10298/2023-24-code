@@ -16,6 +16,7 @@ import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
+import us.brainstormz.robotTwo.SerializableGamepad
 import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
@@ -212,8 +213,8 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                     currentGamepad1.copy(gamepad1)
                     ActualWorld(
                             actualRobot =    hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState),
-                            actualGamepad1 = currentGamepad1,
-                            actualGamepad2 = currentGamepad1,
+                            actualGamepad1 = SerializableGamepad(currentGamepad1),
+                            actualGamepad2 = SerializableGamepad(currentGamepad1),
                             timestampMilis = System.currentTimeMillis()
                     )
                 },

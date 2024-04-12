@@ -98,8 +98,8 @@ class Robot(private val telemetry: Telemetry, private val hardware: RobotTwoHard
                     currentGamepad2.copy(gamepad2)
                     ActualWorld(
                             actualRobot = hardware.getActualState(drivetrain= drivetrain, depoManager = depoManager, collectorSystem = collectorSystem, previousActualWorld= previousActualState),
-                            actualGamepad1 = currentGamepad1,
-                            actualGamepad2 = currentGamepad2,
+                            actualGamepad1 = SerializableGamepad(currentGamepad1),
+                            actualGamepad2 = SerializableGamepad(currentGamepad2),
                             timestampMilis = System.currentTimeMillis()
                     )
                 },

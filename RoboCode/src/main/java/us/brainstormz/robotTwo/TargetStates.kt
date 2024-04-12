@@ -1,9 +1,9 @@
 package us.brainstormz.robotTwo
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.qualcomm.robotcore.hardware.Gamepad
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.subsystems.Arm
@@ -13,7 +13,6 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 
@@ -44,7 +43,7 @@ data class TargetRobot(
         val launcherPosition: RobotTwoHardware.LauncherPosition,
         val lights: RobotTwoTeleOp.LightTarget
 )
-@Serializable
+
 data class TargetWorld(
         val targetRobot: TargetRobot,
         val driverInput: RobotTwoTeleOp.DriverInput,
@@ -74,17 +73,92 @@ data class ActualRobot(
         val neopixelState: Neopixels.StripState
 )
 
-@Serializable
 data class ActualWorld(
         val actualRobot: ActualRobot,
-        @Transient
         val aprilTagReadings: List<AprilTagDetection> = listOf(),
-        @Transient
-        val actualGamepad1: Gamepad = Gamepad(),
-        @Transient
-        val actualGamepad2: Gamepad = Gamepad(),
+        val actualGamepad1: SerializableGamepad,
+        val actualGamepad2: SerializableGamepad,
         val timestampMilis: Long
-) 
+)
 
+fun blankGamepad() = SerializableGamepad(
+    touchpad = false,
+    dpad_up = false,
+    dpad_down = false,
+    dpad_left = false,
+    dpad_right = false,
+    right_stick_x = 0.0f,
+    right_stick_y = 0.0f,
+    left_stick_x = 0.0f,
+    left_stick_y = 0.0f,
+    right_bumper = false,
+    left_bumper = false,
+    right_trigger = 0.0f,
+    left_trigger = 0.0f,
+    square = false,
+    a = false,
+    x = false,
+    start = false,
+    left_stick_button = false,
+    right_stick_button = false,
+    y = false,
+    b = false,
+    isRumbling = false,
+    theGamepad = null,
+)
 
+data class SerializableGamepad(
+        val touchpad: Boolean,
+        val dpad_up: Boolean,
+        val dpad_down: Boolean,
+        val dpad_left: Boolean,
+        val dpad_right: Boolean,
+        val right_stick_x: Float,
+        val right_stick_y: Float,
+        val left_stick_x: Float,
+        val left_stick_y: Float,
+        val right_bumper: Boolean,
+        val left_bumper: Boolean,
+        val right_trigger: Float,
+        val left_trigger: Float,
+        val square: Boolean,
+        val a: Boolean,
+        val x: Boolean,
+        val start: Boolean,
+        val left_stick_button: Boolean,
+        val right_stick_button: Boolean,
+        val y: Boolean,
+        val b: Boolean,
+        val isRumbling: Boolean,
 
+        @JsonIgnore
+        val theGamepad:Gamepad?,
+){
+    constructor(g:Gamepad):this(
+        theGamepad = g,
+        touchpad = g.touchpad,
+        dpad_up = g.dpad_up,
+        dpad_down = g.dpad_down,
+        dpad_left = g.dpad_left,
+        dpad_right = g.dpad_right,
+        right_stick_x = g.right_stick_x,
+        right_stick_y = g.right_stick_y,
+        left_stick_x = g.left_stick_x,
+        left_stick_y = g.left_stick_y,
+        right_bumper = g.right_bumper,
+        left_bumper = g.left_bumper,
+        right_trigger = g.right_trigger,
+        left_trigger = g.left_trigger,
+        square = g.square,
+        a = g.a,
+        x = g.x,
+        y = g.y,
+        b = g.b,
+        start = g.start,
+        left_stick_button = g.left_stick_button,
+        right_stick_button = g.right_stick_button,
+        isRumbling = g.isRumbling,
+    )
+
+    fun runRumbleEffect(effect: Gamepad.RumbleEffect) = theGamepad!!.runRumbleEffect(effect)
+}

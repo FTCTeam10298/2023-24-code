@@ -10,7 +10,9 @@ import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoTeleOp
+import us.brainstormz.robotTwo.SerializableGamepad
 import us.brainstormz.robotTwo.TargetWorld
+import us.brainstormz.robotTwo.blankGamepad
 import us.brainstormz.robotTwo.subsystems.ColorReading
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
@@ -123,18 +125,18 @@ fun main() {
 //                            targetType = DepoManager.DepoTargetType.GoingHome)))
     val gamepad = teleopTester.getChangedGamepad { it.dpad_down = true}
     println("gamepad: $gamepad")
-    val test = listOf(
-            TeleopTest.emptyWorld.copy(actualGamepad2 = gamepad),
-            TeleopTest.emptyWorld.copy(actualGamepad2 = Gamepad()),
-            TeleopTest.emptyWorld.copy(actualGamepad2 = Gamepad()),
-    )
-//    val expectedOutput = RobotTwoTeleOp.initialPreviousTargetState.copy(driverInput = RobotTwoTeleOp.initialPreviousTargetState.driverInput.)
-
-    val output = teleopTester.runTest(test)
-//    val testPassed: Boolean = expectedOutput == output.last().second
-//    println("\n\n\ntest result: $testPassed")
-//    println("\nexpectedOutput: \n$expectedOutput")
-    println("\noutput: \n$output")
+//    val test = listOf(
+//            TeleopTest.emptyWorld.copy(actualGamepad2 = SerializableGamepad(gamepad)),
+//            TeleopTest.emptyWorld.copy(actualGamepad2 = SerializableGamepad()),
+//            TeleopTest.emptyWorld.copy(actualGamepad2 = SerializableGamepad()),
+//    )
+////    val expectedOutput = RobotTwoTeleOp.initialPreviousTargetState.copy(driverInput = RobotTwoTeleOp.initialPreviousTargetState.driverInput.)
+//
+//    val output = teleopTester.runTest(test)
+////    val testPassed: Boolean = expectedOutput == output.last().second
+////    println("\n\n\ntest result: $testPassed")
+////    println("\nexpectedOutput: \n$expectedOutput")
+//    println("\noutput: \n$output")
 }
 
 class TeleopTest {
@@ -175,8 +177,8 @@ class TeleopTest {
             alpha = 0f,
         )
         val emptyWorld = ActualWorld(
-                actualGamepad1 = Gamepad(),
-                actualGamepad2 = Gamepad(),
+                actualGamepad1 = blankGamepad(),
+                actualGamepad2 = blankGamepad(),
                 actualRobot = ActualRobot(
                         positionAndRotation = PositionAndRotation(),
                         depoState = DepoManager.ActualDepo(

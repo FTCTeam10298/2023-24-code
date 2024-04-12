@@ -24,7 +24,7 @@ class TeleOpMode: OpMode() {
     }
 
     override fun loop() {
-        teleop.loop(gamepad1= gamepad1, gamepad2= gamepad2, hardware= hardware)
+        teleop.loop(gamepad1= SerializableGamepad(gamepad1), gamepad2= SerializableGamepad(gamepad2), hardware= hardware)
     }
 
 }

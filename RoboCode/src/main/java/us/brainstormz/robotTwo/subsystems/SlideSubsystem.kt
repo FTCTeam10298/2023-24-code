@@ -1,5 +1,8 @@
 package us.brainstormz.robotTwo.subsystems
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
 import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -93,8 +96,11 @@ interface SlideSubsystem: DualMovementModeSubsystem {
         return velocityTicksPerMili
     }
 
-
-    @Serializable
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
+    @JsonSubTypes({
+        @JsonSubTypes.Type(value = VariableTargetPosition::class.java),
+//        @JsonSubTypes.Type(value = Vehicle.FuelVehicle.class, name = "FUEL_VEHICLE")
+    })
     sealed interface SlideTargetPosition { val ticks: Int }
 
     class VariableTargetPosition(override val ticks: Int): SlideTargetPosition {

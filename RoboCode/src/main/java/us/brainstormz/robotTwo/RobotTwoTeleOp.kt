@@ -5,6 +5,7 @@ import android.app.ActivityManager.RunningAppProcessInfo
 import android.content.Context
 import android.os.Debug
 import android.os.Debug.MemoryInfo
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
@@ -17,6 +18,7 @@ import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.DepoManager.*
+import us.brainstormz.robotTwo.localTests.TeleopTest
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
@@ -27,6 +29,7 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
@@ -797,7 +800,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 //        Handoff Coordination
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val overrideHandoff = driverInputIsManual || driverInput.gamepad1ControlMode == GamepadControlMode.Manual
-        val handoffWithOverrides = if (overrideHandoff) {
+        val combinedTarget = if (overrideHandoff) {
 
             fun latchInputToLatchPosition(latchInput: LatchInput): Transfer.LatchPositions =
                     when (latchInput) {
@@ -805,7 +808,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         LatchInput.NoInput -> Transfer.LatchPositions.Closed
                     }
 
-            HandoffManager.HandoffTarget(
+            HandoffManager.CollectorDepositorTarget(
                     depo = DepoTarget(
                             lift = Lift.TargetLift(
                                     power = driverInput.depoScoringHeightAdjust,
@@ -903,31 +906,31 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
                     } else {
                         Extendo.ExtendoTarget(
-                                targetPosition = previousExtendoTargetPosition,
-                                movementMode = MovementMode.Power,
-                                power = 0.0)
+                            targetPosition = previousExtendoTargetPosition,
+                            movementMode = MovementMode.Power,
+                            power = 0.0)
                     }
                 }
             }
 
             val uncoordinatedCollectorTarget = CollectorTarget(
-                    intakeNoodles = intakeNoodleTarget,
-                    dropDown = dropdownTarget,
-                    timeOfEjectionStartMilis = timeOfEjectionStartMillis,
-                    timeOfTransferredMillis = timeOfTransferredMillis,
-                    transferSensorState = transferState,
-                    latches = Transfer.TransferTarget(initLatchTarget, initLatchTarget),
-                    extendo = extendoTargetState,
+                intakeNoodles = intakeNoodleTarget,
+                dropDown = dropdownTarget,
+                timeOfEjectionStartMilis = timeOfEjectionStartMillis,
+                timeOfTransferredMillis = timeOfTransferredMillis,
+                transferSensorState = transferState,
+                latches = Transfer.TransferTarget(initLatchTarget, initLatchTarget),
+                extendo = extendoTargetState,
             )
 
             handoffManager.manageHandoff(
-                    handoffInput = driverInput.handoff,
-                    wristInput = driverInput.wrist,
-                    depoInput = repeatDriverInputForDepo.depo,
-                    extendoInput = driverInput.extendo,
-                    collectorTarget = uncoordinatedCollectorTarget,
-                    previousTargetWorld = previousTargetState,
-                    actualWorld = actualWorld
+                handoffInput = driverInput.handoff,
+                wristInput = driverInput.wrist,
+                depoInput = repeatDriverInputForDepo.depo,
+                extendoInput = driverInput.extendo,
+                collectorTarget = uncoordinatedCollectorTarget,
+                previousTargetWorld = previousTargetState,
+                actualWorld = actualWorld,
             )
         }
 
@@ -1033,8 +1036,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 movementMode = MovementMode.Power,
                                 targetPosition = PositionAndRotation()
                         ),
-                        depoTarget = handoffWithOverrides.depo,
-                        collectorTarget = handoffWithOverrides.collector,
+                        depoTarget = combinedTarget.depo,
+                        collectorTarget = combinedTarget.collector,
                         hangPowers = hangTarget,
                         launcherPosition = launcherTarget,
                         lights = lights,
@@ -1079,7 +1082,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val initSensorState = Transfer.SensorState(
                 hasPixelBeenSeen = false,
-                timeOfSeeingMilis = 0L,
+                timeOfSeeingMillis = 0L,
         )
 
         val initLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0)
@@ -1141,13 +1144,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
 
-    fun getActualState(previousActualState:ActualWorld?, gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware):ActualWorld{
+    fun getActualState(previousActualState:ActualWorld?, gamepad1: SerializableGamepad, gamepad2: SerializableGamepad, hardware: RobotTwoHardware):ActualWorld{
         val (currentGamepad1, currentGamepad2)  = measured("gamepad copies"){
-            val currentGamepad1 = Gamepad()
-            currentGamepad1.copy(gamepad1)
-            val currentGamepad2 = Gamepad()
-            currentGamepad2.copy(gamepad2)
-            currentGamepad1 to currentGamepad2
+//            val currentGamepad1 = Gamepad()
+//            currentGamepad1.copy(gamepad1)
+//            val currentGamepad2 = Gamepad()
+//            currentGamepad2.copy(gamepad2)
+            gamepad1 to gamepad2
         }
 
         val actualRobot = hardware.getActualState(
@@ -1166,7 +1169,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         )
     }
 
-    fun loop(gamepad1: Gamepad, gamepad2: Gamepad, hardware: RobotTwoHardware) = measured("main loop"){
+    fun loop(gamepad1: SerializableGamepad, gamepad2: SerializableGamepad, hardware: RobotTwoHardware) = measured("main loop"){
 
         measured("clear bulk cache"){
             for (hub in hardware.allHubs) {
@@ -1246,13 +1249,31 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             telemetry.clearAll()
             telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
 
-            val json = Json { ignoreUnknownKeys = true }
-            val jsonEncoded = json.encodeToString(actualWorld)
+            val jsonEncoded = toJson(actualWorld)
 
             file.printWriter().use {
                 it.print(jsonEncoded)
             }
             sleep(1000)
         }
+    }
+
+    private fun toJson(actualWorld: ActualWorld): String {
+        val json = Json { ignoreUnknownKeys = true }
+        val jsonEncoded = json.encodeToString(actualWorld)
+        return jsonEncoded
+    }
+}
+
+data class CompleteSnapshot(
+    val actualWorld: ActualWorld,
+    val previousActualWorld: ActualWorld?,
+    val targetWorld: TargetWorld,
+    val previousActualTarget: TargetWorld?,
+){
+    fun toJson(): String {
+        val json = Json { ignoreUnknownKeys = true }
+        val jsonEncoded = json.encodeToString(this)
+        return jsonEncoded
     }
 }

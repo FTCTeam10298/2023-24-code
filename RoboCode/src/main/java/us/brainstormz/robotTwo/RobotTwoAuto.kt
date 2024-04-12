@@ -900,8 +900,8 @@ class RobotTwoAuto(private val telemetry: Telemetry, private val aprilTagPipelin
                         ActualWorld(
                             actualRobot = hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState),
                             aprilTagReadings = aprilTagPipeline.detections(),
-                            actualGamepad1 = currentGamepad1,
-                            actualGamepad2 = currentGamepad1,
+                            actualGamepad1 = SerializableGamepad(currentGamepad1),
+                            actualGamepad2 = SerializableGamepad(currentGamepad1),
                             timestampMilis = System.currentTimeMillis()
                         )
                     }
