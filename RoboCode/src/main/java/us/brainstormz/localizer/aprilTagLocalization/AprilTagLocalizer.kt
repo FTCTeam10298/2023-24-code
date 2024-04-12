@@ -5,7 +5,7 @@ import us.brainstormz.localizer.PositionAndRotation
 import kotlin.math.abs
 
 class AprilTagLocalizer {
-    val aprilTagLocalizationFunctions = AprilTagLocalizationFunctions(0.0, 0.0, )
+    val aprilTagLocalizationFunctions = AprilTagLocalizationFunctions(0.0, 0.0)
 
     //find the average error and just subtract that much.
     data class AprilTuningOffsets(

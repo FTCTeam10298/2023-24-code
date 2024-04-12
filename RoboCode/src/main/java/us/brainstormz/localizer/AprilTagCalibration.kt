@@ -4,43 +4,21 @@
 //import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 //import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 //import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
-//import kotlin.math.abs
+//import us.brainstormz.localizer.aprilTagLocalization.AverageAprilTagLocalizationError
+//import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
 //import kotlin.math.cos
 //import kotlin.math.sin
 //
 ///*
-//LIST OF TESTS
-//    ... 01
 //
-//     val inputCamRelative = CameraRelativePointInSpace(xInches=5.0, yInches=10.0, yawDegrees= 0.0)
-//
-//    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=5.0, yInches=10.0, headingDegrees= 0.0)//heading degrees = yaw
-//
-//    val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoords(inputCamRelative)
-//
-//    val inputTagRelative = actualOutputTagRelative
-//
-//    val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=50.25, yInches=40.41, headingDegrees = 0.0)
-//
-//    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
-//
-//    ... 02
-//
-////WHAT DOES THIS NEED TO DO?
-//
-////1. Count number of unique measurements for a point (for X, Y, H)
-////2. Show greatest under/over delta for that tag (wait several seconds, so the bot isn't moving)
-//
-////I think we need to show sub-10th deltas- hundredths - IMPLEMENT EVERYWHERE FIRST
-//
-////BUT WE MIGHT AS WELL...
-//1. Print every delta onto the console (or maybe not?)
-//
-//
+//PIPELINE - ask what court to calibrate (multiple presses to confirm) get point for B/R1, B/R2, B/R3, B/R4
+//calculate deltas from real
+//find average error
+//show calibration results, confirm/discard -> save to disk
 // */
 //
 //fun main () {
-//    var aprilTagLocalization = AprilTagLocalizationFunctions(
+//    val aprilTagLocalization = AprilTagLocalizationFunctions(
 //            cameraXOffset=0.00,
 //            cameraYOffset=0.00 //it's right on center! Yay!
 //    )
@@ -51,13 +29,14 @@
 //
 //    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=11.585, yInches=8.112, headingDegrees= 10.0)//heading degrees = yaw
 //
-//    val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoords(inputCamRelative)
+//    val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoordsPartDeux(inputCamRelative)
 //
 //    val inputTagRelative = actualOutputTagRelative
 //
 //    val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=46.995, yInches=52.138, headingDegrees = 10.0)
 //
-//    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
+//    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative,
+//            allianceSideFound = ReusableAprilTagFieldLocalizer.AllianceSide.Red)
 //
 //
 //    println("Our camera-relative input was $inputCamRelative" )
@@ -68,16 +47,16 @@
 //    println("We expected to see a position of $expectedOutputFieldRelative")
 //    println("Instead, we calculated that our camera is at $actualOutputFieldRelative.")
 //
-//
-//
-//
-//
-//
 //}
 //
+//data class CameraRelativePointInSpace(val xInches: Double, val yInches: Double, val yawDegrees: Double)
+//data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
+//
+//data class FieldRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
 //
 //
-//private fun returnCamCentricCoordsInTagCentricCoords(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
+//
+//fun returnCamCentricCoordsInTagCentricCoordsPartDeux(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
 //    //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
 //
 //    val yawRadians = Math.toRadians(anyOldTag.yawDegrees)
@@ -100,6 +79,11 @@
 //
 //}
 //
+//fun evaluateAprilTagAccuracy(detectedPoint: TagRelativePointInSpace) {
+//    val square0_1 = org.opencv.core.Point(0.0, 0.0)
+//
+//}
+//
 ////private fun returnTagCentricCoordsInFieldCoords(cameraXOffset: Double, cameraYOffset: Double, targetAprilTagID: Int, inputTagRelative: TagRelativePointInSpace): FieldRelativePointInSpace {
 ////
 ////    var aprilTagLocalization = AprilTagLocalizationOTron(
@@ -117,7 +101,7 @@
 //
 //
 //@Autonomous
-//class AprilTagNoiseBounceOMeter: LinearOpMode() {
+//class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 //
 //    // A
 //    //03-19 22:53:42.309  1691  1817 I System.out: Robot X: -0.7379603385925293
@@ -142,7 +126,41 @@
 //            cameraYOffset=0.00 //it's right on center! Yay!
 //    )
 //
-//    val targetAprilTagID = 2
+//    //TODO: ignore values at y < 10 inches.. this means accuracy less than one inch.
+//    //
+//    //x is always
+//
+//    //TODO: Switch between alliance side error sets depending on recognization - maybe done?
+//    //TODO: Return a Boolean for one-inch accurate measurement
+//    //TODO: Remove Crashes
+////    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
+////            xInches = 0.47,
+////            yInches = 2.58,
+////            hDegrees = 2.68,
+////    )
+////
+////    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
+////            xInches = 0.0,
+////            yInches = 3.455555556,
+////            hDegrees = 0.0, //0
+////    )
+//
+//    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
+//            xInches = 0.0,
+//            yInches = 0.0,
+//            hDegrees = 0.0,
+//    )
+//
+//    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
+//            xInches = 0.0,
+//            yInches = 0.0,
+//            hDegrees = 0.0, //0
+//    )
+//
+//    val localizer = ReusableAprilTagFieldLocalizer(
+//            aprilTagLocalization = aprilTagLocalization,
+//            averageErrorRedSide = RedAllianceBackboardAverageErrors,
+//            averageErrorBlueSide =  BlueAllianceBackboardAverageErrors)
 //
 //    private val aprilTagThings = listOf(
 ////            Size(2304, 1536)
@@ -190,48 +208,7 @@
 //        }
 //    }
 //
-//    data class AprilTagAndData(val AprilTag: AprilTagDetection, val CamRelativePointInSpace: CameraRelativePointInSpace?,
-//                               val TagRelativePointInSpace: TagRelativePointInSpace?, val FieldRelativePointInSpace: FieldRelativePointInSpace?)
-//
 //    /** Gabe edit me */
-//    private fun returnAprilTagInFieldCentricCoords(aprilTag: AprilTagDetection): AprilTagAndData? {
-//        //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
-//
-//        //you need to look at the diagram to get this.
-//
-//        //getting l
-//
-//        if (aprilTag != null) {
-//            val thisAprilTagPose = aprilTag.ftcPose
-//            val representationOfAprilTag = CameraRelativePointInSpace(
-//                    xInches=thisAprilTagPose.x,
-//                    yInches=thisAprilTagPose.y,
-//                    yawDegrees=thisAprilTagPose.yaw)
-//
-//            val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoords(representationOfAprilTag)
-//            val resultPositionInTagCentric = TagRelativePointInSpace(
-//                    thisTagInTagCentricCoords.xInches,
-//                    thisTagInTagCentricCoords.yInches,
-//                    thisTagInTagCentricCoords.headingDegrees)
-//
-//            val thisTagInFieldCentricCoords = aprilTagLocalization.getCameraPositionOnField(aprilTagID = aprilTag.id, thisTagInTagCentricCoords)
-//
-//            val resultPositionInJamesFieldCoords = returnFieldCentricCoordsInJamesFieldCoords(thisTagInFieldCentricCoords)
-//
-//            return AprilTagAndData(aprilTag, representationOfAprilTag!!, resultPositionInTagCentric, resultPositionInJamesFieldCoords)
-//        }
-//        else return null
-//    }
-//
-//    fun returnFieldCentricCoordsInJamesFieldCoords(anyOldTag: FieldRelativePointInSpace): FieldRelativePointInSpace {
-//
-//        return FieldRelativePointInSpace(
-//                xInches = anyOldTag.xInches,
-//                yInches = -(anyOldTag.yInches),
-//                headingDegrees = 360 - abs(anyOldTag.headingDegrees) //have the angle decrease
-//        )
-//    }
-//
 //    private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>, idOfTargetAprilTag: Int): AprilTagDetection? {
 //        for (detection in currentDetections) {
 //            if (detection.id == idOfTargetAprilTag) {
@@ -245,6 +222,8 @@
 //    private fun getListOfCurrentAprilTagsSeen(): List<AprilTagDetection> {
 //        return aprilTagThings.flatMap { it.detections() }
 //    }
+//
+//
 //    private fun showAllAprilTagsInfo(currentDetections: List<AprilTagDetection>) {
 //
 //
@@ -253,7 +232,11 @@
 //
 //            for (detection in currentDetections) {
 //
-//                val detectionFieldCoords = returnAprilTagInFieldCentricCoords(detection)!!.FieldRelativePointInSpace!!
+//                val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
+//
+//                val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)!!
+//                val detectionAllianceSide = allDetectionData?.allianceSide
+//                val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 //
 //                if (currentDetections.isNotEmpty()) {
 //
@@ -267,6 +250,7 @@
 //                    println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
 //
 //                    println(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+//                    println(String.format("We're on alliance side {$detectionAllianceSide}"))
 //                }
 //            }
 //            val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
@@ -295,11 +279,12 @@
 //
 //        val theTargetAprilTag: AprilTagDetection? = returnTargetAprilTag(
 //                currentDetections = listOfAllAprilTagsDetected,
-//                idOfTargetAprilTag = leastDistortedAprilTag.id)
+//                idOfTargetAprilTag = leastDistortedAprilTag.id
+//        )
 //
 //
 //        if (theTargetAprilTag != null) {
-//            val theTargetAprilTagPositionInfo = returnAprilTagInFieldCentricCoords(theTargetAprilTag)
+//            val theTargetAprilTagPositionInfo = localizer.returnAprilTagInFieldCentricCoords(theTargetAprilTag)
 //            val theTargetAprilTagPositionTagRelative = theTargetAprilTagPositionInfo!!.TagRelativePointInSpace
 //            val theTargetAprilTagPositionFieldRelative = theTargetAprilTagPositionInfo.FieldRelativePointInSpace
 //
@@ -323,6 +308,7 @@
 //
 //                telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
 //                telemetry.addLine("Least Distorted AprilTag: $idOfLeastDistortedTag")
+//
 //
 ////                println("Robot X: ${theTargetAprilTagPosition?.xInches}")
 ////                println("Robot Y: ${theTargetAprilTagPosition?.yInches}")

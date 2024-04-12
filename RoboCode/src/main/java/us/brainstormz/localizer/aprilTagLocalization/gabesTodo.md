@@ -7,6 +7,17 @@ determine the bounds of accurate angles
 accept offset for x, y, and r
 (test function)
 
+CALIBRATION FUNCTION
+
+We have 5 points for both alliance sides that are reproducible. Every morning there are 30 minutes for calibration.
+
+There are two fields at WORLDS.  
+
+...get real vs actual for all 5, get error for x and y, 
+
+
+
+
 MAGICAL MYSTICAL APRILTAG PUBLISHING TRACK
 - James coords. - done I think
 - Pick Best Apriltag Function - very done
