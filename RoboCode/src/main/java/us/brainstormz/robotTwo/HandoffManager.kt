@@ -76,7 +76,7 @@ class HandoffManager(
         ): Side.ThingWithSides<Claw>
     }
 
-    private enum class PixelController {
+    enum class PixelController {
         Depo,
         Collector,
         Both,
@@ -84,10 +84,101 @@ class HandoffManager(
     }
 
 
-    private data class OneSideCoordinatedExtremeties(
+    data class OneSideCoordinatedExtremeties(
             val latch: HandoffCoordinated.PixelHolder,
             val claw: HandoffCoordinated.PixelHolder
     )
+
+    fun detectActualController(
+            side: Side,
+            actualExtendo: ExtendoCoordinationStates,
+            actualLatches: HandoffCoordinated.SidedPixelHolders,
+            actualDepo: DepoCoordinationStates,
+            actualWrist: HandoffCoordinated.SidedPixelHolders,
+            transferSensorState: TransferSensorState
+    ): PixelController {
+        val pixelIsDetectedBySensor = transferSensorState.getBySide(side).hasPixelBeenSeen
+        val latchIsClosed = HandoffCoordinated.PixelHolder.Holding == actualLatches.getBySide(side)
+
+        val clawIsGripping = HandoffCoordinated.PixelHolder.Holding == actualWrist.getBySide(side)
+
+        val extendoIsIn = actualExtendo == ExtendoCoordinationStates.ReadyToHandoff
+        val liftIsIn = actualDepo == DepoCoordinationStates.ReadyToHandoff
+        val bothSlidesAreIn = liftIsIn && extendoIsIn
+
+        return when {
+            bothSlidesAreIn && pixelIsDetectedBySensor && latchIsClosed && clawIsGripping -> PixelController.Both
+            pixelIsDetectedBySensor && latchIsClosed -> PixelController.Collector
+            clawIsGripping && ((pixelIsDetectedBySensor && !latchIsClosed && bothSlidesAreIn) || (!pixelIsDetectedBySensor && !bothSlidesAreIn)) -> PixelController.Depo
+            else -> PixelController.NoPixel
+        }
+    }
+
+    fun decideFinalController(
+            side: Side,
+            actualController: PixelController,
+            inputConstraints: HandoffConstraints
+    ): PixelController {
+        val thereIsAPixel = actualController != PixelController.NoPixel
+        return if (thereIsAPixel) {
+            val pixelHanoffDesire = inputConstraints.handoffPixelsToLift.getBySide(side)
+
+            when (pixelHanoffDesire) {
+                HandoffReadyness.FinishHandoff -> PixelController.Depo
+                HandoffReadyness.StartHandoff -> PixelController.Both
+                HandoffReadyness.DontHandoff -> {
+                    when (actualController) {
+                        PixelController.Depo -> {
+                            when (inputConstraints.depo) {
+                                DepoCoordinationStates.ReadyToHandoff -> PixelController.Collector
+                                DepoCoordinationStates.PotentiallyBlockingExtendoMovement -> PixelController.Depo
+                                DepoCoordinationStates.NotReady -> PixelController.Both
+                            }
+                        }
+                        else -> PixelController.Collector
+                    }
+                }
+            }
+        } else {
+            PixelController.NoPixel
+        }
+    }
+
+    fun resolveControllerDifference(finalController: PixelController, actualController: PixelController, actualExtendo: ExtendoCoordinationStates, actualDepo: DepoCoordinationStates): PixelController {
+        val airlockLogic = if (actualController == finalController) {
+            finalController
+        } else {
+            when (actualController) {
+                PixelController.Depo -> PixelController.Both
+                PixelController.Collector -> PixelController.Both
+                PixelController.Both -> finalController
+                PixelController.NoPixel -> PixelController.NoPixel
+            }
+        }
+
+        val extendoIsIn = actualExtendo == ExtendoCoordinationStates.ReadyToHandoff
+        val depoIsIn = actualDepo == DepoCoordinationStates.ReadyToHandoff
+        val legalMove = if (extendoIsIn && depoIsIn) {
+            airlockLogic
+        } else {
+            actualController
+        }
+        return legalMove
+    }
+
+    fun latchFromTargetController(targetPixelController: PixelController): HandoffCoordinated.PixelHolder = when (targetPixelController) {
+        PixelController.Depo -> HandoffCoordinated.PixelHolder.Released
+        PixelController.Both -> HandoffCoordinated.PixelHolder.Holding
+        PixelController.Collector -> HandoffCoordinated.PixelHolder.Holding
+        PixelController.NoPixel -> HandoffCoordinated.PixelHolder.Holding
+    }
+
+    fun clawFromTargetController(targetPixelController: PixelController): HandoffCoordinated.PixelHolder = when (targetPixelController) {
+        PixelController.Depo -> HandoffCoordinated.PixelHolder.Holding
+        PixelController.Both -> HandoffCoordinated.PixelHolder.Holding
+        PixelController.Collector -> HandoffCoordinated.PixelHolder.Released
+        PixelController.NoPixel -> HandoffCoordinated.PixelHolder.Released
+    }
 
     fun coordinateHandoff(
             inputConstraints: HandoffConstraints,
@@ -99,180 +190,72 @@ class HandoffManager(
     ): HandoffCoordinated {
 
         telemetry.addLine("\ninputConstraints: $inputConstraints")
-//        telemetry.addLine("actualState: $actualState")
-        telemetry.addLine("transferSensorState: $transferSensorState")
+        telemetry.addLine("\nactualExtendo: $actualExtendo")
+        telemetry.addLine("\nactualLatches: $actualLatches")
+        telemetry.addLine("\nactualDepo: $actualDepo")
+        telemetry.addLine("\nactualWrist: $actualWrist")
+        telemetry.addLine("\ntransferSensorState: $transferSensorState")
 
-        val getActualController = { side: Side ->
-            val pixelIsDetectedBySensor = transferSensorState.getBySide(side).hasPixelBeenSeen
-            val latchIsClosed = HandoffCoordinated.PixelHolder.Holding == actualLatches.getBySide(side)
+        fun deriveTargetController(side: Side): Pair<PixelController, Boolean> {
+            val actualController = detectActualController(
+                    side = side,
+                    actualExtendo = actualExtendo,
+                    actualLatches = actualLatches,
+                    actualDepo = actualDepo,
+                    actualWrist = actualWrist,
+                    transferSensorState = transferSensorState
+            )
 
-            val clawIsGripping = HandoffCoordinated.PixelHolder.Holding == actualWrist.getBySide(side)
+            val finalController = decideFinalController(
+                    side = side,
+                    actualController,
+                    inputConstraints,
+            )
+            val targetPixelController = resolveControllerDifference(
+                    finalController = finalController,
+                    actualController = actualController,
+                    actualExtendo = actualExtendo,
+                    actualDepo = actualDepo
+            )
 
-            val extendoIsIn = actualExtendo == ExtendoCoordinationStates.ReadyToHandoff
-            val liftIsIn = actualDepo == DepoCoordinationStates.ReadyToHandoff
-            val bothSlidesAreIn = liftIsIn && extendoIsIn
+            telemetry.addLine("\n$side pixel, actual controller: $actualController, final controller: $finalController, intermediate target: $targetPixelController")
 
-            when {
-                bothSlidesAreIn && pixelIsDetectedBySensor && latchIsClosed && clawIsGripping -> PixelController.Both
-                pixelIsDetectedBySensor && latchIsClosed -> PixelController.Collector
-                clawIsGripping && ((pixelIsDetectedBySensor && !latchIsClosed && bothSlidesAreIn) || (!pixelIsDetectedBySensor && !bothSlidesAreIn)) -> PixelController.Depo
-                else -> PixelController.NoPixel
-            }
+            val controllerIsAtFinalState = actualController == finalController
+
+            return targetPixelController to controllerIsAtFinalState
         }
 
-        val getFinalPixelController = { side: Side, actualController: PixelController->
-
-            val thereIsAPixel = actualController != PixelController.NoPixel
-            if (thereIsAPixel) {
-                val pixelHanoffDesire = inputConstraints.handoffPixelsToLift.getBySide(side)
-
-                when (pixelHanoffDesire) {
-                    HandoffReadyness.FinishHandoff -> PixelController.Depo
-                    HandoffReadyness.StartHandoff -> PixelController.Both
-                    HandoffReadyness.DontHandoff -> {
-                        when (actualController) {
-                            PixelController.Depo -> {
-                                when (inputConstraints.depo) {
-                                    DepoCoordinationStates.ReadyToHandoff -> PixelController.Collector
-                                    else -> PixelController.Depo
-                                }
-                            }
-                            else -> PixelController.Collector
-                        }
-
-//                        val pixelIsStillInTransfer = actualDepo != DepoCoordinationStates.NotReady
-//                        val liftWantsToLeave = inputConstraints.depo == DepoCoordinationStates.NotReady
-//
-//                        val extendoWantsToLeave = inputConstraints.extendo == ExtendoCoordinationStates.NotReady
-//
-//                        when {
-//                            pixelIsStillInTransfer && liftWantsToLeave -> PixelController.Collector
-//                            extendoWantsToLeave -> PixelController.Collector
-//                            else -> actualController
-//                        }
-                    }
-                }
-            } else {
-                PixelController.NoPixel
-            }
-        }
+        val left = deriveTargetController(Side.Left)
+        val right = deriveTargetController(Side.Right)
 
 
-        val bothActualControllersAreAtFinal = Side.entries.fold(true) { acc, side ->
-            val actualController = getActualController(side)
+        val latches = HandoffCoordinated.SidedPixelHolders(
+                left = latchFromTargetController(left.first),
+                right = latchFromTargetController(right.first)
+        )
+        val wrist = HandoffCoordinated.SidedPixelHolders(
+                left = clawFromTargetController(left.first),
+                right = clawFromTargetController(right.first)
+        )
 
-            val finalConroller = getFinalPixelController(side, actualController)
-
-            val controllerIsAtFinal = finalConroller == actualController
-
-            telemetry.addLine("$side pixel is controlled by $actualController, it wants to be controlled by $finalConroller")
-
-            acc && controllerIsAtFinal
-        }
-
-        fun determineOutputFromController(side: Side, targetPixelController: PixelController): OneSideCoordinatedExtremeties = when (targetPixelController) {
-            PixelController.Depo -> OneSideCoordinatedExtremeties(
-                    latch = HandoffCoordinated.PixelHolder.Released,
-                    claw = HandoffCoordinated.PixelHolder.Holding,
-            )
-            PixelController.Both -> OneSideCoordinatedExtremeties(
-                    latch = HandoffCoordinated.PixelHolder.Holding,
-                    claw = HandoffCoordinated.PixelHolder.Holding
-            )
-            PixelController.Collector -> OneSideCoordinatedExtremeties(
-                    latch = HandoffCoordinated.PixelHolder.Holding,
-                    claw = HandoffCoordinated.PixelHolder.Released,
-            )
-            PixelController.NoPixel -> OneSideCoordinatedExtremeties(
-                    latch = HandoffCoordinated.PixelHolder.Holding,
-                    claw = HandoffCoordinated.PixelHolder.Released,
-            )
-        }
-
+        val bothActualControllersAreAtFinal = left.second && right.second
 
         return if (bothActualControllersAreAtFinal) {
-            val outputs = {side: Side ->
-                val controller = getActualController(side)
-                determineOutputFromController(side, controller)
-            }
-            val left = outputs(Side.Left)
-            val right = outputs(Side.Right)
-
             HandoffCoordinated(
                     extendo = inputConstraints.extendo,
                     depo = inputConstraints.depo,
 
-                    latches = HandoffCoordinated.SidedPixelHolders(
-                            left = left.latch,
-                            right = right.latch
-                    ),
-                    wrist = HandoffCoordinated.SidedPixelHolders(
-                        left = left.claw,
-                        right = right.claw
-                    )
+                    latches = latches,
+                    wrist = wrist
             )
         } else {
-            fun resolveControllerDifference(finalController: PixelController, actualController: PixelController): PixelController {
-                val controlByTarget = if (finalController == PixelController.NoPixel) {
-                    PixelController.Collector
-                } else {
-                    finalController
-                }
-
-                return if (actualController == finalController) {
-                    controlByTarget
-                } else {
-                    when (actualController) {
-                        PixelController.Depo -> PixelController.Both
-                        PixelController.Collector -> PixelController.Both
-                        PixelController.Both -> controlByTarget
-                        PixelController.NoPixel -> PixelController.NoPixel
-                    }
-                }
-            }
-
-            val outputs = {side: Side ->
-                val actualController = getActualController(side)
-                determineOutputFromController(side,
-                        targetPixelController = resolveControllerDifference(
-                                finalController = getFinalPixelController(side, actualController),
-                                actualController = actualController
-                        )
-                )
-            }
-
-            val left = outputs(Side.Left)
-            val right = outputs(Side.Right)
-
-            //Extensions must be in
             HandoffCoordinated(
                     extendo = ExtendoCoordinationStates.ReadyToHandoff,
                     depo = DepoCoordinationStates.ReadyToHandoff,
 
-                    latches = HandoffCoordinated.SidedPixelHolders(
-                            left = left.latch,
-                            right = right.latch
-                    ),
-                    wrist = HandoffCoordinated.SidedPixelHolders(
-                            left = left.claw,
-                            right = right.claw
-                    )
+                    latches = latches,
+                    wrist = wrist
             )
-        }
-    }
-    private fun deriveLatchPositionFromPixelHolder(pixelHolder: HandoffCoordinated.PixelHolder): LatchPositions {
-        return when(pixelHolder) {
-            HandoffCoordinated.PixelHolder.Holding -> LatchPositions.Closed
-            HandoffCoordinated.PixelHolder.Released -> LatchPositions.Open
-        }
-    }
-    private fun deriveClawTargetFromPixelHolder(claw: HandoffCoordinated.PixelHolder, clawInput: RobotTwoTeleOp.ClawInput): RobotTwoTeleOp.ClawInput {
-        return when(claw) {
-//            HandoffCoordinated.Claw.Holding ->
-//            HandoffCoordinated.Claw.Released ->
-//            HandoffCoordinated.Claw.Passthrough -> clawInput
-            HandoffCoordinated.PixelHolder.Holding -> RobotTwoTeleOp.ClawInput.Hold
-            HandoffCoordinated.PixelHolder.Released -> RobotTwoTeleOp.ClawInput.Drop
         }
     }
 
@@ -281,6 +264,22 @@ class HandoffManager(
             val depo: DepoTarget
     )
     fun manageHandoff(handoffInput: RobotTwoTeleOp.HandoffInput, wristInput: RobotTwoTeleOp.WristInput, depoInput: RobotTwoTeleOp.DepoInput, extendoInput: RobotTwoTeleOp.ExtendoInput, collectorTarget: CollectorTarget, previousTargetWorld: TargetWorld, actualWorld: ActualWorld): HandoffTarget {
+
+        fun deriveLatchPositionFromPixelHolder(pixelHolder: HandoffCoordinated.PixelHolder): LatchPositions {
+            return when(pixelHolder) {
+                HandoffCoordinated.PixelHolder.Holding -> LatchPositions.Closed
+                HandoffCoordinated.PixelHolder.Released -> LatchPositions.Open
+            }
+        }
+        fun deriveClawTargetFromPixelHolder(claw: HandoffCoordinated.PixelHolder, clawInput: RobotTwoTeleOp.ClawInput): RobotTwoTeleOp.ClawInput {
+            return when(claw) {
+//            HandoffCoordinated.Claw.Holding ->
+//            HandoffCoordinated.Claw.Released ->
+//            HandoffCoordinated.Claw.Passthrough -> clawInput
+                HandoffCoordinated.PixelHolder.Holding -> RobotTwoTeleOp.ClawInput.Hold
+                HandoffCoordinated.PixelHolder.Released -> RobotTwoTeleOp.ClawInput.Drop
+            }
+        }
 
         fun getPixelHolderFromIsHolding(isHolding: Boolean): HandoffCoordinated.PixelHolder {
             return if (isHolding) {
@@ -306,6 +305,7 @@ class HandoffManager(
         val inputExtendo = when (extendoInput) {
             RobotTwoTeleOp.ExtendoInput.RetractManual -> ExtendoCoordinationStates.ReadyToHandoff
             RobotTwoTeleOp.ExtendoInput.RetractSetAmount -> ExtendoCoordinationStates.ReadyToHandoff
+            RobotTwoTeleOp.ExtendoInput.NoInput -> ExtendoCoordinationStates.ReadyToHandoff
             else -> ExtendoCoordinationStates.NotReady
         }
         val inputDepo = when (depoInput) {
