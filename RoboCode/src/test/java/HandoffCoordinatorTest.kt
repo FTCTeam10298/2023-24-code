@@ -563,9 +563,9 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by depo and depo is up, and extendo wants to go out, extendo slide will move`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.StartHandoff // true??
+        val handoffPixelsToLift = HandoffReadiness.DontHandoff // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
-        val doingHandoff = true // ???
+        val doingHandoff = false // ???
 
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
@@ -1070,7 +1070,7 @@ class HandoffCoordinatorTest {
 
         // then
         val expectedOutput = HandoffCoordinated(
-            extendo = ExtendoHandoffControlDecision.HandoffPosition,
+            extendo = ExtendoHandoffControlDecision.DriverControlledPosition,
             latches = SidedPixelHolders(
                 left = PixelHolder.Holding,
                 right = PixelHolder.Holding
