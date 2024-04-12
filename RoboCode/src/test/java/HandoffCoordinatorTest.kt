@@ -54,7 +54,7 @@ class HandoffCoordinatorTest {
         val testSubject = createHandoffManager()
         val inputConstraints = HandoffConstraints(
             depo = DepoCoordinationStates.ReadyToHandoff,
-            handoffPixelsToLift = HandoffPixelsToLift(HandoffReadiness.StartHandoff)
+            handoffPixelsToLift = HandoffPixelsToLift(TargetPixelControlState.ControlledByBoth)
         )
         val actualState = HandoffCoordinated(
             extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -109,7 +109,7 @@ class HandoffCoordinatorTest {
     @Test
     fun `handoff will not finish when it can finish but HandoffPixelsToLift is false`() {
         // given
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -173,7 +173,7 @@ class HandoffCoordinatorTest {
     fun `handoff will finish when it can finish and HandoffPixelsToLift is true`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.FinishHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByDepositor // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -238,7 +238,7 @@ class HandoffCoordinatorTest {
     fun `when both slides are in, gripping claw will stay at both, released claw will start handoff`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.FinishHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByDepositor // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -303,7 +303,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by both slides and extendo wants to go out, lift will let go, extendo slide won't move`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.FinishHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByDepositor // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -368,7 +368,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by both slides and extendo is a little out, claws will release and extendo will retract`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -433,7 +433,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by both slides and trying to transfer and extendo is a little out, claws will release and extendo will retract`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.StartHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByBoth // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -498,7 +498,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by depo and depo is down, and extendo wants to go out, extendo will grab pixels, extendo slide won't move`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -563,7 +563,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by depo and depo is up, and extendo wants to go out, extendo slide will move`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = false // ???
 
@@ -627,7 +627,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by depo and depo is off the limit and pixels are past the color sensor but still partially in the transfer, and extendo wants to go out, extendo slide won't move`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.StartHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByBoth // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -691,7 +691,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by both slides and lift wants to go out without pixels, lift will let got but will wait to move`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -757,7 +757,7 @@ class HandoffCoordinatorTest {
         // given
 
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -825,7 +825,7 @@ class HandoffCoordinatorTest {
     fun `when depo has pixels, it's up a little, and extendo is in, collector stays open and lift keeps doing it's thing`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.FinishHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByDepositor // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -890,7 +890,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by both slides and lift wants to go out and take pixels, extendo will let got, lift will wait to move`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.FinishHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByDepositor // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -955,7 +955,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by both slides and extendo wants to go out but lift wants to take pixels, lift will let go, extendo will wait to move`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.FinishHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByDepositor // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -1022,7 +1022,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by extendo and extendo wants to go out, extendo will move`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -1088,7 +1088,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by lift and lift wants to go out with pixels, lift will move and take pixels`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.FinishHandoff // true??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByDepositor // true??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -1153,7 +1153,7 @@ class HandoffCoordinatorTest {
     fun `when pixel is controlled by lift and lift wants to go out without pixels, lift will not move and pixels will un-handoff`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -1220,7 +1220,7 @@ class HandoffCoordinatorTest {
     fun `when depo is depositing pixels, handoff won't engage`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -1286,7 +1286,7 @@ class HandoffCoordinatorTest {
     fun `when both slides are in and collecotr has pixels, and drivers want both to go out, they go out`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 
@@ -1353,7 +1353,7 @@ class HandoffCoordinatorTest {
     fun `when depo slide would be blocking pixels, but there's no pixels, extendo can go out`() {
         // given
 
-        val handoffPixelsToLift = HandoffReadiness.DontHandoff // false??
+        val handoffPixelsToLift = TargetPixelControlState.ControlledByCollector // false??
         val physicalExtendoReadiness = ExtendoCoordinationStates.ReadyToHandoff
         val doingHandoff = true // ???
 

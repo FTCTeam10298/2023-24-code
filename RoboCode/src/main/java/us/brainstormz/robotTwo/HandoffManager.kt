@@ -22,16 +22,16 @@ class HandoffManager(
 
 
     // ??? Seems like this should be different
-    enum class HandoffReadiness {
-        FinishHandoff,
-        StartHandoff,
-        DontHandoff,
+    enum class TargetPixelControlState {
+        ControlledByDepositor,
+        ControlledByBoth,
+        ControlledByCollector,
     }
     data class HandoffPixelsToLift(
-            override val left: HandoffReadiness,
-            override val right: HandoffReadiness
-    ): Side.ThingWithSides<HandoffReadiness> {
-        constructor(both: HandoffReadiness): this(both, both)
+        override val left: TargetPixelControlState,
+        override val right: TargetPixelControlState
+    ): Side.ThingWithSides<TargetPixelControlState> {
+        constructor(both: TargetPixelControlState): this(both, both)
     }
 
 
@@ -93,7 +93,7 @@ class HandoffManager(
             val claw: HandoffCoordinated.PixelHolder
     )
 
-    fun detectActualController(
+    fun detectActualOwner(
             side: Side,
             actualExtendo: ExtendoCoordinationStates,
             actualLatches: HandoffCoordinated.SidedPixelHolders,
@@ -118,7 +118,7 @@ class HandoffManager(
         }
     }
 
-    fun decideFinalController(
+    private fun decidePixelDestination(
         side: Side,
         actualController: PixelOwner,
         inputConstraints: HandoffConstraints,
@@ -126,14 +126,14 @@ class HandoffManager(
     ): PixelOwner {
         val thereIsAPixel = actualController != PixelOwner.NoPixel
         return if (thereIsAPixel) {
-            if(doingHandoff ){
+            if(doingHandoff){
 
                 val pixelHandoffDesire = inputConstraints.handoffPixelsToLift.getBySide(side)
 
                 when (pixelHandoffDesire) {
-                    HandoffReadiness.FinishHandoff -> PixelOwner.Depo
-                    HandoffReadiness.StartHandoff -> PixelOwner.Both
-                    HandoffReadiness.DontHandoff -> {
+                    TargetPixelControlState.ControlledByDepositor -> PixelOwner.Depo
+                    TargetPixelControlState.ControlledByBoth -> PixelOwner.Both
+                    TargetPixelControlState.ControlledByCollector -> {
                         when (actualController) {
                             PixelOwner.Depo -> {
                                 when (inputConstraints.depo) {
@@ -154,14 +154,14 @@ class HandoffManager(
         }
     }
 
-    fun resolveControllerDifference(finalController: PixelOwner, actualController: PixelOwner, actualExtendo: ExtendoCoordinationStates, actualDepo: DepoCoordinationStates): PixelOwner {
-        val airlockLogic = if (actualController == finalController) {
-            finalController
+    fun getNextTargetOwner(finalOwner: PixelOwner, currentOwner: PixelOwner, actualExtendo: ExtendoCoordinationStates, actualDepo: DepoCoordinationStates): PixelOwner {
+        val airlockLogic = if (currentOwner == finalOwner) {
+            finalOwner
         } else {
-            when (actualController) {
+            when (currentOwner) {
                 PixelOwner.Depo -> PixelOwner.Both
                 PixelOwner.Collector -> PixelOwner.Both
-                PixelOwner.Both -> finalController
+                PixelOwner.Both -> finalOwner
                 PixelOwner.NoPixel -> PixelOwner.NoPixel
             }
         }
@@ -171,7 +171,7 @@ class HandoffManager(
         val legalMove = if (extendoIsIn && depoIsIn) {
             airlockLogic
         } else {
-            actualController
+            currentOwner
         }
         return legalMove
     }
@@ -207,9 +207,15 @@ class HandoffManager(
         telemetry.addLine("\nactualWrist: $actualWrist")
         telemetry.addLine("\ntransferSensorState: $transferSensorState")
 
-        data class PixelControlStatus(val targetOwner:PixelOwner, val pixelIsWithFinalOwner:Boolean)
-        fun derivePixelControlStatus(side: Side): PixelControlStatus {
-            val actualController = detectActualController(
+        data class PixelHandoffState(
+            val currentOwner:PixelOwner,
+            val targetOwner:PixelOwner,
+            val finalOwner:PixelOwner,
+        ){
+            val pixelIsWithFinalOwner = currentOwner == finalOwner
+        }
+        fun determinePixelHandoffState(side: Side): PixelHandoffState {
+            val currentOwner = detectActualOwner(
                     side = side,
                     actualExtendo = physicalExtendoReadiness,
                     actualLatches = actualLatches,
@@ -218,39 +224,41 @@ class HandoffManager(
                     transferSensorState = transferSensorState
             )
 
-            val finalController = decideFinalController(
+            val finalOwner = decidePixelDestination(
                     side = side,
-                    actualController,
+                    currentOwner,
                     inputConstraints,
                     doingHandoff,
             )
-            val targetPixelController = resolveControllerDifference(
-                    finalController = finalController,
-                    actualController = actualController,
+            val targetPixelController = getNextTargetOwner(
+                    finalOwner = finalOwner,
+                    currentOwner = currentOwner,
                     actualExtendo = physicalExtendoReadiness,
                     actualDepo = actualDepo
             )
 
-            telemetry.addLine("\n$side pixel, actual controller: $actualController, final controller: $finalController, intermediate target: $targetPixelController")
+            telemetry.addLine("\n$side pixel, actual controller: $currentOwner, final controller: $finalOwner, intermediate target: $targetPixelController")
 
-            val controllerIsAtFinalState = actualController == finalController
 
-            return PixelControlStatus(targetPixelController, pixelIsWithFinalOwner = controllerIsAtFinalState)
+            return PixelHandoffState(
+                currentOwner,
+                targetPixelController,
+                finalOwner)
         }
 
-        val left = derivePixelControlStatus(Side.Left)
-        val right = derivePixelControlStatus(Side.Right)
+        val leftPixelStatus = determinePixelHandoffState(Side.Left)
+        val rightPixelStatus = determinePixelHandoffState(Side.Right)
 
         val latches = HandoffCoordinated.SidedPixelHolders(
-                left = latchFromTargetController(left.targetOwner),
-                right = latchFromTargetController(right.targetOwner)
+                left = latchFromTargetController(leftPixelStatus.targetOwner),
+                right = latchFromTargetController(rightPixelStatus.targetOwner)
         )
         val wrist = HandoffCoordinated.SidedPixelHolders(
-                left = clawFromTargetController(left.targetOwner),
-                right = clawFromTargetController(right.targetOwner)
+                left = clawFromTargetController(leftPixelStatus.targetOwner),
+                right = clawFromTargetController(rightPixelStatus.targetOwner)
         )
 
-        val bothPixelsAreWithFinalOwner = left.pixelIsWithFinalOwner && right.pixelIsWithFinalOwner
+        val bothPixelsAreWithFinalOwner = leftPixelStatus.pixelIsWithFinalOwner && rightPixelStatus.pixelIsWithFinalOwner
 
         return if (bothPixelsAreWithFinalOwner) {
             HandoffCoordinated(
@@ -325,23 +333,23 @@ class HandoffManager(
             else -> DepoCoordinationStates.NotReady
         }
 
-        fun deriveHandoffReadiness(handoffInput: RobotTwoTeleOp.HandoffInput, clawInput: RobotTwoTeleOp.ClawInput): HandoffReadiness {
+        fun deriveHandoffReadiness(handoffInput: RobotTwoTeleOp.HandoffInput, clawInput: RobotTwoTeleOp.ClawInput): TargetPixelControlState {
             val liftInputIsDown = driverDepositorHandoffReadiness == DepoCoordinationStates.ReadyToHandoff
             val extendoInputIsIn = areDriversRetractingExtendo == ExtendoCoordinationStates.ReadyToHandoff
             val inputAllowsForHandoff = liftInputIsDown && extendoInputIsIn
 
             return when (handoffInput) {
-                RobotTwoTeleOp.HandoffInput.Handoff -> HandoffReadiness.FinishHandoff
+                RobotTwoTeleOp.HandoffInput.Handoff -> TargetPixelControlState.ControlledByDepositor
                 RobotTwoTeleOp.HandoffInput.NoInput -> {
                     when (clawInput) {
-                        RobotTwoTeleOp.ClawInput.Drop -> HandoffReadiness.DontHandoff
-                        RobotTwoTeleOp.ClawInput.Hold -> HandoffReadiness.StartHandoff
+                        RobotTwoTeleOp.ClawInput.Drop -> TargetPixelControlState.ControlledByCollector
+                        RobotTwoTeleOp.ClawInput.Hold -> TargetPixelControlState.ControlledByBoth
                         RobotTwoTeleOp.ClawInput.NoInput -> {
                             val automaticallyHandoff = inputAllowsForHandoff
                             if (automaticallyHandoff) {
-                                HandoffReadiness.StartHandoff
+                                TargetPixelControlState.ControlledByBoth
                             } else {
-                                HandoffReadiness.DontHandoff
+                                TargetPixelControlState.ControlledByCollector
                             }
                         }
                     }
