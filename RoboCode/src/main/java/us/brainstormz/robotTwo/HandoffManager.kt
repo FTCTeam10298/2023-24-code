@@ -93,7 +93,7 @@ class HandoffManager(
             val claw: HandoffCoordinated.PixelHolder
     )
 
-    fun detectActualOwner(
+    private fun detectActualOwner(
             side: Side,
             actualExtendo: ExtendoCoordinationStates,
             actualLatches: HandoffCoordinated.SidedPixelHolders,
@@ -107,7 +107,7 @@ class HandoffManager(
         val clawIsGripping = HandoffCoordinated.PixelHolder.Holding == actualWrist.getBySide(side)
 
         val extendoIsIn = actualExtendo == ExtendoCoordinationStates.ReadyToHandoff
-        val liftIsIn = actualDepo == DepoCoordinationStates.ReadyToHandoff
+        val liftIsIn = actualDepo != DepoCoordinationStates.NotReady
         val bothSlidesAreIn = liftIsIn && extendoIsIn
 
         return when {
@@ -131,18 +131,6 @@ class HandoffManager(
                     TargetPixelControlState.ControlledByDepositor -> PixelOwner.Depo
                     TargetPixelControlState.ControlledByBoth -> PixelOwner.Both
                     TargetPixelControlState.ControlledByCollector -> PixelOwner.Collector
-//                        {
-//                        when (actualController) {
-//                            PixelOwner.Depo -> {
-//                                when (inputConstraints.depo) {
-//                                    DepoCoordinationStates.ReadyToHandoff -> PixelOwner.Collector
-//                                    DepoCoordinationStates.PotentiallyBlockingExtendoMovement -> PixelOwner.Depo
-//                                    DepoCoordinationStates.NotReady -> PixelOwner.Both
-//                                }
-//                            }
-//                            else -> PixelOwner.Collector
-//                        }
-//                    }
                 }
         } else {
             PixelOwner.NoPixel
@@ -150,7 +138,7 @@ class HandoffManager(
     }
 
     fun getNextTargetOwner(finalOwner: PixelOwner, currentOwner: PixelOwner, actualExtendo: ExtendoCoordinationStates, actualDepo: DepoCoordinationStates): PixelOwner {
-        val airlockLogic = if (currentOwner == finalOwner) {
+        val nextOwnerInAirlockProcess = if (currentOwner == finalOwner) {
             finalOwner
         } else {
             when (currentOwner) {
@@ -160,15 +148,7 @@ class HandoffManager(
                 PixelOwner.NoPixel -> PixelOwner.NoPixel
             }
         }
-
-        val extendoIsIn = actualExtendo == ExtendoCoordinationStates.ReadyToHandoff
-        val depoIsIn = actualDepo == DepoCoordinationStates.ReadyToHandoff
-        val legalMove = if (extendoIsIn && depoIsIn) {
-            airlockLogic
-        } else {
-            currentOwner
-        }
-        return legalMove
+        return nextOwnerInAirlockProcess
     }
 
     fun latchFromTargetController(targetPixelOwner: PixelOwner): HandoffCoordinated.PixelHolder = when (targetPixelOwner) {

@@ -7,7 +7,6 @@ import android.os.Debug
 import android.os.Debug.MemoryInfo
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.hardware.lynx.LynxModule
-import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -18,7 +17,6 @@ import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.DepoManager.*
-import us.brainstormz.robotTwo.localTests.TeleopTest
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
@@ -29,7 +27,6 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
@@ -1138,6 +1135,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
         }
     }
+    var getTime:()->Long = {System.currentTimeMillis()}
 
     var timeOfMatchStartMilis = 0L
     fun start() {
@@ -1168,7 +1166,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             actualRobot = actualRobot,
             actualGamepad1 = currentGamepad1,
             actualGamepad2 = currentGamepad2,
-            timestampMilis = System.currentTimeMillis()
+            timestampMilis = getTime()
         )
     }
 

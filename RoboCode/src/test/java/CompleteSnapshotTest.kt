@@ -11,7 +11,6 @@ import us.brainstormz.robotTwo.CompleteSnapshot
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
-import us.brainstormz.robotTwo.SerializableGamepad
 import us.brainstormz.robotTwo.TargetRobot
 import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.blankGamepad
@@ -21,7 +20,6 @@ import us.brainstormz.robotTwo.subsystems.Dropdown
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
-import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer

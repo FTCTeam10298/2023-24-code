@@ -1,7 +1,6 @@
 package us.brainstormz.robotTwo.localTests
 
 import com.qualcomm.robotcore.hardware.Gamepad
-import kotlinx.serialization.Serializable
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation
@@ -10,11 +9,9 @@ import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.RobotTwoTeleOp
-import us.brainstormz.robotTwo.SerializableGamepad
 import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.blankGamepad
 import us.brainstormz.robotTwo.subsystems.ColorReading
-import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
