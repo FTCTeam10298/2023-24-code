@@ -22,7 +22,7 @@ fun createHandoffManager(): HandoffManager {
     val arm = Arm()
     val lift = Lift(telemetry)
     val wrist = Wrist(Claw(telemetry), Claw(telemetry), telemetry)
-    val handoffManager = HandoffManager(
+    return HandoffManager(
         collectorManager = CollectorManager(
             intake = Intake(),
             transfer = transfer,
@@ -41,7 +41,6 @@ fun createHandoffManager(): HandoffManager {
         transfer = transfer,
         telemetry = telemetry
     )
-    return handoffManager
 }
 class HandoffCoordinatorTest {
 
