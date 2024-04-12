@@ -1,14 +1,31 @@
 #!/bin/bash
 
-set -e
+set -x
+TIMESTAMP=`date +"%Y-%m-%d.%H%M%S"`
+LABEL="$1"
 
-mkdir -p ~/Desktop/ftc/odomCalibrate/allData/
+if [ -z "$LABEL" ]
+then
+    echo "NO LABEL"
+else
+    echo "Using label '$LABEL'"
+    LABEL="-$LABEL"
+fi
 
-adb pull /storage/emulated/0/Download/ ~/Desktop/ftc/odomCalibrate
+DEST=~/Desktop/ftc/odomCalibrate/$TIMESTAMP$LABEL
+mkdir -p $DEST/allData/
+file $DEST/allData/
+
+adb pull /storage/emulated/0/Download/ $DEST
 echo Pulled files
 
-mv ~/Desktop/ftc/odomCalibrate/Download/* ~/Desktop/ftc/odomCalibrate/allData/
+file $DEST/allData/
+
+mv $DEST/Download/* $DEST/allData/
 echo Moved files
+
+
+file $DEST/allData/
 
 adb shell rm -r /storage/emulated/0/Download/
 adb shell mkdir /storage/emulated/0/Download/
