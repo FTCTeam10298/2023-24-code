@@ -144,7 +144,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
     //
     //x is always
 
-    //TODO: Switch between alliance side error sets depending on recognization - maybe done?
+    //TODO: Switch between alliance side error sets depending on recognization - test with initial points
     //TODO: Return a Boolean for one-inch accurate measurement
     //TODO: Remove Crashes
 //    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
@@ -160,14 +160,14 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 //    )
 
     val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-            xInches = 0.0,
-            yInches = 0.0,
+            xInches = -0.275,
+            yInches = 3.15,
             hDegrees = 0.0,
     )
 
     val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-            xInches = 0.18,
-            yInches = 3.415,
+            xInches = -0.08125,
+            yInches = 3.575,
             hDegrees = 0.0, //0
     )
 
