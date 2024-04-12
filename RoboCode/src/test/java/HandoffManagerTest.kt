@@ -109,7 +109,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector,
                 depo = DepoTarget(
                         armPosition = Arm.ArmTarget(Arm.Positions.In),
@@ -194,7 +194,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector,
                 depo = DepoTarget(
                         armPosition = Arm.ArmTarget(Arm.Positions.In),
@@ -279,7 +279,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector.copy(
                         intakeNoodles = Intake.CollectorPowers.Off
                 ),
@@ -367,7 +367,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector.copy(
                         latches = Transfer.TransferTarget(
                                 left = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0),
@@ -460,7 +460,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector,
                 depo = DepoTarget(
                         armPosition = Arm.ArmTarget(Arm.Positions.In),
@@ -548,7 +548,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector,
                 depo = DepoTarget(
                         armPosition = Arm.ArmTarget(Arm.Positions.In),
@@ -633,7 +633,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector,
                 depo = DepoTarget(
                         armPosition = Arm.ArmTarget(Arm.Positions.ClearLiftMovement),
@@ -719,7 +719,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector.copy(
                         extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Min)
                 ),
@@ -808,7 +808,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector.copy(
                         extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.PurpleCenterPosition)
                 ),
@@ -897,7 +897,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector.copy(
                         extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Max),
                         latches = Transfer.TransferTarget(
@@ -993,7 +993,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector.copy(
                         extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Max),
                         latches = Transfer.TransferTarget(
@@ -1085,7 +1085,7 @@ class HandoffManagerTest {
         )
 
         // then
-        val expectedOutput = HandoffManager.HandoffTarget(
+        val expectedOutput = HandoffManager.CollectorDepositorTarget(
                 collector = collector.copy(
                         extendo = Extendo.ExtendoTarget(Extendo.ExtendoPositions.Min),
                         latches = Transfer.TransferTarget(

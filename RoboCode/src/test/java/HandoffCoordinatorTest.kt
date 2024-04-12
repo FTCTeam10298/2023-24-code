@@ -71,11 +71,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -130,11 +130,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -188,11 +188,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -247,11 +247,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -305,11 +305,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -363,11 +363,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -421,11 +421,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -479,11 +479,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -537,11 +537,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -595,11 +595,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -653,11 +653,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -711,11 +711,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -771,11 +771,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -829,11 +829,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -887,11 +887,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -945,11 +945,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -1003,11 +1003,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -1061,11 +1061,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -1120,11 +1120,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -1179,11 +1179,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = true,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )
@@ -1238,11 +1238,11 @@ class HandoffCoordinatorTest {
                 transferSensorState = Transfer.TransferSensorState(
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                         Transfer.SensorState(
                                 hasPixelBeenSeen = false,
-                                timeOfSeeingMilis = 0
+                                timeOfSeeingMillis = 0
                         ),
                 ),
         )

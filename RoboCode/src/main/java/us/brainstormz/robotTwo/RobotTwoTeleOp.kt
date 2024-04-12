@@ -797,7 +797,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 //        Handoff Coordination
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val overrideHandoff = driverInputIsManual || driverInput.gamepad1ControlMode == GamepadControlMode.Manual
-        val handoffWithOverrides = if (overrideHandoff) {
+        val combinedTarget = if (overrideHandoff) {
 
             fun latchInputToLatchPosition(latchInput: LatchInput): Transfer.LatchPositions =
                     when (latchInput) {
@@ -805,7 +805,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         LatchInput.NoInput -> Transfer.LatchPositions.Closed
                     }
 
-            HandoffManager.HandoffTarget(
+            HandoffManager.CollectorDepositorTarget(
                     depo = DepoTarget(
                             lift = Lift.TargetLift(
                                     power = driverInput.depoScoringHeightAdjust,
@@ -903,31 +903,31 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
                     } else {
                         Extendo.ExtendoTarget(
-                                targetPosition = previousExtendoTargetPosition,
-                                movementMode = MovementMode.Power,
-                                power = 0.0)
+                            targetPosition = previousExtendoTargetPosition,
+                            movementMode = MovementMode.Power,
+                            power = 0.0)
                     }
                 }
             }
 
             val uncoordinatedCollectorTarget = CollectorTarget(
-                    intakeNoodles = intakeNoodleTarget,
-                    dropDown = dropdownTarget,
-                    timeOfEjectionStartMilis = timeOfEjectionStartMillis,
-                    timeOfTransferredMillis = timeOfTransferredMillis,
-                    transferSensorState = transferState,
-                    latches = Transfer.TransferTarget(initLatchTarget, initLatchTarget),
-                    extendo = extendoTargetState,
+                intakeNoodles = intakeNoodleTarget,
+                dropDown = dropdownTarget,
+                timeOfEjectionStartMilis = timeOfEjectionStartMillis,
+                timeOfTransferredMillis = timeOfTransferredMillis,
+                transferSensorState = transferState,
+                latches = Transfer.TransferTarget(initLatchTarget, initLatchTarget),
+                extendo = extendoTargetState,
             )
 
             handoffManager.manageHandoff(
-                    handoffInput = driverInput.handoff,
-                    wristInput = driverInput.wrist,
-                    depoInput = repeatDriverInputForDepo.depo,
-                    extendoInput = driverInput.extendo,
-                    collectorTarget = uncoordinatedCollectorTarget,
-                    previousTargetWorld = previousTargetState,
-                    actualWorld = actualWorld
+                handoffInput = driverInput.handoff,
+                wristInput = driverInput.wrist,
+                depoInput = repeatDriverInputForDepo.depo,
+                extendoInput = driverInput.extendo,
+                collectorTarget = uncoordinatedCollectorTarget,
+                previousTargetWorld = previousTargetState,
+                actualWorld = actualWorld,
             )
         }
 
@@ -1033,8 +1033,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                 movementMode = MovementMode.Power,
                                 targetPosition = PositionAndRotation()
                         ),
-                        depoTarget = handoffWithOverrides.depo,
-                        collectorTarget = handoffWithOverrides.collector,
+                        depoTarget = combinedTarget.depo,
+                        collectorTarget = combinedTarget.collector,
                         hangPowers = hangTarget,
                         launcherPosition = launcherTarget,
                         lights = lights,
@@ -1079,7 +1079,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val initSensorState = Transfer.SensorState(
                 hasPixelBeenSeen = false,
-                timeOfSeeingMilis = 0L,
+                timeOfSeeingMillis = 0L,
         )
 
         val initLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0)

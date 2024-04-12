@@ -20,16 +20,17 @@ class HandoffManager(
 
 
 
-    enum class HandoffReadyness {
+    // ??? Seems like this should be different
+    enum class HandoffReadiness {
         FinishHandoff,
         StartHandoff,
-        DontHandoff
+        DontHandoff,
     }
     data class HandoffPixelsToLift(
-            override val left: HandoffReadyness,
-            override val right: HandoffReadyness
-    ): Side.ThingWithSides<HandoffReadyness> {
-        constructor(both: HandoffReadyness): this(both, both)
+            override val left: HandoffReadiness,
+            override val right: HandoffReadiness
+    ): Side.ThingWithSides<HandoffReadiness> {
+        constructor(both: HandoffReadiness): this(both, both)
     }
 
 
@@ -40,7 +41,7 @@ class HandoffManager(
 
     enum class DepoCoordinationStates {
         NotReady,
-        PotentiallyBlockingExtendoMovement,
+        PotentiallyBlockingExtendoMovement,  // might not be needed
         ReadyToHandoff
     }
     data class HandoffConstraints(
@@ -124,9 +125,9 @@ class HandoffManager(
             val pixelHanoffDesire = inputConstraints.handoffPixelsToLift.getBySide(side)
 
             when (pixelHanoffDesire) {
-                HandoffReadyness.FinishHandoff -> PixelController.Depo
-                HandoffReadyness.StartHandoff -> PixelController.Both
-                HandoffReadyness.DontHandoff -> {
+                HandoffReadiness.FinishHandoff -> PixelController.Depo
+                HandoffReadiness.StartHandoff -> PixelController.Both
+                HandoffReadiness.DontHandoff -> {
                     when (actualController) {
                         PixelController.Depo -> {
                             when (inputConstraints.depo) {
@@ -182,7 +183,7 @@ class HandoffManager(
 
     fun coordinateHandoff(
             inputConstraints: HandoffConstraints,
-            actualExtendo: ExtendoCoordinationStates,
+            physicalExtendoReadiness: ExtendoCoordinationStates,
             actualLatches: HandoffCoordinated.SidedPixelHolders,
             actualDepo: DepoCoordinationStates,
             actualWrist: HandoffCoordinated.SidedPixelHolders,
@@ -190,7 +191,7 @@ class HandoffManager(
     ): HandoffCoordinated {
 
         telemetry.addLine("\ninputConstraints: $inputConstraints")
-        telemetry.addLine("\nactualExtendo: $actualExtendo")
+        telemetry.addLine("\nactualExtendo: $physicalExtendoReadiness")
         telemetry.addLine("\nactualLatches: $actualLatches")
         telemetry.addLine("\nactualDepo: $actualDepo")
         telemetry.addLine("\nactualWrist: $actualWrist")
@@ -199,7 +200,7 @@ class HandoffManager(
         fun deriveTargetController(side: Side): Pair<PixelController, Boolean> {
             val actualController = detectActualController(
                     side = side,
-                    actualExtendo = actualExtendo,
+                    actualExtendo = physicalExtendoReadiness,
                     actualLatches = actualLatches,
                     actualDepo = actualDepo,
                     actualWrist = actualWrist,
@@ -214,7 +215,7 @@ class HandoffManager(
             val targetPixelController = resolveControllerDifference(
                     finalController = finalController,
                     actualController = actualController,
-                    actualExtendo = actualExtendo,
+                    actualExtendo = physicalExtendoReadiness,
                     actualDepo = actualDepo
             )
 
@@ -259,11 +260,11 @@ class HandoffManager(
         }
     }
 
-    data class HandoffTarget(
+    data class CollectorDepositorTarget(
             val collector: CollectorTarget,
             val depo: DepoTarget
     )
-    fun manageHandoff(handoffInput: RobotTwoTeleOp.HandoffInput, wristInput: RobotTwoTeleOp.WristInput, depoInput: RobotTwoTeleOp.DepoInput, extendoInput: RobotTwoTeleOp.ExtendoInput, collectorTarget: CollectorTarget, previousTargetWorld: TargetWorld, actualWorld: ActualWorld): HandoffTarget {
+    fun manageHandoff(handoffInput: RobotTwoTeleOp.HandoffInput, wristInput: RobotTwoTeleOp.WristInput, depoInput: RobotTwoTeleOp.DepoInput, extendoInput: RobotTwoTeleOp.ExtendoInput, collectorTarget: CollectorTarget, previousTargetWorld: TargetWorld, actualWorld: ActualWorld): CollectorDepositorTarget {
 
         fun deriveLatchPositionFromPixelHolder(pixelHolder: HandoffCoordinated.PixelHolder): LatchPositions {
             return when(pixelHolder) {
@@ -302,36 +303,34 @@ class HandoffManager(
             )
         }
 
-        val inputExtendo = when (extendoInput) {
-            RobotTwoTeleOp.ExtendoInput.RetractManual -> ExtendoCoordinationStates.ReadyToHandoff
-            RobotTwoTeleOp.ExtendoInput.RetractSetAmount -> ExtendoCoordinationStates.ReadyToHandoff
-            RobotTwoTeleOp.ExtendoInput.NoInput -> ExtendoCoordinationStates.ReadyToHandoff
+        val driverExtendoHandoffReadiness = when (extendoInput) {
+            RobotTwoTeleOp.ExtendoInput.RetractManual, RobotTwoTeleOp.ExtendoInput.RetractSetAmount, RobotTwoTeleOp.ExtendoInput.NoInput -> ExtendoCoordinationStates.ReadyToHandoff
             else -> ExtendoCoordinationStates.NotReady
         }
-        val inputDepo = when (depoInput) {
+        val driverDepositorHandoffReadiness = when (depoInput) {
             RobotTwoTeleOp.DepoInput.Manual -> DepoCoordinationStates.ReadyToHandoff
             RobotTwoTeleOp.DepoInput.NoInput -> DepoCoordinationStates.ReadyToHandoff
             RobotTwoTeleOp.DepoInput.Down -> DepoCoordinationStates.ReadyToHandoff
             else -> DepoCoordinationStates.NotReady
         }
 
-        fun deriveHandoffReadyness(handoffInput: RobotTwoTeleOp.HandoffInput, clawInput: RobotTwoTeleOp.ClawInput): HandoffReadyness {
-            val liftInputIsDown = inputDepo == DepoCoordinationStates.ReadyToHandoff
-            val extendoInputIsIn = inputExtendo == ExtendoCoordinationStates.ReadyToHandoff
+        fun deriveHandoffReadiness(handoffInput: RobotTwoTeleOp.HandoffInput, clawInput: RobotTwoTeleOp.ClawInput): HandoffReadiness {
+            val liftInputIsDown = driverDepositorHandoffReadiness == DepoCoordinationStates.ReadyToHandoff
+            val extendoInputIsIn = driverExtendoHandoffReadiness == ExtendoCoordinationStates.ReadyToHandoff
             val inputAllowsForHandoff = liftInputIsDown && extendoInputIsIn
 
             return when (handoffInput) {
-                RobotTwoTeleOp.HandoffInput.Handoff -> HandoffReadyness.FinishHandoff
+                RobotTwoTeleOp.HandoffInput.Handoff -> HandoffReadiness.FinishHandoff
                 RobotTwoTeleOp.HandoffInput.NoInput -> {
                     when (clawInput) {
-                        RobotTwoTeleOp.ClawInput.Drop -> HandoffReadyness.DontHandoff
-                        RobotTwoTeleOp.ClawInput.Hold -> HandoffReadyness.StartHandoff
+                        RobotTwoTeleOp.ClawInput.Drop -> HandoffReadiness.DontHandoff
+                        RobotTwoTeleOp.ClawInput.Hold -> HandoffReadiness.StartHandoff
                         RobotTwoTeleOp.ClawInput.NoInput -> {
                             val automaticallyHandoff = inputAllowsForHandoff
                             if (automaticallyHandoff) {
-                                HandoffReadyness.StartHandoff
+                                HandoffReadiness.StartHandoff
                             } else {
-                                HandoffReadyness.DontHandoff
+                                HandoffReadiness.DontHandoff
                             }
                         }
                     }
@@ -342,14 +341,14 @@ class HandoffManager(
 
         val handoffCoordinated = coordinateHandoff(
                 inputConstraints = HandoffConstraints(
-                        extendo = inputExtendo,
-                        depo = inputDepo,
+                        extendo = driverExtendoHandoffReadiness,
+                        depo = driverDepositorHandoffReadiness,
                         handoffPixelsToLift = HandoffPixelsToLift(
-                                left = deriveHandoffReadyness(handoffInput, wristInput.left),
-                                right = deriveHandoffReadyness(handoffInput, wristInput.right)
+                                left = deriveHandoffReadiness(handoffInput, wristInput.left),
+                                right = deriveHandoffReadiness(handoffInput, wristInput.right)
                         )
                 ),
-                actualExtendo =  when {
+                physicalExtendoReadiness =  when {
                     actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated -> ExtendoCoordinationStates.ReadyToHandoff
                     else -> ExtendoCoordinationStates.NotReady
                 },
@@ -410,7 +409,7 @@ class HandoffManager(
                 actualWorld = actualWorld
         )
 
-        return HandoffTarget(
+        return CollectorDepositorTarget(
                 coordinatedCollector,
                 coordinatedDepo
         )
