@@ -95,7 +95,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
         val isStalling = actualExtendo.currentAmps >= stallCurrentAmps
         val power = if (isStalling) {
-            0.0
+            pidPower.coerceAtLeast(-0.5)
         } else {
             if (pidPower.absoluteValue <= 0.05) {
                 0.0

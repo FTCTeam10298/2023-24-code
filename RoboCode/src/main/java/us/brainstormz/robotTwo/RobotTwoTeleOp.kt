@@ -437,8 +437,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val gamepad2RightClawToggle = gamepad2.right_bumper && !previousGamepad2.right_bumper
         val rightClaw: ClawInput = if (gamepad2RightClawToggle || gamepad1RightClawToggle) {
             when (previousTargetState.targetRobot.depoTarget.wristPosition.right) {
-                Claw.ClawTarget.Gripping -> ClawInput.Drop
-                Claw.ClawTarget.Retracted -> ClawInput.Hold
+                ClawTarget.Gripping -> ClawInput.Drop
+                ClawTarget.Retracted -> ClawInput.Hold
             }
         } else {
             ClawInput.NoInput
@@ -897,13 +897,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             movementMode = MovementMode.Power,
                             power = -0.5)
                 }
-                
+
                 ExtendoInput.NoInput -> {
                     if (doHandoffSequence) {
                         val slideThinksItsAtZero = actualRobot.collectorSystemState.extendo.currentPositionTicks <= 0
-                        val slideIsSuperCloseToZero = actualRobot.collectorSystemState.extendo.currentPositionTicks <= 100
 
-                        if ((slideThinksItsAtZero || slideIsSuperCloseToZero) && !actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
+                        if (slideThinksItsAtZero && !actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
                             Extendo.ExtendoTarget(power = -extendo.findResetPower, movementMode = MovementMode.Power, targetPosition = Extendo.ExtendoPositions.Min)
                         } else {
                             Extendo.ExtendoTarget(
@@ -939,6 +938,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 extendo = extendoTargetState,
             )
 
+            //Left and right claws are switched for driver one
             handoffManager.manageHandoff(
                 handoffInput = driverInput.handoff,
                 wristInput = driverInput.wrist,

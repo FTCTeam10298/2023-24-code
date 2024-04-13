@@ -430,10 +430,21 @@ class HandoffManager(
                 timestampMillis = actualWorld.timestampMilis,
                 uncoordinatedTarget = collectorTarget.copy(
                         extendo = if (handoffCoordinated.extendo == ExtendoHandoffControlDecision.HandoffPosition) {
-                            Extendo.ExtendoTarget(
-                                targetPosition = Extendo.ExtendoPositions.Min,
-                                movementMode = DualMovementModeSubsystem.MovementMode.Position,
-                            )
+
+                            val slideIsSuperCloseToZero = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks <= 300
+
+                            if (slideIsSuperCloseToZero && !actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
+                                Extendo.ExtendoTarget(
+                                    power = -0.6,
+                                    movementMode = DualMovementModeSubsystem.MovementMode.Power,
+                                    targetPosition = Extendo.ExtendoPositions.Min
+                                )
+                            } else {
+                                Extendo.ExtendoTarget(
+                                    targetPosition = Extendo.ExtendoPositions.Min,
+                                    movementMode = DualMovementModeSubsystem.MovementMode.Position,
+                                )
+                            }
                         } else {
                             collectorTarget.extendo
                         },
