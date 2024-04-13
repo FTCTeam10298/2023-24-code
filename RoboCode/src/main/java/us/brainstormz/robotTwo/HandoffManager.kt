@@ -451,8 +451,8 @@ class HandoffManager(
                     DepoHandoffControlDecision.DriverControlledPosition -> depoInput
                 },
                 wrist = RobotTwoTeleOp.WristInput(
-                        left = deriveClawTargetFromPixelHolder(handoffCoordinated.wrist.right, wristInput.right),
-                        right = deriveClawTargetFromPixelHolder(handoffCoordinated.wrist.left, wristInput.left)
+                    right = deriveClawTargetFromPixelHolder(handoffCoordinated.wrist.left, wristInput.right),
+                    left = deriveClawTargetFromPixelHolder(handoffCoordinated.wrist.right, wristInput.left),
                 ),
         )
         val coordinatedDepo = depoManager.fullyManageDepo(
