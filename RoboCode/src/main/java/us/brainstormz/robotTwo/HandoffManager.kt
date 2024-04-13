@@ -261,7 +261,7 @@ class HandoffManager(
 
         val bothPixelsAreWithFinalOwner = leftPixelStatus.pixelIsWithFinalOwner && rightPixelStatus.pixelIsWithFinalOwner
 
-        val depoIsNotOut = actualDepo != ActualSlideStates.NotReady
+        val depoIsNotOut = actualDepo != ActualSlideStates.NotReady//I think this is why Brody's controls don't passthrough when the lift is below clearArmPosition
         val doHandoff = Side.entries.fold(false) { acc, side ->
             acc || inputConstraints.targetPixelControlStates.getBySide(side) != TargetPixelControlState.ControlledByCollector
         }
@@ -398,9 +398,10 @@ class HandoffManager(
             else -> ActualSlideStates.NotReady
         }
 
+        val armIsOutIsh = actualWorld.actualRobot.depoState.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees
         val actualDepo = when {
             actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated && arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)-> ActualSlideStates.ReadyToHandoff
-            !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks) -> ActualSlideStates.PartiallyIn
+            !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks) && !armIsOutIsh -> ActualSlideStates.PartiallyIn
             else -> ActualSlideStates.NotReady
         }
 

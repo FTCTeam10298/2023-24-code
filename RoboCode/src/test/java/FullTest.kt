@@ -2424,7 +2424,8 @@ class FullTest {
                 )
             ),
             driverInput = initialPreviousTargetState.driverInput.copy(
-                depo = RobotTwoTeleOp.DepoInput.Preset1
+                depo = RobotTwoTeleOp.DepoInput.Preset1,
+                bumperMode = RobotTwoTeleOp.Gamepad1BumperMode.Claws
             ),
             doingHandoff = true
         )

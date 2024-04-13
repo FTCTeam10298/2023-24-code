@@ -407,6 +407,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         telemetry.addLine("liftTargetIsDown: $liftTargetIsDown")
         telemetry.addLine("bothClawsAreRetracted: $bothClawsAreRetracted")
 
+        //Brody, after the jittering i don't get claw control
+        //Brody, at the low preset i don't get claw control
+
         val gamepadOneBumperMode: Gamepad1BumperMode = when {
             gamepad1DpadIsActive -> {
                 Gamepad1BumperMode.Claws
@@ -791,19 +794,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             }
         )
 
-
-        fun repeatClaw(side: Side): ClawInput {
-            val unrepeatedInput = driverInput.wrist.getBySide(side)
-            return if (unrepeatedInput == ClawInput.NoInput) {
-                previousTargetState.driverInput.wrist.getBySide(side)
-            } else {
-                unrepeatedInput
-            }
-        }
-        val driverInputWrist = WristTargets(
-                left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
-                right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
-
 //        Handoff Coordination
         val driverInputIsManual = driverInput.depo == DepoInput.Manual
         val overrideHandoff = driverInputIsManual || driverInput.gamepad1ControlMode == GamepadControlMode.Manual
@@ -814,6 +804,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                         LatchInput.Open -> Transfer.LatchPositions.Open
                         LatchInput.NoInput -> Transfer.LatchPositions.Closed
                     }
+
+            val driverInputWrist = WristTargets(
+                left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
+                right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
 
             HandoffManager.CollectorDepositorTarget(
                     depo = DepoTarget(
