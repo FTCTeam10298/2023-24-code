@@ -15,6 +15,9 @@ There are two fields at WORLDS.
 
 ...get real vs actual for all 5, get error for x and y, 
 
+I. Make a system to return Blue Alliance and Red Alliance Coefficients for a field #... refactor everything to take sets of red and blue alliance coefficients.
+//previous day's data - check for significant delta.
+like .1 inch
 
 
 

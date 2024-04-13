@@ -19,7 +19,7 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
                                      private val averageErrorBlueSide: AverageAprilTagLocalizationError){
 
     fun getFieldPositionsForTag(detection: AprilTagDetection):FieldRelativePointInSpace? {
-        return returnAprilTagInFieldCentricCoords(detection)?.FieldRelativePointInSpace
+        return returnAprilTagInFieldCentricCoords(detection).FieldRelativePointInSpace
     }
 
     private fun returnFieldCentricCoordsInJamesFieldCoords(anyOldTag: FieldRelativePointInSpace, allianceSide: AllianceSide): FieldRelativePointInSpace {
