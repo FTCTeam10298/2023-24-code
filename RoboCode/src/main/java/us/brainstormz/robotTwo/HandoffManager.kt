@@ -123,13 +123,14 @@ class HandoffManager(
 
         val extendoIsIn = actualExtendo != ActualSlideStates.NotReady
 //        val extendoIsIn = actualExtendo == ActualSlideStates.ReadyToHandoff
+        val liftIsInHandoffPosition = actualDepo == ActualSlideStates.ReadyToHandoff
         val liftIsIn = actualDepo != ActualSlideStates.NotReady
         val bothSlidesAreIn = liftIsIn && extendoIsIn
 
         return when {
             bothSlidesAreIn && latchIsClosed && clawIsGripping -> PixelOwner.Both
             pixelIsDetectedBySensor && latchIsClosed -> PixelOwner.Collector
-            clawIsGripping && ((pixelIsDetectedBySensor && !latchIsClosed && bothSlidesAreIn) || (!pixelIsDetectedBySensor && !bothSlidesAreIn)) -> PixelOwner.Depo
+            clawIsGripping && ((pixelIsDetectedBySensor && !latchIsClosed && bothSlidesAreIn) || (!pixelIsDetectedBySensor && !liftIsInHandoffPosition)) -> PixelOwner.Depo
             else -> PixelOwner.NoPixel
         }
     }
@@ -173,7 +174,7 @@ class HandoffManager(
                 PixelOwner.Both -> {
                     when (actualDepo) {
                         ActualSlideStates.NotReady -> PixelOwner.Depo
-                        ActualSlideStates.PartiallyIn -> PixelOwner.Both
+                        ActualSlideStates.PartiallyIn -> PixelOwner.Depo
                         ActualSlideStates.ReadyToHandoff -> PixelOwner.Collector
                     }
                 }
