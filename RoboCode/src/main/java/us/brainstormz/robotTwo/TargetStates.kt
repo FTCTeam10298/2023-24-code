@@ -49,12 +49,7 @@ data class TargetWorld(
     val doingHandoff: Boolean,
 
     @get:JsonIgnore
-        val getNextTask: ((
-                    actualState: ActualWorld,
-                    previousActualState: ActualWorld,
-                    targetState: TargetWorld,
-                ) -> RobotTwoAuto.AutoInput)? = null,
-    //((targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?)? = null,
+    val autoInput: RobotTwoAuto.AutoInput,
     val timeTargetStartedMilis: Long = 0,
     val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
 ) {
@@ -63,7 +58,7 @@ data class TargetWorld(
                     other.targetRobot == targetRobot &&
                     other.driverInput == driverInput &&
                     other.doingHandoff == doingHandoff &&
-                    other.getNextTask == getNextTask &&
+                    other.autoInput == autoInput &&
                     other.timeTargetStartedMilis == timeTargetStartedMilis &&
                     other.gamepad1Rumble == gamepad1Rumble
         } else {

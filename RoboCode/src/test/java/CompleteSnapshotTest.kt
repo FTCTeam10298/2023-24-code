@@ -10,6 +10,7 @@ import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.CollectorTarget
 import us.brainstormz.robotTwo.CompleteSnapshot
 import us.brainstormz.robotTwo.DepoManager
+import us.brainstormz.robotTwo.RobotTwoAuto.Companion.blankAutoState
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetRobot
@@ -30,8 +31,6 @@ class CompleteSnapshotTest {
     @Test
     fun `reads and writes`(){
         // given
-
-
         val emptyWorld = ActualWorld(
                 actualGamepad1 = blankGamepad(),
                 actualGamepad2 = blankGamepad(),
@@ -92,7 +91,7 @@ class CompleteSnapshotTest {
                 ),
                 doingHandoff = false,
                 driverInput = RobotTwoTeleOp.noInput,
-                getNextTask = null,
+                autoInput = blankAutoState,
                 gamepad1Rumble = null
         )
         val snapshot = CompleteSnapshot(
@@ -108,6 +107,6 @@ class CompleteSnapshotTest {
         println(json)
 
         // then
-        Assert.assertEquals(snapshot.copy(targetWorld = snapshot.targetWorld.copy(getNextTask = null)), foo)
+        Assert.assertEquals(snapshot.copy(targetWorld = snapshot.targetWorld), foo)
     }
 }

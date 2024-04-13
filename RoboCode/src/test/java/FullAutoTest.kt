@@ -69,20 +69,25 @@ class FullAutoTest {
         // when
         val loop = getLoopFunction(actualWorld, now(), previousTarget)
         loop(actualWorld.copy(
-            actualRobot = actualWorld.actualRobot.copy(
-                positionAndRotation = PositionAndRotation(0.0, 0.0)
-            )
+                actualRobot = actualWorld.actualRobot.copy(
+                        positionAndRotation = PositionAndRotation(20.0, 0.0)
+                )
+        ), now())
+        loop(actualWorld.copy(
+                actualRobot = actualWorld.actualRobot.copy(
+                        positionAndRotation = PositionAndRotation(20.0, 0.0)
+                )
         ), now())
         val newTarget =
             loop(actualWorld.copy(
                 actualRobot = actualWorld.actualRobot.copy(
-                    positionAndRotation = PositionAndRotation(0.0, 0.0)
+                    positionAndRotation = PositionAndRotation(30.0, 0.0)
                 )
             ), now())
 
         // then
         assertEqualsJson(
-            PositionAndRotation(10.0, 10.0),
+            PositionAndRotation(10.0),
             newTarget.targetRobot.drivetrainTarget.targetPosition)
     }
 

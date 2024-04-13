@@ -26,7 +26,13 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
             override val targetPosition: SlideSubsystem.SlideTargetPosition,
             override val power: Double = 0.0,
             override val movementMode: DualMovementModeSubsystem.MovementMode,
-    ): DualMovementModeSubsystem.TargetMovementSubsystem
+    ): DualMovementModeSubsystem.TargetMovementSubsystem {
+        constructor(targetPosition: SlideSubsystem.SlideTargetPosition): this (
+                targetPosition = targetPosition,
+                movementMode = DualMovementModeSubsystem.MovementMode.Position,
+                power = 0.0
+        )
+    }
 
     @JsonTypeName("ExtendoPositions")
     enum class ExtendoPositions( override val ticks: Int): SlideSubsystem.SlideTargetPosition {
