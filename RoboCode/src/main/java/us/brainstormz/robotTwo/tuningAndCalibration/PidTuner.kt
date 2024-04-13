@@ -215,7 +215,8 @@ class PidTuner(private val hardware: RobotTwoHardware, telemetry: Telemetry) {
                             actualRobot =    hardware.getActualState(drivetrain, collectorSystem, depoManager, previousActualState),
                             actualGamepad1 = SerializableGamepad(currentGamepad1),
                             actualGamepad2 = SerializableGamepad(currentGamepad1),
-                            timestampMilis = System.currentTimeMillis()
+                            timestampMilis = System.currentTimeMillis(),
+                            timeOfMatchStartMillis = System.currentTimeMillis()
                     )
                 },
                 targetStateFetcher = {actualState, previousActualState, previousTargetState,  ->

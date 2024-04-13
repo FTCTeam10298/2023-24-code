@@ -37,7 +37,7 @@ class AutoTest {
         program.init(hardware, openCvAbstraction)
 
         for (i in 1..numberOfTimesToRunInitLoop) {
-            program.init_loop(hardware, openCvAbstraction, gamepad1 = Gamepad())
+            program.initLoop(hardware, openCvAbstraction, gamepad1 = blankGamepad())
         }
 
         val results:List<Pair<ActualWorld, TargetWorld>> = testSteps.mapIndexed() { index, actualWorld ->

@@ -202,6 +202,7 @@ class TeleopTest {
                         neopixelState = Neopixels.HalfAndHalfTarget().compileStripState()
                 ),
                 timestampMilis = 0,
+                timeOfMatchStartMillis = 0
         )
     }
     fun getChangedGamepad(originalGamepad: Gamepad = Gamepad(), gamepadChange: (gamepad: Gamepad)->Unit): Gamepad {

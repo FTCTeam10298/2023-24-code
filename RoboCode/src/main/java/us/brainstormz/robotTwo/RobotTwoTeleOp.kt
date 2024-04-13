@@ -723,6 +723,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         )
     }
 
+    fun start() {
+        
+    }
+
+    fun init(hardware: RobotTwoHardware) = super.initRobot(hardware)
+
     fun loop(
         gamepad1: SerializableGamepad,
         gamepad2: SerializableGamepad,

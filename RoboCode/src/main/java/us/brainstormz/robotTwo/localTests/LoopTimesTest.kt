@@ -31,7 +31,7 @@ fun main() {
     val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
     val teleop = RobotTwoTeleOp(opmode.telemetry)
 
-    teleop.init(hardware)
+    teleop.initRobot(hardware)
 
     val loopTimeMeasurer = DeltaTimeMeasurer()
     val peaks = mutableListOf<PeakData>()

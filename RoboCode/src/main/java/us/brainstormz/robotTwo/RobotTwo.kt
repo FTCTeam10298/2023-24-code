@@ -374,7 +374,7 @@ open class RobotTwo(private val telemetry: Telemetry) {
         val timeBeforeEndOfMatchToStartEndgameSeconds = 15.0
         val matchTimeSeconds = 2.0 * 60.0
         val timeSinceStartOfMatchToStartEndgameSeconds = matchTimeSeconds - timeBeforeEndOfMatchToStartEndgameSeconds
-        val timeSinceStartOfMatchMilis = System.currentTimeMillis() - timeOfMatchStartMilis
+        val timeSinceStartOfMatchMilis = actualWorld.timestampMilis - actualWorld.timeOfMatchStartMillis
         val timeSinceStartOfMatchSeconds = timeSinceStartOfMatchMilis / 1000
 
         val timeToStartEndgame = timeSinceStartOfMatchSeconds >= timeSinceStartOfMatchToStartEndgameSeconds
@@ -410,7 +410,7 @@ open class RobotTwo(private val telemetry: Telemetry) {
     lateinit var stateDumper: StateDumper
     lateinit var statsDumper:StatsDumper
     lateinit var drivetrain: Drivetrain
-    fun init(hardware: RobotTwoHardware) {
+    fun initRobot(hardware: RobotTwoHardware) {
         FtcRobotControllerActivity.instance?.let{ controller ->
             statsDumper = StatsDumper(reportingIntervalMillis = 1000, controller)
             statsDumper.start()
@@ -425,11 +425,6 @@ open class RobotTwo(private val telemetry: Telemetry) {
         }
     }
     var getTime:()->Long = {System.currentTimeMillis()}
-
-    var timeOfMatchStartMilis = 0L
-    fun start() {
-        timeOfMatchStartMilis = System.currentTimeMillis()
-    }
 
     val functionalReactiveAutoRunner = FunctionalReactiveAutoRunner<TargetWorld, ActualWorld>()
     val loopTimeMeasurer = DeltaTimeMeasurer()
@@ -455,7 +450,8 @@ open class RobotTwo(private val telemetry: Telemetry) {
             actualRobot = actualRobot,
             actualGamepad1 = currentGamepad1,
             actualGamepad2 = currentGamepad2,
-            timestampMilis = getTime()
+            timestampMilis = getTime(),
+            timeOfMatchStartMillis = previousActualState?.timeOfMatchStartMillis ?: getTime()
         )
     }
 

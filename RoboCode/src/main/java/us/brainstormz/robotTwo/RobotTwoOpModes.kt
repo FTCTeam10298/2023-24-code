@@ -16,7 +16,7 @@ class TeleOpMode: OpMode() {
         hardware.init(hardwareMap)
 
         teleop = RobotTwoTeleOp(telemetry)
-        teleop.init(hardware)
+        teleop.initRobot(hardware)
     }
 
     override fun start() {
@@ -54,7 +54,7 @@ class Autonomous: OpMode() {
     }
 
     override fun init_loop() {
-        auto.init_loop(hardware, opencv, gamepad1)
+        auto.initLoop(hardware, opencv, SerializableGamepad(gamepad1))
     }
 
     override fun start() {

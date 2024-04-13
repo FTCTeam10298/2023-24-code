@@ -83,7 +83,8 @@ data class ActualWorld(
         val aprilTagReadings: List<AprilTagDetection> = listOf(),
         val actualGamepad1: SerializableGamepad,
         val actualGamepad2: SerializableGamepad,
-        val timestampMilis: Long
+        val timestampMilis: Long,
+        var timeOfMatchStartMillis:Long
 )
 
 fun blankGamepad() = SerializableGamepad(

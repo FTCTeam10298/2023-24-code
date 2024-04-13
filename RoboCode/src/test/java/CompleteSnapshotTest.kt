@@ -60,6 +60,7 @@ class CompleteSnapshotTest {
                         neopixelState = Neopixels.HalfAndHalfTarget().compileStripState()
                 ),
                 timestampMilis = 0,
+                timeOfMatchStartMillis = 0
         )
         val initialTarget = TargetWorld(
                 targetRobot = TargetRobot(
