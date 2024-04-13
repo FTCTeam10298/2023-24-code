@@ -5,6 +5,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
+import us.brainstormz.robotTwo.ActualDriveTrainPower
 import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
@@ -45,9 +46,12 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
                           ) {
         val power = when (target.movementMode) {
             DualMovementModeSubsystem.MovementMode.Position -> {
+                telemetry.addLine("Drivetrain going to position")
                 calcPowerToTarget(target.targetPosition, actualPosition)
             }
             DualMovementModeSubsystem.MovementMode.Power -> {
+                telemetry.clearAll()
+                telemetry.addLine("Drivetrain going to power")
                 target.power
             }
         }
@@ -76,6 +80,10 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
             tempAngleError += Math.PI * 2
 
         val angleError: Double = tempAngleError
+
+        telemetry.addLine("distanceErrorX: $distanceErrorX")
+        telemetry.addLine("distanceErrorY: $distanceErrorY")
+        telemetry.addLine("angleError: $angleError")
 
         val speedX: Double = xTranslationPID.calcPID(
                 target = target,
@@ -126,5 +134,14 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
 
     fun getVelocity(actualWorld: ActualWorld, previousWorld: ActualWorld): DriveVelocity {
         return getVelocity(actualWorld.actualRobot.positionAndRotation, actualWorld.timestampMilis, previousWorld.actualRobot.positionAndRotation, previousWorld.timestampMilis)
+    }
+
+    fun getDrivetrainPowers(hardware: RobotTwoHardware): ActualDriveTrainPower {
+        return ActualDriveTrainPower(
+            lf = hardware.lFDrive.power,
+            rf = hardware.rFDrive.power,
+            lb = hardware.lBDrive.power,
+            rb = hardware.rBDrive.power,
+        )
     }
 }

@@ -6,6 +6,7 @@ import com.qualcomm.hardware.lynx.LynxModule
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.FauxLocalizer
+import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
@@ -26,22 +27,23 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.utils.measured
 import java.io.File
 
-open class RobotTwo(private val telemetry: Telemetry) {
+abstract class RobotTwo(private val telemetry: Telemetry) {
     val intake = Intake()
     val dropdown = Dropdown()
     val transfer = Transfer(telemetry)
     val extendo = Extendo(telemetry)
-    val collectorSystem: CollectorManager = CollectorManager(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
     val leftClaw: Claw = Claw(telemetry)
     val rightClaw: Claw = Claw(telemetry)
     val wrist = Wrist(leftClaw, rightClaw, telemetry= telemetry)
     val arm: Arm = Arm()
     val lift: Lift = Lift(telemetry)
+    val collectorSystem: CollectorManager = CollectorManager(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, depoManager, wrist, arm, lift, transfer, telemetry)
 
 
     fun getTargetWorld(driverInput: RobotTwoTeleOp.DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): TargetWorld {
+
         val actualRobot = actualWorld.actualRobot
 
         telemetry.addLine("\nlift stuff: ${actualRobot.depoState.lift}")
@@ -409,8 +411,9 @@ open class RobotTwo(private val telemetry: Telemetry) {
 
     lateinit var stateDumper: StateDumper
     lateinit var statsDumper:StatsDumper
+
     lateinit var drivetrain: Drivetrain
-    fun initRobot(hardware: RobotTwoHardware) {
+    fun initRobot(hardware: RobotTwoHardware, localizer: Localizer) {
         FtcRobotControllerActivity.instance?.let{ controller ->
             statsDumper = StatsDumper(reportingIntervalMillis = 1000, controller)
             statsDumper.start()
@@ -418,7 +421,7 @@ open class RobotTwo(private val telemetry: Telemetry) {
         stateDumper = StateDumper(reportingIntervalMillis = 1000, functionalReactiveAutoRunner)
         stateDumper.start()
 
-        drivetrain = Drivetrain(hardware, FauxLocalizer(), telemetry)
+        drivetrain = Drivetrain(hardware, localizer, telemetry)
 
         for (module in hardware.allHubs) {
             module.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
@@ -457,16 +460,16 @@ open class RobotTwo(private val telemetry: Telemetry) {
 
     fun getTargetWorldFromDriverInput(
         getDriverInput: (actualWorld: ActualWorld,
-                         previousActualWorld: ActualWorld,
-                         previousTargetState: TargetWorld) -> DriverInput,
+                         previousActualWorld: ActualWorld?,
+                         previousTargetState: TargetWorld?) -> DriverInput,
         actualState: ActualWorld,
         previousActualState: ActualWorld?,
         previousTargetState: TargetWorld?,
     ): TargetWorld {
+        val driverInput = getDriverInput(actualState, previousActualState, previousTargetState)
 
         val previousActualState = previousActualState ?: TeleopTest.emptyWorld
         val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
-        val driverInput = getDriverInput(actualState, previousActualState, previousTargetState)
         val targetWorld = getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
         if (actualState.actualGamepad1.touchpad && !previousActualState.actualGamepad1.touchpad) {
             saveStateSnapshot(actualState, previousActualState, targetWorld, previousTargetState)
@@ -537,7 +540,7 @@ open class RobotTwo(private val telemetry: Telemetry) {
 
 
     private var numberOfSnapshotsMade = 0
-    private fun saveStateSnapshot(actualWorld: ActualWorld, previousActualWorld: ActualWorld?, targetWorld: TargetWorld, previousActualTarget: TargetWorld?) {
+    fun saveStateSnapshot(actualWorld: ActualWorld, previousActualWorld: ActualWorld?, targetWorld: TargetWorld, previousActualTarget: TargetWorld?) {
 
         val file = File("/storage/emulated/0/Download/stateSnapshot$numberOfSnapshotsMade.json")
         file.createNewFile()

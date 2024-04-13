@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.vision.VisionPortal
+import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
 
@@ -16,7 +17,7 @@ class TeleOpMode: OpMode() {
         hardware.init(hardwareMap)
 
         teleop = RobotTwoTeleOp(telemetry)
-        teleop.initRobot(hardware)
+        teleop.initRobot(hardware, FauxLocalizer())
     }
 
     override fun start() {

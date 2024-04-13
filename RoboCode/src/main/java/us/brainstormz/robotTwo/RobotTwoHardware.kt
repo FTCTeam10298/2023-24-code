@@ -62,7 +62,7 @@ class WrappedColorSensor(val offset:Int, val sensor:NormalizedColorSensor){
 
 open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode: OpMode): MecanumHardware, TwoWheelImuOdometry {
 
-    val backCameraName = "Webcam 2"
+    val backCameraName = "Webcam 1"
     val backCameraResolution = Size(1920, 1080)
 
     override lateinit var lFDrive: DcMotor
@@ -329,6 +329,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         telemetry.addLine("extendo current position: ${extendoMotorMaster.currentPosition}")
         ActualRobot(
                 positionAndRotation = drivetrain.getPosition(),
+                driveTrainPower = drivetrain.getDrivetrainPowers(this),
                 collectorSystemState = collectorSystem.getCurrentState(this, previousActualWorld),
                 depoState = depoManager.getDepoState(this, previousActualWorld),
                 neopixelState = neoPixelActualState

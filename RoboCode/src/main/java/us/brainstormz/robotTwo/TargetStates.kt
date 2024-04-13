@@ -71,11 +71,21 @@ data class TargetWorld(
         }
 }
 
+data class ActualDriveTrainPower(
+    val lf: Double,
+    val rf: Double,
+    val lb: Double,
+    val rb: Double,
+) {
+    constructor(): this(0.0, 0.0, 0.0, 0.0)
+}
+
 data class ActualRobot(
-        val positionAndRotation: PositionAndRotation,
-        val depoState: DepoManager.ActualDepo,
-        val collectorSystemState: CollectorManager.ActualCollector,
-        val neopixelState: Neopixels.StripState
+    val positionAndRotation: PositionAndRotation,
+    val driveTrainPower: ActualDriveTrainPower,
+    val depoState: DepoManager.ActualDepo,
+    val collectorSystemState: CollectorManager.ActualCollector,
+    val neopixelState: Neopixels.StripState
 )
 
 data class ActualWorld(

@@ -3,6 +3,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.Assert
 import org.junit.Test
 import us.brainstormz.localizer.PositionAndRotation
+import us.brainstormz.robotTwo.ActualDriveTrainPower
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorManager
@@ -36,6 +37,7 @@ class CompleteSnapshotTest {
                 actualGamepad2 = blankGamepad(),
                 actualRobot = ActualRobot(
                         positionAndRotation = PositionAndRotation(),
+                        driveTrainPower = ActualDriveTrainPower(),
                         depoState = DepoManager.ActualDepo(
                                 armAngleDegrees = 0.0,
                                 lift = SlideSubsystem.ActualSlideSubsystem(

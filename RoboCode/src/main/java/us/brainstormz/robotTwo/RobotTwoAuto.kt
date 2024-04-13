@@ -13,6 +13,7 @@ import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropColors
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropPosition
 import us.brainstormz.robotTwo.RobotTwoTeleOp.*
+import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
 import us.brainstormz.robotTwo.localTests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
 import us.brainstormz.robotTwo.subsystems.Arm
@@ -46,7 +47,7 @@ class RobotTwoAuto(
         handoff = HandoffInput.NoInput,
         hang = HangInput.NoInput,
         launcher = LauncherInput.NoInput,
-        getNextTask = { actualWorld, previousActualWorld, targetWorld -> nextTargetFromCondition(true, targetWorld) }
+        getNextTask = { actualWorld, previousActualWorld, targetWorld -> AutoInput(targetWorld.driverInput, {_, _, _, -> null}) }
     )
 
     private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
@@ -64,15 +65,35 @@ class RobotTwoAuto(
         return rotationErrorDegrees.absoluteValue <= 3.0
     }
 
+
+    /**For Teague*/
+    /*
+
+    to save snapshot:
+        saveStateSnapshot(actualWorld, null, targetWorld, null)
+
+    to add a target position:
+        blankAutoState.copy(
+            drivePosition = PositionAndRotation(),
+            getNextTask = { actualWorld, previousActualWorld, targetWorld ->
+
+                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+            }
+        ),
+
+
+     */
+
     private val autoStateList: List<AutoInput> = listOf(
         blankAutoState.copy(
             drivePosition = PositionAndRotation(),
             getNextTask = { actualWorld, previousActualWorld, targetWorld ->
+
                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
             }
         ),
         blankAutoState.copy(
-            drivePosition = PositionAndRotation(10.0, 10.0, 0.0),
+            drivePosition = PositionAndRotation(10.0),
             getNextTask = { actualWorld, previousActualWorld, targetWorld ->
                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
             }
@@ -111,15 +132,15 @@ class RobotTwoAuto(
     }
 
     private lateinit var autoListIterator: ListIterator<AutoInput>
-    private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld, previousTargetState: TargetWorld?): AutoInput {
+    private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
         return if (previousTargetState == null) {
             getNextTargetFromList()
         } else {
             previousTargetState.getNextTask?.let { getNextTask ->
-                val previousInput = previousTargetState.getNextTask.invoke(actualState, previousActualState, previousTargetState)
+                val previousInput = previousTargetState.getNextTask.invoke(actualState, previousActualState!!, previousTargetState)
 
                 previousInput
-            } ?: getAutoInputFromTargetWorld(previousTargetState)
+            } ?: AutoInput(previousTargetState.driverInput, blankAutoState.getNextTask)
         }
     }
 
@@ -247,9 +268,11 @@ class RobotTwoAuto(
     private var propDetector: RobotTwoPropDetector? = null
 
     fun init(hardware: RobotTwoHardware, opencv: OpenCvAbstraction) {
-        initRobot(hardware)
+        initRobot(
+            hardware = hardware,
+            localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
+        )
 
-        val odometryLocalizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "partnerYellow", firstMenu = true)
         wizard.newMenu("partnerYellow", "What will our partner be placing on the board?", listOf("Yellow", "Nothing"), nextMenu = "startingPos")
@@ -281,7 +304,6 @@ class RobotTwoAuto(
                 startPosition = wizardResults!!.startPosition
 
                 runCamera(opencv, wizardResults!!)
-//                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
             }
         } else {
             telemetry.addLine("propPosition? = ${propDetector?.propPosition}")
@@ -305,30 +327,46 @@ class RobotTwoAuto(
 
         autoListIterator = autoStateList.listIterator()
 
-        drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
+//        drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
+        drivetrain.localizer.setPositionAndRotation(PositionAndRotation())
     }
 
 
     fun loop(hardware: RobotTwoHardware, gamepad1: SerializableGamepad) = measured("main loop"){
+
         runRobot(
             { actual, previousActual, previousTarget ->
-                val autoInput = nextTargetState(
-                    actual,
-                    previousActual?:emptyWorld,
-                    previousTarget
-                )
-                val teleopTargetWorld = getTargetWorldFromDriverInput(
-                    { _, _, _ -> autoInput.driverInput},
+
+                telemetry.addLine("positionAndRotation: ${actual.actualRobot.positionAndRotation}")
+                telemetry.addLine("driveTrainPower: ${actual.actualRobot.driveTrainPower}")
+
+                val newInput = nextTargetState(
                     actual,
                     previousActual,
                     previousTarget
                 )
+
+
+                val drivetrainTarget = Drivetrain.DrivetrainTarget(newInput.drivePosition)
+
+                val teleopTargetWorld = getTargetWorldFromDriverInput(
+                    { _, _, _ -> newInput.driverInput},
+                    actual,
+                    previousActual,
+                    previousTarget
+                )
+
                 teleopTargetWorld.copy(
                     targetRobot = teleopTargetWorld.targetRobot.copy(
-                        drivetrainTarget = Drivetrain.DrivetrainTarget(autoInput.drivePosition)
+                        drivetrainTarget = drivetrainTarget
                     ),
                     getNextTask = { actual, previousActual, target ->
-                        autoInput.getNextTask(actual, previousActual, target)!!
+                        newInput.getNextTask(actual, previousActual, target)!!
+                    },
+                    timeTargetStartedMilis = if (newInput.driverInput != previousTarget?.driverInput) {
+                        actual.timestampMilis
+                    } else {
+                        previousTarget.timeTargetStartedMilis
                     }
                 )
             },

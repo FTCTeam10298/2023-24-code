@@ -3,8 +3,10 @@ package us.brainstormz.robotTwo
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
 import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.DepoManager.*
+import us.brainstormz.robotTwo.localTests.TeleopTest
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
 import us.brainstormz.robotTwo.subsystems.Drivetrain
@@ -155,9 +157,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
     fun getDriverInput(
         actualWorld: ActualWorld,
-        previousActualWorld: ActualWorld,
-        previousTargetState: TargetWorld
+        previousActualWorld: ActualWorld?,
+        previousTargetState: TargetWorld?
     ): DriverInput {
+        val previousActualWorld = previousActualWorld ?: TeleopTest.emptyWorld
+        val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
+
         val gamepad1 = actualWorld.actualGamepad1
         val gamepad2 = actualWorld.actualGamepad2
         val previousGamepad1 = previousActualWorld.actualGamepad1
@@ -724,10 +729,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
     }
 
     fun start() {
-        
+
     }
 
-    fun init(hardware: RobotTwoHardware) = super.initRobot(hardware)
+    fun init(hardware: RobotTwoHardware) = super.initRobot(hardware, FauxLocalizer())
 
     fun loop(
         gamepad1: SerializableGamepad,
