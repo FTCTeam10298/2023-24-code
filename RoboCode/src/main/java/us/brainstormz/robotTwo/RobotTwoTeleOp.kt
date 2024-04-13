@@ -897,11 +897,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                             movementMode = MovementMode.Power,
                             power = -0.5)
                 }
+                
                 ExtendoInput.NoInput -> {
                     if (doHandoffSequence) {
                         val slideThinksItsAtZero = actualRobot.collectorSystemState.extendo.currentPositionTicks <= 0
+                        val slideIsSuperCloseToZero = actualRobot.collectorSystemState.extendo.currentPositionTicks <= 100
 
-                        if (slideThinksItsAtZero && !actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
+                        if ((slideThinksItsAtZero || slideIsSuperCloseToZero) && !actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
                             Extendo.ExtendoTarget(power = -extendo.findResetPower, movementMode = MovementMode.Power, targetPosition = Extendo.ExtendoPositions.Min)
                         } else {
                             Extendo.ExtendoTarget(

@@ -114,6 +114,6 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         val power = pid.calcPID(
                 target = targetPositionTicks,
                 error = positionError.toDouble()) //+ gravityConstant
-        return power.coerceIn(-0.5..0.5)
+        return power
     }
 }
