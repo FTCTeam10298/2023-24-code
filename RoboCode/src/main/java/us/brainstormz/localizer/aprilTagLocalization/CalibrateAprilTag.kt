@@ -82,7 +82,6 @@ fun main () {
 
 
 
-
 @TeleOp
 class AprilTagOmeter_Calibration: LinearOpMode() {
 
@@ -306,17 +305,24 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
                     println(String.format("We're on alliance side {$detectionAllianceSide}, and our code says this measurement is accurate: {$detectionAccuracy}"))
 
                     if (detection.id == closestAprilTag.id) {
+                        println("We found and maybe logged the correct tag!")
                         val xToLog = detectionFieldCoords?.xInches
                         val yToLog = detectionFieldCoords?.yInches
 
                         telemetry.addLine("X: {$xToLog}, Y: {$yToLog}")
 
+                    } else {
+                        println("we found nothing.")
                     }
+
 
                 }
             }
 
 
+        }
+        else {
+            println("there weren't any detections, sadge")
         }
 
 
