@@ -444,6 +444,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             ClawInput.NoInput
         }
 
+        //Brody - if i press up while the extendo is jittering it only takes one pixel up
+
         /**Collector*/
         //when collector stops and starts forget about the remembered roller intake times
         fun nextPosition(isDirectionPositive: Boolean): CollectorInput {
@@ -779,12 +781,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
             depo = when {
                 handoffButtonPressed -> DepoInput.Down
                 driverInput.depo == DepoInput.NoInput -> {
-                    previousTargetState.driverInput.depo
-//                    if (!handoffButtonPressed) {
-//                        previousTargetState.driverInput.depo
-//                    } else {
-//
-//                    }
+                    if (driverInput.bumperMode == Gamepad1BumperMode.Collector && previousTargetState.driverInput.bumperMode == Gamepad1BumperMode.Claws) {
+                        DepoInput.Down
+                    } else {
+                        previousTargetState.driverInput.depo
+                    }
                 }
                 else -> driverInput.depo
             }
