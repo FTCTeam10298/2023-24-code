@@ -7,9 +7,13 @@ import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CompleteSnapshot
 import us.brainstormz.robotTwo.RobotTwoTeleOp
+import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
+import us.brainstormz.robotTwo.SerializableGamepad
 import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.localTests.FauxRobotTwoHardware
+import us.brainstormz.robotTwo.localTests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.robotTwo.subsystems.Claw
+import us.brainstormz.robotTwo.subsystems.ColorReading
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
@@ -2100,6 +2104,7 @@ class FullTest {
         val snapshot:CompleteSnapshot = jacksonObjectMapper().readValue("""{"actualWorld":{"actualRobot":{"positionAndRotation":{"x":0.0,"y":0.0,"r":0.0},"depoState":{"armAngleDegrees":69.9636363636364,"lift":{"currentPositionTicks":1204,"limitSwitchIsActivated":false,"zeroPositionOffsetTicks":47,"ticksMovedSinceReset":1204,"currentAmps":2.274},"wristAngles":{"leftClawAngleDegrees":20.363636363636374,"rightClawAngleDegrees":346.54545454545456,"left":20.363636363636374,"right":346.54545454545456}},"collectorSystemState":{"extendo":{"currentPositionTicks":0,"limitSwitchIsActivated":true,"zeroPositionOffsetTicks":-478,"ticksMovedSinceReset":0,"currentAmps":0.003},"transferState":{"left":{"red":0.0044921874,"green":0.007714844,"blue":0.011035156,"alpha":0.022851562,"asList":[0.0044921874,0.007714844,0.011035156,0.022851562]},"right":{"red":0.0044921874,"green":0.008007812,"blue":0.012207031,"alpha":0.024218751,"asList":[0.0044921874,0.008007812,0.012207031,0.024218751]}}},"neopixelState":{"wroteForward":false,"pixels":[{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0}]}},"aprilTagReadings":[],"actualGamepad1":{"touchpad":true,"dpad_up":false,"dpad_down":false,"dpad_left":false,"dpad_right":false,"right_stick_x":0.0,"right_stick_y":0.0,"left_stick_x":0.0,"left_stick_y":0.0,"right_bumper":false,"left_bumper":false,"right_trigger":0.0,"left_trigger":0.0,"square":false,"a":false,"x":false,"start":false,"left_stick_button":false,"right_stick_button":false,"y":false,"b":false,"isRumbling":false},"actualGamepad2":{"touchpad":false,"dpad_up":false,"dpad_down":false,"dpad_left":false,"dpad_right":false,"right_stick_x":0.0,"right_stick_y":0.0,"left_stick_x":0.0,"left_stick_y":0.0,"right_bumper":false,"left_bumper":false,"right_trigger":0.0,"left_trigger":0.0,"square":false,"a":false,"x":false,"start":false,"left_stick_button":false,"right_stick_button":false,"y":false,"b":false,"isRumbling":false},"timestampMilis":1712959431210},"previousActualWorld":{"actualRobot":{"positionAndRotation":{"x":0.0,"y":0.0,"r":0.0},"depoState":{"armAngleDegrees":69.9636363636364,"lift":{"currentPositionTicks":1204,"limitSwitchIsActivated":false,"zeroPositionOffsetTicks":47,"ticksMovedSinceReset":1204,"currentAmps":2.27},"wristAngles":{"leftClawAngleDegrees":20.363636363636374,"rightClawAngleDegrees":346.43636363636364,"left":20.363636363636374,"right":346.43636363636364}},"collectorSystemState":{"extendo":{"currentPositionTicks":0,"limitSwitchIsActivated":true,"zeroPositionOffsetTicks":-478,"ticksMovedSinceReset":0,"currentAmps":0.007},"transferState":{"left":{"red":0.0044921874,"green":0.007714844,"blue":0.011035156,"alpha":0.022851562,"asList":[0.0044921874,0.007714844,0.011035156,0.022851562]},"right":{"red":0.0044921874,"green":0.008007812,"blue":0.012207031,"alpha":0.024218751,"asList":[0.0044921874,0.008007812,0.012207031,0.024218751]}}},"neopixelState":{"wroteForward":true,"pixels":[{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0}]}},"aprilTagReadings":[],"actualGamepad1":{"touchpad":false,"dpad_up":false,"dpad_down":false,"dpad_left":false,"dpad_right":false,"right_stick_x":0.0,"right_stick_y":0.0,"left_stick_x":0.0,"left_stick_y":0.0,"right_bumper":false,"left_bumper":false,"right_trigger":0.0,"left_trigger":0.0,"square":false,"a":false,"x":false,"start":false,"left_stick_button":false,"right_stick_button":false,"y":false,"b":false,"isRumbling":false},"actualGamepad2":{"touchpad":false,"dpad_up":false,"dpad_down":false,"dpad_left":false,"dpad_right":false,"right_stick_x":0.0,"right_stick_y":0.0,"left_stick_x":0.0,"left_stick_y":0.0,"right_bumper":false,"left_bumper":false,"right_trigger":0.0,"left_trigger":0.0,"square":false,"a":false,"x":false,"start":false,"left_stick_button":false,"right_stick_button":false,"y":false,"b":false,"isRumbling":false},"timestampMilis":1712959431181},"targetWorld":{"targetRobot":{"drivetrainTarget":{"targetPosition":{"x":0.0,"y":0.0,"r":0.0},"movementMode":"Power","power":{"x":0.0,"y":0.0,"r":-0.0}},"depoTarget":{"armPosition":{"targetPosition":"Out","movementMode":"Power","power":0.0},"lift":{"targetPosition":["LiftPositions","SetLine3"],"power":-0.0,"movementMode":"Power"},"wristPosition":{"left":"Retracted","right":"Retracted","asMap":{"Left":"Retracted","Right":"Retracted"},"bothOrNull":"Retracted"},"targetType":"Manual"},"collectorTarget":{"extendo":{"targetPosition":["ExtendoPositions","Min"],"power":0.0,"movementMode":"Power"},"timeOfEjectionStartMilis":0,"timeOfTransferredMillis":0,"intakeNoodles":"Off","dropDown":{"targetPosition":"Up","movementMode":"Position","power":0.0},"transferSensorState":{"left":{"hasPixelBeenSeen":false,"timeOfSeeingMillis":0},"right":{"hasPixelBeenSeen":false,"timeOfSeeingMillis":0}},"latches":{"left":{"target":"Closed","timeTargetChangedMillis":0},"right":{"target":"Closed","timeTargetChangedMillis":0}}},"hangPowers":"Holding","launcherPosition":"Holding","lights":{"pattern":{"leftPixel":"Unknown","rightPixel":"Unknown","asList":["Unknown","Unknown"]},"stripTarget":{"wroteForward":true,"pixels":[{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0}]}}},"driverInput":{"bumperMode":"Claws","gamepad1ControlMode":"Manual","gamepad2ControlMode":"Normal","lightInput":"NoInput","depo":"Preset3","depoScoringHeightAdjust":-0.0,"armOverridePower":0.0,"wrist":{"left":"NoInput","right":"NoInput","bothClaws":{"Left":"NoInput","Right":"NoInput"}},"collector":"NoInput","dropdown":"NoInput","dropdownPositionOverride":0.0,"extendo":"NoInput","extendoManualPower":0.0,"hang":"NoInput","launcher":"NoInput","handoff":"NoInput","leftLatch":"NoInput","rightLatch":"NoInput","driveVelocity":{"x":0.0,"y":0.0,"r":-0.0}},"doingHandoff":true,"timeTargetStartedMilis":0,"gamepad1Rumble":null},"previousActualTarget":{"targetRobot":{"drivetrainTarget":{"targetPosition":{"x":0.0,"y":0.0,"r":0.0},"movementMode":"Power","power":{"x":0.0,"y":0.0,"r":-0.0}},"depoTarget":{"armPosition":{"targetPosition":"Out","movementMode":"Position","power":0.0},"lift":{"targetPosition":["LiftPositions","SetLine3"],"power":0.0,"movementMode":"Position"},"wristPosition":{"left":"Retracted","right":"Retracted","asMap":{"Left":"Retracted","Right":"Retracted"},"bothOrNull":"Retracted"},"targetType":"GoingOut"},"collectorTarget":{"extendo":{"targetPosition":["ExtendoPositions","Min"],"power":0.0,"movementMode":"Position"},"timeOfEjectionStartMilis":1712959406272,"timeOfTransferredMillis":1712959406272,"intakeNoodles":"Off","dropDown":{"targetPosition":"Up","movementMode":"Position","power":0.0},"transferSensorState":{"left":{"hasPixelBeenSeen":false,"timeOfSeeingMillis":0},"right":{"hasPixelBeenSeen":false,"timeOfSeeingMillis":0}},"latches":{"left":{"target":"Closed","timeTargetChangedMillis":1712959416799},"right":{"target":"Closed","timeTargetChangedMillis":1712959411414}}},"hangPowers":"Holding","launcherPosition":"Holding","lights":{"pattern":{"leftPixel":"Unknown","rightPixel":"Unknown","asList":["Unknown","Unknown"]},"stripTarget":{"wroteForward":true,"pixels":[{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0},{"red":255.0,"blue":0.0,"white":0.0,"green":0.0}]}}},"driverInput":{"bumperMode":"Claws","gamepad1ControlMode":"Normal","gamepad2ControlMode":"Normal","lightInput":"NoInput","depo":"Preset3","depoScoringHeightAdjust":-0.0,"armOverridePower":0.0,"wrist":{"left":"NoInput","right":"NoInput","bothClaws":{"Left":"NoInput","Right":"NoInput"}},"collector":"NoInput","dropdown":"NoInput","dropdownPositionOverride":0.0,"extendo":"NoInput","extendoManualPower":0.0,"hang":"NoInput","launcher":"NoInput","handoff":"NoInput","leftLatch":"NoInput","rightLatch":"NoInput","driveVelocity":{"x":0.0,"y":0.0,"r":-0.0}},"doingHandoff":true,"timeTargetStartedMilis":0,"gamepad1Rumble":null}}""")
 
         val actualFromSnapshot = snapshot.previousActualWorld!!
+        println(jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(actualFromSnapshot))
         val actualWorld = actualFromSnapshot.copy(
             actualRobot = actualFromSnapshot.actualRobot.copy(
                 depoState = actualFromSnapshot.actualRobot.depoState.copy(
@@ -2108,9 +2113,120 @@ class FullTest {
                         rightClawAngleDegrees = 0.0
                     )
                 )
+            ),
+        )
+        val previousTargetFromSnapshot = snapshot.previousActualTarget!!
+        val previousTarget = previousTargetFromSnapshot.copy(
+            driverInput = previousTargetFromSnapshot.driverInput.copy(
+                depo = RobotTwoTeleOp.DepoInput.Down
             )
         )
-        val previousTarget = snapshot.previousActualTarget!!
+        val now = actualWorld.timestampMilis + 1
+
+        // when
+        val newTarget = runTest(actualWorld, previousTarget, now)
+
+        // then
+        assertEqualsJson(
+            Lift.LiftPositions.ClearForArmToMove,
+            newTarget.targetRobot.depoTarget.lift.targetPosition)
+    }
+
+
+
+    @Test
+    fun `depositor should go up when a handoff was previously requested and now the depo is requested to move up`(){
+        val actualWorld = emptyWorld.copy(
+            actualRobot = emptyWorld.actualRobot.copy(
+                depoState = emptyWorld.actualRobot.depoState.copy(
+                    wristAngles = Wrist.ActualWrist(
+                        Claw.ClawTarget.Gripping.angleDegrees,
+                        Claw.ClawTarget.Gripping.angleDegrees
+                    )
+                ),
+                collectorSystemState = emptyWorld.actualRobot.collectorSystemState.copy(
+                    transferState = Transfer.ActualTransfer(
+                        ColorReading(1f, 1f, 1f, 1f),
+                        ColorReading(1f, 1f, 1f, 1f),
+                    )
+                )
+            ),
+            actualGamepad1 = emptyWorld.actualGamepad1.copy(
+                dpad_up = true
+            )
+        )
+
+        val previousTarget = initialPreviousTargetState.copy(
+            targetRobot = initialPreviousTargetState.targetRobot.copy(
+                depoTarget = initialPreviousTargetState.targetRobot.depoTarget.copy(
+                    wristPosition = Wrist.WristTargets(
+                        Claw.ClawTarget.Gripping,
+                        Claw.ClawTarget.Gripping
+                    )
+                ),
+                collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
+                    transferSensorState = Transfer.TransferSensorState(
+                        Transfer.SensorState(true, 0),
+                        Transfer.SensorState(true, 0),
+                    )
+                )
+            ),
+            doingHandoff = true
+        )
+
+        val now = actualWorld.timestampMilis + 1
+
+        // when
+        val newTarget = runTest(actualWorld, previousTarget, now)
+
+        // then
+        assertEqualsJson(
+            Lift.LiftPositions.SetLine3,
+            newTarget.targetRobot.depoTarget.lift.targetPosition)
+    }
+
+
+    @Test
+    fun `depositor should go down when a handoff just finished and now a handoff is requested again`(){
+
+        val actualWorld = emptyWorld.copy(
+            actualRobot = emptyWorld.actualRobot.copy(
+                depoState = emptyWorld.actualRobot.depoState.copy(
+                    wristAngles = Wrist.ActualWrist(
+                        Claw.ClawTarget.Retracted.angleDegrees,
+                        Claw.ClawTarget.Retracted.angleDegrees
+                    )
+                ),
+//                collectorSystemState = emptyWorld.actualRobot.collectorSystemState.copy(
+//                    transferState = Transfer.ActualTransfer(
+//                        ColorReading(1f, 1f, 1f, 1f),
+//                        ColorReading(1f, 1f, 1f, 1f),
+//                    )
+//                )
+            ),
+            actualGamepad1 = emptyWorld.actualGamepad1.copy(
+                a = true
+            )
+        )
+
+        val previousTarget = initialPreviousTargetState.copy(
+            targetRobot = initialPreviousTargetState.targetRobot.copy(
+                depoTarget = initialPreviousTargetState.targetRobot.depoTarget.copy(
+                    wristPosition = Wrist.WristTargets(
+                        Claw.ClawTarget.Retracted,
+                        Claw.ClawTarget.Retracted
+                    )
+                ),
+                collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
+                    transferSensorState = Transfer.TransferSensorState(
+                        Transfer.SensorState(false, 0),
+                        Transfer.SensorState(false, 0),
+                    )
+                )
+            ),
+            doingHandoff = true
+        )
+
         val now = actualWorld.timestampMilis + 1
 
         // when

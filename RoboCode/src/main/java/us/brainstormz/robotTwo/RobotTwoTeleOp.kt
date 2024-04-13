@@ -695,24 +695,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
 
-        val weWantToStartHandoff = driverInput.handoff == HandoffInput.Handoff || theRobotJustCollectedTwoPixels
-
-        val inputsConflictWithTransfer = driverInput.extendo == ExtendoInput.ExtendManual || (driverInput.depo == DepoInput.Manual)
-
-        val doHandoffSequence: Boolean = when {
-            inputsConflictWithTransfer -> {
-                false
-            }
-            weWantToStartHandoff -> {
-                telemetry.addLine("Starting handoff")
-                true
-            }
-            else -> {
-                previousTargetState.doingHandoff
-            }
-        }
-        // tell humans
-        telemetry.addLine("doHandoffSequence: $doHandoffSequence")
 
         /**Intake Noodles*/
         val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis?:actualWorld.timestampMilis)
@@ -770,6 +752,37 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         }
 
         /**Handoff*/
+        val handoffButtonPressed = driverInput.handoff == HandoffInput.Handoff
+        val doHandoffSequence: Boolean = if (handoffButtonPressed) {
+            true
+        } else {
+            val extendoInputConflictsWithAutoHandoff = driverInput.extendo == ExtendoInput.ExtendManual
+//            val depoInputConflictsWithAutoHandoff = !(driverInput.depo == DepoInput.Down || driverInput.depo == DepoInput.NoInput)
+//            val inputsConflictWithTransfer = depoInputConflictsWithAutoHandoff || extendoInputConflictsWithAutoHandoff
+
+            when {
+                extendoInputConflictsWithAutoHandoff -> {
+                    false
+                }
+                theRobotJustCollectedTwoPixels -> {
+                    telemetry.addLine("Auto starting handoff")
+                    true
+                }
+                else -> {
+                    previousTargetState.doingHandoff
+                }
+            }
+        }
+
+        val repeatDriverInputForDepo = driverInput.copy(
+            depo = when {
+                handoffButtonPressed -> DepoInput.Down
+                driverInput.depo == DepoInput.NoInput && !handoffButtonPressed -> previousTargetState.driverInput.depo
+                else -> driverInput.depo
+            }
+        )
+
+
         fun repeatClaw(side: Side): ClawInput {
             val unrepeatedInput = driverInput.wrist.getBySide(side)
             return if (unrepeatedInput == ClawInput.NoInput) {
@@ -778,18 +791,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 unrepeatedInput
             }
         }
-        val repeatDriverInputForDepo = driverInput.copy(
-                depo = if (driverInput.depo == DepoInput.NoInput) {
-                    previousTargetState.driverInput.depo
-                } else {
-                    driverInput.depo
-                },
-//                wrist = WristInput(
-//                        left = repeatClaw(Side.Left),
-//                        right = repeatClaw(Side.Right)
-//                )
-        )
-
         val driverInputWrist = WristTargets(
                 left= driverInput.wrist.left.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.left,
                 right= driverInput.wrist.right.toClawTarget() ?: previousTargetState.targetRobot.depoTarget.wristPosition.right)
@@ -900,7 +901,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                                     movementMode = MovementMode.Position,
                                     power = 0.0)
                         }
-
                     } else {
                         Extendo.ExtendoTarget(
                             targetPosition = previousExtendoTargetPosition,
@@ -909,6 +909,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     }
                 }
             }
+
 
             val uncoordinatedCollectorTarget = CollectorTarget(
                 intakeNoodles = intakeNoodleTarget,

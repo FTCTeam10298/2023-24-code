@@ -247,13 +247,8 @@ class HandoffManager(
         )
 
         val bothPixelsAreWithFinalOwner = leftPixelStatus.pixelIsWithFinalOwner && rightPixelStatus.pixelIsWithFinalOwner
-        val slidesWantsToGoToHanoffPosition = Side.entries.fold(false) {acc, side ->
-            val targetPixelControlState = inputConstraints.targetPixelControlStates.getBySide(side)
-            val thisSideWantsToGoToHandoffPosition = targetPixelControlState != TargetPixelControlState.ControlledByCollector
-            acc || thisSideWantsToGoToHandoffPosition
-        }
 
-        return if (bothPixelsAreWithFinalOwner && !slidesWantsToGoToHanoffPosition) {
+        return if (bothPixelsAreWithFinalOwner) {
             HandoffCoordinated(
                     extendo = ExtendoHandoffControlDecision.DriverControlledPosition,
                     depo = inputConstraints.depo,

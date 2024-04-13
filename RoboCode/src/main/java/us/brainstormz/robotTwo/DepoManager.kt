@@ -64,7 +64,8 @@ class DepoManager(
         val depoTargetType = getDepoTargetTypeFromDepoInput(depoInput) ?: return null
 
         if (previousDepoTargetType != depoTargetType) {
-            jankSave = WristTargets(wristInput.left, wristInput.right)
+//            jankSave = WristTargets(wristInput.left, wristInput.right)
+            jankSave = WristTargets(previousWristTarget.left, previousWristTarget.right)
         }
 
         val wristTarget: WristTargets =
@@ -129,6 +130,7 @@ class DepoManager(
                     finalDepoTarget.wristPosition
                 } else {
                     //If depo is going in then go out and either claw is gripping, drop then come in.
+
                     val armIsOkToDrop = actualDepo.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees + 2
                     if (!armIsOkToDrop && eitherClawIsGripping) {
                         val gripIfClawIsntFullyReleased = { side: Side ->

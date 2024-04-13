@@ -159,5 +159,5 @@ data class SerializableGamepad(
         isRumbling = g.isRumbling,
     )
 
-    fun runRumbleEffect(effect: Gamepad.RumbleEffect) = theGamepad!!.runRumbleEffect(effect)
+    fun runRumbleEffect(effect: Gamepad.RumbleEffect) = theGamepad?.runRumbleEffect(effect)
 }
