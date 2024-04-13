@@ -13,6 +13,8 @@ import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropColors
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropPosition
 import us.brainstormz.robotTwo.RobotTwoTeleOp.*
+import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
+import us.brainstormz.robotTwo.localTests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
@@ -36,7 +38,7 @@ class RobotTwoAuto(
 
 
 
-    private val autoStateList: List<TargetWorld> = listOf(
+    private val autoStateList: List<AutoInput> = listOf(
 
     )
 
@@ -46,25 +48,41 @@ class RobotTwoAuto(
 
 
 
-    private fun getNextTargetFromList(): TargetWorld {
+    private fun getNextTargetFromList(): AutoInput {
         return autoListIterator.next().copy(timeTargetStartedMilis = System.currentTimeMillis())
     }
 
-    private lateinit var autoListIterator: ListIterator<TargetWorld>
-    private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld, previousTargetState: TargetWorld): DriverInput {
+    private lateinit var autoListIterator: ListIterator<AutoInput>
+    private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld, previousTargetState: TargetWorld): AutoInput {
         return if (previousTargetState == null) {
             getNextTargetFromList()
         } else {
             when {
                 autoListIterator.hasNext()-> {
-                    previousTargetState.getNextTask?.let{
-                        it(previousTargetState, actualState, previousActualState ?: actualState)} ?: previousTargetState
+
+                    val previousInput = previousTargetState.getNextTask?.let{
+                        it(previousTargetState, actualState, previousActualState ?: actualState)
+                    } ?: previousTargetState.driverInput
+
+                    previousTargetState.getNextTask?.let { getNextTask ->
+                        AutoInput(
+                            driverInput = previousInput,
+                            getNextTask = getNextTask
+                        )
+                    } ?: AutoInput(
+                        driverInput = previousInput,
+                        getNextTask = { _, _, _ -> previousInput }
+                    )
                 }
                 else -> {
-                    previousTargetState
+                    val previousInput =previousTargetState.driverInput
+                    AutoInput(
+                        previousInput,
+                        { _, _, _ -> previousInput }
+                    )
                 }
             }
-        }.driverInput
+        }
     }
 
 
@@ -73,10 +91,12 @@ class RobotTwoAuto(
     }
     
     data class AutoInput(
-            val targetRobot: DriverInput,
-            val getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> DriverInput,
-            val timeTargetStartedMilis: Long = 0L
-    )
+        val driverInput: DriverInput,
+        val getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> DriverInput,
+        val timeTargetStartedMilis: Long = 0L
+    ) {
+//        constructor(driverInput: DriverInput, )
+    }
 
     data class MovementPIDSet(val x: PID, val y: PID, val r: PID)
     data class RobotState(
@@ -203,7 +223,21 @@ class RobotTwoAuto(
 
     fun loop(hardware: RobotTwoHardware, gamepad1: SerializableGamepad) = measured("main loop"){
         runRobot(
-            ::nextTargetState,
+            { actual, previousActual, previousTarget ->
+                val driverInput = nextTargetState(
+                    actual,
+                    previousActual?:emptyWorld,
+                    previousTarget?:initialPreviousTargetState
+                )
+                getTargetWorldFromDriverInput(
+                    { _, _, _ -> driverInput.driverInput},
+                    actual,
+                    previousActual,
+                    previousTarget
+                ).copy(
+                    getNextTask = driverInput.getNextTask
+                )
+            },
             gamepad1,
             gamepad1,
             hardware

@@ -402,7 +402,7 @@ open class RobotTwo(private val telemetry: Telemetry) {
             ),
             doingHandoff = doHandoffSequence,
             driverInput = repeatDriverInputForDepo,
-            getNextTask = { _, _, _-> null },
+            getNextTask = null,
             gamepad1Rumble = RobotTwoTeleOp.RumbleEffects.Throb
         )
     }
@@ -459,8 +459,28 @@ open class RobotTwo(private val telemetry: Telemetry) {
         )
     }
 
+    fun getTargetWorldFromDriverInput(
+        getDriverInput: (actualWorld: ActualWorld,
+                         previousActualWorld: ActualWorld,
+                         previousTargetState: TargetWorld) -> DriverInput,
+        actualState: ActualWorld,
+        previousActualState: ActualWorld?,
+        previousTargetState: TargetWorld?,
+    ): TargetWorld {
+
+        val previousActualState = previousActualState ?: TeleopTest.emptyWorld
+        val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
+        val driverInput = getDriverInput(actualState, previousActualState, previousTargetState)
+        val targetWorld = getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
+        if (actualState.actualGamepad1.touchpad && !previousActualState.actualGamepad1.touchpad) {
+            saveStateSnapshot(actualState, previousActualState, targetWorld, previousTargetState)
+        }
+        return targetWorld
+    }
+
     fun runRobot(
-        getDriverInput: (actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld, )->RobotTwoTeleOp.DriverInput,
+        targetStateFetcher: (actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?)->TargetWorld,
+//        (actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld, )->RobotTwoTeleOp.DriverInput,
         gamepad1: SerializableGamepad,
         gamepad2: SerializableGamepad,
         hardware: RobotTwoHardware
@@ -474,19 +494,7 @@ open class RobotTwo(private val telemetry: Telemetry) {
 
         functionalReactiveAutoRunner.loop(
             actualStateGetter = {getActualState(it, gamepad1, gamepad2, hardware)},
-            targetStateFetcher = { previousTargetState, actualState, previousActualState ->
-
-                telemetry.addLine("extendo current draw: ${actualState.actualRobot.collectorSystemState.extendo.currentAmps}")
-
-                val previousActualState = previousActualState ?: TeleopTest.emptyWorld
-                val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
-                val driverInput = getDriverInput(actualState, previousActualState, previousTargetState)
-                val targetWorld = getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
-                if (actualState.actualGamepad1.touchpad && !previousActualState.actualGamepad1.touchpad) {
-                    saveStateSnapshot(actualState, previousActualState, targetWorld, previousTargetState)
-                }
-                targetWorld
-            },
+            targetStateFetcher = targetStateFetcher,
             stateFulfiller = { targetState, previousTargetState, actualState, previousActualState ->
                 val previousActualState = previousActualState ?: actualState
                 measured("actuate robot"){

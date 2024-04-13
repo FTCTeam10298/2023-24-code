@@ -43,12 +43,17 @@ data class TargetRobot(
 )
 
 data class TargetWorld(
-        val targetRobot: TargetRobot,
-        val driverInput: RobotTwoTeleOp.DriverInput,
-        val doingHandoff: Boolean,
+    val targetRobot: TargetRobot,
+    val driverInput: RobotTwoTeleOp.DriverInput,
+    val doingHandoff: Boolean,
 
-        @get:JsonIgnore
-        val getNextTask: ((targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?)? = null,
+    @get:JsonIgnore
+        val getNextTask: ((
+                    targetState: TargetWorld,
+                    actualState: ActualWorld,
+                    previousActualState: ActualWorld
+                ) -> RobotTwoTeleOp.DriverInput)? = null,
+    //((targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?)? = null,
         val timeTargetStartedMilis: Long = 0,
         val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
 ) {
@@ -158,6 +163,7 @@ data class SerializableGamepad(
         right_stick_button = g.right_stick_button,
         isRumbling = g.isRumbling,
     )
+
 
     fun runRumbleEffect(effect: Gamepad.RumbleEffect) = theGamepad?.runRumbleEffect(effect)
 }

@@ -5,10 +5,11 @@ import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.FauxOpenCvAbstraction
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.robotTwo.ActualWorld
+import us.brainstormz.robotTwo.RobotTwoAuto
 import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
-import us.brainstormz.robotTwo.OldRobotTwoAuto
 import us.brainstormz.robotTwo.SerializableGamepad
 import us.brainstormz.robotTwo.TargetWorld
+import us.brainstormz.robotTwo.blankGamepad
 
 fun main() {
     val tester = AutoTest()
@@ -30,7 +31,7 @@ class AutoTest {
     fun runTest(testSteps: List<ActualWorld>, numberOfTimesToRunInitLoop: Int): List<Pair<ActualWorld, TargetWorld>> {
         val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
         val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
-        val program = OldRobotTwoAuto(opmode.telemetry, AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution))
+        val program = RobotTwoAuto(opmode.telemetry, AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution))
         val openCvAbstraction = FauxOpenCvAbstraction(opmode)
 
         program.init(hardware, openCvAbstraction)
@@ -48,7 +49,7 @@ class AutoTest {
 
             //Run Once
             for (i in 1..numberOfTimesToRunInitLoop) {
-                program.loop(hardware, gamepad1 = Gamepad())
+                program.loop(hardware, gamepad1 = blankGamepad())
             }
 
             //Get result

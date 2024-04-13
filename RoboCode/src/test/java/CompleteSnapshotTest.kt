@@ -89,7 +89,7 @@ class CompleteSnapshotTest {
                 ),
                 doingHandoff = false,
                 driverInput = RobotTwoTeleOp.noInput,
-                getNextTask = { _, _, _ -> null },
+                getNextTask = null,
                 gamepad1Rumble = null
         )
         val snapshot = CompleteSnapshot(

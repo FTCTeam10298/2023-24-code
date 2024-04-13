@@ -37,7 +37,7 @@ class Autonomous: OpMode() {
     private val multiTelemetry = telemetry
     private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= multiTelemetry, opmode = this)
 
-    private lateinit var auto: OldRobotTwoAuto
+    private lateinit var auto: RobotTwoAuto
     private val opencv: OpenCvAbstraction = OpenCvAbstraction(this)
     private val aprilTagPipeline = AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution)
     override fun init() {
@@ -48,7 +48,7 @@ class Autonomous: OpMode() {
 
         opencv.init(hardwareMap, containerIds.last())
 
-        auto = OldRobotTwoAuto(multiTelemetry, aprilTagPipeline)
+        auto = RobotTwoAuto(multiTelemetry, aprilTagPipeline)
 
         auto.init(hardware, opencv)
     }
@@ -62,7 +62,7 @@ class Autonomous: OpMode() {
     }
 
     override fun loop() {
-        auto.loop(hardware= hardware, gamepad1)
+        auto.loop(hardware= hardware, SerializableGamepad(gamepad1))
     }
 
     override fun stop() {

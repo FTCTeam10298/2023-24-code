@@ -717,7 +717,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
             ),
             doingHandoff = false,
             driverInput = noInput,
-            getNextTask = { _, _, _ -> null },
+            getNextTask = null,
             gamepad1Rumble = null
         )
     }
@@ -728,7 +728,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         hardware: RobotTwoHardware
     ) = measured("main loop") {
         runRobot(
-            ::getDriverInput,
+            { actual, previousActual, previousTarget ->
+                getTargetWorldFromDriverInput(
+                    ::getDriverInput,
+                    actual,
+                    previousActual,
+                    previousTarget
+                )
+            },
             gamepad1,
             gamepad2,
             hardware
