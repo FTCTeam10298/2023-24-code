@@ -8,15 +8,15 @@ import returnCamCentricCoordsInTagCentricCoordsPartDeux
 import kotlin.math.abs
 
 //Go to a bunch of points, look at the best AprilTag, then find your error, find the median average error, and subtract it. That should clean up your data.
-data class AverageAprilTagLocalizationError (
+data class AverageAprilTagBackboardOffset (
         val xInches: Double,
         val yInches: Double,
         val hDegrees: Double
 )
 
 class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLocalizationFunctions,
-                                     private val averageErrorRedSide: AverageAprilTagLocalizationError,
-                                     private val averageErrorBlueSide: AverageAprilTagLocalizationError){
+                                     private val averageErrorRedSide: AverageAprilTagBackboardOffset,
+                                     private val averageErrorBlueSide: AverageAprilTagBackboardOffset){
 
     fun getFieldPositionsForTag(detection: AprilTagDetection):FieldRelativePointInSpace? {
         return returnAprilTagInFieldCentricCoords(detection).FieldRelativePointInSpace

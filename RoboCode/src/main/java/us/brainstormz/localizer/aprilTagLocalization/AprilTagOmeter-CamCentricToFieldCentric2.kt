@@ -1,12 +1,11 @@
 import android.util.Size
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldErrors
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldConfigurations
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
-import us.brainstormz.localizer.aprilTagLocalization.AverageAprilTagLocalizationError
+import us.brainstormz.localizer.aprilTagLocalization.AverageAprilTagBackboardOffset
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
 import kotlin.math.cos
 import kotlin.math.sin
@@ -185,26 +184,12 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
 
     //new offsets
-    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-            xInches = 0.04375,
-            yInches = 3.675,
-            hDegrees = 0.0,
-    )
-
-    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-            xInches = -0.0,
-            yInches = 0.0,
-            hDegrees = 0.0, //0
-    )
-
-    val fieldErrors = AprilTagFieldErrors()
-
-    val leftErrors = fieldErrors.leftField
+    val currentFieldConfiguration = AprilTagFieldConfigurations.leftFieldAtWorlds
 
     val localizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
-            averageErrorRedSide = RedAllianceBackboardAverageErrors,
-            averageErrorBlueSide =  BlueAllianceBackboardAverageErrors)
+            averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
+            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets)
 
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)

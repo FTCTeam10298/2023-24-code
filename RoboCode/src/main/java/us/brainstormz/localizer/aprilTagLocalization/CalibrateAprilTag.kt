@@ -4,10 +4,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import us.brainstormz.localizer.PointInXInchesAndYInches
 import us.brainstormz.localizer.PredeterminedFieldPoints
-import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldErrors
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldConfigurations
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
+import java.util.stream.IntStream.range
 import kotlin.math.abs
 
 /*
@@ -33,6 +34,70 @@ LIST OF TESTS
  */
 
 fun main () {
+
+    val firstPoint = PointInXInchesAndYInches(
+            xInches = 47.7,
+            yInches = -47.8
+    )
+
+    val secondPoint = PointInXInchesAndYInches(
+            xInches = 23.4,
+            yInches = -44.2
+    )
+
+    val thirdPoint = PointInXInchesAndYInches(
+            xInches = 47.1,
+            yInches = -20.1
+    )
+
+    val fourthPoint = PointInXInchesAndYInches(
+            xInches = 23.6,
+            yInches = -20.0
+    )
+
+
+
+    val fourPointsPredictedMeasurement = FourPoints(
+            first = firstPoint,
+            second = secondPoint,
+            third = thirdPoint,
+            fourth = fourthPoint
+    )
+
+
+    val deltas = findErrorOfFourPoints(
+            allianceSide = ReusableAprilTagFieldLocalizer.AllianceSide.Blue,
+            fourPointsPredictedMeasurement = fourPointsPredictedMeasurement
+    )
+
+
+    for (i in range(0, 4)){
+
+        val eachDelta: PointInXInchesAndYInches? = when(i) {
+            1 -> deltas.first
+            2 -> deltas.second
+            3 -> deltas.third
+            4 -> deltas.fourth
+            else -> null
+
+        }
+
+
+        val xInches = eachDelta?.xInches
+        val yInches = eachDelta?.yInches
+
+        if (xInches != null) {
+            println("X for point {$eachDelta}: $xInches")
+            println("X for point {$eachDelta}: $xInches")
+        }
+        else {
+            println("I didn't get anything :(")
+        }
+
+
+        println()
+
+    }
 
 
 
@@ -170,49 +235,17 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
             cameraYOffset=0.00 //it's right on center! Yay!
     )
 
-    //TODO: ignore values at y < 10 inches.. this means accuracy less than one inch - done.
     //
     //x is always
 
-    //TODO: Switch between two sets of two sets of errors. (or do we? Can't James handle that?) -
-
-    //TODO: Return a Boolean for one-inch accurate measurement - Needs to be finetuned.
-
-    //TODO: Remove Crashes - testing passively.
-//    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = 0.47,
-//            yInches = 2.58,
-//            hDegrees = 2.68,
-//    )
-//
-//    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = 0.0,
-//            yInches = 3.455555556,
-//            hDegrees = 0.0, //0
-//    )
 
 
-
-//    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = -0.275,
-//            yInches = 3.15,
-//            hDegrees = 0.0,
-//    )
-//
-//    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = -0.08125,
-//            yInches = 3.575,
-//            hDegrees = 0.0, //0
-//    )
-
-    val fieldErrors = AprilTagFieldErrors()
-
-    val leftErrors = fieldErrors.leftField
+    val currentFieldConfiguration = AprilTagFieldConfigurations.leftFieldAtWorlds
 
     val localizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
-            averageErrorRedSide = leftErrors.RedAllianceError,
-            averageErrorBlueSide =  leftErrors.BlueAllianceError)
+            averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
+            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets)
 
 
 
