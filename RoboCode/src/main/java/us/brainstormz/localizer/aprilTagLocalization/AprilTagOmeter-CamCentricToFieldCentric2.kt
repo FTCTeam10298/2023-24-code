@@ -141,7 +141,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
     //TODO: Switch between two sets of two sets of errors. (or do we? Can't James handle that?) -
 
-    //TODO: Return a Boolean for one-inch accurate measurement - Done.
+    //TODO: Return a Boolean for one-inch accurate measurement - Needs to be finetuned.
 
     //TODO: Remove Crashes - testing passively.
 //    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(

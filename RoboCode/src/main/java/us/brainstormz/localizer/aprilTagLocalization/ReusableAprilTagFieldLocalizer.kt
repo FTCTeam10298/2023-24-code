@@ -76,7 +76,19 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
 
         val resultPositionInJamesFieldCoords = returnFieldCentricCoordsInJamesFieldCoords(thisTagInFieldCentricCoords, alliancePositionOfTag)
 
-        if (resultPositionInJamesFieldCoords.yInches < 10 ){
+
+        //we're only ever on the negative y-side, so we take the negative to get the absolute value of our y.
+
+        val yMinimum = 10
+
+        val xMinimum = -1000
+
+        val xMaximum = 1000
+
+        val areWeInAnAccurateXPosition = java.lang.Boolean.valueOf(xMinimum <= -resultPositionInJamesFieldCoords.yInches ||
+                -resultPositionInJamesFieldCoords.yInches <= xMaximum)
+
+        if (-resultPositionInJamesFieldCoords.yInches <= yMinimum && areWeInAnAccurateXPosition){
             isTheMeasurementAccurateToOneInch = false
         }
 
