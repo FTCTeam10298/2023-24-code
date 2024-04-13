@@ -1,22 +1,6 @@
 package us.brainstormz.robotTwo.tuningAndCalibration
 
 import us.brainstormz.pid.PID
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.Gamepad
-import org.firstinspires.ftc.robotcore.external.Telemetry
-import us.brainstormz.robotTwo.Robot
-import us.brainstormz.robotTwo.RobotTwoHardware
-import us.brainstormz.robotTwo.RobotTwoTeleOp
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
-import us.brainstormz.robotTwo.subsystems.Extendo
-import us.brainstormz.robotTwo.subsystems.Neopixels
-import us.brainstormz.robotTwo.subsystems.SlideSubsystem
-import us.brainstormz.utils.ConfigServer
-import us.brainstormz.utils.ConfigServerTelemetry
 
 
 data class ExtendoPidTuningAdjusterConfig (

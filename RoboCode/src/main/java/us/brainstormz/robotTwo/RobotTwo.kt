@@ -26,7 +26,7 @@ import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.utils.measured
 import java.io.File
 
-open class Robot(private val telemetry: Telemetry) {
+open class RobotTwo(private val telemetry: Telemetry) {
     val intake = Intake()
     val dropdown = Dropdown()
     val transfer = Transfer(telemetry)

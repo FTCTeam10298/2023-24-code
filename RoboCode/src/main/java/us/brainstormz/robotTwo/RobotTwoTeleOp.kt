@@ -20,7 +20,7 @@ import us.brainstormz.utils.Utils.sqrKeepSign
 import us.brainstormz.utils.measured
 import kotlin.math.absoluteValue
 
-class RobotTwoTeleOp(private val telemetry: Telemetry): Robot(telemetry) {
+class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
     enum class RumbleEffects(val effect: RumbleEffect) {
         TwoTap(
