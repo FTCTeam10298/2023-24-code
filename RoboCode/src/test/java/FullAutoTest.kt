@@ -4,6 +4,7 @@ import org.junit.Assert
 import org.junit.Test
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
+import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoAuto
@@ -41,33 +42,31 @@ class FullAutoTest {
 //            )
         )
 
-        val previousTarget = initialPreviousTargetState.copy(
-//            targetRobot = initialPreviousTargetState.targetRobot.copy(
-//                depoTarget = initialPreviousTargetState.targetRobot.depoTarget.copy(
-//                    wristPosition = Wrist.WristTargets(
-//                        Claw.ClawTarget.Gripping,
-//                        Claw.ClawTarget.Gripping
-//                    )
-//                ),
-//                collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
-//                    transferSensorState = Transfer.TransferSensorState(
-//                        Transfer.SensorState(true, 0),
-//                        Transfer.SensorState(true, 0),
-//                    )
-//                )
-//            ),
-//            doingHandoff = true
-        )
-
-        val now = actualWorld.timestampMilis + 1
+        var prevNow = System.currentTimeMillis()
+        fun now(): Long {
+            val newNow = prevNow+1000
+            prevNow = newNow
+            return newNow
+        }
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+        val loop = getLoopFunction(actualWorld, now())
+        loop(actualWorld.copy(
+            actualRobot = actualWorld.actualRobot.copy(
+                positionAndRotation = PositionAndRotation(0.0, 0.0)
+            )
+        ), now())
+        val newTarget =
+            loop(actualWorld.copy(
+                actualRobot = actualWorld.actualRobot.copy(
+                    positionAndRotation = PositionAndRotation(0.0, 0.0)
+                )
+            ), now())
 
         // then
         assertEqualsJson(
-            DualMovementModeSubsystem.MovementMode.Position,
-            newTarget.targetRobot.drivetrainTarget.movementMode)
+            PositionAndRotation(10.0, 10.0),
+            newTarget.targetRobot.drivetrainTarget.targetPosition)
     }
 
 
@@ -77,7 +76,7 @@ class FullAutoTest {
         Assert.assertEquals(expected, actual)
     }
 
-    fun runTest(actualWorld:ActualWorld, previousTarget:TargetWorld, now:Long): TargetWorld {
+    fun getLoopFunction(initActualWorld:ActualWorld, initNow:Long, previousTargetWorld: TargetWorld? = null): (actual: ActualWorld, now: Long) -> TargetWorld {
         val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
         val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
         val auto = RobotTwoAuto(
@@ -88,19 +87,31 @@ class FullAutoTest {
 
         auto.init(hardware, openCv)
 
-        auto.initLoop(hardware, openCv, actualWorld.actualGamepad1)
+        auto.initLoop(hardware, openCv, initActualWorld.actualGamepad1)
+
 
         //Set Inputs
-        hardware.actualRobot = actualWorld.actualRobot
-        auto.getTime = {now}
-        auto.functionalReactiveAutoRunner.hackSetForTest(previousTarget)
+        hardware.actualRobot = initActualWorld.actualRobot
+        auto.getTime = { initNow }
+        previousTargetWorld?.let { previousTarget ->
+            auto.functionalReactiveAutoRunner.hackSetForTest(previousTarget)
+        }
 
         auto.start(hardware, openCv)
 
-        //Run Once
-        auto.loop(gamepad1 = actualWorld.actualGamepad1, hardware = hardware)
+        return { actualWorld, now ->
+            //Set Inputs
+            hardware.actualRobot = actualWorld.actualRobot
+            auto.getTime = { now }
 
-        //Get result
-        return auto.functionalReactiveAutoRunner.previousTargetState!!
+            //Run
+            auto.loop(gamepad1 = actualWorld.actualGamepad1, hardware = hardware)
+
+            //Get result
+            auto.functionalReactiveAutoRunner.previousTargetState!!
+        }
+    }
+    fun runTest(onlyActualWorld:ActualWorld, onlyNow:Long): TargetWorld {
+        return getLoopFunction(onlyActualWorld, onlyNow)(onlyActualWorld, onlyNow)
     }
 }

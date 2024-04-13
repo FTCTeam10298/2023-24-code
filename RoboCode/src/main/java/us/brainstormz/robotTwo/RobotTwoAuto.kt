@@ -26,6 +26,7 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Transfer.TransferTarget
 import us.brainstormz.robotTwo.subsystems.Transfer.LatchPositions
 import us.brainstormz.utils.measured
+import kotlin.math.absoluteValue
 
 class RobotTwoAuto(
     private val telemetry: Telemetry,
@@ -33,42 +34,80 @@ class RobotTwoAuto(
 ): RobotTwo(telemetry) {
 
 
+    private val blankAutoState = AutoInput(
+        drivePosition = PositionAndRotation(),
+        depo = DepoInput.NoInput,
+        wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
+        collector = CollectorInput.NoInput,
+        dropdown = DropdownInput.NoInput,
+        leftLatch = LatchInput.NoInput,
+        rightLatch = LatchInput.NoInput,
+        extendo = ExtendoInput.NoInput,
+        handoff = HandoffInput.NoInput,
+        hang = HangInput.NoInput,
+        launcher = LauncherInput.NoInput,
+        getNextTask = { actualWorld, previousActualWorld, targetWorld -> nextTargetFromCondition(true, targetWorld) }
+    )
 
+    private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
+        val taskStartedTimeMilis = targetWorld.timeTargetStartedMilis
+        val timeSinceTargetStarted = System.currentTimeMillis() - taskStartedTimeMilis
+        return timeSinceTargetStarted >= timeToElapseMilis
+    }
 
+    private fun isRobotAtPosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld, precisionInches: Double = drivetrain.precisionInches, precisionDegrees: Double = drivetrain.precisionDegrees): Boolean {
+        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = precisionInches, precisionDegrees = precisionDegrees)
+    }
 
+    private fun isRobotAtAngle(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld): Boolean {
+        val rotationErrorDegrees = actualState.actualRobot.positionAndRotation.r - targetWorld.targetRobot.drivetrainTarget.targetPosition.r
+        return rotationErrorDegrees.absoluteValue <= 3.0
+    }
 
     private val autoStateList: List<AutoInput> = listOf(
-        AutoInput(
+        blankAutoState.copy(
             drivePosition = PositionAndRotation(),
-            depo = DepoInput.NoInput,
-            wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
-            collector = CollectorInput.NoInput,
-            dropdown = DropdownInput.NoInput,
-            leftLatch = LatchInput.NoInput,
-            rightLatch = LatchInput.NoInput,
-            extendo = ExtendoInput.NoInput,
-            handoff = HandoffInput.NoInput,
-            hang = HangInput.NoInput,
-            launcher = LauncherInput.NoInput,
-            getNextTask = { _, _, target -> nextTargetFromCondition(true, target) }
-        )
+            getNextTask = { actualWorld, previousActualWorld, targetWorld ->
+                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+            }
+        ),
+        blankAutoState.copy(
+            drivePosition = PositionAndRotation(10.0, 10.0, 0.0),
+            getNextTask = { actualWorld, previousActualWorld, targetWorld ->
+                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+            }
+        ),
+//        blankAutoState.copy(
+//            drivePosition = PositionAndRotation(20.0, 10.0, 0.0),
+//            getNextTask = { actualWorld, previousActualWorld, targetWorld ->
+//                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+//            }
+//        ),
     )
 
 
 
 
 
+    private fun getAutoInputFromTargetWorld(targetWorld: TargetWorld): AutoInput {
+        return AutoInput(targetWorld.driverInput, targetWorld.getNextTask!!)
+    }
 
-    private fun nextTargetFromCondition(condition: Boolean, previousTargetState: TargetWorld): AutoInput {
+    private fun nextTargetFromCondition(condition: Boolean, targetWorld: TargetWorld): AutoInput {
         return if (condition) {
             getNextTargetFromList()
         } else {
-            /*previousTargetState.getNextTask() ?: */AutoInput(previousTargetState.driverInput) { _, _, _, -> null }
+            getAutoInputFromTargetWorld(targetWorld)
+//            /*previousTargetState.getNextTask() ?: */AutoInput(targetWorld.driverInput.) { _, _, _, -> null }
         }
     }
 
     private fun getNextTargetFromList(): AutoInput {
-        return autoListIterator.next()
+        return if (autoListIterator.hasNext()) {
+            autoListIterator.next()
+        } else {
+            autoStateList.last()
+        }
     }
 
     private lateinit var autoListIterator: ListIterator<AutoInput>
@@ -76,24 +115,11 @@ class RobotTwoAuto(
         return if (previousTargetState == null) {
             getNextTargetFromList()
         } else {
-            when {
-                autoListIterator.hasNext()-> {
+            previousTargetState.getNextTask?.let { getNextTask ->
+                val previousInput = previousTargetState.getNextTask.invoke(actualState, previousActualState, previousTargetState)
 
-
-                    previousTargetState.getNextTask?.let { getNextTask ->
-                        val previousInput = previousTargetState.getNextTask.invoke(actualState, previousActualState, previousTargetState)
-
-                        previousInput
-                    } ?: previousTargetState.driverInput.toAutoInput()
-                }
-                else -> {
-                    val previousInput =previousTargetState.driverInput
-                    AutoInput(
-                        previousInput,
-                        { _, _, _ -> previousInput.toAutoInput() }
-                    )
-                }
-            }
+                previousInput
+            } ?: getAutoInputFromTargetWorld(previousTargetState)
         }
     }
 
@@ -301,7 +327,7 @@ class RobotTwoAuto(
                     targetRobot = teleopTargetWorld.targetRobot.copy(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(autoInput.drivePosition)
                     ),
-                    getNextTask = {actual, previousActual, target ->
+                    getNextTask = { actual, previousActual, target ->
                         autoInput.getNextTask(actual, previousActual, target)!!
                     }
                 )
