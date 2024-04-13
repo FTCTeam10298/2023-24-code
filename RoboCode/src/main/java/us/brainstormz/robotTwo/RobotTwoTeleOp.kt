@@ -918,13 +918,22 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                 }
             }
 
+            fun getLatchTargetFromDriverInput(latchInput: LatchInput): Transfer.LatchTarget {
+                return Transfer.LatchTarget(when (latchInput) {
+                    LatchInput.Open -> Transfer.LatchPositions.Open
+                    LatchInput.NoInput -> Transfer.LatchPositions.Closed
+                }, 0)
+            }
+
             val uncoordinatedCollectorTarget = CollectorTarget(
                 intakeNoodles = intakeNoodleTarget,
                 dropDown = dropdownTarget,
                 timeOfEjectionStartMilis = timeOfEjectionStartMillis,
                 timeOfTransferredMillis = timeOfTransferredMillis,
                 transferSensorState = transferState,
-                latches = Transfer.TransferTarget(initLatchTarget, initLatchTarget),
+                latches = Transfer.TransferTarget(
+                    left = getLatchTargetFromDriverInput(driverInput.leftLatch),
+                    right = getLatchTargetFromDriverInput(driverInput.rightLatch)),
                 extendo = extendoTargetState,
             )
 

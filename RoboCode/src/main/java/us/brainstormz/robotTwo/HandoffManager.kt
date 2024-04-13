@@ -35,16 +35,22 @@ class HandoffManager(
     }
 
 
+    enum class ActualSlideStates {
+        NotReady,
+        PartiallyIn,
+        ReadyToHandoff
+    }
+
     enum class ExtendoCoordinationStates {
         NotReady,
         ReadyToHandoff
     }
-
     enum class DepoCoordinationStates {
         NotReady,
         PotentiallyBlockingExtendoMovement,  // might not be needed
         ReadyToHandoff
     }
+
     data class HandoffConstraints(
             val depo: DepoCoordinationStates,
             val targetPixelControlStates: TargetPixelControlStates
@@ -104,9 +110,9 @@ class HandoffManager(
 
     private fun detectActualOwner(
             side: Side,
-            actualExtendo: ExtendoCoordinationStates,
+            actualExtendo: ActualSlideStates,
             actualLatches: HandoffCoordinated.SidedPixelHolders,
-            actualDepo: DepoCoordinationStates,
+            actualDepo: ActualSlideStates,
             actualWrist: HandoffCoordinated.SidedPixelHolders,
             transferSensorState: TransferSensorState
     ): PixelOwner {
@@ -115,8 +121,9 @@ class HandoffManager(
 
         val clawIsGripping = HandoffCoordinated.PixelHolder.Holding == actualWrist.getBySide(side)
 
-        val extendoIsIn = actualExtendo == ExtendoCoordinationStates.ReadyToHandoff
-        val liftIsIn = actualDepo != DepoCoordinationStates.NotReady
+        val extendoIsIn = actualExtendo != ActualSlideStates.NotReady
+//        val extendoIsIn = actualExtendo == ActualSlideStates.ReadyToHandoff
+        val liftIsIn = actualDepo != ActualSlideStates.NotReady
         val bothSlidesAreIn = liftIsIn && extendoIsIn
 
         return when {
@@ -146,7 +153,11 @@ class HandoffManager(
         }
     }
 
-    fun getNextTargetOwner(finalOwner: PixelOwner, currentOwner: PixelOwner, actualExtendo: ExtendoCoordinationStates, actualDepo: DepoCoordinationStates): PixelOwner {
+    fun getNextTargetOwner(
+        finalOwner: PixelOwner,
+        currentOwner: PixelOwner,
+        actualExtendo: ActualSlideStates,
+        actualDepo: ActualSlideStates): PixelOwner {
         val nextOwnerInAirlockProcess = if (currentOwner == finalOwner) {
             finalOwner
         } else {
@@ -157,13 +168,13 @@ class HandoffManager(
             }
         }
 
-        val freezeIfExtendoAndDepoArentReady = if (actualExtendo != ExtendoCoordinationStates.ReadyToHandoff) {
+        val freezeIfExtendoAndDepoArentReady = if (actualExtendo != ActualSlideStates.ReadyToHandoff) {
             when (currentOwner) {
                 PixelOwner.Both -> {
                     when (actualDepo) {
-                        DepoCoordinationStates.NotReady -> PixelOwner.Depo
-                        DepoCoordinationStates.PotentiallyBlockingExtendoMovement -> PixelOwner.Both
-                        DepoCoordinationStates.ReadyToHandoff -> PixelOwner.Collector
+                        ActualSlideStates.NotReady -> PixelOwner.Depo
+                        ActualSlideStates.PartiallyIn -> PixelOwner.Both
+                        ActualSlideStates.ReadyToHandoff -> PixelOwner.Collector
                     }
                 }
                 else -> currentOwner
@@ -191,9 +202,9 @@ class HandoffManager(
 
     fun coordinateHandoff(
             inputConstraints: HandoffConstraints,
-            physicalExtendoReadiness: ExtendoCoordinationStates,
+            physicalExtendoReadiness: ActualSlideStates,
             actualLatches: HandoffCoordinated.SidedPixelHolders,
-            actualDepo: DepoCoordinationStates,
+            actualDepo: ActualSlideStates,
             actualWrist: HandoffCoordinated.SidedPixelHolders,
             transferSensorState: TransferSensorState,
     ): HandoffCoordinated {
@@ -248,7 +259,15 @@ class HandoffManager(
 
         val bothPixelsAreWithFinalOwner = leftPixelStatus.pixelIsWithFinalOwner && rightPixelStatus.pixelIsWithFinalOwner
 
-        return if (bothPixelsAreWithFinalOwner) {
+        val depoIsNotOut = actualDepo != ActualSlideStates.NotReady
+        val targetDepoIsDown = inputConstraints.depo == DepoCoordinationStates.ReadyToHandoff
+        val doHandoff = Side.entries.fold(false) { acc, side ->
+            acc || inputConstraints.targetPixelControlStates.getBySide(side) != TargetPixelControlState.ControlledByCollector
+        }
+        val eitherPixelTargetIsBoth = leftPixelStatus.targetOwner == PixelOwner.Both || rightPixelStatus.targetOwner == PixelOwner.Both
+        val doneHandingOff = bothPixelsAreWithFinalOwner && !(eitherPixelTargetIsBoth || (depoIsNotOut && doHandoff))
+
+        return if (doneHandingOff) {
             HandoffCoordinated(
                     extendo = ExtendoHandoffControlDecision.DriverControlledPosition,
                     depo = DepoHandoffControlDecision.DriverControlledPosition,
@@ -347,14 +366,14 @@ class HandoffManager(
 
         fun determineTargetPixelControlState(
             doingHandoff: Boolean,
-            actualExtendo: ExtendoCoordinationStates,
-            actualDepo: DepoCoordinationStates
+            actualExtendo: ActualSlideStates,
+            actualDepo: ActualSlideStates
         ): TargetPixelControlState {
             val liftInputIsDown = driverDepositorHandoffReadiness == DepoCoordinationStates.ReadyToHandoff
             val extendoInputIsIn = areDriversRetractingExtendo == ExtendoCoordinationStates.ReadyToHandoff
             val inputAllowsForHandoff = liftInputIsDown && extendoInputIsIn
 
-            val actualDepoAndExtendoAreInPositionForHandoff = actualExtendo == ExtendoCoordinationStates.ReadyToHandoff && actualDepo == DepoCoordinationStates.ReadyToHandoff
+            val actualDepoAndExtendoAreInPositionForHandoff = actualExtendo == ActualSlideStates.ReadyToHandoff && actualDepo == ActualSlideStates.ReadyToHandoff
 
             return when(doingHandoff){
                 true -> TargetPixelControlState.ControlledByDepositor
@@ -367,14 +386,15 @@ class HandoffManager(
         }
 
         val physicalExtendoReadiness = when {
-            actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated -> ExtendoCoordinationStates.ReadyToHandoff
-            else -> ExtendoCoordinationStates.NotReady
+            actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated -> ActualSlideStates.ReadyToHandoff
+            actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks <= Extendo.ExtendoPositions.InPastBatteryBox.ticks && !actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated -> ActualSlideStates.PartiallyIn
+            else -> ActualSlideStates.NotReady
         }
 
         val actualDepo = when {
-            actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated && arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)-> DepoCoordinationStates.ReadyToHandoff
-            !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks) -> DepoCoordinationStates.PotentiallyBlockingExtendoMovement
-            else -> DepoCoordinationStates.NotReady
+            actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated && arm.checkIfArmIsAtTarget(Arm.Positions.In, actualWorld.actualRobot.depoState.armAngleDegrees)-> ActualSlideStates.ReadyToHandoff
+            !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks) -> ActualSlideStates.PartiallyIn
+            else -> ActualSlideStates.NotReady
         }
 
         val handoffCoordinated = coordinateHandoff(

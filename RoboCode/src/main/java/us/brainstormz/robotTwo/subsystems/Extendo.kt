@@ -33,6 +33,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 //        AllTheWayInTarget(0),
 
         Min(0),
+        InPastBatteryBox(100),
 //        Manual(0),
         PurpleFarSidePosition((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         PurpleCloseSidePosition((800*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
