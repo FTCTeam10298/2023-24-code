@@ -130,6 +130,7 @@ class HandoffManager(
         return when {
             bothSlidesAreIn && latchIsClosed && clawIsGripping -> PixelOwner.Both
             pixelIsDetectedBySensor && latchIsClosed -> PixelOwner.Collector
+//            pixelIsDetectedBySensor && latchIsClosed && !clawIsGripping -> PixelOwner.Collector
             clawIsGripping && ((pixelIsDetectedBySensor && !latchIsClosed && bothSlidesAreIn) || (!pixelIsDetectedBySensor && !liftIsInHandoffPosition)) -> PixelOwner.Depo
             else -> PixelOwner.NoPixel
         }
