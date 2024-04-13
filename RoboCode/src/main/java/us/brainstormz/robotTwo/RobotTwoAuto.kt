@@ -40,7 +40,7 @@ class RobotTwoAuto(
                 handoffInput = HandoffInput.NoInput,
                 wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
                 extendoInput = ExtendoPositions.Min,
-                getNextInput = { actualWorld, previousActualWorld, targetWorld -> throw Exception("Hey don't be here") }
+                getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> previousTargetWorld.autoInput }
         )
     }
 
@@ -54,41 +54,37 @@ class RobotTwoAuto(
         return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = precisionInches, precisionDegrees = precisionDegrees)
     }
 
-    private fun isRobotAtAngle(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld): Boolean {
-        val rotationErrorDegrees = actualState.actualRobot.positionAndRotation.r - targetWorld.targetRobot.drivetrainTarget.targetPosition.r
-        return rotationErrorDegrees.absoluteValue <= 3.0
-    }
-
 
     private val autoStateList: List<AutoInput> = listOf(
-        blankAutoState.copy(
-            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
-            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-            }
-        ),
-        blankAutoState.copy(
-            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(10.0)),
-            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-            }
-        ),
-
-//        blankAutoState.copy(
-//            drivePosition = PositionAndRotation(20.0, 10.0, 0.0),
-//            getNextTask = { actualWorld, previousActualWorld, targetWorld ->
-//                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-//            }
-//        ),
+            blankAutoState.copy(
+                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
+                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                    }
+            ),
+            blankAutoState.copy(
+                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(x = 10.0)),
+                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                    }
+            ),
+            blankAutoState.copy(
+                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(10.0, 10.0)),
+                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                    }
+            ),
+            blankAutoState.copy(
+                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(10.0, 10.0, 90.0)),
+                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                    }
+            ),
     )
 
 
 
-
-
     fun getTargetWorldFromAutoInput(autoInput: AutoInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetWorld: TargetWorld): TargetWorld {
-
-        val actualRobot = actualWorld.actualRobot
 
         /**Handoff*/
         val transferState = transfer.getTransferState(
@@ -106,14 +102,6 @@ class RobotTwoAuto(
 
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
 
-
-        /**Intake Noodles*/
-
-
-        /**Dropdown*/
-
-
-        /**Handoff*/
         val uncoordinatedCollectorTarget = CollectorTarget(
                 intakeNoodles = Intake.CollectorPowers.Off,
                 dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
@@ -143,17 +131,6 @@ class RobotTwoAuto(
                 actualWorld = actualWorld,
                 doingHandoff = doingHandoff,
         )
-
-        /**Drive*/
-
-
-        /**Hang*/
-
-
-        /**Launcher*/
-
-
-        /**Lights*/
 
         return TargetWorld(
                 targetRobot = TargetRobot(
@@ -205,17 +182,11 @@ class RobotTwoAuto(
 
     private lateinit var autoListIterator: ListIterator<AutoInput>
     private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
-
         return if (previousTargetState != null && previousActualState != null) {
             previousTargetState.autoInput.getNextInput(actualState, previousActualState, previousTargetState)
         } else {
             getNextTargetFromList()
         }
-
-
-//        return previousTargetState?.let{ previousTargetState ->
-//            previousTargetState.autoInput.getNextInput(actualState, previousActualState, previousTargetState)
-//        } ?: getNextTargetFromList()
     }
 
 
