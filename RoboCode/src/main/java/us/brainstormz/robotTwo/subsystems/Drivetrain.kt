@@ -45,12 +45,9 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
                           ) {
         val power = when (target.movementMode) {
             DualMovementModeSubsystem.MovementMode.Position -> {
-                telemetry.addLine("Drivetrain going to position")
                 calcPowerToTarget(target.targetPosition, actualPosition)
             }
             DualMovementModeSubsystem.MovementMode.Power -> {
-                telemetry.clearAll()
-                telemetry.addLine("Drivetrain going to power")
                 target.power
             }
         }
@@ -59,7 +56,6 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
 
     fun powerDrivetrain(power: DrivetrainPower) {
         setSpeedAll(vX = power.x, vY= power.y, vA= power.r, minPower = -1.0, maxPower = 1.0)
-//        setSpeedAll(vX = power.x, vY= power.y, vA= power.r, minPower = 0.0, maxPower = 0.0)
     }
 
     fun calcPowerToTarget(target: PositionAndRotation,

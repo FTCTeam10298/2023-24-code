@@ -601,7 +601,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         )
     }
 
-    fun getTargetWorld(driverInput: RobotTwoTeleOp.DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): TargetWorld {
+    fun getTargetWorld(driverInput: DriverInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld): TargetWorld {
 
         val actualRobot = actualWorld.actualRobot
 
@@ -682,7 +682,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         }
 
         /**Handoff*/
-        val handoffButtonPressed = driverInput.handoff == RobotTwoTeleOp.HandoffInput.Handoff
+        val handoffButtonPressed = driverInput.handoff == HandoffInput.Handoff
         val doHandoffSequence: Boolean = if (handoffButtonPressed) {
             true
         } else {
@@ -946,7 +946,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
             desiredPixelLightPattern.toStripState()
         }
 
-        val lights = RobotTwoTeleOp.LightTarget(desiredPixelLightPattern, colorToDisplay)
+        val lights = LightTarget(desiredPixelLightPattern, colorToDisplay)
 
         return TargetWorld(
                 targetRobot = TargetRobot(
