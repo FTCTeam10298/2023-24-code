@@ -42,6 +42,7 @@ data class TargetRobot(
         val lights: RobotTwoTeleOp.LightTarget
 )
 
+
 data class TargetWorld(
     val targetRobot: TargetRobot,
     val driverInput: RobotTwoTeleOp.DriverInput,
@@ -49,13 +50,13 @@ data class TargetWorld(
 
     @get:JsonIgnore
         val getNextTask: ((
-                    targetState: TargetWorld,
                     actualState: ActualWorld,
-                    previousActualState: ActualWorld
-                ) -> RobotTwoTeleOp.DriverInput)? = null,
+                    previousActualState: ActualWorld,
+                    targetState: TargetWorld,
+                ) -> RobotTwoAuto.AutoInput)? = null,
     //((targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> TargetWorld?)? = null,
-        val timeTargetStartedMilis: Long = 0,
-        val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
+    val timeTargetStartedMilis: Long = 0,
+    val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
 ) {
     override fun equals(other: Any?): Boolean =
         if (other is TargetWorld) {

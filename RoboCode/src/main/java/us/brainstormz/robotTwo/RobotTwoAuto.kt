@@ -39,7 +39,20 @@ class RobotTwoAuto(
 
 
     private val autoStateList: List<AutoInput> = listOf(
-
+        AutoInput(
+            drivePosition = PositionAndRotation(),
+            depo = DepoInput.NoInput,
+            wrist = WristInput(ClawInput.NoInput, ClawInput.NoInput),
+            collector = CollectorInput.NoInput,
+            dropdown = DropdownInput.NoInput,
+            leftLatch = LatchInput.NoInput,
+            rightLatch = LatchInput.NoInput,
+            extendo = ExtendoInput.NoInput,
+            handoff = HandoffInput.NoInput,
+            hang = HangInput.NoInput,
+            launcher = LauncherInput.NoInput,
+            getNextTask = { _, _, target -> nextTargetFromCondition(true, target) }
+        )
     )
 
 
@@ -47,38 +60,38 @@ class RobotTwoAuto(
 
 
 
+    private fun nextTargetFromCondition(condition: Boolean, previousTargetState: TargetWorld): AutoInput {
+        return if (condition) {
+            getNextTargetFromList()
+        } else {
+            /*previousTargetState.getNextTask() ?: */AutoInput(previousTargetState.driverInput) { _, _, _, -> null }
+        }
+    }
 
     private fun getNextTargetFromList(): AutoInput {
-        return autoListIterator.next().copy(timeTargetStartedMilis = System.currentTimeMillis())
+        return autoListIterator.next()
     }
 
     private lateinit var autoListIterator: ListIterator<AutoInput>
-    private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld, previousTargetState: TargetWorld): AutoInput {
+    private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld, previousTargetState: TargetWorld?): AutoInput {
         return if (previousTargetState == null) {
             getNextTargetFromList()
         } else {
             when {
                 autoListIterator.hasNext()-> {
 
-                    val previousInput = previousTargetState.getNextTask?.let{
-                        it(previousTargetState, actualState, previousActualState ?: actualState)
-                    } ?: previousTargetState.driverInput
 
                     previousTargetState.getNextTask?.let { getNextTask ->
-                        AutoInput(
-                            driverInput = previousInput,
-                            getNextTask = getNextTask
-                        )
-                    } ?: AutoInput(
-                        driverInput = previousInput,
-                        getNextTask = { _, _, _ -> previousInput }
-                    )
+                        val previousInput = previousTargetState.getNextTask.invoke(actualState, previousActualState, previousTargetState)
+
+                        previousInput
+                    } ?: previousTargetState.driverInput.toAutoInput()
                 }
                 else -> {
                     val previousInput =previousTargetState.driverInput
                     AutoInput(
                         previousInput,
-                        { _, _, _ -> previousInput }
+                        { _, _, _ -> previousInput.toAutoInput() }
                     )
                 }
             }
@@ -91,11 +104,58 @@ class RobotTwoAuto(
     }
     
     data class AutoInput(
-        val driverInput: DriverInput,
-        val getNextTask: (targetState: TargetWorld, actualState: ActualWorld, previousActualState: ActualWorld) -> DriverInput,
-        val timeTargetStartedMilis: Long = 0L
+        val drivePosition: PositionAndRotation,
+        val depo: DepoInput,
+        val wrist: WristInput,
+        val collector: CollectorInput,
+        val dropdown: DropdownInput,
+        val extendo: ExtendoInput,
+        val hang: HangInput,
+        val launcher: LauncherInput,
+        val handoff: HandoffInput,
+        val leftLatch: LatchInput,
+        val rightLatch: LatchInput,
+        val getNextTask: (actualState: ActualWorld, previousActualState: ActualWorld, targetState: TargetWorld) -> AutoInput?,
     ) {
-//        constructor(driverInput: DriverInput, )
+        val driverInput = DriverInput(
+            driveVelocity = Drivetrain.DrivetrainPower(),
+            depo = depo,
+            depoScoringHeightAdjust = 0.0,
+            armOverridePower = 0.0,
+            wrist = wrist,
+            collector = collector,
+            dropdown = dropdown,
+            dropdownPositionOverride = 0.0,
+            leftLatch = leftLatch,
+            rightLatch = rightLatch,
+            extendo = extendo,
+            extendoManualPower = 0.0,
+            handoff = handoff,
+            hang = hang,
+            launcher = launcher,
+            bumperMode = Gamepad1BumperMode.Collector,
+            gamepad1ControlMode = GamepadControlMode.Normal,
+            gamepad2ControlMode = GamepadControlMode.Normal,
+            lightInput = LightInput.NoColor
+        )
+
+        constructor(
+            driverInput: DriverInput,
+            getNextTask: (actualState: ActualWorld, previousActualState: ActualWorld, targetState: TargetWorld) -> AutoInput?,
+        ): this(
+            drivePosition = PositionAndRotation(),
+            depo = driverInput.depo,
+            wrist = driverInput.wrist,
+            collector = driverInput.collector,
+            dropdown = driverInput.dropdown,
+            leftLatch = driverInput.leftLatch,
+            rightLatch = driverInput.rightLatch,
+            extendo = driverInput.extendo,
+            handoff = driverInput.handoff,
+            hang = driverInput.hang,
+            launcher = driverInput.launcher,
+            getNextTask = getNextTask
+        )
     }
 
     data class MovementPIDSet(val x: PID, val y: PID, val r: PID)
@@ -224,18 +284,20 @@ class RobotTwoAuto(
     fun loop(hardware: RobotTwoHardware, gamepad1: SerializableGamepad) = measured("main loop"){
         runRobot(
             { actual, previousActual, previousTarget ->
-                val driverInput = nextTargetState(
+                val autoInput = nextTargetState(
                     actual,
                     previousActual?:emptyWorld,
-                    previousTarget?:initialPreviousTargetState
+                    previousTarget
                 )
                 getTargetWorldFromDriverInput(
-                    { _, _, _ -> driverInput.driverInput},
+                    { _, _, _ -> autoInput.driverInput},
                     actual,
                     previousActual,
                     previousTarget
                 ).copy(
-                    getNextTask = driverInput.getNextTask
+                    getNextTask = {actual, previousActual, target ->
+                        autoInput.getNextTask(actual, previousActual, target)!!
+                    }
                 )
             },
             gamepad1,

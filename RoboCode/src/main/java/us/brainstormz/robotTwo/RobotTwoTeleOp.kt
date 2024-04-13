@@ -129,7 +129,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         NoInput
     }
 
-    @Serializable
     data class DriverInput(
         val bumperMode: Gamepad1BumperMode,
         val gamepad1ControlMode: GamepadControlMode,
@@ -150,7 +149,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         val leftLatch: LatchInput,
         val rightLatch: LatchInput,
         val driveVelocity: Drivetrain.DrivetrainPower
-    )
+    ) {
+        fun toAutoInput(): RobotTwoAuto.AutoInput = RobotTwoAuto.AutoInput(this) {_, _, _, -> null}
+    }
 
     fun getDriverInput(
         actualWorld: ActualWorld,
