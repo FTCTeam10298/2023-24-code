@@ -37,7 +37,6 @@ class TeleOpMode: OpMode() {
 class Autonomous: OpMode() {
 
     private val multiTelemetry = MultipleTelemetry(telemetry, PrintlnTelemetry())
-//    private val multiTelemetry = telemetry
     private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= multiTelemetry, opmode = this)
 
     private lateinit var auto: RobotTwoAuto
@@ -49,16 +48,11 @@ class Autonomous: OpMode() {
         auto.init(hardware)
     }
 
-    override fun init_loop() {
-        auto.initLoop(hardware, SerializableGamepad(gamepad1))
-    }
-
     override fun start() {
         auto.start(hardware)
     }
 
     override fun loop() {
-        telemetry.addLine("looping at highest level")
         auto.loop(hardware= hardware, SerializableGamepad(gamepad1))
     }
 }

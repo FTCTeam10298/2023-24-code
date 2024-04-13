@@ -36,9 +36,9 @@ class AutoTest {
 
         program.init(hardware)
 
-        for (i in 1..numberOfTimesToRunInitLoop) {
-            program.initLoop(hardware, gamepad1 = blankGamepad())
-        }
+//        for (i in 1..numberOfTimesToRunInitLoop) {
+//            program.initLoop(hardware, gamepad1 = blankGamepad())
+//        }
 
         val results:List<Pair<ActualWorld, TargetWorld>> = testSteps.mapIndexed() { index, actualWorld ->
             //Set Inputs

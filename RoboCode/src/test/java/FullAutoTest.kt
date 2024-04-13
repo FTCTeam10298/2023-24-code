@@ -106,7 +106,7 @@ class FullAutoTest {
 
         auto.init(hardware,)
 
-        auto.initLoop(hardware, initActualWorld.actualGamepad1)
+//        auto.initLoop(hardware, initActualWorld.actualGamepad1)
 
 
         //Set Inputs

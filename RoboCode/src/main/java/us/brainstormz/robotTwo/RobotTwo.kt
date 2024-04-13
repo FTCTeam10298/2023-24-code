@@ -41,9 +41,6 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, depoManager, wrist, arm, lift, transfer, telemetry)
 
-    lateinit var stateDumper: StateDumper
-    lateinit var statsDumper:StatsDumper
-
     lateinit var drivetrain: Drivetrain
     fun initRobot(hardware: RobotTwoHardware, localizer: Localizer) {
 //        FtcRobotControllerActivity.instance?.let{ controller ->
@@ -92,7 +89,6 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
 
     fun runRobot(
         targetStateFetcher: (actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?)->TargetWorld,
-//        (actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetState: TargetWorld, )->RobotTwoTeleOp.DriverInput,
         gamepad1: SerializableGamepad,
         gamepad2: SerializableGamepad,
         hardware: RobotTwoHardware
@@ -142,10 +138,6 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
         measured("telemetry"){
             telemetry.addLine("loop time: $loopTime milis")
             telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime()} milis")
-
-//            measured("expensiveTelemetryLines-addLine"){
-//                stateDumper.lines().forEach(telemetry::addLine)
-//            }
 
             telemetry.update()
         }

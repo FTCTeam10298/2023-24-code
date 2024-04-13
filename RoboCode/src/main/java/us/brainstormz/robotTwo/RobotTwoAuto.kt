@@ -161,50 +161,38 @@ class RobotTwoAuto(
                                 )
                                 PropPosition.Right -> listOf(
                                         blankAutoState.copy(
-                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
+                                                        x = startPosition.x + 24,
+                                                        y = startPosition.y - 6,
+                                                        r = startPosition.r - 30,
+                                                )),
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    telemetry.addLine("get next from 1")
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
                                         ),
                                         blankAutoState.copy(
-                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(10.0)),
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
+                                                        x = startPosition.x + 22,
+                                                        y = startPosition.y - 4,
+                                                        r = startPosition.r - 30,
+                                                )),
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    telemetry.addLine("get next from 2")
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
                                         ),
-//                                        blankAutoState.copy(
-//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-//                                                        x = startPosition.x + 24,
-//                                                        y = startPosition.y - 6,
-//                                                        r = startPosition.r - 30,
-//                                                )),
-//                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-//                                                    telemetry.addLine("get next from 1")
-//                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-//                                                }
-//                                        ),
-//                                        blankAutoState.copy(
-//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-//                                                        x = startPosition.x + 22,
-//                                                        y = startPosition.y - 4,
-//                                                        r = startPosition.r - 30,
-//                                                )),
-//                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-//                                                    telemetry.addLine("get next from 2")
-//                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-//                                                }
-//                                        ),
-//                                        blankAutoState.copy(
-//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-//                                                        x = startPosition.x + 10,
-//                                                        y = -55.0,
-//                                                        r = 180.0,
-//                                                )),
-//                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-//                                                    telemetry.addLine("get next from 3")
-//                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-//                                                }
-//                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
+                                                        x = startPosition.x + 10,
+                                                        y = -55.0,
+                                                        r = 180.0,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    telemetry.addLine("get next from 3")
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
                                 )
                             }
                         },
@@ -298,28 +286,10 @@ class RobotTwoAuto(
         }
     }
 
-    private val console = TelemetryConsole(telemetry)
-    private val wizard = TelemetryWizard(console, null)
     data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val shouldDoYellow: Boolean)
-
-    private fun getMenuWizardResults(gamepad1: Gamepad): WizardResults {
-        return WizardResults(
-                alliance = when (wizard.wasItemChosen("alliance", "Red")) {
-                    true -> RobotTwoHardware.Alliance.Red
-                    false -> RobotTwoHardware.Alliance.Blue
-                },
-                startPosition = when (wizard.wasItemChosen("startingPos", "Audience")) {
-                    true -> StartPosition.Audience
-                    false -> StartPosition.Backboard
-                },
-                partnerIsPlacingYellow = wizard.wasItemChosen("partnerYellow", "Yellow"),
-                shouldDoYellow = wizard.wasItemChosen("doYellow", "Yellow")
-        )
-    }
 
     private var startPosition: StartPosition = StartPosition.Backboard
 
-    private var propDetector: RobotTwoPropDetector? = null
     fun init(hardware: RobotTwoHardware) {
         initRobot(
             hardware = hardware,
@@ -327,61 +297,19 @@ class RobotTwoAuto(
         )
 
         telemetry.addLine("init Called")
-        telemetry.addLine("init Called")
-    }
-
-    private fun runCamera(opencv: OpenCvAbstraction, wizardResults: WizardResults) {
-        val propColor: PropColors = when (wizardResults.alliance) {
-            RobotTwoHardware.Alliance.Blue -> PropColors.Blue
-            RobotTwoHardware.Alliance.Red -> PropColors.Red
-        }
-        propDetector = RobotTwoPropDetector(telemetry, propColor)
-        opencv.onNewFrame(propDetector!!::processFrame)
-    }
-
-    private var wizardResults: WizardResults? = null
-    fun initLoop(hardware: RobotTwoHardware, gamepad1: SerializableGamepad) {
-        if (wizardResults == null) {
-//            val isWizardDone = wizard.summonWizard(gamepad1.theGamepad ?: Gamepad())
-//            if (isWizardDone) {
-//                wizardResults = getMenuWizardResults(gamepad1.theGamepad ?: Gamepad())
-//
-//                alliance = wizardResults!!.alliance
-//                startPosition = wizardResults!!.startPosition
-//
-//                runCamera(opencv, wizardResults!!)
-//            }
-        } else {
-//            telemetry.addLine("propPosition? = ${propDetector?.propPosition}")
-            telemetry.addLine("wizardResults = ${wizardResults}")
-        }
-        telemetry.addLine("initLoop Called")
-        telemetry.addLine("initLoop Called")
     }
 
     fun start(hardware: RobotTwoHardware) {
-//        val propPosition = propDetector?.propPosition ?: PropPosition.Right
-//        try{
-//            opencv.stop()
-//        }catch (t:Throwable){
-//            t.printStackTrace()
-//            telemetry.addLine("WARN: OPENCV Didn't stop cleanly")
-//        }
 
         val startPositionAndRotation: PositionAndRotation = when (alliance) {
             RobotTwoHardware.Alliance.Red -> startPosition.redStartPosition
             RobotTwoHardware.Alliance.Blue -> flipRedPositionToBlue(startPosition.redStartPosition)
         }
 
-
         autoStateList = calcAutoTargetStateList(alliance, startPosition, PropPosition.Right)
         autoListIterator = autoStateList.listIterator()
 
         drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
-
-        telemetry.addLine("Auto Start Called")
-        telemetry.addLine("Auto Start Called")
-//        drivetrain.localizer.setPositionAndRotation(PositionAndRotation())
     }
 
 
