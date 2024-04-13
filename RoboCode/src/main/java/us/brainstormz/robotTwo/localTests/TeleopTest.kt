@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.robotTwo.ActualDriveTrainPower
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorManager
@@ -179,7 +178,6 @@ class TeleopTest {
                 actualGamepad2 = blankGamepad(),
                 actualRobot = ActualRobot(
                         positionAndRotation = PositionAndRotation(),
-                        driveTrainPower = ActualDriveTrainPower(),
                         depoState = DepoManager.ActualDepo(
                                 armAngleDegrees = 0.0,
                                 lift = SlideSubsystem.ActualSlideSubsystem(

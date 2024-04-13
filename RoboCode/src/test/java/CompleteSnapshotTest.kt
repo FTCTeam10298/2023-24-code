@@ -3,14 +3,12 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.Assert
 import org.junit.Test
 import us.brainstormz.localizer.PositionAndRotation
-import us.brainstormz.robotTwo.ActualDriveTrainPower
 import us.brainstormz.robotTwo.ActualRobot
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CollectorManager
 import us.brainstormz.robotTwo.CollectorTarget
 import us.brainstormz.robotTwo.CompleteSnapshot
 import us.brainstormz.robotTwo.DepoManager
-import us.brainstormz.robotTwo.RobotTwoAuto.Companion.blankAutoState
 import us.brainstormz.robotTwo.RobotTwoHardware
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.TargetRobot
@@ -36,7 +34,6 @@ class CompleteSnapshotTest {
                 actualGamepad2 = blankGamepad(),
                 actualRobot = ActualRobot(
                         positionAndRotation = PositionAndRotation(),
-                        driveTrainPower = ActualDriveTrainPower(),
                         depoState = DepoManager.ActualDepo(
                                 armAngleDegrees = 0.0,
                                 lift = SlideSubsystem.ActualSlideSubsystem(
@@ -91,7 +88,7 @@ class CompleteSnapshotTest {
                 ),
                 doingHandoff = false,
                 driverInput = RobotTwoTeleOp.noInput,
-                autoInput = blankAutoState,
+                autoInput = RobotTwoTeleOp.teleopAutoState,
                 gamepad1Rumble = null
         )
         val snapshot = CompleteSnapshot(

@@ -329,7 +329,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         telemetry.addLine("extendo current position: ${extendoMotorMaster.currentPosition}")
         ActualRobot(
                 positionAndRotation = drivetrain.getPosition(),
-                driveTrainPower = drivetrain.getDrivetrainPowers(this),
                 collectorSystemState = collectorSystem.getCurrentState(this, previousActualWorld),
                 depoState = depoManager.getDepoState(this, previousActualWorld),
                 neopixelState = neoPixelActualState

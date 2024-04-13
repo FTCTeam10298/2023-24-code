@@ -70,12 +70,12 @@ class FullAutoTest {
         val loop = getLoopFunction(actualWorld, now(), previousTarget)
         loop(actualWorld.copy(
                 actualRobot = actualWorld.actualRobot.copy(
-                        positionAndRotation = PositionAndRotation(20.0, 0.0)
+                        positionAndRotation = PositionAndRotation(0.0, 0.0)
                 )
         ), now())
         loop(actualWorld.copy(
                 actualRobot = actualWorld.actualRobot.copy(
-                        positionAndRotation = PositionAndRotation(20.0, 0.0)
+                        positionAndRotation = PositionAndRotation(0.0, 0.0)
                 )
         ), now())
         val newTarget =

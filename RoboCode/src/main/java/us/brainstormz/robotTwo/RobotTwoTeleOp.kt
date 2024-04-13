@@ -6,7 +6,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.robotTwo.DepoManager.*
-import us.brainstormz.robotTwo.RobotTwoAuto.Companion.blankAutoState
 import us.brainstormz.robotTwo.localTests.TeleopTest
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
@@ -964,7 +963,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                 ),
                 doingHandoff = doHandoffSequence,
                 driverInput = repeatDriverInputForDepo,
-                autoInput = blankAutoState,
+                autoInput = teleopAutoState,
                 gamepad1Rumble = RobotTwoTeleOp.RumbleEffects.Throb
         )
     }
@@ -1055,6 +1054,15 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         val initLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0)
 
+        val teleopAutoState = RobotTwoAuto.AutoInput(
+                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
+                depoInput = DepoInput.NoInput,
+                handoffInput = HandoffInput.NoInput,
+                wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
+                extendoInput = Extendo.ExtendoPositions.Min,
+                getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> throw Exception("Why are you running?") }
+        )
+
         val initialPreviousTargetState = TargetWorld(
             targetRobot = TargetRobot(
                 drivetrainTarget = Drivetrain.DrivetrainTarget(
@@ -1091,7 +1099,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
             ),
             doingHandoff = false,
             driverInput = noInput,
-            autoInput = blankAutoState,
+            autoInput = teleopAutoState,
             gamepad1Rumble = null
         )
     }

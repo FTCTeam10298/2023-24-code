@@ -33,16 +33,14 @@ class RobotTwoAuto(
     private val aprilTagPipeline: AprilTagPipeline
 ): RobotTwo(telemetry) {
 
-    companion object {
-        val blankAutoState = AutoInput(
-                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
-                depoInput = DepoInput.NoInput,
-                handoffInput = HandoffInput.NoInput,
-                wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
-                extendoInput = ExtendoPositions.Min,
-                getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> previousTargetWorld.autoInput }
-        )
-    }
+    private val blankAutoState = AutoInput(
+            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
+            depoInput = DepoInput.NoInput,
+            handoffInput = HandoffInput.NoInput,
+            wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
+            extendoInput = ExtendoPositions.Min,
+            getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> getNextTargetFromList() }
+    )
 
     private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
         val taskStartedTimeMilis = targetWorld.timeTargetStartedMilis
@@ -168,7 +166,7 @@ class RobotTwoAuto(
         return if (condition) {
             getNextTargetFromList()
         } else {
-            targetWorld.autoInput
+            targetWorld.autoInput ?: getNextTargetFromList()
         }
     }
 
@@ -183,7 +181,8 @@ class RobotTwoAuto(
     private lateinit var autoListIterator: ListIterator<AutoInput>
     private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
         return if (previousTargetState != null && previousActualState != null) {
-            previousTargetState.autoInput.getNextInput(actualState, previousActualState, previousTargetState)
+            previousTargetState.autoInput?.getNextInput?.invoke(actualState, previousActualState, previousTargetState)
+                    ?: getNextTargetFromList()
         } else {
             getNextTargetFromList()
         }

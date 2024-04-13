@@ -5,7 +5,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.localizer.Localizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.motion.MecanumMovement
-import us.brainstormz.robotTwo.ActualDriveTrainPower
 import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
@@ -121,6 +120,7 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
             return xIsLess && yIsLess && rIsLess
         }
     }
+
     fun getVelocity(actualPosition: PositionAndRotation, actualTimeMilis: Long, previousPosition: PositionAndRotation, previousTimeMilis: Long): DriveVelocity {
         val deltaPosition = actualPosition - previousPosition
         val deltaTime = actualTimeMilis - previousTimeMilis
@@ -134,14 +134,5 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
 
     fun getVelocity(actualWorld: ActualWorld, previousWorld: ActualWorld): DriveVelocity {
         return getVelocity(actualWorld.actualRobot.positionAndRotation, actualWorld.timestampMilis, previousWorld.actualRobot.positionAndRotation, previousWorld.timestampMilis)
-    }
-
-    fun getDrivetrainPowers(hardware: RobotTwoHardware): ActualDriveTrainPower {
-        return ActualDriveTrainPower(
-            lf = hardware.lFDrive.power,
-            rf = hardware.rFDrive.power,
-            lb = hardware.lBDrive.power,
-            rb = hardware.rBDrive.power,
-        )
     }
 }

@@ -49,7 +49,8 @@ data class TargetWorld(
     val doingHandoff: Boolean,
 
     @get:JsonIgnore
-    val autoInput: RobotTwoAuto.AutoInput,
+    val autoInput: RobotTwoAuto.AutoInput? = null,
+
     val timeTargetStartedMilis: Long = 0,
     val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
 ) {
@@ -66,18 +67,8 @@ data class TargetWorld(
         }
 }
 
-data class ActualDriveTrainPower(
-    val lf: Double,
-    val rf: Double,
-    val lb: Double,
-    val rb: Double,
-) {
-    constructor(): this(0.0, 0.0, 0.0, 0.0)
-}
-
 data class ActualRobot(
     val positionAndRotation: PositionAndRotation,
-    val driveTrainPower: ActualDriveTrainPower,
     val depoState: DepoManager.ActualDepo,
     val collectorSystemState: CollectorManager.ActualCollector,
     val neopixelState: Neopixels.StripState
