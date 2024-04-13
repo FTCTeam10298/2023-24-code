@@ -9,6 +9,28 @@ accept offset for x, y, and r
 
 CALIBRATION FUNCTION
 
+(right) to reset
+
+Select field: (Left, Right)
+
+Select side: (Red, Blue)
+
+Press (Triangle, X, Square, Circle) for P1:
+
+Press (?) for coefficients
+
+Display deltas, updated deltas (?)
+
+Press (?) to display original constant, updated constants, difference. 
+
+Triangle or X to save/discard
+
+Return to menu
+
+
+
+
+
 We have 5 points for both alliance sides that are reproducible. Every morning there are 30 minutes for calibration.
 
 There are two fields at WORLDS.  

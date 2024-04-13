@@ -1,15 +1,13 @@
 import android.util.Size
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldErrors
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
 import us.brainstormz.localizer.aprilTagLocalization.AverageAprilTagLocalizationError
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
-import kotlin.math.cos
-import kotlin.math.sin
+import us.brainstormz.robotTwo.RobotTwoTeleOp
 
 /*
 LIST OF TESTS
@@ -40,6 +38,7 @@ fun main () {
     )
 
 
+
     val targetAprilTagID: Int = 2
     val inputCamRelative = CameraRelativePointInSpace(xInches=10.0, yInches=10.0, yawDegrees= 10.0)
 
@@ -65,35 +64,9 @@ fun main () {
 
 }
 
-data class CameraRelativePointInSpace(val xInches: Double, val yInches: Double, val yawDegrees: Double)
-data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
-
-data class FieldRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
 
 
 
-fun returnCamCentricCoordsInTagCentricCoordsPartDeux(anyOldTag: CameraRelativePointInSpace): TagRelativePointInSpace {
-    //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
-
-    val yawRadians = Math.toRadians(anyOldTag.yawDegrees)
-
-    val aSectionOfXInches = anyOldTag.xInches/cos(yawRadians)
-    val yOutsideOfSquareInches = aSectionOfXInches * sin(yawRadians)
-
-    //another angle in the triangle.
-    val qDegrees: Double = 180 - 90 - anyOldTag.yawDegrees
-
-    val qRadians = Math.toRadians(qDegrees)
-
-    val yInsideOfSquareInches = anyOldTag.yInches - yOutsideOfSquareInches
-
-    val otherPartOfXInches = yInsideOfSquareInches * cos(qRadians)
-    val yRelativeToTagInches = yInsideOfSquareInches * sin(qRadians)
-    val xRelativeToTagInches = aSectionOfXInches + otherPartOfXInches
-
-    return TagRelativePointInSpace(xInches=xRelativeToTagInches, yInches=yRelativeToTagInches, headingDegrees=anyOldTag.yawDegrees)
-
-}
 
 //private fun returnTagCentricCoordsInFieldCoords(cameraXOffset: Double, cameraYOffset: Double, targetAprilTagID: Int, inputTagRelative: TagRelativePointInSpace): FieldRelativePointInSpace {
 //
@@ -109,10 +82,38 @@ fun returnCamCentricCoordsInTagCentricCoordsPartDeux(anyOldTag: CameraRelativePo
 //}
 
 
+//CALIBRATION FUNCTION
+//
+//(right) to reset
+//
+//Select field: (Left, Right)
+//
+//Select side: (Red, Blue)
+//
+//Press (Triangle, X, Square, Circle) for P1:
+//
+//Press (?) for coefficients
+//
+//Display deltas, updated deltas (?)
+//
+//Press (?) to display original constant, updated constants, difference.
+//
+//Triangle or X to save/discard
+//
+//Return to menu
 
+enum class menuLevel {
+    FieldSelection,
+    SideSelection,
+    GetValues,
+    ShowCoefficients,
+    ShowDeltasInValues,
+    ShowChangeInValues,
+    SaveData
+}
 
 @TeleOp
-class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
+class AprilTagOmeter_Assisted_Calibration: LinearOpMode() {
 
     // A
     //03-19 22:53:42.309  1691  1817 I System.out: Robot X: -0.7379603385925293
@@ -158,6 +159,18 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 //            hDegrees = 0.0, //0
 //    )
 
+    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
+            xInches = -0.275,
+            yInches = 3.15,
+            hDegrees = 0.0,
+    )
+
+    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
+            xInches = -0.08125,
+            yInches = 3.575,
+            hDegrees = 0.0, //0
+    )
+
 //    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
 //            xInches = -0.275,
 //            yInches = 3.15,
@@ -170,41 +183,12 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 //            hDegrees = 0.0, //0
 //    )
 
-//    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = -0.0,
-//            yInches = 0.0,
-//            hDegrees = 0.0,
-//    )
-//
-//    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = -0.0,
-//            yInches = 0.0,
-//            hDegrees = 0.0, //0
-//    )
-
-
-
-    //new offsets
-    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-            xInches = 0.04375,
-            yInches = 3.675,
-            hDegrees = 0.0,
-    )
-
-    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-            xInches = -0.0,
-            yInches = 0.0,
-            hDegrees = 0.0, //0
-    )
-
-    val fieldErrors = AprilTagFieldErrors()
-
-    val leftErrors = fieldErrors.leftField
-
     val localizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
             averageErrorRedSide = RedAllianceBackboardAverageErrors,
             averageErrorBlueSide =  BlueAllianceBackboardAverageErrors)
+
+
 
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
@@ -228,19 +212,39 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
 //        hardware.init(hardwareMap)
 
+        data class RetainedState(
+                val trianglePressed:Boolean
+        )
+
+
+
+        var previousTriangleState = RetainedState(trianglePressed = gamepad1.triangle)
 
         waitForStart()
 
+
+
         while(opModeIsActive()) {
+            val state = RetainedState(trianglePressed = gamepad1.triangle)
 
             aprilTagThings.forEach { it.resumeStreaming() }
 
             val currentDetections = getListOfCurrentAprilTagsSeen()
+
+            val aWasPressed = (state.trianglePressed && !previousTriangleState.trianglePressed)
+
+            if (aWasPressed) {
+                println("button got hit!")
+                telemetryPutTarget(currentDetections = currentDetections)
+            }
+
             showAllAprilTagsInfo(currentDetections)
 
-            // Share the CPU.
-            sleep(20)
+//            // Share the CPU.
+//            sleep(20)
             telemetry.update()
+
+            previousTriangleState = state
 
         }
         if(isStopRequested) {
@@ -260,7 +264,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
             }
         }
 
-       return null
+        return null
     }
 
     private fun getListOfCurrentAprilTagsSeen(): List<AprilTagDetection> {
@@ -269,8 +273,6 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
 
     private fun showAllAprilTagsInfo(currentDetections: List<AprilTagDetection>) {
-
-
 
         if (currentDetections.isNotEmpty()) {
 
@@ -308,7 +310,58 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
     }
 
-        fun showTargetAprilTagInfo(listOfAllAprilTagsDetected: List<AprilTagDetection>, leastDistortedAprilTag: AprilTagDetection) {
+    private fun telemetryPutTarget(currentDetections: List<AprilTagDetection>) {
+
+        if (currentDetections.isNotEmpty()) {
+
+            val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
+
+            showTargetAprilTagInfo(
+                    listOfAllAprilTagsDetected = currentDetections,
+                    leastDistortedAprilTag = closestAprilTag)
+
+            for (detection in currentDetections) {
+
+
+                val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
+
+                val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
+                val detectionAllianceSide = allDetectionData?.AllianceSide
+                val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
+                val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
+
+                if (currentDetections.isNotEmpty()) {
+
+                    println(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
+                    //
+                    println(String.format("XYH %6.1f %6.1f %6.1f  (inch, inch, deg)",
+                            detectionFieldCoords?.xInches,
+                            detectionFieldCoords?.yInches,
+                            detectionFieldCoords?.headingDegrees))
+
+                    println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
+
+                    println(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+                    println(String.format("We're on alliance side {$detectionAllianceSide}, and our code says this measurement is accurate: {$detectionAccuracy}"))
+
+                    if (detection.id == closestAprilTag.id) {
+                        val xToLog = detectionFieldCoords?.xInches
+                        val yToLog = detectionFieldCoords?.yInches
+
+                        telemetry.addLine("X: {$xToLog}, Y: {$yToLog}")
+
+                    }
+
+                }
+            }
+
+
+        }
+
+
+    }
+
+    fun showTargetAprilTagInfo(listOfAllAprilTagsDetected: List<AprilTagDetection>, leastDistortedAprilTag: AprilTagDetection) {
 
 
 
@@ -387,7 +440,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
         else {
             telemetry.addLine("I just don't see it.")
         }
-         // ...
+        // ...
 
 
         // Add "key" information to telemetry
