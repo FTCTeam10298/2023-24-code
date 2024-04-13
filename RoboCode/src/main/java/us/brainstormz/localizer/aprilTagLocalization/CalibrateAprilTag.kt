@@ -2,11 +2,13 @@ import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
+import us.brainstormz.localizer.PointInXInchesAndYInches
+import us.brainstormz.localizer.PredeterminedFieldPoints
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldErrors
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
-import us.brainstormz.localizer.aprilTagLocalization.AverageAprilTagLocalizationError
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
+import kotlin.math.abs
 
 /*
 LIST OF TESTS
@@ -31,35 +33,38 @@ LIST OF TESTS
  */
 
 fun main () {
-    val aprilTagLocalization = AprilTagLocalizationFunctions(
-            cameraXOffset=0.00,
-            cameraYOffset=0.00 //it's right on center! Yay!
-    )
 
 
 
-    val targetAprilTagID: Int = 2
-    val inputCamRelative = CameraRelativePointInSpace(xInches=10.0, yInches=10.0, yawDegrees= 10.0)
-
-    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=11.585, yInches=8.112, headingDegrees= 10.0)//heading degrees = yaw
-
-    val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoordsPartDeux(inputCamRelative)
-
-    val inputTagRelative = actualOutputTagRelative
-
-    val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=46.995, yInches=52.138, headingDegrees = 10.0)
-
-    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative,
-            allianceSideFound = ReusableAprilTagFieldLocalizer.AllianceSide.Red)
-
-
-    println("Our camera-relative input was $inputCamRelative" )
-    println("Our expected tag-relative output was $expectedOutputTagRelative")
-    println("...but we got this: $actualOutputTagRelative")
-
-    println("So we took that tag-relative position, $inputTagRelative.")
-    println("We expected to see a position of $expectedOutputFieldRelative")
-    println("Instead, we calculated that our camera is at $actualOutputFieldRelative.")
+//    val aprilTagLocalization = AprilTagLocalizationFunctions(
+//            cameraXOffset=0.00,
+//            cameraYOffset=0.00 //it's right on center! Yay!
+//    )
+//
+//
+//
+//    val targetAprilTagID: Int = 2
+//    val inputCamRelative = CameraRelativePointInSpace(xInches=10.0, yInches=10.0, yawDegrees= 10.0)
+//
+//    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=11.585, yInches=8.112, headingDegrees= 10.0)//heading degrees = yaw
+//
+//    val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoordsPartDeux(inputCamRelative)
+//
+//    val inputTagRelative = actualOutputTagRelative
+//
+//    val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=46.995, yInches=52.138, headingDegrees = 10.0)
+//
+//    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative,
+//            allianceSideFound = ReusableAprilTagFieldLocalizer.AllianceSide.Red)
+//
+//
+//    println("Our camera-relative input was $inputCamRelative" )
+//    println("Our expected tag-relative output was $expectedOutputTagRelative")
+//    println("...but we got this: $actualOutputTagRelative")
+//
+//    println("So we took that tag-relative position, $inputTagRelative.")
+//    println("We expected to see a position of $expectedOutputFieldRelative")
+//    println("Instead, we calculated that our camera is at $actualOutputFieldRelative.")
 
 }
 
@@ -80,6 +85,63 @@ fun main () {
 //
 //}
 
+data class FourPoints(
+        val first: PointInXInchesAndYInches,
+        val second: PointInXInchesAndYInches,
+        val third: PointInXInchesAndYInches,
+        val fourth: PointInXInchesAndYInches
+)
+
+fun findErrorOfFourPoints(allianceSide: ReusableAprilTagFieldLocalizer.AllianceSide,
+                          fourPointsPredictedMeasurement: FourPoints): FourPoints {
+    val predeterminedFieldPoints = PredeterminedFieldPoints()
+
+    val predeterminedFieldPointsRedOrBlue = when(allianceSide) {
+        ReusableAprilTagFieldLocalizer.AllianceSide.Blue -> predeterminedFieldPoints.Blue
+        ReusableAprilTagFieldLocalizer.AllianceSide.Red -> predeterminedFieldPoints.Red
+    }
+
+    val realWorldMeasurementOfFirst = predeterminedFieldPointsRedOrBlue.first
+    val realWorldMeasurementOfSecond = predeterminedFieldPointsRedOrBlue.second
+    val realWorldMeasurementOfThird = predeterminedFieldPointsRedOrBlue.third
+    val realWorldMeasurementOfFourth = predeterminedFieldPointsRedOrBlue.fourth
+
+    val predictedMeasurementOfFirst = fourPointsPredictedMeasurement.first
+    val predictedMeasurementOfSecond = fourPointsPredictedMeasurement.second
+    val predictedMeasurementOfThird = fourPointsPredictedMeasurement.third
+    val predictedMeasurementOfFourth = fourPointsPredictedMeasurement.fourth
+
+    val differenceBetweenActualMeasurementAndPredictionFirst = PointInXInchesAndYInches(
+           xInches = realWorldMeasurementOfFirst.xInches - abs(predictedMeasurementOfFirst.xInches),
+           yInches = realWorldMeasurementOfFirst.xInches - abs(predictedMeasurementOfFirst.xInches)
+
+    )
+
+    val differenceBetweenActualMeasurementAndPredictionSecond = PointInXInchesAndYInches(
+            xInches = realWorldMeasurementOfSecond.xInches - abs(predictedMeasurementOfSecond.xInches),
+            yInches = realWorldMeasurementOfSecond.xInches - abs(predictedMeasurementOfSecond.xInches)
+    )
+
+    val differenceBetweenActualMeasurementAndPredictionThird = PointInXInchesAndYInches(
+            xInches = realWorldMeasurementOfThird.xInches - abs(predictedMeasurementOfThird.xInches),
+            yInches = realWorldMeasurementOfThird.xInches - abs(predictedMeasurementOfThird.xInches)
+    )
+
+    val differenceBetweenActualMeasurementAndPredictionFourth = PointInXInchesAndYInches(
+            xInches = realWorldMeasurementOfFourth.xInches - abs(predictedMeasurementOfFourth.xInches),
+            yInches = realWorldMeasurementOfFourth.xInches - abs(predictedMeasurementOfFourth.xInches)
+    )
+
+
+
+    return(FourPoints(
+            first = differenceBetweenActualMeasurementAndPredictionFirst,
+            second = differenceBetweenActualMeasurementAndPredictionSecond,
+            third = differenceBetweenActualMeasurementAndPredictionThird,
+            fourth = differenceBetweenActualMeasurementAndPredictionFourth
+    ))
+
+}
 
 
 @TeleOp

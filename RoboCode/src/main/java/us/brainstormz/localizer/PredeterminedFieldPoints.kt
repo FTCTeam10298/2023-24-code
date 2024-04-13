@@ -1,52 +1,49 @@
 package us.brainstormz.localizer
 
-data class FieldRelativePointInSpaceNoHeading(val xInches: Double, val yInches: Double)
+import FourPoints
 
-data class FourPoints(
-        val first: FieldRelativePointInSpaceNoHeading,
-        val second: FieldRelativePointInSpaceNoHeading,
-        val third: FieldRelativePointInSpaceNoHeading,
-        val fourth: FieldRelativePointInSpaceNoHeading
-)
+data class PointInXInchesAndYInches(val xInches: Double, val yInches: Double)
 
-val b1 = FieldRelativePointInSpaceNoHeading(
+
+
+val b1 = PointInXInchesAndYInches(
         xInches = 47.5,
         yInches = 47.625
 )
 
-val b2 = FieldRelativePointInSpaceNoHeading(
+val b2 = PointInXInchesAndYInches(
         xInches = 23.625,
         yInches = 47.625
 )
 
-val b3 = FieldRelativePointInSpaceNoHeading(
+val b3 = PointInXInchesAndYInches(
         xInches = 47.5,
         yInches = 23.875
 )
 
-val b4 = FieldRelativePointInSpaceNoHeading(
+val b4 = PointInXInchesAndYInches(
         xInches = 23.75,
         yInches = 23.875
 )
 
 
 
-val r1 = FieldRelativePointInSpaceNoHeading(
+val r1 = PointInXInchesAndYInches(
         xInches = 23.875,
         yInches = 47.625
 )
 
-val r2 = FieldRelativePointInSpaceNoHeading(
+val r2 = PointInXInchesAndYInches(
         xInches = 47.625,
         yInches = 47.625
 )
 
-val r3 = FieldRelativePointInSpaceNoHeading(
+val r3 = PointInXInchesAndYInches(
         xInches = 23.875,
         yInches = 23.375
 )
 
-val r4 = FieldRelativePointInSpaceNoHeading(
+val r4 = PointInXInchesAndYInches(
         xInches = 47.625,
         yInches = 23.375
 )
