@@ -12,10 +12,10 @@ import us.brainstormz.robotTwo.localTests.TeleopTest
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.Dropdown
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
 import us.brainstormz.robotTwo.subsystems.Intake
+import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.measured
@@ -87,7 +87,7 @@ class RobotTwoAuto(
 
         val intakeNoodleTarget = when (autoInput.intakeInput) {
                 IntakeInput.Intake -> Intake.CollectorPowers.Intake
-                IntakeInput.NoInput -> previousTargetWorld.targetRobot.collectorTarget.intakeNoodles
+                IntakeInput.NoInput -> Intake.CollectorPowers.Off
         }
 
 //        /**Dropdown*/
@@ -144,7 +144,7 @@ class RobotTwoAuto(
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
                         lights = LightTarget(),
                 ),
-                doingHandoff = doingHandoff,
+                doingHandoff = handoffTarget.handoffCompleted,
                 driverInput = initialPreviousTargetState.driverInput,
                 autoInput = autoInput,
                 timeTargetStartedMilis = if (autoInput != previousTargetWorld.autoInput) {
@@ -163,8 +163,8 @@ class RobotTwoAuto(
 
     private val blankAutoState = AutoInput(
             drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
-            depoInput = DepoInput.Down,
-            handoffInput = HandoffInput.Handoff,
+            depoInput = DepoInput.NoInput,
+            handoffInput = HandoffInput.NoInput,
             wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
             extendoInput = ExtendoPositions.Min,
             intakeInput = IntakeInput.NoInput,
@@ -190,12 +190,27 @@ class RobotTwoAuto(
         return rotationErrorDegrees.absoluteValue <= 3.0
     }
 
+    private val pushIntoBoardDrivetrainPower = -0.3
+
+    private fun checkIfLiftIsOkToDriveUnderTruss(actualWorld: ActualWorld): Boolean {
+        return !lift.isLiftAbovePosition(
+                targetPositionTicks = 100,
+                actualLiftPositionTicks = actualWorld.actualRobot.depoState.lift.currentPositionTicks
+        )
+    }
+
+    private fun checkIfHandoffIsDone(previousTargetWorld: TargetWorld): Boolean {
+        return !previousTargetWorld.doingHandoff
+    }
+
     /** Path assembly */
     data class PathPreAssembled(
             val purplePlacementPath: (PropPosition)->List<AutoInput>,
             val purpleDriveToBoardPath: (PropPosition)->List<AutoInput>,
             val yellowDepositSequence: (PropPosition)->List<AutoInput>,
-            val cyclePath: (PropPosition)->List<AutoInput>,
+            val driveToStackFromBoard: (PropPosition)->List<AutoInput>,
+            val collectFromStack: (PropPosition)->List<AutoInput>,
+            val driveToBoardFromStack: (PropPosition)->List<AutoInput>,
             val parkPath: List<AutoInput>) {
         fun assemblePath(propPosition: PropPosition, numberOfCycles: Int): List<AutoInput> {
             val fiftyPoint = purplePlacementPath(propPosition) +
@@ -203,7 +218,7 @@ class RobotTwoAuto(
                     yellowDepositSequence(propPosition)
 
             val cycles = (0..numberOfCycles).fold(listOf<AutoInput>()) { acc, it ->
-                acc + cyclePath(propPosition) + yellowDepositSequence(propPosition)
+                acc + driveToStackFromBoard(propPosition) + collectFromStack(propPosition) + driveToBoardFromStack(propPosition) + yellowDepositSequence(propPosition)
             }
             return  fiftyPoint + cycles + parkPath
 
@@ -281,6 +296,7 @@ class RobotTwoAuto(
                                                 y = -53.0,
                                                 r = 0.0,
                                         )),
+                                        handoffInput = HandoffInput.Handoff,
                                         getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                             nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                         }
@@ -289,28 +305,57 @@ class RobotTwoAuto(
                         },
                         yellowDepositSequence = { propPosition ->
                             listOf(
-                                blankAutoState.copy(
-                                        drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= -0.5)),
-                                        depoInput = DepoInput.Preset1,
-                                        handoffInput = HandoffInput.Handoff,
-                                        wristInput = WristInput(
-                                                left = ClawInput.Drop,
-                                                right = ClawInput.Drop
-                                        ),
-                                        getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                            val wristIsAtPosition = wrist.wristIsAtPosition(
-                                                    target = Wrist.WristTargets(
-                                                            left = Claw.ClawTarget.Retracted,
-                                                            right = Claw.ClawTarget.Retracted
-                                                    ),
-                                                    actual = actualWorld.actualRobot.depoState.wristAngles
-                                            )
-                                            nextTargetFromCondition(wristIsAtPosition, targetWorld)
-                                        }
-                                ),
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
+                                            depoInput = DepoInput.Down,
+                                            handoffInput = HandoffInput.Handoff,
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                nextTargetFromCondition(checkIfHandoffIsDone(targetWorld), targetWorld)
+                                            }
+                                    ),
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
+                                            depoInput = DepoInput.Preset1,
+                                            handoffInput = HandoffInput.Handoff,
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                val liftIsAtPosition = lift.isLiftAtPosition(targetWorld.targetRobot.depoTarget.lift.targetPosition.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
+                                                nextTargetFromCondition(liftIsAtPosition, targetWorld)
+                                            }
+                                    ),
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
+                                            depoInput = DepoInput.Preset1,
+                                            handoffInput = HandoffInput.NoInput,
+//                                            wristInput = WristInput(
+//                                                    left = ClawInput.Drop,
+//                                                    right = ClawInput.Drop
+//                                            ),
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                val wristIsAtPosition = wrist.wristIsAtPosition(
+                                                        target = Wrist.WristTargets(
+                                                                left = Claw.ClawTarget.Retracted,
+                                                                right = Claw.ClawTarget.Retracted
+                                                        ),
+                                                        actual = actualWorld.actualRobot.depoState.wristAngles
+                                                )
+                                                nextTargetFromCondition(wristIsAtPosition, targetWorld)
+                                            }
+                                    ),
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower()),
+                                            depoInput = DepoInput.Down,
+                                            handoffInput = HandoffInput.NoInput,
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                val liftIsDown = !lift.isLiftAbovePosition(
+                                                        targetPositionTicks = targetWorld.targetRobot.depoTarget.lift.targetPosition.ticks,
+                                                        actualLiftPositionTicks = actualWorld.actualRobot.depoState.lift.currentPositionTicks
+                                                )
+                                                nextTargetFromCondition(liftIsDown, targetWorld)
+                                            }
+                                    ),
                             )
                         },
-                        cyclePath = { propPosition ->
+                        driveToStackFromBoard = { propPosition ->
                             listOf(
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
@@ -319,7 +364,8 @@ class RobotTwoAuto(
                                                     r = 0.0,
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                val liftIsOkToDriveUnderTruss = checkIfLiftIsOkToDriveUnderTruss(actualWorld)
+                                                nextTargetFromCondition(liftIsOkToDriveUnderTruss && isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
                                     ),
                                     blankAutoState.copy(
@@ -336,17 +382,21 @@ class RobotTwoAuto(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
                                                     x = -50.0,
                                                     y = 40.0,
-                                                    r = -35.0,
+                                                    r = -30.0,
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 nextTargetFromCondition(isRobotAtAngle(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
                                     ),
+                            )
+                        },
+                        collectFromStack = { propPosition ->
+                            listOf(
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                    x = -50.0,
+                                                    x = -45.0,
                                                     y = 40.0,
-                                                    r = -35.0,
+                                                    r = -25.0,
                                             )),
                                             extendoInput = ExtendoPositions.CollectFromStack,
                                             intakeInput = IntakeInput.Intake,
@@ -360,6 +410,10 @@ class RobotTwoAuto(
                                                 nextTargetFromCondition(weGotTwoPixels || timeIsUp, targetWorld)
                                             }
                                     ),
+                            )
+                        },
+                        driveToBoardFromStack = { propPosition ->
+                            listOf(
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
                                                     x = startPosition.x + 2.5,
@@ -367,7 +421,8 @@ class RobotTwoAuto(
                                                     r = 0.0,
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                val liftIsOkToDriveUnderTruss = checkIfLiftIsOkToDriveUnderTruss(actualWorld)
+                                                nextTargetFromCondition(liftIsOkToDriveUnderTruss && isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
                                     ),
                                     blankAutoState.copy(
@@ -386,6 +441,7 @@ class RobotTwoAuto(
                                                     y = -53.0,
                                                     r = 0.0,
                                             )),
+                                            handoffInput = HandoffInput.Handoff,
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
@@ -427,8 +483,14 @@ class RobotTwoAuto(
                         yellowDepositSequence = { propPosition ->
                             listOf()
                         },
-                        cyclePath = { propPosition ->
-                                    listOf()
+                        driveToStackFromBoard = { propPosition ->
+                            listOf()
+                        },
+                        collectFromStack = { propPosition ->
+                            listOf()
+                        },
+                        driveToBoardFromStack = { propPosition ->
+                            listOf()
                         },
                         parkPath = listOf()
                 )

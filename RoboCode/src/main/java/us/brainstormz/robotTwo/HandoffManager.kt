@@ -71,6 +71,8 @@ class HandoffManager(
 
             val depo: DepoHandoffControlDecision,
             val wrist: HandoffSidedOutput,
+
+            val handoffCompleted: Boolean
     ) {
 
         enum class PixelHolder {
@@ -281,6 +283,7 @@ class HandoffManager(
                         left = HandoffCoordinated.HandoffCommand.Passthrough,
                         right = HandoffCoordinated.HandoffCommand.Passthrough
                     ),
+                    handoffCompleted = true
             )
         } else {
             val targetDepoIsDown = inputConstraints.depo == DepoCoordinationStates.ReadyToHandoff
@@ -304,14 +307,16 @@ class HandoffManager(
                     depo = depoControlDecision,
 
                     latches = latches,
-                    wrist = wrist
+                    wrist = wrist,
+                    handoffCompleted = false
             )
         }
     }
 
     data class CollectorDepositorTarget(
             val collector: CollectorTarget,
-            val depo: DepoTarget
+            val depo: DepoTarget,
+            val handoffCompleted: Boolean
     )
     fun manageHandoff(
         wristInput: RobotTwoTeleOp.WristInput,
@@ -483,8 +488,9 @@ class HandoffManager(
         )
 
         return CollectorDepositorTarget(
-                coordinatedCollector,
-                coordinatedDepo
+                collector = coordinatedCollector,
+                depo = coordinatedDepo,
+                handoffCompleted = handoffCoordinated.handoffCompleted
         )
     }
 

@@ -53,6 +53,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
     }
 
     enum class DepoInput {
+        YellowPlacement,
         Preset1,
         Preset2,
         Preset3,
@@ -796,7 +797,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                                             power = 0.0)
                                 }
                             },
-                    )
+                    ),
+                    handoffCompleted = false
             )
         } else {
             val previousExtendoTargetPosition = previousTargetState.targetRobot.collectorTarget.extendo.targetPosition

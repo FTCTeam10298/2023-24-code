@@ -36,6 +36,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
             RobotTwoTeleOp.DepoInput.Preset3 -> LiftPositions.SetLine2
             RobotTwoTeleOp.DepoInput.Preset4 -> LiftPositions.SetLine3
             RobotTwoTeleOp.DepoInput.Down -> LiftPositions.Down
+            RobotTwoTeleOp.DepoInput.YellowPlacement -> LiftPositions.AutoLowYellowPlacement
 //            RobotTwoTeleOp.DepoInput.NoInput -> LiftPositions.Nothing
 //            RobotTwoTeleOp.DepoInput.ScoringHeightAdjust -> SlideSubsystem.VariableTargetPosition(ticks = position.toInt())
 //            RobotTwoTeleOp.DepoInput.Manual -> SlideSubsystem.VariableTargetPosition(0)
