@@ -260,7 +260,6 @@ class HandoffManager(
         val bothPixelsAreWithFinalOwner = leftPixelStatus.pixelIsWithFinalOwner && rightPixelStatus.pixelIsWithFinalOwner
 
         val depoIsNotOut = actualDepo != ActualSlideStates.NotReady
-        val targetDepoIsDown = inputConstraints.depo == DepoCoordinationStates.ReadyToHandoff
         val doHandoff = Side.entries.fold(false) { acc, side ->
             acc || inputConstraints.targetPixelControlStates.getBySide(side) != TargetPixelControlState.ControlledByCollector
         }
@@ -282,6 +281,12 @@ class HandoffManager(
                     ),
             )
         } else {
+            val targetDepoIsDown = inputConstraints.depo == DepoCoordinationStates.ReadyToHandoff
+            val depoControlDecision = if (!targetDepoIsDown) {
+                DepoHandoffControlDecision.DriverControlledPosition
+            } else {
+                DepoHandoffControlDecision.HandoffPosition
+            }
 
             val latches = HandoffCoordinated.HandoffSidedOutput(
                 left = latchFromTargetController(leftPixelStatus.targetOwner),
@@ -294,7 +299,7 @@ class HandoffManager(
 
             HandoffCoordinated(
                     extendo = ExtendoHandoffControlDecision.HandoffPosition,
-                    depo = DepoHandoffControlDecision.HandoffPosition,
+                    depo = depoControlDecision,
 
                     latches = latches,
                     wrist = wrist
