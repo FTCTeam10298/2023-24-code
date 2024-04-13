@@ -314,7 +314,6 @@ class HandoffManager(
             val depo: DepoTarget
     )
     fun manageHandoff(
-        handoffInput: RobotTwoTeleOp.HandoffInput,
         wristInput: RobotTwoTeleOp.WristInput,
         depoInput: RobotTwoTeleOp.DepoInput,
         extendoInput: RobotTwoTeleOp.ExtendoInput,

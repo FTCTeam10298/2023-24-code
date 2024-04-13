@@ -862,7 +862,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
             //Left and right claws are switched for driver one
             handoffManager.manageHandoff(
-                    handoffInput = driverInput.handoff,
                     wristInput = driverInput.wrist,
                     depoInput = repeatDriverInputForDepo.depo,
                     extendoInput = driverInput.extendo,
@@ -1060,6 +1059,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                 handoffInput = HandoffInput.NoInput,
                 wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
                 extendoInput = Extendo.ExtendoPositions.Min,
+                intakeInput = RobotTwoAuto.IntakeInput.NoInput,
                 getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> throw Exception("Why are you running?") }
         )
 

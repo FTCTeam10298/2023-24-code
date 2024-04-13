@@ -14,7 +14,7 @@ import kotlin.math.sin
 class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val telemetry: Telemetry): DualMovementModeSubsystem, MecanumMovement(localizer, hardware, telemetry) {
 
     @Serializable
-    data class DrivetrainPower(val x: Double, val y: Double, val r: Double) {
+    data class DrivetrainPower(val x: Double = 0.0, val y: Double = 0.0, val r: Double = 0.0) {
         constructor() : this(0.0, 0.0, 0.0)
         operator fun plus(other: DrivetrainPower): DrivetrainPower {
             return DrivetrainPower(

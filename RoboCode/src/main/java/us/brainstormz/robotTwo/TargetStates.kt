@@ -48,6 +48,7 @@ data class AutoInput (
         val handoffInput: RobotTwoTeleOp.HandoffInput,
         val wristInput: RobotTwoTeleOp.WristInput,
         val extendoInput: Extendo.ExtendoPositions,
+        val intakeInput: RobotTwoAuto.IntakeInput,
         @get:JsonIgnore
         val getNextInput: (actualWorld: ActualWorld, previousActualWorld: ActualWorld, targetWorld: TargetWorld) -> AutoInput
 )
