@@ -93,11 +93,6 @@ fun returnCamCentricCoordsInTagCentricCoordsPartDeux(anyOldTag: CameraRelativePo
 
 }
 
-fun evaluateAprilTagAccuracy(detectedPoint: TagRelativePointInSpace) {
-    val square0_1 = org.opencv.core.Point(0.0, 0.0)
-
-}
-
 //private fun returnTagCentricCoordsInFieldCoords(cameraXOffset: Double, cameraYOffset: Double, targetAprilTagID: Int, inputTagRelative: TagRelativePointInSpace): FieldRelativePointInSpace {
 //
 //    var aprilTagLocalization = AprilTagLocalizationOTron(
@@ -144,9 +139,11 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
     //
     //x is always
 
-    //TODO: Switch between alliance side error sets depending on recognization - test with initial points
+    //TODO: Switch between two sets of two sets of errors. (or do we? Can't James handle that?)
+
     //TODO: Return a Boolean for one-inch accurate measurement
-    //TODO: Remove Crashes
+
+    //TODO: Remove Crashes - testing passively.
 //    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
 //            xInches = 0.47,
 //            yInches = 2.58,
@@ -248,7 +245,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
                 val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 
-                val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)!!
+                val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
                 val detectionAllianceSide = allDetectionData?.allianceSide
                 val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
@@ -257,9 +254,9 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                     println(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
                     //
                     println(String.format("XYH %6.1f %6.1f %6.1f  (inch, inch, deg)",
-                            detectionFieldCoords.xInches,
-                            detectionFieldCoords.yInches,
-                            detectionFieldCoords.headingDegrees))
+                            detectionFieldCoords?.xInches,
+                            detectionFieldCoords?.yInches,
+                            detectionFieldCoords?.headingDegrees))
 
                     println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
 
@@ -299,7 +296,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
         if (theTargetAprilTag != null) {
             val theTargetAprilTagPositionInfo = localizer.returnAprilTagInFieldCentricCoords(theTargetAprilTag)
-            val theTargetAprilTagPositionTagRelative = theTargetAprilTagPositionInfo!!.TagRelativePointInSpace
+            val theTargetAprilTagPositionTagRelative = theTargetAprilTagPositionInfo.TagRelativePointInSpace
             val theTargetAprilTagPositionFieldRelative = theTargetAprilTagPositionInfo.FieldRelativePointInSpace
 
             telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag.id, "WAS YOUR SELECTED TAG, AND I FOUND IT!"))
@@ -328,9 +325,9 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 //                println("Robot Y: ${theTargetAprilTagPosition?.yInches}")
 //                println("Robot Bearing: ${theTargetAprilTagPosition?.headingDegrees}")
 
-//                println("Field X: ${theTargetAprilTagPositionFieldRelative!!.xInches}")
-//                println("Robot Y: ${theTargetAprilTagPositionFieldRelative!!.yInches}")
-//                println("Robot Bearing: ${theTargetAprilTagPositionFieldRelative!!.headingDegrees}")
+//                println("Field X: ${theTargetAprilTagPositionFieldRelative?.xInches}")
+//                println("Robot Y: ${theTargetAprilTagPositionFieldRelative?.yInches}")
+//                println("Robot Bearing: ${theTargetAprilTagPositionFieldRelative?.headingDegrees}")
                 println("Least Distorted Apriltag: $idOfLeastDistortedTag")
 
 
@@ -344,7 +341,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 //
 //                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
                 val muchData = aprilTagLocalization.getAprilTagLocation(detection.id)
-//                telemetry.addLine("Random Madness!! $muchData")
+//                telemetry.addLine("Random Madness? $muchData")
 
 
 //            } else {

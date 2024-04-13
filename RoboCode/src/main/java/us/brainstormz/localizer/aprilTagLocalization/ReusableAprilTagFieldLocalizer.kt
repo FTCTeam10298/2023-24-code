@@ -42,41 +42,38 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
 
     }
 
-    fun returnAprilTagInFieldCentricCoords(aprilTag: AprilTagDetection): AprilTagAndData? {
+    fun returnAprilTagInFieldCentricCoords(aprilTag: AprilTagDetection): AprilTagAndData {
         //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
 
         //you need to look at the diagram to get this.
 
         //getting l
 
-        if (aprilTag != null) {
-            val thisAprilTagPose = aprilTag.ftcPose
-            val representationOfAprilTag = CameraRelativePointInSpace(
-                    xInches=thisAprilTagPose.x,
-                    yInches=thisAprilTagPose.y,
-                    yawDegrees=thisAprilTagPose.yaw)
+        val thisAprilTagPose = aprilTag.ftcPose
+        val representationOfAprilTag = CameraRelativePointInSpace(
+                xInches=thisAprilTagPose.x,
+                yInches=thisAprilTagPose.y,
+                yawDegrees=thisAprilTagPose.yaw)
 
-            val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoordsPartDeux(representationOfAprilTag)
-            val resultPositionInTagCentric = TagRelativePointInSpace(
-                    thisTagInTagCentricCoords.xInches,
-                    thisTagInTagCentricCoords.yInches,
-                    thisTagInTagCentricCoords.headingDegrees)
+        val thisTagInTagCentricCoords = returnCamCentricCoordsInTagCentricCoordsPartDeux(representationOfAprilTag)
+        val resultPositionInTagCentric = TagRelativePointInSpace(
+                thisTagInTagCentricCoords.xInches,
+                thisTagInTagCentricCoords.yInches,
+                thisTagInTagCentricCoords.headingDegrees)
 
-            val alliancePositionOfTag: AllianceSide = when(aprilTag.id) {
-                1, 2, 3 -> AllianceSide.Blue
-                4, 5, 6 -> AllianceSide.Red
+        val alliancePositionOfTag: AllianceSide = when(aprilTag.id) {
+            1, 2, 3 -> AllianceSide.Blue
+            4, 5, 6 -> AllianceSide.Red
 
-                //this should never happen, but we have some weirdness
-                else -> AllianceSide.Blue
-            }
-
-            val thisTagInFieldCentricCoords = aprilTagLocalization.getCameraPositionOnField(aprilTagID = aprilTag.id, thisTagInTagCentricCoords, alliancePositionOfTag)
-
-            val resultPositionInJamesFieldCoords = returnFieldCentricCoordsInJamesFieldCoords(thisTagInFieldCentricCoords, alliancePositionOfTag)
-
-            return AprilTagAndData(aprilTag, representationOfAprilTag!!, resultPositionInTagCentric, resultPositionInJamesFieldCoords, alliancePositionOfTag)
+            //this should never happen, but we have some weirdness
+            else -> AllianceSide.Blue
         }
-        else return null
+
+        val thisTagInFieldCentricCoords = aprilTagLocalization.getCameraPositionOnField(aprilTagID = aprilTag.id, thisTagInTagCentricCoords, alliancePositionOfTag)
+
+        val resultPositionInJamesFieldCoords = returnFieldCentricCoordsInJamesFieldCoords(thisTagInFieldCentricCoords, alliancePositionOfTag)
+
+        return AprilTagAndData(aprilTag, representationOfAprilTag, resultPositionInTagCentric, resultPositionInJamesFieldCoords, alliancePositionOfTag)
     }
 
     enum class AllianceSide{
