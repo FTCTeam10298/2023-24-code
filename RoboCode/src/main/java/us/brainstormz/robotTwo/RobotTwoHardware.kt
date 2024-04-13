@@ -75,7 +75,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         val robotWidthInches = 16.21457
         val tabCutoffCompensationInches = 0.5
         val redStartingXInches = -(72.0 - ((robotLengthInches/2) + tabCutoffCompensationInches))
-        val redStartingRDegrees = -90.0
+        val redStartingRDegrees = 90.0
     }
 
     override lateinit var imu: IMU
@@ -396,19 +396,27 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
 
         /**Lift*/
         measured("lift") {
+            println("before lift")
             val liftPower: Double = when (targetState.targetRobot.depoTarget.lift.movementMode) {
                 MovementMode.Position -> {
-                    lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
+                    println("before lift position")
+                    val power = lift.calculatePowerToMoveToPosition(targetState.targetRobot.depoTarget.lift.targetPosition.ticks, actualState.actualRobot.depoState.lift.currentPositionTicks)
+                    println("after lift position")
+                    power
                 }
                 MovementMode.Power -> {
+                    println("before lift power")
                     telemetry.addLine("Running lift in manual mode at power ${targetState.targetRobot.depoTarget.lift.power}")
-                    targetState.targetRobot.depoTarget.lift.power
+                    val power = targetState.targetRobot.depoTarget.lift.power
+                    println("after lift power")
+                    power
                 }
             }
-
+            println("after lift calc power")
             telemetry.addLine("lift position: ${targetState.targetRobot.depoTarget.lift.targetPosition}")
             telemetry.addLine("lift power: $liftPower\n\n")
             lift.powerSubsystem(liftPower, this)
+            println("after lift apply power")
         }
 
         /**Arm*/

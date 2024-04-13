@@ -31,13 +31,13 @@ class AutoTest {
     fun runTest(testSteps: List<ActualWorld>, numberOfTimesToRunInitLoop: Int): List<Pair<ActualWorld, TargetWorld>> {
         val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
         val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
-        val program = RobotTwoAuto(opmode.telemetry, AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution))
-        val openCvAbstraction = FauxOpenCvAbstraction(opmode)
+        val program = RobotTwoAuto(opmode.telemetry)//, AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution))
+//        val openCvAbstraction = FauxOpenCvAbstraction(opmode)
 
-        program.init(hardware, openCvAbstraction)
+        program.init(hardware)
 
         for (i in 1..numberOfTimesToRunInitLoop) {
-            program.initLoop(hardware, openCvAbstraction, gamepad1 = blankGamepad())
+            program.initLoop(hardware, gamepad1 = blankGamepad())
         }
 
         val results:List<Pair<ActualWorld, TargetWorld>> = testSteps.mapIndexed() { index, actualWorld ->
@@ -45,7 +45,7 @@ class AutoTest {
             hardware.actualRobot = actualWorld.actualRobot
 
             //Start
-            program.start(hardware, openCvAbstraction)
+            program.start(hardware)
 
             //Run Once
             for (i in 1..numberOfTimesToRunInitLoop) {

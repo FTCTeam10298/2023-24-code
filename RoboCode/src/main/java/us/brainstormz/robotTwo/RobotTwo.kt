@@ -46,12 +46,12 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
 
     lateinit var drivetrain: Drivetrain
     fun initRobot(hardware: RobotTwoHardware, localizer: Localizer) {
-        FtcRobotControllerActivity.instance?.let{ controller ->
-            statsDumper = StatsDumper(reportingIntervalMillis = 1000, controller)
-            statsDumper.start()
-        }
-        stateDumper = StateDumper(reportingIntervalMillis = 1000, functionalReactiveAutoRunner)
-        stateDumper.start()
+//        FtcRobotControllerActivity.instance?.let{ controller ->
+//            statsDumper = StatsDumper(reportingIntervalMillis = 1000, controller)
+//            statsDumper.start()
+//        }
+//        stateDumper = StateDumper(reportingIntervalMillis = 1000, functionalReactiveAutoRunner)
+//        stateDumper.start()
 
         drivetrain = Drivetrain(hardware, localizer, telemetry)
 
@@ -143,9 +143,9 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
             telemetry.addLine("loop time: $loopTime milis")
             telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime()} milis")
 
-            measured("expensiveTelemetryLines-addLine"){
-                stateDumper.lines().forEach(telemetry::addLine)
-            }
+//            measured("expensiveTelemetryLines-addLine"){
+//                stateDumper.lines().forEach(telemetry::addLine)
+//            }
 
             telemetry.update()
         }

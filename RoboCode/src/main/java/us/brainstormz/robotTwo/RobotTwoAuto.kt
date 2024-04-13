@@ -1,6 +1,5 @@
 package us.brainstormz.robotTwo
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.openftc.easyopencv.OpenCvCameraRotation
@@ -22,68 +21,17 @@ import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
 import us.brainstormz.robotTwo.subsystems.Intake
-import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.utils.measured
-import kotlin.math.absoluteValue
 
 
 class RobotTwoAuto(
     private val telemetry: Telemetry,
-    private val aprilTagPipeline: AprilTagPipeline
 ): RobotTwo(telemetry) {
-
-    private val blankAutoState = AutoInput(
-            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
-            depoInput = DepoInput.NoInput,
-            handoffInput = HandoffInput.NoInput,
-            wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
-            extendoInput = ExtendoPositions.Min,
-            getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> getNextTargetFromList() }
-    )
-
-    private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
-        val taskStartedTimeMilis = targetWorld.timeTargetStartedMilis
-        val timeSinceTargetStarted = System.currentTimeMillis() - taskStartedTimeMilis
-        return timeSinceTargetStarted >= timeToElapseMilis
-    }
-
-    private fun isRobotAtPosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld, precisionInches: Double = drivetrain.precisionInches, precisionDegrees: Double = drivetrain.precisionDegrees): Boolean {
-        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = precisionInches, precisionDegrees = precisionDegrees)
-    }
-
-
-    private val autoStateList: List<AutoInput> = listOf(
-            blankAutoState.copy(
-                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
-                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                    }
-            ),
-            blankAutoState.copy(
-                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(x = 10.0)),
-                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                    }
-            ),
-            blankAutoState.copy(
-                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(10.0, 10.0)),
-                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                    }
-            ),
-            blankAutoState.copy(
-                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(10.0, 10.0, 90.0)),
-                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                    }
-            ),
-    )
-
-
 
     fun getTargetWorldFromAutoInput(autoInput: AutoInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetWorld: TargetWorld): TargetWorld {
 
+        telemetry.addLine("looping at getTargetWorldFromAutoInput level")
         /**Handoff*/
         val transferState = transfer.getTransferState(
                 actualWorld = actualWorld,
@@ -102,7 +50,7 @@ class RobotTwoAuto(
 
         val uncoordinatedCollectorTarget = CollectorTarget(
                 intakeNoodles = Intake.CollectorPowers.Off,
-                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Init),
                 timeOfEjectionStartMilis = 0,
                 timeOfTransferredMillis = 0,
                 transferSensorState = transferState,
@@ -151,55 +99,203 @@ class RobotTwoAuto(
         )
     }
 
-
-    data class AutoInput (
-            val drivetrainTarget: Drivetrain.DrivetrainTarget,
-            val depoInput: DepoInput,
-            val handoffInput: HandoffInput,
-            val wristInput: WristInput,
-            val extendoInput: ExtendoPositions,
-            @get:JsonIgnore
-            val getNextInput: (actualWorld: ActualWorld, previousActualWorld: ActualWorld, targetWorld: TargetWorld) -> AutoInput
+    private val blankAutoState = AutoInput(
+            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
+            depoInput = DepoInput.NoInput,
+            handoffInput = HandoffInput.NoInput,
+            wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
+            extendoInput = ExtendoPositions.Min,
+            getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> getNextTargetFromList(previousAutoInput= previousTargetWorld.autoInput!!) }
     )
 
-    private fun nextTargetFromCondition(condition: Boolean, targetWorld: TargetWorld): AutoInput {
-        return if (condition) {
-            getNextTargetFromList()
-        } else {
-            targetWorld.autoInput ?: getNextTargetFromList()
-        }
+    private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
+        val taskStartedTimeMilis = targetWorld.timeTargetStartedMilis
+        val timeSinceTargetStarted = System.currentTimeMillis() - taskStartedTimeMilis
+        return timeSinceTargetStarted >= timeToElapseMilis
     }
 
-    private fun getNextTargetFromList(): AutoInput {
-        return if (autoListIterator.hasNext()) {
-            autoListIterator.next()
-        } else {
-            autoStateList.last()
-        }
+    private fun isRobotAtPosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld, precisionInches: Double = drivetrain.precisionInches, precisionDegrees: Double = drivetrain.precisionDegrees): Boolean {
+        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = precisionInches, precisionDegrees = precisionDegrees)
     }
 
-    private lateinit var autoListIterator: ListIterator<AutoInput>
-    private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
-        return if (previousTargetState != null && previousActualState != null) {
-            previousTargetState.autoInput?.getNextInput?.invoke(actualState, previousActualState, previousTargetState)
-                    ?: getNextTargetFromList()
-        } else {
-            getNextTargetFromList()
-        }
+    private fun isRobotAtPrecisePosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld): Boolean {
+        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = 2.0, precisionDegrees = 5.0)
     }
 
-
-    private fun flipRedPositionToBlue(positionAndRotation: PositionAndRotation): PositionAndRotation {
-        return positionAndRotation.copy(x= -positionAndRotation.x, r= -positionAndRotation.r)
+    /** Path assembly */
+    data class PathPreAssembled(val purplePlacementPath: (PropPosition)->List<AutoInput>, val driveToBoardPath: (PropPosition)->List<AutoInput>, val yellowDepositPath: (PropPosition)->List<AutoInput>, val parkPath: List<AutoInput>) {
+        fun assemblePath(propPosition: PropPosition): List<AutoInput> {
+            return  purplePlacementPath(propPosition) +
+                    driveToBoardPath(propPosition) +
+                    yellowDepositPath(propPosition) +
+                    parkPath
+        }
     }
 
     enum class StartPosition(val redStartPosition: PositionAndRotation) {
         Backboard(PositionAndRotation(  x = RobotTwoHardware.redStartingXInches,
-            y= -12.0,
-            r= RobotTwoHardware.redStartingRDegrees)),
+                y= -12.0,
+                r= RobotTwoHardware.redStartingRDegrees)),
         Audience(PositionAndRotation(   x = RobotTwoHardware.redStartingXInches,
-            y= 36.0,
-            r= RobotTwoHardware.redStartingRDegrees))
+                y= 36.0,
+                r= RobotTwoHardware.redStartingRDegrees))
+    }
+
+    private fun calcAutoTargetStateList(
+            alliance: RobotTwoHardware.Alliance,
+            startingSide: StartPosition,
+            propPosition: PropPosition
+    ): List<AutoInput> {
+        val startPosition = startingSide.redStartPosition
+
+        val redPath: PathPreAssembled = when (startingSide) {
+            StartPosition.Backboard -> {
+                PathPreAssembled(
+                        purplePlacementPath = { propPosition ->
+                            when (propPosition) {
+                                PropPosition.Left -> listOf(
+
+                                )
+                                PropPosition.Center -> listOf(
+
+                                )
+                                PropPosition.Right -> listOf(
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(10.0)),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+//                                        blankAutoState.copy(
+//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
+//                                                        x = startPosition.x + 24,
+//                                                        y = startPosition.y - 6,
+//                                                        r = startPosition.r - 30,
+//                                                )),
+//                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+//                                                    telemetry.addLine("get next from 1")
+//                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+//                                                }
+//                                        ),
+//                                        blankAutoState.copy(
+//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
+//                                                        x = startPosition.x + 22,
+//                                                        y = startPosition.y - 4,
+//                                                        r = startPosition.r - 30,
+//                                                )),
+//                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+//                                                    telemetry.addLine("get next from 2")
+//                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+//                                                }
+//                                        ),
+//                                        blankAutoState.copy(
+//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
+//                                                        x = startPosition.x + 10,
+//                                                        y = -55.0,
+//                                                        r = 180.0,
+//                                                )),
+//                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+//                                                    telemetry.addLine("get next from 3")
+//                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+//                                                }
+//                                        ),
+                                )
+                            }
+                        },
+                        driveToBoardPath = { propPosition ->
+                            listOf()
+                        },
+                        yellowDepositPath = { propPosition ->
+                            listOf()
+                        },
+                        parkPath = listOf()
+                )
+            }
+            StartPosition.Audience -> {
+                PathPreAssembled(
+                        purplePlacementPath = { propPosition ->
+                            listOf()
+                        },
+                        driveToBoardPath = { propPosition ->
+                            listOf()
+                        },
+                        yellowDepositPath = {propPosition ->
+                            listOf()
+                        },
+                        parkPath = listOf()
+                )
+            }
+        }
+
+        val allianceIsColorBlue = alliance == RobotTwoHardware.Alliance.Blue
+        val propPositionSwappedToMatchBlue = when (propPosition) {
+            PropPosition.Left -> PropPosition.Right
+            PropPosition.Center -> PropPosition.Center
+            PropPosition.Right -> PropPosition.Left
+        }
+        val adjustedPropPosition = if (allianceIsColorBlue) {
+            propPositionSwappedToMatchBlue
+        } else {
+            propPosition
+        }
+
+        val allianceMirroredAndAsList = if (allianceIsColorBlue) {
+            mirrorRedAutoToBlue(redPath.assemblePath(adjustedPropPosition))
+        } else {
+            redPath.assemblePath(adjustedPropPosition)
+        }
+
+        return allianceMirroredAndAsList
+    }
+
+    private fun mirrorRedAutoToBlue(auto: List<AutoInput>): List<AutoInput> {
+        return auto.map { autoInput ->
+            val flippedBluePosition = flipRedPositionToBlue(autoInput.drivetrainTarget.targetPosition)
+            autoInput.copy(
+                    drivetrainTarget = autoInput.drivetrainTarget.copy(
+                            targetPosition = flippedBluePosition
+                    )
+            )
+        }
+    }
+    private fun flipRedPositionToBlue(positionAndRotation: PositionAndRotation): PositionAndRotation {
+        return positionAndRotation.copy(x= -positionAndRotation.x, r= -positionAndRotation.r)
+    }
+
+
+
+
+    private fun nextTargetFromCondition(condition: Boolean, targetWorld: TargetWorld): AutoInput {
+        return if (condition) {
+            getNextTargetFromList(targetWorld.autoInput!!)
+        } else {
+            targetWorld.autoInput ?: getNextTargetFromList(blankAutoState)
+        }
+    }
+
+    private fun getNextTargetFromList(previousAutoInput: AutoInput): AutoInput {
+        return if (autoListIterator.hasNext()) {
+            autoListIterator.next()
+        } else {
+            blankAutoState
+        }
+    }
+
+    private lateinit var autoStateList: List<AutoInput>
+    private lateinit var autoListIterator: ListIterator<AutoInput>
+    private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
+        return if (previousTargetState != null && previousActualState != null) {
+            previousTargetState.autoInput!!.getNextInput?.invoke(actualState, previousActualState, previousTargetState)
+                    ?: getNextTargetFromList(blankAutoState)
+        } else {
+            getNextTargetFromList(blankAutoState)
+        }
     }
 
     private val console = TelemetryConsole(telemetry)
@@ -224,22 +320,14 @@ class RobotTwoAuto(
     private var startPosition: StartPosition = StartPosition.Backboard
 
     private var propDetector: RobotTwoPropDetector? = null
-
-    fun init(hardware: RobotTwoHardware, opencv: OpenCvAbstraction) {
+    fun init(hardware: RobotTwoHardware) {
         initRobot(
             hardware = hardware,
             localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         )
 
-
-        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "partnerYellow", firstMenu = true)
-        wizard.newMenu("partnerYellow", "What will our partner be placing on the board?", listOf("Yellow", "Nothing"), nextMenu = "startingPos")
-        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience" to "doYellow", "Backboard" to null))
-        wizard.newMenu("doYellow", "What do we do after the purple?", listOf("Yellow", "Nothing"))
-
-        opencv.internalCamera = false
-        opencv.cameraName = "Webcam 1"
-        opencv.cameraOrientation = OpenCvCameraRotation.UPRIGHT
+        telemetry.addLine("init Called")
+        telemetry.addLine("init Called")
     }
 
     private fun runCamera(opencv: OpenCvAbstraction, wizardResults: WizardResults) {
@@ -252,46 +340,55 @@ class RobotTwoAuto(
     }
 
     private var wizardResults: WizardResults? = null
-    fun initLoop(hardware: RobotTwoHardware, opencv: OpenCvAbstraction, gamepad1: SerializableGamepad) {
+    fun initLoop(hardware: RobotTwoHardware, gamepad1: SerializableGamepad) {
         if (wizardResults == null) {
-            val isWizardDone = wizard.summonWizard(gamepad1.theGamepad ?: Gamepad())
-            if (isWizardDone) {
-                wizardResults = getMenuWizardResults(gamepad1.theGamepad ?: Gamepad())
-
-                alliance = wizardResults!!.alliance
-                startPosition = wizardResults!!.startPosition
-
-                runCamera(opencv, wizardResults!!)
-            }
+//            val isWizardDone = wizard.summonWizard(gamepad1.theGamepad ?: Gamepad())
+//            if (isWizardDone) {
+//                wizardResults = getMenuWizardResults(gamepad1.theGamepad ?: Gamepad())
+//
+//                alliance = wizardResults!!.alliance
+//                startPosition = wizardResults!!.startPosition
+//
+//                runCamera(opencv, wizardResults!!)
+//            }
         } else {
-            telemetry.addLine("propPosition? = ${propDetector?.propPosition}")
+//            telemetry.addLine("propPosition? = ${propDetector?.propPosition}")
             telemetry.addLine("wizardResults = ${wizardResults}")
         }
+        telemetry.addLine("initLoop Called")
+        telemetry.addLine("initLoop Called")
     }
 
-    fun start(hardware: RobotTwoHardware, opencv: OpenCvAbstraction) {
-        val propPosition = propDetector?.propPosition ?: PropPosition.Right
-        try{
-            opencv.stop()
-        }catch (t:Throwable){
-            t.printStackTrace()
-            println("WARN: OPENCV Didn't stop cleanly")
-        }
+    fun start(hardware: RobotTwoHardware) {
+//        val propPosition = propDetector?.propPosition ?: PropPosition.Right
+//        try{
+//            opencv.stop()
+//        }catch (t:Throwable){
+//            t.printStackTrace()
+//            telemetry.addLine("WARN: OPENCV Didn't stop cleanly")
+//        }
 
         val startPositionAndRotation: PositionAndRotation = when (alliance) {
             RobotTwoHardware.Alliance.Red -> startPosition.redStartPosition
             RobotTwoHardware.Alliance.Blue -> flipRedPositionToBlue(startPosition.redStartPosition)
         }
 
+
+        autoStateList = calcAutoTargetStateList(alliance, startPosition, PropPosition.Right)
         autoListIterator = autoStateList.listIterator()
 
-//        drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
-        drivetrain.localizer.setPositionAndRotation(PositionAndRotation())
+        drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
+
+        telemetry.addLine("Auto Start Called")
+        telemetry.addLine("Auto Start Called")
+//        drivetrain.localizer.setPositionAndRotation(PositionAndRotation())
     }
 
 
     fun loop(hardware: RobotTwoHardware, gamepad1: SerializableGamepad) = measured("main loop"){
 
+        telemetry.addLine("looping at auto level")
+        telemetry.addLine("Looping")
         runRobot(
                 targetStateFetcher = { actualWorld, previousActualWorld, previousTargetWorld ->
 
@@ -300,6 +397,8 @@ class RobotTwoAuto(
                             previousActualWorld,
                             previousTargetWorld
                     )
+                    telemetry.addLine("auto: $newInput")
+                    telemetry.addLine("looping at targetStateFetcher level")
 
                     val previousActualWorld = previousActualWorld ?: TeleopTest.emptyWorld
                     val previousTargetWorld: TargetWorld = previousTargetWorld ?: initialPreviousTargetState

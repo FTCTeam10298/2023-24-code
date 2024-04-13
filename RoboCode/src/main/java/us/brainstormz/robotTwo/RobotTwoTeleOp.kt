@@ -1054,7 +1054,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         val initLatchTarget = Transfer.LatchTarget(Transfer.LatchPositions.Closed, 0)
 
-        val teleopAutoState = RobotTwoAuto.AutoInput(
+        val teleopAutoState = AutoInput(
                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
                 depoInput = DepoInput.NoInput,
                 handoffInput = HandoffInput.NoInput,
@@ -1073,7 +1073,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                 depoTarget = initDepoTarget,
                 collectorTarget = CollectorTarget(
                     intakeNoodles = Intake.CollectorPowers.Off,
-                    dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
+                    dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Init),
                     timeOfEjectionStartMilis = 0,
                     timeOfTransferredMillis = 0,
                     transferSensorState = Transfer.TransferSensorState(

@@ -1,10 +1,12 @@
 package us.brainstormz.robotTwo
 
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.vision.VisionPortal
 import us.brainstormz.faux.FauxLocalizer
+import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
 
@@ -34,39 +36,29 @@ class TeleOpMode: OpMode() {
 @Autonomous(name = "RobotTwoAuto", group = "!")
 class Autonomous: OpMode() {
 
-//    private val multiTelemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
-    private val multiTelemetry = telemetry
+    private val multiTelemetry = MultipleTelemetry(telemetry, PrintlnTelemetry())
+//    private val multiTelemetry = telemetry
     private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= multiTelemetry, opmode = this)
 
     private lateinit var auto: RobotTwoAuto
-    private val opencv: OpenCvAbstraction = OpenCvAbstraction(this)
-    private val aprilTagPipeline = AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution)
     override fun init() {
         hardware.init(hardwareMap)
 
-        val containerIds = VisionPortal.makeMultiPortalView(2, VisionPortal.MultiPortalLayout.HORIZONTAL)
-        aprilTagPipeline.init(containerIds.first(), hardwareMap)
+        auto = RobotTwoAuto(multiTelemetry)
 
-        opencv.init(hardwareMap, containerIds.last())
-
-        auto = RobotTwoAuto(multiTelemetry, aprilTagPipeline)
-
-        auto.init(hardware, opencv)
+        auto.init(hardware)
     }
 
     override fun init_loop() {
-        auto.initLoop(hardware, opencv, SerializableGamepad(gamepad1))
+        auto.initLoop(hardware, SerializableGamepad(gamepad1))
     }
 
     override fun start() {
-        auto.start(hardware, opencv)
+        auto.start(hardware)
     }
 
     override fun loop() {
+        telemetry.addLine("looping at highest level")
         auto.loop(hardware= hardware, SerializableGamepad(gamepad1))
-    }
-
-    override fun stop() {
-        aprilTagPipeline.close()
     }
 }
