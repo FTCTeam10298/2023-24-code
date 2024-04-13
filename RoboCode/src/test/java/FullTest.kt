@@ -6,16 +6,20 @@ import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.CompleteSnapshot
+import us.brainstormz.robotTwo.DepoManager
+import us.brainstormz.robotTwo.DepoTarget
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
 import us.brainstormz.robotTwo.SerializableGamepad
 import us.brainstormz.robotTwo.TargetWorld
 import us.brainstormz.robotTwo.localTests.FauxRobotTwoHardware
 import us.brainstormz.robotTwo.localTests.TeleopTest.Companion.emptyWorld
+import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.ColorReading
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.SlideSubsystem
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 
@@ -2236,6 +2240,86 @@ class FullTest {
         assertEqualsJson(
             Lift.LiftPositions.ClearForArmToMove,
             newTarget.targetRobot.depoTarget.lift.targetPosition)
+    }
+
+
+    @Test
+    fun `claws should close when a handoff is finished and input is to close claw`(){
+
+        val actualWorld = emptyWorld.copy(
+            actualRobot = emptyWorld.actualRobot.copy(
+                depoState = emptyWorld.actualRobot.depoState.copy(
+                    wristAngles = Wrist.ActualWrist(
+                        Claw.ClawTarget.Gripping.angleDegrees,
+                        Claw.ClawTarget.Gripping.angleDegrees
+                    ),
+                    lift = SlideSubsystem.ActualSlideSubsystem(
+                        Lift.LiftPositions.SetLine2.ticks,
+                        false, 0, 0, 0.0
+                    ),
+                    armAngleDegrees = Arm.Positions.Out.angleDegrees
+                ),
+            ),
+            actualGamepad2 = emptyWorld.actualGamepad2.copy(
+                right_bumper = true,
+                left_bumper = true
+            )
+        )
+
+        val previousTarget = initialPreviousTargetState.copy(
+            targetRobot = initialPreviousTargetState.targetRobot.copy(
+                depoTarget = DepoTarget(
+                    wristPosition = Wrist.WristTargets(
+                        Claw.ClawTarget.Gripping,
+                        Claw.ClawTarget.Gripping
+                    ),
+                    lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
+                    armPosition = Arm.ArmTarget(Arm.Positions.Out),
+                    targetType = DepoManager.DepoTargetType.GoingOut
+                ),
+                collectorTarget = initialPreviousTargetState.targetRobot.collectorTarget.copy(
+                    transferSensorState = Transfer.TransferSensorState(
+                        Transfer.SensorState(false, 0),
+                        Transfer.SensorState(false, 0),
+                    )
+                )
+            ),
+            driverInput = initialPreviousTargetState.driverInput.copy(
+                depo = RobotTwoTeleOp.DepoInput.Preset3
+            ),
+            doingHandoff = true
+        )
+
+        val now = actualWorld.timestampMilis + 1
+
+
+        // when
+        val newTarget = runTest(actualWorld, previousTarget, now)
+
+
+        // then
+//        val expectedTarget = previousTarget.copy(
+//            targetRobot = previousTarget.targetRobot.copy(
+//                depoTarget = previousTarget.targetRobot.depoTarget.copy(
+//                    wristPosition = Wrist.WristTargets(
+//                        Claw.ClawTarget.Retracted,
+//                        Claw.ClawTarget.Retracted
+//                    ),
+//                ),
+//            )
+//        )
+        val expectedTarget = DepoTarget(
+            wristPosition = Wrist.WristTargets(
+                Claw.ClawTarget.Retracted,
+                Claw.ClawTarget.Retracted
+            ),
+            lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
+            armPosition = Arm.ArmTarget(Arm.Positions.Out),
+            targetType = DepoManager.DepoTargetType.GoingOut
+        )
+
+        assertEqualsJson(expectedTarget,
+                        newTarget.targetRobot.depoTarget)
     }
 
 

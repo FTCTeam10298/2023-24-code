@@ -17,6 +17,7 @@ import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.robotTwo.DepoManager.*
+import us.brainstormz.robotTwo.localTests.TeleopTest.Companion.emptyWorld
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Claw.ClawTarget
@@ -777,7 +778,14 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
         val repeatDriverInputForDepo = driverInput.copy(
             depo = when {
                 handoffButtonPressed -> DepoInput.Down
-                driverInput.depo == DepoInput.NoInput && !handoffButtonPressed -> previousTargetState.driverInput.depo
+                driverInput.depo == DepoInput.NoInput -> {
+                    previousTargetState.driverInput.depo
+//                    if (!handoffButtonPressed) {
+//                        previousTargetState.driverInput.depo
+//                    } else {
+//
+//                    }
+                }
                 else -> driverInput.depo
             }
         )
@@ -909,7 +917,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
                     }
                 }
             }
-
 
             val uncoordinatedCollectorTarget = CollectorTarget(
                 intakeNoodles = intakeNoodleTarget,
@@ -1185,7 +1192,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry) {
 
                     telemetry.addLine("extendo current draw: ${actualState.actualRobot.collectorSystemState.extendo.currentAmps}")
 
-                    val previousActualState = previousActualState ?: actualState
+                    val previousActualState = previousActualState ?: emptyWorld//actualState
                     val previousTargetState: TargetWorld = previousTargetState ?: initialPreviousTargetState
                     val driverInput = getDriverInput(previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)
                     val targetWorld = getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualState, previousActualWorld= previousActualState)

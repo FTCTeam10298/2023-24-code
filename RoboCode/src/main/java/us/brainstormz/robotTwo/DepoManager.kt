@@ -56,21 +56,20 @@ class DepoManager(
         }
     }
 
-    var jankSave = WristTargets(Claw.ClawTarget.Gripping)
+//    var jankSave = WristTargets(Claw.ClawTarget.Gripping)
     fun getFinalDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, depoScoringHeightAdjust: Double, wristInput: WristTargets, previousWristTarget: WristTargets, previousDepoTargetType: DepoTargetType, actualLift: SlideSubsystem.ActualSlideSubsystem): DepoTarget? {
 
         //close applicable claws otherwise keep the same claw pos
         //If the depo is going out, then if handoff is yes then close applicable claws otherwise keep the same claw pos
         val depoTargetType = getDepoTargetTypeFromDepoInput(depoInput) ?: return null
 
-        if (previousDepoTargetType != depoTargetType) {
-//            jankSave = WristTargets(wristInput.left, wristInput.right)
-            jankSave = WristTargets(previousWristTarget.left, previousWristTarget.right)
-        }
+//        if (previousDepoTargetType != depoTargetType) {
+//            jankSave = WristTargets(previousWristTarget.left, previousWristTarget.right)
+//        }
 
         val wristTarget: WristTargets =
                 when (depoTargetType) {
-                    DepoTargetType.GoingOut -> WristTargets(jankSave.left, jankSave.right)
+                    DepoTargetType.GoingOut -> wristInput
                     DepoTargetType.GoingHome -> {
                         val liftIsAlreadyDown = !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualLift.currentPositionTicks)
                         if (liftIsAlreadyDown) {
