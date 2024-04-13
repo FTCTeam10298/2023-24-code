@@ -139,9 +139,9 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
     //
     //x is always
 
-    //TODO: Switch between two sets of two sets of errors. (or do we? Can't James handle that?)
+    //TODO: Switch between two sets of two sets of errors. (or do we? Can't James handle that?) -
 
-    //TODO: Return a Boolean for one-inch accurate measurement
+    //TODO: Return a Boolean for one-inch accurate measurement - Done.
 
     //TODO: Remove Crashes - testing passively.
 //    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
@@ -246,7 +246,8 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                 val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 
                 val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
-                val detectionAllianceSide = allDetectionData?.allianceSide
+                val detectionAllianceSide = allDetectionData?.AllianceSide
+                val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
                 val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
                 if (currentDetections.isNotEmpty()) {
@@ -261,7 +262,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                     println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
 
                     println(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
-                    println(String.format("We're on alliance side {$detectionAllianceSide}"))
+                    println(String.format("We're on alliance side {$detectionAllianceSide}, and our code says this measurement is accurate: {$detectionAccuracy}"))
                 }
             }
             val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)

@@ -43,6 +43,9 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
     }
 
     fun returnAprilTagInFieldCentricCoords(aprilTag: AprilTagDetection): AprilTagAndData {
+
+        var isTheMeasurementAccurateToOneInch = true
+
         //go look in the FTC documentation, you absolutely need to understand the FTC AprilTag Coordinate System
 
         //you need to look at the diagram to get this.
@@ -73,7 +76,17 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
 
         val resultPositionInJamesFieldCoords = returnFieldCentricCoordsInJamesFieldCoords(thisTagInFieldCentricCoords, alliancePositionOfTag)
 
-        return AprilTagAndData(aprilTag, representationOfAprilTag, resultPositionInTagCentric, resultPositionInJamesFieldCoords, alliancePositionOfTag)
+        if (resultPositionInJamesFieldCoords.yInches < 10 ){
+            isTheMeasurementAccurateToOneInch = false
+        }
+
+
+        return AprilTagAndData(AprilTag = aprilTag,
+                CamRelativePointInSpace = representationOfAprilTag,
+                TagRelativePointInSpace = resultPositionInTagCentric,
+                FieldRelativePointInSpace =  resultPositionInJamesFieldCoords,
+                AllianceSide = alliancePositionOfTag,
+                valueHasOneInchAccuracy = isTheMeasurementAccurateToOneInch)
     }
 
     enum class AllianceSide{
@@ -84,6 +97,6 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
 
     data class AprilTagAndData(val AprilTag: AprilTagDetection, val CamRelativePointInSpace: CameraRelativePointInSpace?,
                                val TagRelativePointInSpace: TagRelativePointInSpace?, val FieldRelativePointInSpace: FieldRelativePointInSpace?,
-                               val allianceSide: AllianceSide)
+                               val AllianceSide: AllianceSide, val valueHasOneInchAccuracy: Boolean)
 
 }
