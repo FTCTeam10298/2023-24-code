@@ -707,7 +707,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         val repeatDriverInputForDepo = driverInput.copy(
                 depo = when {
-                    handoffButtonPressed -> RobotTwoTeleOp.DepoInput.Down
+                    handoffButtonPressed -> DepoInput.Down
                     driverInput.depo == DepoInput.NoInput -> {
                         if (driverInput.bumperMode == Gamepad1BumperMode.Collector && previousTargetState.driverInput.bumperMode == Gamepad1BumperMode.Claws) {
                             DepoInput.Down
