@@ -290,9 +290,10 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //        hardware.init(hardwareMap)
 
         data class RetainedState(
-                val aPressed:Boolean,
-                val bPressed:Boolean,
-                val yPressed:Boolean
+                val aPressed: Boolean,
+                val bPressed: Boolean,
+                val yPressed: Boolean,
+                val xPressed: Boolean
         )
 
         telemetry.update()
@@ -300,6 +301,9 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //        var previousAState = RetainedState(aPressed = gamepad1.a)
 
         var aIsPressed = false
+        var bIsPressed = false
+        var xIsPressed = false
+        var yIsPressed = false
 
         waitForStart()
 
@@ -310,21 +314,43 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
             val currentDetections = getListOfCurrentAprilTagsSeen()
 
-
-
-
-
-            if (gamepad1.a && !aIsPressed) {
+            if ((gamepad1.a) && !aIsPressed) {
                 recalculateFirstPoint(currentDetections = currentDetections)
 
-                showData()
-
-                telemetry.update()
                 aIsPressed = true
             }
             if (aIsPressed == true && !gamepad1.a) {
                 aIsPressed = false
             }
+
+            if (gamepad1.b  && !bIsPressed) {
+                recalculateSecondPoint(currentDetections = currentDetections)
+
+                bIsPressed = true
+            }
+            if (bIsPressed == true && !gamepad1.b) {
+                bIsPressed = false
+            }
+            if (gamepad1.y && !yIsPressed) {
+                recalculateThirdPoint(currentDetections = currentDetections)
+
+                yIsPressed = true
+            }
+            if (yIsPressed == true && !gamepad1.y) {
+                yIsPressed = false
+            }
+
+            if (gamepad1.x && !xIsPressed) {
+                recalculateFourthPoint(currentDetections = currentDetections)
+
+                xIsPressed = true
+            }
+            if (xIsPressed == true && !gamepad1.x) {
+                xIsPressed = false
+            }
+
+            showData()
+            telemetry.update()
 
 //            if (aWasPressed) {
 ////                previousAState = state
@@ -488,6 +514,85 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
         }
     }
 
+    private fun recalculateThirdPoint(currentDetections: List<AprilTagDetection>) {
+
+        println("The button-specific function ran")
+
+        if (currentDetections.isNotEmpty()) {
+
+            val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
+
+//            showTargetAprilTagInfo(
+//                    listOfAllAprilTagsDetected = currentDetections,
+//                    leastDistortedAprilTag = closestAprilTag)
+
+            for (detection in currentDetections) {
+
+                println("The list of tags wasn't empty...")
+
+
+                if (detection.id == closestAprilTag.id) {
+                    telemetry.addLine("OK, it worked")
+
+                    val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
+//
+                    val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
+//                    val detectionAllianceSide = allDetectionData?.AllianceSide
+//                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
+                    val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
+
+                    thirdPointCalculatedPosition.xInches = detectionTagCoords?.xInches
+                    thirdPointCalculatedPosition.yInches = detectionTagCoords?.yInches
+
+
+                } else {
+//                    telemetry.addLine("Nope, it didn't.")
+//                    return
+                }
+            }
+        }
+    }
+
+    private fun recalculateFourthPoint(currentDetections: List<AprilTagDetection>) {
+
+        println("The button-specific function ran")
+
+        if (currentDetections.isNotEmpty()) {
+
+            val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
+
+//            showTargetAprilTagInfo(
+//                    listOfAllAprilTagsDetected = currentDetections,
+//                    leastDistortedAprilTag = closestAprilTag)
+
+            for (detection in currentDetections) {
+
+                println("The list of tags wasn't empty...")
+
+
+                if (detection.id == closestAprilTag.id) {
+                    telemetry.addLine("OK, it worked")
+
+                    val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
+//
+                    val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
+//                    val detectionAllianceSide = allDetectionData?.AllianceSide
+//                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
+                    val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
+
+                    fourthPointCalculatedPosition.xInches = detectionTagCoords?.xInches
+                    fourthPointCalculatedPosition.yInches = detectionTagCoords?.yInches
+
+
+                } else {
+//                    telemetry.addLine("Nope, it didn't.")
+//                    return
+                }
+            }
+        }
+    }
+
+
 
 //                val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 //
@@ -553,18 +658,18 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
         telemetry.addLine("\n\n Second point -   ⃝  to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
-                first.xInches,
-                first.yInches))
+                second.xInches,
+                second.yInches))
 
         telemetry.addLine("\n\n Third point - ╳ to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
-                first.xInches,
-                first.yInches))
+                third.xInches,
+                third.yInches))
 
         telemetry.addLine("\n\n Fourth point - ⃞ to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
-                first.xInches,
-                first.yInches))
+                fourth.xInches,
+                fourth.yInches))
 
 
     }
