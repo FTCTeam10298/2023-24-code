@@ -220,6 +220,8 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
             aprilTagThings.forEach { it.resumeStreaming() }
 
+
+
             val currentDetections = getListOfCurrentAprilTagsSeen()
             showAllAprilTagsInfo(currentDetections)
 
@@ -237,7 +239,6 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
         }
     }
 
-    /** Gabe edit me */
     private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>, idOfTargetAprilTag: Int): AprilTagDetection? {
         for (detection in currentDetections) {
             if (detection.id == idOfTargetAprilTag) {
@@ -249,7 +250,13 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
     }
 
     private fun getListOfCurrentAprilTagsSeen(): List<AprilTagDetection> {
-        return aprilTagThings.flatMap { it.detections() }
+        return try {
+            aprilTagThings.flatMap { it.detections() }
+        }
+        catch (error: Throwable) {
+            emptyList()
+        }
+
     }
 
 
@@ -326,7 +333,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
                 val detection: AprilTagDetection = theTargetAprilTag ?: listOfAllAprilTagsDetected.first();
 //                if (detection == tagWithLeastYawDistortion) {
 //                else {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection?.id, detection.metadata.name))
+                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
 //                    }}
 
                 val theTag: AprilTagDetection = detection
@@ -338,6 +345,7 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
 
                 telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
                 telemetry.addLine("Least Distorted AprilTag: $idOfLeastDistortedTag")
+                telemetry.addLine("TheCakeIsALIE")
 
 
 //                println("Robot X: ${theTargetAprilTagPosition?.xInches}")
