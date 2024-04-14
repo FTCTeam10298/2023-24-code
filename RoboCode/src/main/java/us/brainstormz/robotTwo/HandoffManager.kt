@@ -504,7 +504,8 @@ class HandoffManager(
         val coordinatedDepo = depoManager.fullyManageDepo(
                 target = depoDriverInput,
                 previousTarget = previousTargetWorld.targetRobot.depoTarget,
-                actualWorld = actualWorld
+                actualWorld = actualWorld,
+                handoffCompleted = handoffCoordinated.handoffCompleted
         )
 
         return CollectorDepositorTarget(

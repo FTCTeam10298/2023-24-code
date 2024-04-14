@@ -114,7 +114,7 @@ class DepoManager(
         }
     }
 
-    fun coordinateArmLiftAndClaws(finalDepoTarget: DepoTarget, previousTargetDepo: DepoTarget, actualDepo: ActualDepo): DepoTarget {
+    fun coordinateArmLiftAndClaws(finalDepoTarget: DepoTarget, previousTargetDepo: DepoTarget, actualDepo: ActualDepo, handoffCompleted: Boolean): DepoTarget {
         //If the depo is going out, then if handoff is yes then close applicable claws otherwise keep the same claw pos
 
         val eitherClawIsGripping = !wrist.wristIsAtPosition(WristTargets(both= Claw.ClawTarget.Retracted), actualDepo.wristAngles)
@@ -188,7 +188,7 @@ class DepoManager(
                 }
             }
         } else {
-            val liftIsAboveClear = actualDepo.lift.currentPositionTicks > Lift.LiftPositions.ClearForArmToMove.ticks
+            val liftIsAboveClear = actualDepo.lift.currentPositionTicks >= Lift.LiftPositions.ClearForArmToMove.ticks
             when (finalDepoTarget.targetType) {
                 DepoTargetType.GoingHome -> {
 
@@ -229,10 +229,11 @@ class DepoManager(
                     } else {
                         val goToFinalAnyway = when (finalDepoTarget.targetType) {
                             DepoTargetType.GoingHome -> {
-                                val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
-                                val liftIsAlreadyDecentlyFarDown = actualDepo.lift.currentPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
-
-                                !eitherClawIsGripping && (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox)
+                                false
+//                                val armIsInsideOfBatteryBox = actualDepo.armAngleDegrees <= Arm.Positions.InsideTheBatteryBox.angleDegrees
+//                                val liftIsAlreadyDecentlyFarDown = actualDepo.lift.currentPositionTicks < Lift.LiftPositions.ClearForArmToMove.ticks/2
+//
+//                                !eitherClawIsGripping && (liftIsAlreadyDecentlyFarDown && !armIsInsideOfBatteryBox)
                             }
                             else -> {
                                 //When going out arm doesn't have to be at position just out enough
@@ -264,7 +265,7 @@ class DepoManager(
         )
     }
 
-    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousTarget: DepoTarget, actualWorld: ActualWorld): DepoTarget {
+    fun fullyManageDepo(target: RobotTwoTeleOp.DriverInput, previousTarget: DepoTarget, actualWorld: ActualWorld, handoffCompleted: Boolean): DepoTarget {
         val actualDepo: ActualDepo = actualWorld.actualRobot.depoState
         telemetry.addLine("\nDepo manager: ")
 
@@ -281,7 +282,7 @@ class DepoManager(
                 actualDepo.armAngleDegrees
         ) ?: previousTarget
 
-        val movingArmAndLiftTarget = coordinateArmLiftAndClaws(finalDepoTarget, previousTarget, actualDepo)
+        val movingArmAndLiftTarget = coordinateArmLiftAndClaws(finalDepoTarget, previousTarget, actualDepo, handoffCompleted)
 
         val armAndLiftAreAtFinalRestingPlace: Boolean = checkIfArmAndLiftAreAtTarget(finalDepoTarget, actualDepo)
         val wristPosition: WristTargets =

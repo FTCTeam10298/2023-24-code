@@ -2626,6 +2626,7 @@ class FullTest {
     }
 
 
+//    TODO make this test pass when I have more time
     @Test
     fun `does the mash`(){
         //given
@@ -2642,11 +2643,36 @@ class FullTest {
         println("previousTarget: ${previousTarget.withoutLights().printPretty()}")
 
         val now = actualWorld.timestampMilis + 1
+        val loop = getLoopFunction()
 
         // when
-        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
+        println("\n\nfirstTarget\n\n")
+        val firstTarget = loop(actualWorld, now, previousTarget, emptyWorld)
+        // then
+        assertEqualsJson(
+                DepoTarget(
+                        wristPosition = Wrist.WristTargets(
+                                Claw.ClawTarget.Gripping,
+                                Claw.ClawTarget.Gripping
+                        ),
+                        lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
+                        armPosition = Arm.ArmTarget(Arm.Positions.ClearLiftMovement),
+                        targetType = DepoManager.DepoTargetType.GoingHome
+                ),
+                firstTarget.targetRobot.depoTarget
+        )
 
-
+        // when
+        println("\n\nsecondTarget\n\n")
+        val secondActualWorld = actualWorld.copy(
+                actualRobot = actualWorld.actualRobot.copy(
+                        depoState = actualWorld.actualRobot.depoState.copy(
+                                lift = SlideSubsystem.ActualSlideSubsystem(Lift.LiftPositions.ClearForArmToMove.ticks, false, 0, 0, 0.0),
+                                armAngleDegrees = Arm.Positions.ClearLiftMovement.angleDegrees
+                        )
+                )
+        )
+        val secondTarget = loop(secondActualWorld, now, firstTarget, actualWorld)
         // then
         assertEqualsJson(
                 DepoTarget(
@@ -2654,11 +2680,11 @@ class FullTest {
                                 Claw.ClawTarget.Retracted,
                                 Claw.ClawTarget.Retracted
                         ),
-                        lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
+                        lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                         armPosition = Arm.ArmTarget(Arm.Positions.Out),
-                        targetType = DepoManager.DepoTargetType.GoingOut
+                        targetType = DepoManager.DepoTargetType.GoingHome
                 ),
-                newTarget.targetRobot.depoTarget
+                secondTarget.targetRobot.depoTarget
         )
     }
 

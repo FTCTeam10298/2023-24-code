@@ -46,7 +46,8 @@ class DepoCoordinatorTest {
         val actualOutput = testSubject.coordinateArmLiftAndClaws(
                 finalDepoTarget = finalDepoTarget,
                 previousTargetDepo = previousTargetDepo,
-                actualDepo = actualDepo
+                actualDepo = actualDepo,
+                handoffCompleted = true
         )
 
         // then
@@ -116,7 +117,8 @@ class DepoCoordinatorTest {
         val actualOutput = testSubject.coordinateArmLiftAndClaws(
                 finalDepoTarget = finalDepoTarget,
                 previousTargetDepo = previousTargetDepo,
-                actualDepo = actualDepo
+                actualDepo = actualDepo,
+                handoffCompleted = true
         )
 
         // then
