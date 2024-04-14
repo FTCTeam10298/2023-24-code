@@ -15,7 +15,6 @@ import us.brainstormz.robotTwo.subsystems.Dropdown
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
 import us.brainstormz.robotTwo.subsystems.Intake
-import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.measured
@@ -168,7 +167,7 @@ class RobotTwoAuto(
             wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
             extendoInput = ExtendoPositions.Min,
             intakeInput = IntakeInput.NoInput,
-            getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> getNextTargetFromList(previousAutoInput= previousTargetWorld.autoInput!!) }
+            getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> getNextTargetFromList(previousAutoInput= previousTargetWorld.autoInput!!) },
     )
 
     private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
@@ -326,10 +325,10 @@ class RobotTwoAuto(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
                                             depoInput = DepoInput.Preset1,
                                             handoffInput = HandoffInput.NoInput,
-//                                            wristInput = WristInput(
-//                                                    left = ClawInput.Drop,
-//                                                    right = ClawInput.Drop
-//                                            ),
+                                            wristInput = WristInput(
+                                                    left = ClawInput.Drop,
+                                                    right = ClawInput.Drop
+                                            ),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 val wristIsAtPosition = wrist.wristIsAtPosition(
                                                         target = Wrist.WristTargets(
@@ -539,21 +538,20 @@ class RobotTwoAuto(
         return if (condition) {
             getNextTargetFromList(targetWorld.autoInput!!)
         } else {
-            targetWorld.autoInput ?: getNextTargetFromList(blankAutoState)
+            targetWorld.autoInput
         }
     }
 
     private fun getNextTargetFromList(previousAutoInput: AutoInput): AutoInput {
-        return if (autoListIterator.hasNext()) {
-            autoListIterator.next()
-        } else {
-            previousAutoInput
-        }
+        val nextIndex = previousAutoInput.listIndex?.plus(1) ?: 0
+
+        return autoStateList.getOrNull(nextIndex)?.copy(
+                listIndex = nextIndex
+        ) ?: previousAutoInput
     }
 
     private lateinit var autoStateList: List<AutoInput>
-    private lateinit var autoListIterator: ListIterator<AutoInput>
-    private fun nextTargetState(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
+    private fun nextAutoInput(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
         return if (previousTargetState != null && previousActualState != null) {
             previousTargetState.autoInput!!.getNextInput?.invoke(actualState, previousActualState, previousTargetState)
                     ?: getNextTargetFromList(blankAutoState)
@@ -583,7 +581,6 @@ class RobotTwoAuto(
         }
 
         autoStateList = calcAutoTargetStateList(alliance, startPosition, PropPosition.Right)
-        autoListIterator = autoStateList.listIterator()
 
         drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
     }
@@ -596,19 +593,19 @@ class RobotTwoAuto(
         runRobot(
                 targetStateFetcher = { actualWorld, previousActualWorld, previousTargetWorld ->
 
-                    val newInput = nextTargetState(
+                    val autoInput = nextAutoInput(
                             actualWorld,
                             previousActualWorld,
                             previousTargetWorld
                     )
 
-                    telemetry.addLine("auto: $newInput")
+                    telemetry.addLine("auto: $autoInput")
                     telemetry.addLine("looping at targetStateFetcher level")
 
                     val previousActualWorld = previousActualWorld ?: TeleopTest.emptyWorld
                     val previousTargetWorld: TargetWorld = previousTargetWorld ?: initialPreviousTargetState
                     val targetWorld = getTargetWorldFromAutoInput(
-                            autoInput = newInput,
+                            autoInput = autoInput,
                             actualWorld = actualWorld,
                             previousActualWorld = previousActualWorld,
                             previousTargetWorld = previousTargetWorld

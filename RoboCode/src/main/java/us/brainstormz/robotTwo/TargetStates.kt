@@ -50,7 +50,8 @@ data class AutoInput (
         val extendoInput: Extendo.ExtendoPositions,
         val intakeInput: RobotTwoAuto.IntakeInput,
         @get:JsonIgnore
-        val getNextInput: (actualWorld: ActualWorld, previousActualWorld: ActualWorld, targetWorld: TargetWorld) -> AutoInput
+        val getNextInput: ((actualWorld: ActualWorld, previousActualWorld: ActualWorld, targetWorld: TargetWorld) -> AutoInput)? = null,
+        val listIndex: Int? = null
 )
 
 data class TargetWorld(
@@ -58,8 +59,7 @@ data class TargetWorld(
     val driverInput: RobotTwoTeleOp.DriverInput,
     val doingHandoff: Boolean,
 
-//    @get:JsonIgnore
-    val autoInput: AutoInput? = null,
+    val autoInput: AutoInput,
 
     val timeTargetStartedMilis: Long = 0,
     val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
