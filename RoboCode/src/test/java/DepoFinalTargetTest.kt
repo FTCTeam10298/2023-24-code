@@ -31,6 +31,7 @@ class DepoFinalTargetTest {
                 previousWristTarget = previousWristTarget,
                 previousDepoTargetType = previousDepoTargetType,
                 actualLift = actualLift,
+                actualArmAngleDegrees = 0.0
         )
 
         // then

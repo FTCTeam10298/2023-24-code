@@ -58,7 +58,7 @@ class DepoManager(
     }
 
 //    var jankSave = WristTargets(Claw.ClawTarget.Gripping)
-    fun getFinalDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, depoScoringHeightAdjust: Double, wristInput: WristTargets, previousWristTarget: WristTargets, previousDepoTargetType: DepoTargetType, actualLift: SlideSubsystem.ActualSlideSubsystem): DepoTarget? {
+    fun getFinalDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, depoScoringHeightAdjust: Double, wristInput: WristTargets, previousWristTarget: WristTargets, previousDepoTargetType: DepoTargetType, actualLift: SlideSubsystem.ActualSlideSubsystem, actualArmAngleDegrees: Double): DepoTarget? {
 
         //close applicable claws otherwise keep the same claw pos
         //If the depo is going out, then if handoff is yes then close applicable claws otherwise keep the same claw pos
@@ -72,12 +72,13 @@ class DepoManager(
                 when (depoTargetType) {
                     DepoTargetType.GoingOut -> wristInput
                     DepoTargetType.GoingHome -> {
-                        val liftIsAlreadyDown = !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualLift.currentPositionTicks)
-                        if (liftIsAlreadyDown) {
-                            wristInput
-                        } else {
-                            WristTargets(Claw.ClawTarget.Retracted)
-                        }
+//                        val depoIsAlreadyDown = !lift.isLiftAbovePosition(Lift.LiftPositions.ClearForArmToMove.ticks, actualLift.currentPositionTicks) && actualArmAngleDegrees >= Arm.Positions.OkToDropPixels.angleDegrees;
+//                        if (depoIsAlreadyDown) {
+//                            wristInput
+//                        } else {
+//                            WristTargets(Claw.ClawTarget.Retracted)
+//                        }
+                        WristTargets(Claw.ClawTarget.Retracted)
                     }
                     else -> return null
                 }
@@ -120,10 +121,14 @@ class DepoManager(
 
         val armAndLiftAreAtFinalRestingPlace: Boolean = checkIfArmAndLiftAreAtTarget(finalDepoTarget, actualDepo)
 
-
         val wristTarget = when (finalDepoTarget.targetType) {
             DepoTargetType.GoingOut -> {
-                finalDepoTarget.wristPosition
+                val armIsOutEnoughToDrop = actualDepo.armAngleDegrees <= Arm.Positions.OkToDropPixels.angleDegrees
+                if (armIsOutEnoughToDrop) {
+                    finalDepoTarget.wristPosition
+                } else {
+                    wrist.getWristTargetsFromActualWrist(actualDepo.wristAngles)
+                }
             }
             DepoTargetType.GoingHome -> {
                 if (armAndLiftAreAtFinalRestingPlace) {
@@ -264,7 +269,15 @@ class DepoManager(
         val depoInput = target.depo
         val wristInput = WristTargets(left= target.wrist.left.toClawTarget() ?: previousTarget.wristPosition.left, right= target.wrist.right.toClawTarget()?:previousTarget.wristPosition.right)
 
-        val finalDepoTarget = getFinalDepoTarget(depoInput, target.depoScoringHeightAdjust, wristInput, previousTarget.wristPosition, previousTarget.targetType, SlideSubsystem.ActualSlideSubsystem(actualDepo.lift)) ?: previousTarget
+        val finalDepoTarget = getFinalDepoTarget(
+                depoInput,
+                target.depoScoringHeightAdjust,
+                wristInput,
+                previousTarget.wristPosition,
+                previousTarget.targetType,
+                SlideSubsystem.ActualSlideSubsystem(actualDepo.lift),
+                actualDepo.armAngleDegrees
+        ) ?: previousTarget
 
         val movingArmAndLiftTarget = coordinateArmLiftAndClaws(finalDepoTarget, previousTarget, actualDepo)
 

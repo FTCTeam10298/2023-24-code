@@ -400,7 +400,7 @@ class RobotTwoAuto(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
                                                     x = -50.0,
                                                     y = 40.0,
-                                                    r = -25.0,
+                                                    r = -22.0,
                                             )),
                                             extendoInput = ExtendoPositions.CollectFromStack,
                                             intakeInput = IntakeInput.Intake,

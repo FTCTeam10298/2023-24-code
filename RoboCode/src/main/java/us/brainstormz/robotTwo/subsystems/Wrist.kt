@@ -62,6 +62,19 @@ class Wrist(override val left: Claw, override val right: Claw, private val telem
                             targetToRightClawMap[target.right]!!.position)
     }
 
+    fun getClawTargetFromActualClaw(actualAngleDegrees: Double): Claw.ClawTarget {
+        return if (left.isClawAtAngle(Claw.ClawTarget.Retracted, actualAngleDegrees)){
+            Claw.ClawTarget.Retracted
+        } else {
+            Claw.ClawTarget.Gripping
+        }
+    }
+    fun getWristTargetsFromActualWrist(actual: ActualWrist): WristTargets {
+        return WristTargets(
+                left = getClawTargetFromActualClaw(actual.left),
+                right = getClawTargetFromActualClaw(actual.right)
+        )
+    }
 
 
 }

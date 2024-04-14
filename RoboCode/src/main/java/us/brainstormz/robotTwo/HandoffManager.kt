@@ -290,20 +290,24 @@ class HandoffManager(
                     handoffCompleted = true
             )
         } else {
-            val depoControlDecision = if (bothPixelsAreWithFinalOwner) {
-                DepoHandoffControlDecision.DriverControlledPosition
+            val onePixelWantsToBeWithDepo = leftPixelStatus.targetOwner == PixelOwner.Depo || rightPixelStatus.targetOwner == PixelOwner.Depo
+            val (depoControlDecision, wrist) = if (onePixelWantsToBeWithDepo) {
+                DepoHandoffControlDecision.DriverControlledPosition to HandoffCoordinated.HandoffSidedOutput(
+                        left = HandoffCoordinated.HandoffCommand.Passthrough,
+                        right = HandoffCoordinated.HandoffCommand.Passthrough
+                )
             } else {
-                DepoHandoffControlDecision.HandoffPosition
+                DepoHandoffControlDecision.HandoffPosition to HandoffCoordinated.HandoffSidedOutput(
+                        left = clawFromTargetController(leftPixelStatus.targetOwner),
+                        right = clawFromTargetController(rightPixelStatus.targetOwner)
+                )
             }
 
             val latches = HandoffCoordinated.HandoffSidedOutput(
                 left = latchFromTargetController(leftPixelStatus.targetOwner),
                 right = latchFromTargetController(rightPixelStatus.targetOwner)
             )
-            val wrist = HandoffCoordinated.HandoffSidedOutput(
-                left = clawFromTargetController(leftPixelStatus.targetOwner),
-                right = clawFromTargetController(rightPixelStatus.targetOwner)
-            )
+
 
             HandoffCoordinated(
                     extendo = ExtendoHandoffControlDecision.HandoffPosition,
@@ -381,10 +385,11 @@ class HandoffManager(
         fun determineTargetPixelControlState(
             side: Side,
             doingHandoff: Boolean,
+            inputDepo: DepoCoordinationStates,
             actualExtendo: ActualSlideStates,
             actualDepo: ActualSlideStates
         ): TargetPixelControlState {
-            val liftInputIsDown = driverDepositorHandoffReadiness == DepoCoordinationStates.ReadyToHandoff
+            val liftInputIsDown = driverDepositorHandoffReadiness != DepoCoordinationStates.NotReady
             val extendoInputIsIn = areDriversRetractingExtendo == ExtendoCoordinationStates.ReadyToHandoff
             val inputAllowsForHandoff = liftInputIsDown && extendoInputIsIn
 
@@ -395,8 +400,7 @@ class HandoffManager(
                 false -> if(inputAllowsForHandoff && actualDepoAndExtendoAreInPositionForHandoff){
                     TargetPixelControlState.ControlledByBoth
                 } else {
-                    val pixelIsAtLift = wrist.getBySide(side).isClawAtAngle(Claw.ClawTarget.Retracted, actualWorld.actualRobot.depoState.wristAngles.getBySide(side))
-                    if (!liftInputIsDown && pixelIsAtLift) {
+                    if (inputDepo == DepoCoordinationStates.NotReady) {
                         TargetPixelControlState.ControlledByDepositor
                     } else {
                         TargetPixelControlState.ControlledByCollector
@@ -422,8 +426,8 @@ class HandoffManager(
                 inputConstraints = HandoffConstraints(
                     depo = driverDepositorHandoffReadiness,
                     targetPixelControlStates = TargetPixelControlStates(
-                        left = determineTargetPixelControlState(Side.Left, doingHandoff, physicalExtendoReadiness, actualDepo),
-                        right = determineTargetPixelControlState(Side.Right, doingHandoff, physicalExtendoReadiness, actualDepo),
+                        left = determineTargetPixelControlState(Side.Left, doingHandoff, driverDepositorHandoffReadiness, physicalExtendoReadiness, actualDepo),
+                        right = determineTargetPixelControlState(Side.Right, doingHandoff, driverDepositorHandoffReadiness, physicalExtendoReadiness, actualDepo),
                     )
                 ),
                 physicalExtendoReadiness =  physicalExtendoReadiness,
