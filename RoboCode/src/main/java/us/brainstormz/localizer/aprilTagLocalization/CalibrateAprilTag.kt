@@ -695,8 +695,8 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
         val third = thirdPointCalculatedPosition
         val fourth = fourthPointCalculatedPosition
 
-        telemetry.addLine("Field: $whichWorldsFieldAreWeOn")
-        telemetry.addLine("Backboard Alliance: $allianceSideOfBoard")
+        telemetry.addLine("Field: $whichWorldsFieldAreWeOn - [RB] to change")
+        telemetry.addLine("Backboard Alliance: $allianceSideOfBoard - [LB] to change")
 
         telemetry.addLine("\nFirst point -   ⃤  to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
@@ -713,7 +713,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
                 third.xInches,
                 third.yInches))
 
-        telemetry.addLine("\n\n Fourth point -   ⃞   to change")
+        telemetry.addLine("\n\n Fourth point -    ⃞   to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
                 fourth.xInches,
                 fourth.yInches))
