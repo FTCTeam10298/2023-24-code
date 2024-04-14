@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
@@ -16,12 +17,19 @@ import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
+import us.brainstormz.robotTwo.subsystems.Neopixels
+import us.brainstormz.robotTwo.subsystems.Neopixels.*
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.measured
 import kotlin.math.absoluteValue
 import kotlin.reflect.jvm.ExperimentalReflectionOnLambdas
 import kotlin.reflect.jvm.reflect
+
+fun Any.printPretty() = jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
+fun ActualWorld.withoutLights() = this.copy(actualRobot=this.actualRobot.copy(neopixelState = StripState(true, emptyList()))).printPretty()
+fun TargetWorld.withoutLights() = this.copy(targetRobot=this.targetRobot.copy(lights = RobotTwoTeleOp.LightTarget(stripTarget = StripState(true, emptyList()))))
+fun TargetWorld.withoutGetNext() = this.copy(autoInput=this.autoInput?.copy(getNextInput = null))
 
 
 class RobotTwoAuto(
@@ -214,22 +222,33 @@ class RobotTwoAuto(
     }
 
     /** Path assembly */
+    data class CyclePath(
+            val numberOfCycles: Int,
+            val driveToStackFromBoard: (PropPosition)->List<AutoInput>,
+            val collectFromStack: (PropPosition)->List<AutoInput>,
+            val driveToBoardFromStack: (PropPosition)->List<AutoInput>,
+            val depositSequence: (PropPosition)->List<AutoInput>,
+    ) {
+        fun assemblePath(propPosition: PropPosition): List<AutoInput> {
+            return (0..numberOfCycles).fold(listOf<AutoInput>()) { acc, it ->
+                acc + driveToStackFromBoard(propPosition) + collectFromStack(propPosition) + driveToBoardFromStack(propPosition) + depositSequence(propPosition)
+            }
+        }
+    }
+
     data class PathPreAssembled(
             val purplePlacementPath: (PropPosition)->List<AutoInput>,
             val purpleDriveToBoardPath: (PropPosition)->List<AutoInput>,
             val yellowDepositSequence: (PropPosition)->List<AutoInput>,
-            val driveToStackFromBoard: (PropPosition)->List<AutoInput> = { emptyList() },
-            val collectFromStack: (PropPosition)->List<AutoInput> = { emptyList() },
-            val driveToBoardFromStack: (PropPosition)->List<AutoInput> = { emptyList() },
+            val cyclePath: CyclePath? = null,
             val parkPath: List<AutoInput>) {
-        fun assemblePath(propPosition: PropPosition, numberOfCycles: Int): List<AutoInput> {
+        fun assemblePath(propPosition: PropPosition): List<AutoInput> {
             val fiftyPoint = purplePlacementPath(propPosition) +
                     purpleDriveToBoardPath(propPosition) +
                     yellowDepositSequence(propPosition)
 
-            val cycles = (0..numberOfCycles).fold(listOf<AutoInput>()) { acc, it ->
-                acc + driveToStackFromBoard(propPosition) + collectFromStack(propPosition) + driveToBoardFromStack(propPosition) + yellowDepositSequence(propPosition)
-            }
+            val cycles = cyclePath?.assemblePath(propPosition) ?: emptyList()
+
             return  fiftyPoint + cycles + parkPath
 
         }
@@ -249,7 +268,6 @@ class RobotTwoAuto(
             startingSide: StartPosition,
             propPosition: PropPosition
     ): List<AutoInput> {
-        val numberOfCycles = 2
 
         val startPosition = startingSide.redStartPosition
 
@@ -353,18 +371,18 @@ class RobotTwoAuto(
                                                 nextTargetFromCondition(wristIsAtPosition && liftIsAtPosition, targetWorld)
                                             }
                                     ),
-                                    blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower()),
-                                            depoInput = DepoInput.Down,
-                                            handoffInput = HandoffInput.NoInput,
-                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                val liftIsDown = !lift.isLiftAbovePosition(
-                                                        targetPositionTicks = targetWorld.targetRobot.depoTarget.lift.targetPosition.ticks,
-                                                        actualLiftPositionTicks = actualWorld.actualRobot.depoState.lift.currentPositionTicks
-                                                )
-                                                nextTargetFromCondition(liftIsDown, targetWorld)
-                                            }
-                                    ),
+//                                    blankAutoState.copy(
+//                                            drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower()),
+//                                            depoInput = DepoInput.Down,
+//                                            handoffInput = HandoffInput.NoInput,
+//                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+//                                                val liftIsDown = !lift.isLiftAbovePosition(
+//                                                        targetPositionTicks = Lift.LiftPositions.AutoLowYellowPlacement.ticks - 200,
+//                                                        actualLiftPositionTicks = actualWorld.actualRobot.depoState.lift.currentPositionTicks
+//                                                )
+//                                                nextTargetFromCondition(liftIsDown, targetWorld)
+//                                            }
+//                                    ),
                             )
                         },
                         parkPath = listOf(
@@ -420,9 +438,9 @@ class RobotTwoAuto(
         }
 
         val allianceMirroredAndAsList = if (allianceIsColorBlue) {
-            mirrorRedAutoToBlue(redPath.assemblePath(adjustedPropPosition, numberOfCycles))
+            mirrorRedAutoToBlue(redPath.assemblePath(adjustedPropPosition))
         } else {
-            redPath.assemblePath(adjustedPropPosition, numberOfCycles)
+            redPath.assemblePath(adjustedPropPosition)
         }
 
         return allianceMirroredAndAsList
@@ -454,6 +472,11 @@ class RobotTwoAuto(
     private fun getNextTargetFromList(previousAutoInput: AutoInput): AutoInput {
         val nextIndex = previousAutoInput.listIndex?.plus(1) ?: 0
 
+        val listLength = autoStateList.size
+
+        telemetry.addLine("nextIndex: $nextIndex")
+        telemetry.addLine("listLength: $listLength")
+
         return autoStateList.getOrNull(nextIndex)?.copy(
                 listIndex = nextIndex
         ) ?: previousAutoInput
@@ -462,11 +485,15 @@ class RobotTwoAuto(
     lateinit var autoStateList: List<AutoInput>
     private fun nextAutoInput(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
         return if (previousTargetState != null && previousActualState != null) {
-            previousTargetState.autoInput!!.getNextInput?.invoke(actualState, previousActualState, previousTargetState)
-                    ?: getNextTargetFromList(previousTargetState.autoInput)
-        } else {
-            getNextTargetFromList(blankAutoState)
-        }
+                if (actualState.actualGamepad1.a) {
+                    previousTargetState.autoInput!!.getNextInput?.invoke(actualState, previousActualState, previousTargetState)
+                            ?: getNextTargetFromList(previousTargetState.autoInput)
+                } else {
+                    previousTargetState!!.autoInput!!
+                }
+            } else {
+                getNextTargetFromList(blankAutoState)
+            }
     }
 
     data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val shouldDoYellow: Boolean)
@@ -504,6 +531,8 @@ class RobotTwoAuto(
                             previousActualWorld,
                             previousTargetWorld
                     )
+                    telemetry.addLine("previous auto input index: ${previousTargetWorld?.autoInput?.listIndex}")
+                    telemetry.addLine("new auto input index: ${autoInput.listIndex}")
 
                     val previousActualWorld = previousActualWorld ?: TeleopTest.emptyWorld
                     val previousTargetWorld: TargetWorld = previousTargetWorld ?: initialPreviousTargetState
