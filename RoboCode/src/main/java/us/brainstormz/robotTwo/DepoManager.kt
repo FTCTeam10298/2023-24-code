@@ -248,7 +248,7 @@ class DepoManager(
                             finalDepoTarget.lift.targetPosition
                         } else {
                             telemetry.addLine("lift is waiting for the arm")
-                            Lift.LiftPositions.ClearForArmToMove
+                            Lift.LiftPositions.TargetClearForArmToMove
                         }
                     }
                 } else {

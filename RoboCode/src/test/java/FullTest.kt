@@ -2139,7 +2139,7 @@ class FullTest {
 
         // then
         assertEqualsJson(
-            Lift.LiftPositions.ClearForArmToMove,
+            Lift.LiftPositions.TargetClearForArmToMove,
             newTarget.targetRobot.depoTarget.lift.targetPosition)
     }
 
@@ -2256,7 +2256,7 @@ class FullTest {
         val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
-        assertEqualsJson(Lift.LiftPositions.ClearForArmToMove,
+        assertEqualsJson(Lift.LiftPositions.TargetClearForArmToMove,
             newTarget.targetRobot.depoTarget.lift.targetPosition)
     }
 
@@ -2539,7 +2539,7 @@ class FullTest {
 
         // then
         assertEqualsJson(
-            Lift.LiftPositions.ClearForArmToMove,
+            Lift.LiftPositions.TargetClearForArmToMove,
             newTarget.targetRobot.depoTarget.lift.targetPosition)
     }
 
@@ -2655,7 +2655,7 @@ class FullTest {
                                 Claw.ClawTarget.Gripping,
                                 Claw.ClawTarget.Gripping
                         ),
-                        lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
+                        lift = Lift.TargetLift(Lift.LiftPositions.TargetClearForArmToMove),
                         armPosition = Arm.ArmTarget(Arm.Positions.ClearLiftMovement),
                         targetType = DepoManager.DepoTargetType.GoingHome
                 ),
@@ -2680,7 +2680,7 @@ class FullTest {
                                 Claw.ClawTarget.Gripping,
                                 Claw.ClawTarget.Gripping
                         ),
-                        lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
+                        lift = Lift.TargetLift(Lift.LiftPositions.TargetClearForArmToMove),
                         armPosition = Arm.ArmTarget(Arm.Positions.Out),
                         targetType = DepoManager.DepoTargetType.GoingHome
                 ),
