@@ -322,7 +322,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
                 firstPointButtonPressed = true
             }
-            if (firstPointButtonPressed == true && !(gamepad1.a || gamepad1.triangle) ) {
+            if (firstPointButtonPressed == true && !(gamepad1.dpad_down || gamepad1.triangle) ) {
                 firstPointButtonPressed = false
             }
 
@@ -331,7 +331,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
                 secondPointButtonPressed = true
             }
-            if (secondPointButtonPressed == true && !(gamepad1.b || gamepad1.circle)) {
+            if (secondPointButtonPressed == true && !(gamepad1.dpad_right || gamepad1.circle)) {
                 secondPointButtonPressed = false
             }
             if ((gamepad1.dpad_up || gamepad1.cross) && !thirdPointButtonPressed) {
@@ -339,7 +339,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
                 thirdPointButtonPressed = true
             }
-            if (thirdPointButtonPressed == true && !((gamepad1.y || gamepad1.cross))) {
+            if (thirdPointButtonPressed == true && !((gamepad1.dpad_up || gamepad1.cross))) {
                 thirdPointButtonPressed = false
             }
             //gamepad1.cross controls triangle and cross values
@@ -349,7 +349,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
                 fourthPointButtonPressed = true
             }
-            if (fourthPointButtonPressed == true && !(gamepad1.x || gamepad1.square)) {
+            if (fourthPointButtonPressed == true && !(gamepad1.dpad_left || gamepad1.square)) {
                 fourthPointButtonPressed = false
             }
 
