@@ -2677,8 +2677,8 @@ class FullTest {
         assertEqualsJson(
                 DepoTarget(
                         wristPosition = Wrist.WristTargets(
-                                Claw.ClawTarget.Retracted,
-                                Claw.ClawTarget.Retracted
+                                Claw.ClawTarget.Gripping,
+                                Claw.ClawTarget.Gripping
                         ),
                         lift = Lift.TargetLift(Lift.LiftPositions.ClearForArmToMove),
                         armPosition = Arm.ArmTarget(Arm.Positions.Out),

@@ -218,13 +218,13 @@ class DepoManager(
         }
 
 
-        val armIsAtTarget = checkIfArmIsAtTarget(armTarget, actualDepo.armAngleDegrees)
+        val armIsAtIntermediateTarget = checkIfArmIsAtTarget(armTarget, actualDepo.armAngleDegrees)
         val armIsAtFinalTarget = checkIfArmIsAtTarget(finalDepoTarget.armPosition.targetPosition, actualDepo.armAngleDegrees)
-        telemetry.addLine("armIsAtTarget: $armIsAtTarget")
+        telemetry.addLine("armIsAtTarget: $armIsAtIntermediateTarget")
 
         val liftTarget: SlideSubsystem.SlideTargetPosition =
                 if (bothClawsAreAtIntermediateTarget) {
-                    if (armIsAtFinalTarget) {
+                    if (armIsAtFinalTarget && armIsAtIntermediateTarget) {
                         finalDepoTarget.lift.targetPosition
                     } else {
                         val goToFinalAnyway = when (finalDepoTarget.targetType) {
