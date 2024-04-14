@@ -5,64 +5,10 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldConfigurations
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
-import us.brainstormz.localizer.aprilTagLocalization.AverageAprilTagBackboardOffset
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/*
-LIST OF TESTS
-    ... 01
-
-     val inputCamRelative = CameraRelativePointInSpace(xInches=5.0, yInches=10.0, yawDegrees= 0.0)
-
-    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=5.0, yInches=10.0, headingDegrees= 0.0)//heading degrees = yaw
-
-    val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoords(inputCamRelative)
-
-    val inputTagRelative = actualOutputTagRelative
-
-    val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=50.25, yInches=40.41, headingDegrees = 0.0)
-
-    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
-
-    ... 02
-
-
-
- */
-
-fun main () {
-    val aprilTagLocalization = AprilTagLocalizationFunctions(
-            cameraXOffset=0.00,
-            cameraYOffset=0.00 //it's right on center! Yay!
-    )
-
-
-    val targetAprilTagID: Int = 2
-    val inputCamRelative = CameraRelativePointInSpace(xInches=10.0, yInches=10.0, yawDegrees= 10.0)
-
-    val expectedOutputTagRelative = TagRelativePointInSpace(xInches=11.585, yInches=8.112, headingDegrees= 10.0)//heading degrees = yaw
-
-    val actualOutputTagRelative = returnCamCentricCoordsInTagCentricCoordsPartDeux(inputCamRelative)
-
-    val inputTagRelative = actualOutputTagRelative
-
-    val expectedOutputFieldRelative = FieldRelativePointInSpace(xInches=46.995, yInches=52.138, headingDegrees = 10.0)
-
-    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative,
-            allianceSideFound = ReusableAprilTagFieldLocalizer.AllianceSide.Red)
-
-
-    println("Our camera-relative input was $inputCamRelative" )
-    println("Our expected tag-relative output was $expectedOutputTagRelative")
-    println("...but we got this: $actualOutputTagRelative")
-
-    println("So we took that tag-relative position, $inputTagRelative.")
-    println("We expected to see a position of $expectedOutputFieldRelative")
-    println("Instead, we calculated that our camera is at $actualOutputFieldRelative.")
-
-}
 
 data class CameraRelativePointInSpace(val xInches: Double, val yInches: Double, val yawDegrees: Double)
 data class TagRelativePointInSpace(val xInches: Double, val yInches: Double, val headingDegrees: Double)
@@ -94,33 +40,12 @@ fun returnCamCentricCoordsInTagCentricCoordsPartDeux(anyOldTag: CameraRelativePo
 
 }
 
-//private fun returnTagCentricCoordsInFieldCoords(cameraXOffset: Double, cameraYOffset: Double, targetAprilTagID: Int, inputTagRelative: TagRelativePointInSpace): FieldRelativePointInSpace {
-//
-//    var aprilTagLocalization = AprilTagLocalizationOTron(
-//            cameraXOffset=0.00,
-//            cameraYOffset=0.00 //it's right on center! Yay!
-//    )
-//
-//    val actualOutputFieldRelative = aprilTagLocalization.getCameraPositionOnField(targetAprilTagID, inputTagRelative)
-//
-//    return actualOutputFieldRelative
-//
-//}
 
+val fieldConfigurationToTest =
+        AprilTagFieldConfigurations.garageFieldAtHome
 
-
-
-@TeleOp
-class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
-
-    // A
-    //03-19 22:53:42.309  1691  1817 I System.out: Robot X: -0.7379603385925293
-    //03-19 22:53:42.309  1691  1817 I System.out: Robot Y: 21.688961029052734
-    //03-19 22:53:42.309  1691  1817 I System.out: Robot Bearing: 1.948719801258371
-
-
-
-
+@TeleOp(name = "Test AprilTag Configuration", group = "AprilTag")
+class TestAprilTagConfiguration: LinearOpMode() {
 
     //configure cam offset
 //    val robotCameraYOffset = RobotTwoHardware.robotLengthInches/2 //only hardware ref
@@ -136,55 +61,9 @@ class AprilTagOmeter_CamCentricToFieldCentric: LinearOpMode() {
             cameraYOffset=0.00 //it's right on center! Yay!
     )
 
-    //TODO: ignore values at y < 10 inches.. this means accuracy less than one inch - done.
-    //
-    //x is always
-
-    //TODO: Switch between two sets of two sets of errors. (or do we? Can't James handle that?) -
-
-    //TODO: Return a Boolean for one-inch accurate measurement - Needs to be finetuned.
-
-    //TODO: Remove Crashes - testing passively.
-//    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = 0.47,
-//            yInches = 2.58,
-//            hDegrees = 2.68,
-//    )
-//
-//    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = 0.0,
-//            yInches = 3.455555556,
-//            hDegrees = 0.0, //0
-//    )
-
-//    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = -0.275,
-//            yInches = 3.15,
-//            hDegrees = 0.0,
-//    )
-//
-//    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = -0.08125,
-//            yInches = 3.575,
-//            hDegrees = 0.0, //0
-//    )
-
-//    val RedAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = -0.0,
-//            yInches = 0.0,
-//            hDegrees = 0.0,
-//    )
-//
-//    val BlueAllianceBackboardAverageErrors = AverageAprilTagLocalizationError(
-//            xInches = -0.0,
-//            yInches = 0.0,
-//            hDegrees = 0.0, //0
-//    )
-
-
 
     //new offsets
-    val currentFieldConfiguration = AprilTagFieldConfigurations.leftFieldAtWorlds
+    val currentFieldConfiguration = fieldConfigurationToTest
 
     val localizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,

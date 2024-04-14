@@ -14,6 +14,18 @@ object AprilTagFieldConfigurations {
     )
 
 
+    val garageFieldAtHome = FieldConfiguration(
+            BlueAllianceOffsets = AverageAprilTagBackboardOffset(
+                    xInches = -0.29375,
+                    yInches = 3.235,
+                    hDegrees = 0.0, //0
+            ),
+            RedAllianceOffsets = AverageAprilTagBackboardOffset(
+                    xInches = 0.0125,
+                    yInches = 4.15,
+                    hDegrees = 0.0,
+            )
+    )
 
     val leftFieldAtWorlds = FieldConfiguration(
             BlueAllianceOffsets = AverageAprilTagBackboardOffset(
@@ -41,7 +53,7 @@ object AprilTagFieldConfigurations {
             )
     )
 
-    val fieldConfigurationWithoutOffsets = FieldConfiguration(
+    val fieldConfigurationNoOffsets = FieldConfiguration(
             RedAllianceOffsets = AverageAprilTagBackboardOffset(
                     xInches = 0.0,
                     yInches = 0.0,

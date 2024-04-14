@@ -206,8 +206,9 @@ data class FourPoints(
 //
 //}
 
+val currentFieldConfiguration = AprilTagFieldConfigurations.fieldConfigurationNoOffsets
 
-@TeleOp
+@TeleOp(name = "AprilTag Calibration System", group = "AprilTag")
 class AprilTagOmeter_Calibration: LinearOpMode() {
 
     // A
@@ -235,10 +236,6 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
     //
     //x is always
-
-
-
-    val currentFieldConfiguration = AprilTagFieldConfigurations.leftFieldAtWorlds
 
     val localizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
@@ -357,7 +354,8 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
             }
 
             if (gamepad1.right_bumper && !rightSecondaryPressed == true) {
-                toggleFieldSide(currentDetections = currentDetections)
+                toggleFieldSide()
+                zeroAllValues()
 
                 rightSecondaryPressed = true
             }
@@ -366,7 +364,8 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
             }
 
             if (gamepad1.left_bumper && !leftSecondaryPressed == true) {
-                toggleBackBoardAlliance(currentDetections = currentDetections)
+                toggleBackBoardAlliance()
+                zeroAllValues()
 
                 leftSecondaryPressed = true
             }
@@ -618,7 +617,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
         }
     }
 
-    private fun toggleFieldSide(currentDetections: List<AprilTagDetection>) {
+    private fun toggleFieldSide() {
         whichWorldsFieldAreWeOn = when(whichWorldsFieldAreWeOn) {
             "Left" -> "Right"
             "Right" -> "Left"
@@ -626,7 +625,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
         }
     }
 
-    private fun toggleBackBoardAlliance(currentDetections: List<AprilTagDetection>) {
+    private fun toggleBackBoardAlliance() {
 
         allianceSideOfBoard = when(allianceSideOfBoard) {
             "Red" -> "Blue"
@@ -634,6 +633,19 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
             else -> "Red"
         }
     }
+
+    private fun zeroAllValues() {
+        firstPointCalculatedPosition.xInches = 0.0
+        firstPointCalculatedPosition.yInches = 0.0
+        secondPointCalculatedPosition.xInches = 0.0
+        secondPointCalculatedPosition.yInches = 0.0
+        thirdPointCalculatedPosition.xInches = 0.0
+        thirdPointCalculatedPosition.yInches = 0.0
+        fourthPointCalculatedPosition.xInches = 0.0
+        fourthPointCalculatedPosition.yInches = 0.0
+    }
+
+
 
 
 
