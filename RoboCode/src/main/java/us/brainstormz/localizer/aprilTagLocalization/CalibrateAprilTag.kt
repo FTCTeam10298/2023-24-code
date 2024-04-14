@@ -493,8 +493,8 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
                     val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
-                     firstPointCalculatedPosition.xInches = detectionTagCoords?.xInches
-                     firstPointCalculatedPosition.yInches = detectionTagCoords?.yInches
+                     firstPointCalculatedPosition.xInches = detectionFieldCoords?.xInches
+                     firstPointCalculatedPosition.yInches = detectionFieldCoords?.yInches
 
 
                 } else {
@@ -531,8 +531,8 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
                     val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
-                    secondPointCalculatedPosition.xInches = detectionTagCoords?.xInches
-                    secondPointCalculatedPosition.yInches = detectionTagCoords?.yInches
+                    secondPointCalculatedPosition.xInches = detectionFieldCoords?.xInches
+                    secondPointCalculatedPosition.yInches = detectionFieldCoords?.yInches
 
 
                 } else {
@@ -569,8 +569,8 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
                     val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
-                    thirdPointCalculatedPosition.xInches = detectionTagCoords?.xInches
-                    thirdPointCalculatedPosition.yInches = detectionTagCoords?.yInches
+                    thirdPointCalculatedPosition.xInches = detectionFieldCoords?.xInches
+                    thirdPointCalculatedPosition.yInches = detectionFieldCoords?.yInches
 
 
                 } else {
@@ -606,8 +606,8 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
                     val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
-                    fourthPointCalculatedPosition.xInches = detectionTagCoords?.xInches
-                    fourthPointCalculatedPosition.yInches = detectionTagCoords?.yInches
+                    fourthPointCalculatedPosition.xInches = detectionFieldCoords?.xInches
+                    fourthPointCalculatedPosition.yInches = detectionFieldCoords?.yInches
 
 
                 } else {
@@ -699,22 +699,22 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
         telemetry.addLine("Backboard Alliance: $allianceSideOfBoard - [LB] to change")
 
         telemetry.addLine("\nFirst point -   ⃤  to change")
-        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
+        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
                 first.xInches,
                 first.yInches))
 
         telemetry.addLine("\n\n Second point -   ⃝    to change")
-        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
+        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
                 second.xInches,
                 second.yInches))
 
         telemetry.addLine("\n\n Third point - ╳ to change")
-        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
+        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
                 third.xInches,
                 third.yInches))
 
-        telemetry.addLine("\n\n Fourth point -    ⃞   to change")
-        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
+        telemetry.addLine("\n\n Fourth point -     ⃞    to change")
+        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
                 fourth.xInches,
                 fourth.yInches))
 
