@@ -127,9 +127,17 @@ class RobotTwoAuto(
 
         val doingHandoff = autoInput.handoffInput == HandoffInput.Handoff
 
+        val repeatDriverInputForDepo = when {
+            doingHandoff -> DepoInput.Down
+            autoInput.depoInput == DepoInput.NoInput -> {
+                DepoInput.Down
+            }
+            else -> autoInput.depoInput
+        }
+
         val handoffTarget = handoffManager.manageHandoff(
                 wristInput = autoInput.wristInput,
-                depoInput = autoInput.depoInput,
+                depoInput = repeatDriverInputForDepo,
                 extendoInput = extendoDriverInput,
                 collectorTarget = uncoordinatedCollectorTarget,
                 previousTargetWorld = previousTargetWorld,

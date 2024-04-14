@@ -291,32 +291,40 @@ class HandoffManager(
             )
         } else {
             val onePixelWantsToBeWithDepo = leftPixelStatus.targetOwner == PixelOwner.Depo || rightPixelStatus.targetOwner == PixelOwner.Depo
-            val (depoControlDecision, wrist) = if (onePixelWantsToBeWithDepo) {
-                DepoHandoffControlDecision.DriverControlledPosition to HandoffCoordinated.HandoffSidedOutput(
-                        left = HandoffCoordinated.HandoffCommand.Passthrough,
-                        right = HandoffCoordinated.HandoffCommand.Passthrough
-                )
-            } else {
-                DepoHandoffControlDecision.HandoffPosition to HandoffCoordinated.HandoffSidedOutput(
-                        left = clawFromTargetController(leftPixelStatus.targetOwner),
-                        right = clawFromTargetController(rightPixelStatus.targetOwner)
-                )
-            }
+
 
             val latches = HandoffCoordinated.HandoffSidedOutput(
-                left = latchFromTargetController(leftPixelStatus.targetOwner),
-                right = latchFromTargetController(rightPixelStatus.targetOwner)
+                    left = latchFromTargetController(leftPixelStatus.targetOwner),
+                    right = latchFromTargetController(rightPixelStatus.targetOwner)
             )
 
+            return if (onePixelWantsToBeWithDepo) {
+                HandoffCoordinated(
+                        extendo = ExtendoHandoffControlDecision.HandoffPosition,
+                        depo = DepoHandoffControlDecision.DriverControlledPosition,
 
-            HandoffCoordinated(
-                    extendo = ExtendoHandoffControlDecision.HandoffPosition,
-                    depo = depoControlDecision,
+                        latches = latches,
+                        wrist = HandoffCoordinated.HandoffSidedOutput(
+                                left = HandoffCoordinated.HandoffCommand.Passthrough,
+                                right = HandoffCoordinated.HandoffCommand.Passthrough
+                        ),
+                        handoffCompleted = true
+                )
+            } else {
 
-                    latches = latches,
-                    wrist = wrist,
-                    handoffCompleted = false
-            )
+
+                HandoffCoordinated(
+                        extendo = ExtendoHandoffControlDecision.HandoffPosition,
+                        depo = DepoHandoffControlDecision.HandoffPosition ,
+
+                        latches = latches,
+                        wrist = HandoffCoordinated.HandoffSidedOutput(
+                                left = clawFromTargetController(leftPixelStatus.targetOwner),
+                                right = clawFromTargetController(rightPixelStatus.targetOwner)
+                        ),
+                        handoffCompleted = false
+                )
+            }
         }
     }
 
