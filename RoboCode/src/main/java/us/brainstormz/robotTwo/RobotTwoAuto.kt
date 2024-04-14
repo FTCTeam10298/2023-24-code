@@ -15,6 +15,7 @@ import us.brainstormz.robotTwo.subsystems.Dropdown
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Extendo.ExtendoPositions
 import us.brainstormz.robotTwo.subsystems.Intake
+import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.measured
@@ -319,7 +320,7 @@ class RobotTwoAuto(
                                             depoInput = DepoInput.Preset1,
                                             handoffInput = HandoffInput.Handoff,
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                val liftIsAtPosition = lift.isLiftAtPosition(targetWorld.targetRobot.depoTarget.lift.targetPosition.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
+                                                val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
                                                 nextTargetFromCondition(liftIsAtPosition, targetWorld)
                                             }
                                     ),
@@ -339,7 +340,9 @@ class RobotTwoAuto(
                                                         ),
                                                         actual = actualWorld.actualRobot.depoState.wristAngles
                                                 )
-                                                nextTargetFromCondition(wristIsAtPosition, targetWorld)
+                                                val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
+
+                                                nextTargetFromCondition(wristIsAtPosition && liftIsAtPosition, targetWorld)
                                             }
                                     ),
                                     blankAutoState.copy(
