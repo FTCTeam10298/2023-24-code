@@ -224,7 +224,7 @@ class DepoManager(
 
         val liftTarget: SlideSubsystem.SlideTargetPosition =
                 if (bothClawsAreAtIntermediateTarget) {
-                    if (armIsAtFinalTarget && armIsAtIntermediateTarget) {
+                    if (armIsAtIntermediateTarget && (armIsAtFinalTarget || finalDepoTarget.targetType == DepoTargetType.GoingHome)) {
                         finalDepoTarget.lift.targetPosition
                     } else {
                         val goToFinalAnyway = when (finalDepoTarget.targetType) {

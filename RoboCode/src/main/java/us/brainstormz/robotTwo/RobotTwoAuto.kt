@@ -485,12 +485,8 @@ class RobotTwoAuto(
     lateinit var autoStateList: List<AutoInput>
     private fun nextAutoInput(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
         return if (previousTargetState != null && previousActualState != null) {
-//                if (actualState.actualGamepad1.a) {
-                    previousTargetState.autoInput!!.getNextInput?.invoke(actualState, previousActualState, previousTargetState)
-                            ?: getNextTargetFromList(previousTargetState.autoInput)
-//                } else {
-//                    previousTargetState!!.autoInput!!
-//                }
+                previousTargetState.autoInput!!.getNextInput?.invoke(actualState, previousActualState, previousTargetState)
+                        ?: getNextTargetFromList(previousTargetState.autoInput)
             } else {
                 getNextTargetFromList(blankAutoState)
             }

@@ -21,7 +21,7 @@ class Arm: Subsystem, DualMovementModeSubsystem {
 
     enum class Positions(val angleDegrees:Double) {
         TooFarIn(285.0),
-        ClearLiftMovement(240.0),
+        ClearLiftMovement(238.0),
         In(238.0),
 //        TransferringTarget(230.0),
         InsideTheBatteryBox(225.0),
