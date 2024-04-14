@@ -698,22 +698,22 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
         telemetry.addLine("Field: $whichWorldsFieldAreWeOn - [RB] to change")
         telemetry.addLine("Backboard Alliance: $allianceSideOfBoard - [LB] to change")
 
-        telemetry.addLine("\nFirst point -   ⃤  to change")
+        telemetry.addLine("\nFirst point -     ⃤  to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
                 first.xInches,
                 first.yInches))
 
-        telemetry.addLine("\n\n Second point -   ⃝    to change")
+        telemetry.addLine("\n\n Second point -     ⃝      to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
                 second.xInches,
                 second.yInches))
 
-        telemetry.addLine("\n\n Third point - ╳ to change")
+        telemetry.addLine("\n\n Third point - ╳  to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
                 third.xInches,
                 third.yInches))
 
-        telemetry.addLine("\n\n Fourth point -     ⃞    to change")
+        telemetry.addLine("\n\n Fourth point -     ⃞      to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
                 fourth.xInches,
                 fourth.yInches))
