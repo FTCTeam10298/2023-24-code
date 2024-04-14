@@ -21,7 +21,8 @@ class FunctionalReactiveAutoRunner<TargetState, ActualState> {
 
     private inline fun now() = System.currentTimeMillis()
 
-    fun hackSetForTest(previousTargetState: TargetState){
+    fun hackSetForTest(previousActualState: ActualState, previousTargetState: TargetState){
+        this.previousActualState = previousActualState
         this.previousTargetState = previousTargetState
     }
 }

@@ -554,7 +554,7 @@ class RobotTwoAuto(
     private fun nextAutoInput(actualState: ActualWorld, previousActualState: ActualWorld?, previousTargetState: TargetWorld?): AutoInput {
         return if (previousTargetState != null && previousActualState != null) {
             previousTargetState.autoInput!!.getNextInput?.invoke(actualState, previousActualState, previousTargetState)
-                    ?: getNextTargetFromList(blankAutoState)
+                    ?: getNextTargetFromList(previousTargetState.autoInput)
         } else {
             getNextTargetFromList(blankAutoState)
         }
