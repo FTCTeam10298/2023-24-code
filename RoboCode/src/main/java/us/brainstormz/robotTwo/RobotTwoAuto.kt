@@ -19,6 +19,8 @@ import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.measured
 import kotlin.math.absoluteValue
+import kotlin.reflect.jvm.ExperimentalReflectionOnLambdas
+import kotlin.reflect.jvm.reflect
 
 
 class RobotTwoAuto(
@@ -162,7 +164,7 @@ class RobotTwoAuto(
 
     private val blankAutoState = AutoInput(
             drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
-            depoInput = DepoInput.NoInput,
+            depoInput = DepoInput.Down,
             handoffInput = HandoffInput.NoInput,
             wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
             extendoInput = ExtendoPositions.Min,
@@ -393,7 +395,7 @@ class RobotTwoAuto(
                             listOf(
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                    x = -45.0,
+                                                    x = -50.0,
                                                     y = 40.0,
                                                     r = -25.0,
                                             )),
@@ -405,7 +407,7 @@ class RobotTwoAuto(
                                                     val pixelIsInSide = targetWorld.targetRobot.collectorTarget.transferSensorState.getBySide(side).hasPixelBeenSeen
                                                     acc && pixelIsInSide
                                                 }
-                                                val timeIsUp = false//hasTimeElapsed(5000, targetWorld)
+                                                val timeIsUp = hasTimeElapsed(5000, targetWorld)
                                                 nextTargetFromCondition(weGotTwoPixels || timeIsUp, targetWorld)
                                             }
                                     ),
@@ -532,13 +534,11 @@ class RobotTwoAuto(
     }
 
 
-
-
     private fun nextTargetFromCondition(condition: Boolean, targetWorld: TargetWorld): AutoInput {
         return if (condition) {
             getNextTargetFromList(targetWorld.autoInput!!)
         } else {
-            targetWorld.autoInput
+            targetWorld.autoInput!!
         }
     }
 
@@ -587,9 +587,6 @@ class RobotTwoAuto(
 
 
     fun loop(hardware: RobotTwoHardware, gamepad1: SerializableGamepad) = measured("main loop"){
-
-        telemetry.addLine("looping at auto level")
-        telemetry.addLine("Looping")
         runRobot(
                 targetStateFetcher = { actualWorld, previousActualWorld, previousTargetWorld ->
 
@@ -598,9 +595,6 @@ class RobotTwoAuto(
                             previousActualWorld,
                             previousTargetWorld
                     )
-
-                    telemetry.addLine("auto: $autoInput")
-                    telemetry.addLine("looping at targetStateFetcher level")
 
                     val previousActualWorld = previousActualWorld ?: TeleopTest.emptyWorld
                     val previousTargetWorld: TargetWorld = previousTargetWorld ?: initialPreviousTargetState

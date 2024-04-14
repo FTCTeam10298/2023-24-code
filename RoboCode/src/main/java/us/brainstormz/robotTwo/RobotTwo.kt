@@ -40,15 +40,17 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
     val collectorSystem: CollectorManager = CollectorManager(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
     val handoffManager: HandoffManager = HandoffManager(collectorSystem, depoManager, wrist, arm, lift, transfer, telemetry)
-
     lateinit var drivetrain: Drivetrain
+
+    lateinit var stateDumper: StateDumper
+    lateinit var statsDumper: StatsDumper
     fun initRobot(hardware: RobotTwoHardware, localizer: Localizer) {
-//        FtcRobotControllerActivity.instance?.let{ controller ->
-//            statsDumper = StatsDumper(reportingIntervalMillis = 1000, controller)
-//            statsDumper.start()
-//        }
-//        stateDumper = StateDumper(reportingIntervalMillis = 1000, functionalReactiveAutoRunner)
-//        stateDumper.start()
+        FtcRobotControllerActivity.instance?.let{ controller ->
+            statsDumper = StatsDumper(reportingIntervalMillis = 1000, controller)
+            statsDumper.start()
+        }
+        stateDumper = StateDumper(reportingIntervalMillis = 1000, functionalReactiveAutoRunner)
+        stateDumper.start()
 
         drivetrain = Drivetrain(hardware, localizer, telemetry)
 
@@ -63,10 +65,6 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
 
     fun getActualState(previousActualState:ActualWorld?, gamepad1: SerializableGamepad, gamepad2: SerializableGamepad, hardware: RobotTwoHardware):ActualWorld{
         val (currentGamepad1, currentGamepad2)  = measured("gamepad copies"){
-//            val currentGamepad1 = Gamepad()
-//            currentGamepad1.copy(gamepad1)
-//            val currentGamepad2 = Gamepad()
-//            currentGamepad2.copy(gamepad2)
             gamepad1 to gamepad2
         }
 
@@ -142,6 +140,10 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
         measured("telemetry"){
             telemetry.addLine("loop time: $loopTime milis")
             telemetry.addLine("peak loop time: ${loopTimeMeasurer.peakDeltaTime()} milis")
+
+            measured("expensiveTelemetryLines-addLine"){
+                stateDumper.lines().forEach(telemetry::addLine)
+            }
 
             telemetry.update()
         }

@@ -59,7 +59,7 @@ data class TargetWorld(
     val driverInput: RobotTwoTeleOp.DriverInput,
     val doingHandoff: Boolean,
 
-    val autoInput: AutoInput,
+    val autoInput: AutoInput? = null,
 
     val timeTargetStartedMilis: Long = 0,
     val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
