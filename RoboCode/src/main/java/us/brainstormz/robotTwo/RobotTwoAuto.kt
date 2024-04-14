@@ -128,7 +128,7 @@ class RobotTwoAuto(
         val doingHandoff = autoInput.handoffInput == HandoffInput.Handoff
 
         val repeatDriverInputForDepo = when {
-            doingHandoff -> DepoInput.Down
+//            doingHandoff -> DepoInput.Down
             autoInput.depoInput == DepoInput.NoInput -> {
                 DepoInput.Down
             }
@@ -154,7 +154,7 @@ class RobotTwoAuto(
                         launcherPosition = RobotTwoHardware.LauncherPosition.Holding,
                         lights = LightTarget(),
                 ),
-                doingHandoff = handoffTarget.handoffCompleted,
+                doingHandoff = !handoffTarget.handoffCompleted,
                 driverInput = initialPreviousTargetState.driverInput,
                 autoInput = autoInput,
                 timeTargetStartedMilis = if (autoInput != previousTargetWorld.autoInput) {

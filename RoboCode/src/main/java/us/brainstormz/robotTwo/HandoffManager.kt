@@ -292,7 +292,6 @@ class HandoffManager(
         } else {
             val onePixelWantsToBeWithDepo = leftPixelStatus.targetOwner == PixelOwner.Depo || rightPixelStatus.targetOwner == PixelOwner.Depo
 
-
             val latches = HandoffCoordinated.HandoffSidedOutput(
                     left = latchFromTargetController(leftPixelStatus.targetOwner),
                     right = latchFromTargetController(rightPixelStatus.targetOwner)
@@ -315,7 +314,7 @@ class HandoffManager(
 
                 HandoffCoordinated(
                         extendo = ExtendoHandoffControlDecision.HandoffPosition,
-                        depo = DepoHandoffControlDecision.HandoffPosition ,
+                        depo = DepoHandoffControlDecision.HandoffPosition,
 
                         latches = latches,
                         wrist = HandoffCoordinated.HandoffSidedOutput(
