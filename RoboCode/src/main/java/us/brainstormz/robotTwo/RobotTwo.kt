@@ -104,6 +104,10 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
             actualStateGetter = {getActualState(it, gamepad1, gamepad2, hardware)},
             targetStateFetcher = targetStateFetcher,
             stateFulfiller = { targetState, previousTargetState, actualState, previousActualState ->
+                if (actualState.actualGamepad1.touchpad && previousActualState?.actualGamepad1?.touchpad == false) {
+                    saveStateSnapshot(actualState, previousActualState, targetState, previousTargetState)
+                }
+
                 val previousActualState = previousActualState ?: actualState
                 measured("actuate robot"){
                     hardware.actuateRobot(
@@ -146,31 +150,39 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
 
     private var numberOfSnapshotsMade = 0
     fun saveStateSnapshot(actualWorld: ActualWorld, previousActualWorld: ActualWorld?, targetWorld: TargetWorld, previousActualTarget: TargetWorld?) {
+        Thread {
 
-        val file = File("/storage/emulated/0/Download/stateSnapshot$numberOfSnapshotsMade.json")
-        file.createNewFile()
-        if (file.exists() && file.isFile) {
-            numberOfSnapshotsMade++
+            val file = File("/storage/emulated/0/Download/stateSnapshot$numberOfSnapshotsMade.json")
+            file.createNewFile()
+            if (file.exists() && file.isFile) {
+                numberOfSnapshotsMade++
 
-            telemetry.clearAll()
-            telemetry.addLine("Saving snapshot to: ${file.absolutePath}")
+                val jsonEncoded = NewCompleteSnapshot(
+                        actualWorld = actualWorld,
+                        previousActualWorld = previousActualWorld,
+                        targetWorld = targetWorld,
+                        previousActualTarget = previousActualTarget,
+                ).toJson()
 
-            val jsonEncoded = CompleteSnapshot(
-                actualWorld = actualWorld,
-                previousActualWorld = previousActualWorld,
-                targetWorld = targetWorld,
-                previousActualTarget = previousActualTarget,
-            ).toJson()
-
-            println("SAVING SNAPSHOT $numberOfSnapshotsMade: ${jsonEncoded}")
-            file.printWriter().use {
-                it.print(jsonEncoded)
+                println("SAVING SNAPSHOT $numberOfSnapshotsMade: ${jsonEncoded}")
+                file.printWriter().use {
+                    it.print(jsonEncoded)
+                }
             }
-            Thread.sleep(1000)
-        }
+
+        }.start()
     }
 }
 
+
+data class NewCompleteSnapshot(
+        val actualWorld: ActualWorld,
+        val previousActualWorld: ActualWorld?,
+        val targetWorld: TargetWorld,
+        val previousActualTarget: TargetWorld?,
+){
+    fun toJson() = jacksonObjectMapper().writeValueAsString(this)
+}
 
 data class CompleteSnapshot(
     val actualWorld: ActualWorld,

@@ -1124,11 +1124,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
                     val driverInput = getDriverInput(actualWorld, previousActualWorld, previousTargetWorld)
 
-                    val targetWorld = getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualWorld, previousActualWorld= previousActualState)
-                    if (actualWorld.actualGamepad1.touchpad && !previousActualState.actualGamepad1.touchpad) {
-                        saveStateSnapshot(actualWorld, previousActualState, targetWorld, previousTargetState)
-                    }
-                    targetWorld
+                    getTargetWorld(driverInput= driverInput, previousTargetState= previousTargetState, actualWorld= actualWorld, previousActualWorld= previousActualState)
                 },
                 gamepad1 = gamepad1,
                 gamepad2 = gamepad2,

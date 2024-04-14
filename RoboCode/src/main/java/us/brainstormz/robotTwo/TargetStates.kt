@@ -58,7 +58,7 @@ data class TargetWorld(
     val driverInput: RobotTwoTeleOp.DriverInput,
     val doingHandoff: Boolean,
 
-    @get:JsonIgnore
+//    @get:JsonIgnore
     val autoInput: AutoInput? = null,
 
     val timeTargetStartedMilis: Long = 0,
