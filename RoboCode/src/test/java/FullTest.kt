@@ -9,6 +9,7 @@ import us.brainstormz.robotTwo.CompleteSnapshot
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.DepoTarget
 import us.brainstormz.robotTwo.NewCompleteSnapshot
+import us.brainstormz.robotTwo.RobotTwoAuto
 import us.brainstormz.robotTwo.RobotTwoTeleOp
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
 import us.brainstormz.robotTwo.SerializableGamepad
@@ -2020,7 +2021,8 @@ class FullTest {
 //        Assert.assertEquals(RobotTwoTeleOp.GamepadControlMode.Normal, previousTarget.driverInput.gamepad1ControlMode)
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, System.currentTimeMillis())
+//        val newTarget = runTest(actualWorld, previousTarget, System.currentTimeMillis())
+        val newTarget = getLoopFunction()(actualWorld, System.currentTimeMillis(), previousTarget, emptyWorld)
 
         // then
         println(jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(newTarget.targetRobot.collectorTarget.extendo))
@@ -2038,7 +2040,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
 //        println(jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(newTarget.targetRobot.collectorTarget.extendo))
@@ -2066,7 +2069,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         val expectedTarget = previousTarget.copy(
@@ -2092,8 +2096,9 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
 
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
         // then
         assertEqualsJson(
             Claw.ClawTarget.Retracted,
@@ -2129,7 +2134,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(
@@ -2153,7 +2159,8 @@ class FullTest {
         println("wrist: ${wrist.printPretty()}")
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(
@@ -2183,7 +2190,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(Lift.LiftPositions.SetLine3,
@@ -2244,7 +2252,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(Lift.LiftPositions.ClearForArmToMove,
@@ -2267,7 +2276,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(Wrist.WristTargets(
@@ -2285,7 +2295,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(
@@ -2305,7 +2316,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(
@@ -2324,7 +2336,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(
@@ -2381,7 +2394,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(
@@ -2399,7 +2413,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         //TODO actually implement this test
@@ -2464,7 +2479,7 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
         // then
         assertEqualsJson(Wrist.WristTargets(
@@ -2519,7 +2534,8 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
 
         // then
         assertEqualsJson(
@@ -2580,7 +2596,8 @@ class FullTest {
 
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
+//        val newTarget = runTest(actualWorld, previousTarget, now)
 
 
         // then
@@ -2627,20 +2644,22 @@ class FullTest {
         val now = actualWorld.timestampMilis + 1
 
         // when
-        val newTarget = runTest(actualWorld, previousTarget, now)
+        val newTarget = getLoopFunction()(actualWorld, now, previousTarget, emptyWorld)
 
 
         // then
-        assertEqualsJson(DepoTarget(
-                wristPosition = Wrist.WristTargets(
-                        Claw.ClawTarget.Retracted,
-                        Claw.ClawTarget.Retracted
+        assertEqualsJson(
+                DepoTarget(
+                        wristPosition = Wrist.WristTargets(
+                                Claw.ClawTarget.Retracted,
+                                Claw.ClawTarget.Retracted
+                        ),
+                        lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
+                        armPosition = Arm.ArmTarget(Arm.Positions.Out),
+                        targetType = DepoManager.DepoTargetType.GoingOut
                 ),
-                lift = Lift.TargetLift(Lift.LiftPositions.SetLine2),
-                armPosition = Arm.ArmTarget(Arm.Positions.Out),
-                targetType = DepoManager.DepoTargetType.GoingOut
-        ),
-                newTarget.targetRobot.depoTarget)
+                newTarget.targetRobot.depoTarget
+        )
     }
 
 
@@ -2650,22 +2669,50 @@ class FullTest {
         Assert.assertEquals(expected, actual)
     }
 
-    fun runTest(actualWorld:ActualWorld, previousTarget:TargetWorld, now:Long, previousActualWorld: ActualWorld = emptyWorld): TargetWorld {
+
+    fun getLoopFunction(): (actual: ActualWorld,
+                            now: Long,
+                            previousTargetWorld: TargetWorld,
+                            previousActualWorld: ActualWorld,
+    ) -> TargetWorld {
         val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
         val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
         val teleop = RobotTwoTeleOp(opmode.telemetry)
 
         teleop.init(hardware)
 
-        //Set Inputs
-        hardware.actualRobot = actualWorld.actualRobot
-        teleop.getTime = {now}
-        teleop.functionalReactiveAutoRunner.hackSetForTest(previousActualWorld, previousTarget)
+        return { actualWorld, now, previousTargetWorld, previousActualWorld->
+            //Set Inputs
+            hardware.actualRobot = actualWorld.actualRobot
+            teleop.getTime = {now}
+            teleop.functionalReactiveAutoRunner.hackSetForTest(previousActualWorld, previousTargetWorld)
 
-        //Run Once
-        teleop.loop(gamepad1 = actualWorld.actualGamepad1, gamepad2 = actualWorld.actualGamepad2, hardware)
+            teleop.loop(gamepad1 = actualWorld.actualGamepad1, gamepad2 = actualWorld.actualGamepad2, hardware)
 
-        //Get result
-        return teleop.functionalReactiveAutoRunner.previousTargetState!!
+            //Get result
+            teleop.functionalReactiveAutoRunner.previousTargetState!!
+        }
     }
+
+//    fun runTest(actualWorld:ActualWorld, previousTarget:TargetWorld, now:Long, previousActualWorld: ActualWorld = emptyWorld): TargetWorld {
+//        val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
+//        val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
+//        val teleop = RobotTwoTeleOp(opmode.telemetry)
+//
+//        teleop.init(hardware)
+//
+//
+//        //Run Once
+//        return {
+//            //Set Inputs
+//            hardware.actualRobot = actualWorld.actualRobot
+//            teleop.getTime = {now}
+//            teleop.functionalReactiveAutoRunner.hackSetForTest(previousActualWorld, previousTarget)
+//
+//            teleop.loop(gamepad1 = actualWorld.actualGamepad1, gamepad2 = actualWorld.actualGamepad2, hardware)
+//
+//            //Get result
+//            teleop.functionalReactiveAutoRunner.previousTargetState!!
+//        }
+//    }
 }

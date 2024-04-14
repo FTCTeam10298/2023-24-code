@@ -62,7 +62,7 @@ class FullAutoTest {
                                 left = Claw.ClawTarget.Retracted,
                                 right = Claw.ClawTarget.Gripping
                         ),
-                        targetType = DepoManager.DepoTargetType.GoingOut,
+                        targetType = DepoManager.DepoTargetType.GoingHome,
                 ),
                 newTarget.targetRobot.depoTarget
         )
