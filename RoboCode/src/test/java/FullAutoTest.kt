@@ -20,6 +20,7 @@ class FullAutoTest {
     fun Any.printPretty() = jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
     fun ActualWorld.readable() = this.copy(actualRobot=this.actualRobot.copy(neopixelState = Neopixels.StripState(true, emptyList()))).printPretty()
     fun TargetWorld.withoutLights() = this.copy(targetRobot=this.targetRobot.copy(lights = RobotTwoTeleOp.LightTarget(stripTarget = Neopixels.StripState(true, emptyList()))))
+    fun TargetWorld.withoutGetNext() = this.copy(autoInput=this.autoInput.copy(getNextInput = null))
 
     @Test
     fun `robot goes to target position`(){
@@ -38,9 +39,13 @@ class FullAutoTest {
         val newTarget = loop(actualWorld, startNow+50)
 
         // then
+//        assertEqualsJson(
+//                target.autoInput.listIndex,
+//                newTarget.autoInput.listIndex
+//        )
         assertEqualsJson(
-                target.withoutLights(),
-                newTarget.withoutLights()
+                target.withoutLights().withoutGetNext(),
+                newTarget.withoutLights().withoutGetNext()
         )
 //        assertEqualsJson(
 //                DepoTarget(
@@ -107,9 +112,18 @@ class FullAutoTest {
         //Set Inputs
         auto.getTime = { initNow }
 
-        auto.functionalReactiveAutoRunner.hackSetForTest(previousActualWorld, previousTargetWorld)
-
         auto.start(hardware)
+
+        val stateList = auto.autoStateList
+
+        val previousTargetWorldWithGetNextFunction = previousTargetWorld.copy(
+                autoInput = previousTargetWorld.autoInput.copy(
+                        getNextInput = stateList[previousTargetWorld.autoInput.listIndex!!].getNextInput
+                )
+        )
+
+        auto.functionalReactiveAutoRunner.hackSetForTest(previousActualWorld, previousTargetWorldWithGetNextFunction)
+
 
         return { actualWorld, now ->
             //Set Inputs
