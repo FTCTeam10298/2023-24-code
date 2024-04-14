@@ -159,7 +159,8 @@ class DepoManager(
             else -> return previousTargetDepo
         }
 
-        val bothClawsAreAtTarget = wrist.wristIsAtPosition(finalDepoTarget.wristPosition, actualDepo.wristAngles)
+        val bothClawsAreAtIntermediateTarget = wrist.wristIsAtPosition(wristTarget, actualDepo.wristAngles)
+        val bothClawsAreAtFinalTarget = wrist.wristIsAtPosition(finalDepoTarget.wristPosition, actualDepo.wristAngles)
         val liftIsAtFinalRestingPlace = lift.isLiftAtPosition(finalDepoTarget.lift.targetPosition.ticks, actualDepo.lift.currentPositionTicks)
 
         val clawsArentMoving = wristTarget.asMap.entries.fold(true) {acc, (side, claw) ->
@@ -169,7 +170,7 @@ class DepoManager(
         telemetry.addLine("wristTarget: ${wristTarget.asMap}")
         telemetry.addLine("finalWristPosition: ${finalDepoTarget.wristPosition.asMap}")
 
-        val armTarget: Arm.Positions = if (bothClawsAreAtTarget) {
+        val armTarget: Arm.Positions = if (bothClawsAreAtFinalTarget) {
             when (liftIsAtFinalRestingPlace) {
                 true -> {
                     finalDepoTarget.armPosition.targetPosition
@@ -218,11 +219,12 @@ class DepoManager(
 
 
         val armIsAtTarget = checkIfArmIsAtTarget(armTarget, actualDepo.armAngleDegrees)
+        val armIsAtFinalTarget = checkIfArmIsAtTarget(finalDepoTarget.armPosition.targetPosition, actualDepo.armAngleDegrees)
         telemetry.addLine("armIsAtTarget: $armIsAtTarget")
 
         val liftTarget: SlideSubsystem.SlideTargetPosition =
-                if (bothClawsAreAtTarget) {
-                    if (armIsAtTarget) {
+                if (bothClawsAreAtIntermediateTarget) {
+                    if (armIsAtFinalTarget) {
                         finalDepoTarget.lift.targetPosition
                     } else {
                         val goToFinalAnyway = when (finalDepoTarget.targetType) {
