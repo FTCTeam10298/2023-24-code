@@ -265,6 +265,9 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
             yInches = 0.0
     )
 
+    var whichWorldsFieldAreWeOn: String = "Left"
+    var allianceSideOfBoard: String = "Red"
+
 
 
 
@@ -300,10 +303,13 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
 //        var previousAState = RetainedState(aPressed = gamepad1.a)
 
-        var aIsPressed = false
-        var bIsPressed = false
-        var xIsPressed = false
-        var yIsPressed = false
+        var rightSecondaryPressed = false
+        var leftSecondaryPressed = false
+
+        var firstPointButtonPressed = false
+        var secondPointButtonPressed = false
+        var fourthPointButtonPressed = false
+        var thirdPointButtonPressed = false
 
         waitForStart()
 
@@ -314,40 +320,66 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
             val currentDetections = getListOfCurrentAprilTagsSeen()
 
-            if ((gamepad1.a) && !aIsPressed) {
+            if ((gamepad1.dpad_down || gamepad1.triangle) && !firstPointButtonPressed) {
                 recalculateFirstPoint(currentDetections = currentDetections)
 
-                aIsPressed = true
+                firstPointButtonPressed = true
             }
-            if (aIsPressed == true && !gamepad1.a) {
-                aIsPressed = false
+            if (firstPointButtonPressed == true && !(gamepad1.a || gamepad1.triangle) ) {
+                firstPointButtonPressed = false
             }
 
-            if (gamepad1.b  && !bIsPressed) {
+            if ((gamepad1.dpad_right || gamepad1.circle) && !secondPointButtonPressed) {
                 recalculateSecondPoint(currentDetections = currentDetections)
 
-                bIsPressed = true
+                secondPointButtonPressed = true
             }
-            if (bIsPressed == true && !gamepad1.b) {
-                bIsPressed = false
+            if (secondPointButtonPressed == true && !(gamepad1.b || gamepad1.circle)) {
+                secondPointButtonPressed = false
             }
-            if (gamepad1.y && !yIsPressed) {
+            if ((gamepad1.dpad_up || gamepad1.cross) && !thirdPointButtonPressed) {
                 recalculateThirdPoint(currentDetections = currentDetections)
 
-                yIsPressed = true
+                thirdPointButtonPressed = true
             }
-            if (yIsPressed == true && !gamepad1.y) {
-                yIsPressed = false
+            if (thirdPointButtonPressed == true && !((gamepad1.y || gamepad1.cross))) {
+                thirdPointButtonPressed = false
             }
+            //gamepad1.cross controls triangle and cross values
 
-            if (gamepad1.x && !xIsPressed) {
+            if ((gamepad1.dpad_left || gamepad1.square) && !fourthPointButtonPressed) {
                 recalculateFourthPoint(currentDetections = currentDetections)
 
-                xIsPressed = true
+                fourthPointButtonPressed = true
             }
-            if (xIsPressed == true && !gamepad1.x) {
-                xIsPressed = false
+            if (fourthPointButtonPressed == true && !(gamepad1.x || gamepad1.square)) {
+                fourthPointButtonPressed = false
             }
+
+            if (gamepad1.right_bumper && !rightSecondaryPressed == true) {
+                toggleFieldSide(currentDetections = currentDetections)
+
+                rightSecondaryPressed = true
+            }
+            if (rightSecondaryPressed == true && !gamepad1.right_bumper) {
+                rightSecondaryPressed = false
+            }
+
+            if (gamepad1.left_bumper && !leftSecondaryPressed == true) {
+                toggleBackBoardAlliance(currentDetections = currentDetections)
+
+                leftSecondaryPressed = true
+            }
+            if (leftSecondaryPressed == true && !gamepad1.left_bumper) {
+                leftSecondaryPressed = false
+            }
+
+
+
+
+
+
+
 
             showData()
             telemetry.update()
@@ -454,8 +486,6 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
 
                 if (detection.id == closestAprilTag.id) {
-                    telemetry.addLine("OK, it worked")
-
                     val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 //
                     val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
@@ -493,7 +523,6 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
 
                 if (detection.id == closestAprilTag.id) {
-                    telemetry.addLine("OK, it worked")
 
                     val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 //
@@ -532,7 +561,6 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
 
                 if (detection.id == closestAprilTag.id) {
-                    telemetry.addLine("OK, it worked")
 
                     val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 //
@@ -571,8 +599,6 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
 
                 if (detection.id == closestAprilTag.id) {
-                    telemetry.addLine("OK, it worked")
-
                     val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 //
                     val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
@@ -591,6 +617,24 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
             }
         }
     }
+
+    private fun toggleFieldSide(currentDetections: List<AprilTagDetection>) {
+        whichWorldsFieldAreWeOn = when(whichWorldsFieldAreWeOn) {
+            "Left" -> "Right"
+            "Right" -> "Left"
+            else -> "Left"
+        }
+    }
+
+    private fun toggleBackBoardAlliance(currentDetections: List<AprilTagDetection>) {
+
+        allianceSideOfBoard = when(allianceSideOfBoard) {
+            "Red" -> "Blue"
+            "Blue" -> "Red"
+            else -> "Red"
+        }
+    }
+
 
 
 
@@ -651,12 +695,15 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
         val third = thirdPointCalculatedPosition
         val fourth = fourthPointCalculatedPosition
 
-        telemetry.addLine("First point -   ⃤  to change")
+        telemetry.addLine("Field: $whichWorldsFieldAreWeOn")
+        telemetry.addLine("Backboard Alliance: $allianceSideOfBoard")
+
+        telemetry.addLine("\nFirst point -   ⃤  to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
                 first.xInches,
                 first.yInches))
 
-        telemetry.addLine("\n\n Second point -   ⃝  to change")
+        telemetry.addLine("\n\n Second point -   ⃝    to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
                 second.xInches,
                 second.yInches))
@@ -666,7 +713,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
                 third.xInches,
                 third.yInches))
 
-        telemetry.addLine("\n\n Fourth point - ⃞ to change")
+        telemetry.addLine("\n\n Fourth point -   ⃞   to change")
         telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch, deg)",
                 fourth.xInches,
                 fourth.yInches))
