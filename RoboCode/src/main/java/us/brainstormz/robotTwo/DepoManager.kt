@@ -50,6 +50,7 @@ class DepoManager(
             RobotTwoTeleOp.DepoInput.Preset2 -> DepoTargetType.GoingOut
             RobotTwoTeleOp.DepoInput.Preset3 -> DepoTargetType.GoingOut
             RobotTwoTeleOp.DepoInput.Preset4 -> DepoTargetType.GoingOut
+            RobotTwoTeleOp.DepoInput.YellowPlacement -> DepoTargetType.GoingOut
             RobotTwoTeleOp.DepoInput.ScoringHeightAdjust -> DepoTargetType.GoingOut
             RobotTwoTeleOp.DepoInput.Down -> DepoTargetType.GoingHome
             else -> null

@@ -317,7 +317,7 @@ class RobotTwoAuto(
                                     ),
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
-                                            depoInput = DepoInput.Preset1,
+                                            depoInput = DepoInput.YellowPlacement,
                                             handoffInput = HandoffInput.Handoff,
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
@@ -326,7 +326,7 @@ class RobotTwoAuto(
                                     ),
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
-                                            depoInput = DepoInput.Preset1,
+                                            depoInput = DepoInput.YellowPlacement,
                                             handoffInput = HandoffInput.NoInput,
                                             wristInput = WristInput(
                                                     left = ClawInput.Drop,
