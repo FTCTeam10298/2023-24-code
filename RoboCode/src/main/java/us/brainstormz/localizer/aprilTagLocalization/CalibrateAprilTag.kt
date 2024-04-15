@@ -239,6 +239,13 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
     )
 
 
+    data class TrackedControllerState (
+        val rightBumperPressed:Boolean,
+        val leftBumperPressed:Boolean,
+            val dPadLeftPressed: Boolean
+    )
+    var previousControllerState:TrackedControllerState? = null
+
     override fun runOpMode() {
 
         aprilTagThings.forEach {
@@ -253,7 +260,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
 //        var previousAState = RetainedState(aPressed = gamepad1.a)
 
-        var rightSecondaryPressed = false
+//        var rightSecondaryPressed = false
         val leftSecondaryPressed = false
 
         val firstPointButtonPressed = false
@@ -267,17 +274,32 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
         while(opModeIsActive()) {
 //            val state = RetainedState(aPressed = gamepad1.a)
 
+            val currentControllerState = TrackedControllerState(
+                    rightBumperPressed = gamepad1.right_bumper,
+                    leftBumperPressed = gamepad1.left_bumper,
+                    dPadLeftPressed = gamepad1.dpad_left
+            )
+
             aprilTagThings.forEach { it.resumeStreaming() }
 
             val currentDetections = getListOfCurrentAprilTagsSeen()
 
-             listenForWindowChange(dPadLeftPressed)
+            previousControllerState = currentControllerState
+
+             listenForWindowChange(previousControllerState)
 
             when (currentMenuLevel) {
                 MenuLevel.GetData ->
-                 captureBackboardData (firstPointButtonPressed, currentDetections, secondPointButtonPressed,
-                        thirdPointButtonPressed, fourthPointButtonPressed, rightSecondaryPressed,
-                        leftSecondaryPressed)
+                 captureBackboardData (
+                    previousControllerState,
+                    currentControllerState,
+                    firstPointButtonPressed,
+                    currentDetections,
+                    secondPointButtonPressed,
+                    thirdPointButtonPressed,
+                    fourthPointButtonPressed,
+                    leftSecondaryPressed,
+                 )
 
                 MenuLevel.ShowOffsets -> findOffsetsAndShowResultingReductionOfError()
 //                    findOffsetsAndShowResultingReductionOfError(null!!)
@@ -298,8 +320,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //            sleep(20)
 
 
-
-
+            previousControllerState = currentControllerState
         }
         if(isStopRequested) {
             aprilTagThings.forEach { it.close() }
@@ -313,87 +334,74 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
     }
 
-    private fun listenForWindowChange(dPadLeftPressed: Boolean): Boolean {
-        var dPadLeftPressedState = dPadLeftPressed
+    private fun listenForWindowChange(previousControllerState: TrackedControllerState?) {
 
-        if ((gamepad1.y || gamepad1.dpad_left) && !dPadLeftPressedState) {
-            currentMenuLevel = when(currentMenuLevel) {
+        val currentControllerStateWindowChange = TrackedControllerState(
+                rightBumperPressed = gamepad1.right_bumper,
+                leftBumperPressed = gamepad1.left_bumper,
+                dPadLeftPressed = gamepad1.dpad_left
+        )
+
+        if ((gamepad1.dpad_left) && !(currentControllerStateWindowChange.rightBumperPressed  && (previousControllerState==null || previousControllerState.rightBumperPressed ==false))) {
+            currentMenuLevel = when (currentMenuLevel) {
                 MenuLevel.GetData -> MenuLevel.ShowOffsets
                 MenuLevel.ShowOffsets -> MenuLevel.GetData
             }
-
         }
-
-        if (dPadLeftPressedState == true && !(gamepad1.y || gamepad1.dpad_left)) {
-            dPadLeftPressedState = false
-        }
-
-        return dPadLeftPressedState
-
     }
 
-    private fun captureBackboardData(firstPointButtonPressed: Boolean, currentDetections: List<AprilTagDetection>, secondPointButtonPressed: Boolean, thirdPointButtonPressed: Boolean, fourthPointButtonPressed: Boolean, rightSecondaryPressed: Boolean, leftSecondaryPressed: Boolean) {
+    private fun captureBackboardData(previousControllerState:TrackedControllerState?, currentControllerState:TrackedControllerState, firstPointButtonPressed: Boolean, currentDetections: List<AprilTagDetection>, secondPointButtonPressed: Boolean, thirdPointButtonPressed: Boolean, fourthPointButtonPressed: Boolean, leftSecondaryPressed: Boolean) {
         var firstPointButtonPressed1 = firstPointButtonPressed
         var secondPointButtonPressed1 = secondPointButtonPressed
         var thirdPointButtonPressed1 = thirdPointButtonPressed
         var fourthPointButtonPressed1 = fourthPointButtonPressed
-        var rightSecondaryPressed1 = rightSecondaryPressed
+//        var rightSecondaryPressed1 = rightSecondaryPressed
         var leftSecondaryPressed1 = leftSecondaryPressed
 
-        if ((gamepad1.dpad_down || gamepad1.triangle) && !firstPointButtonPressed1) {
+        if ((gamepad1.triangle) && !firstPointButtonPressed1) {
             recalculateFirstPoint(currentDetections = currentDetections)
 
             firstPointButtonPressed1 = true
         }
-        if (firstPointButtonPressed1 == true && !(gamepad1.dpad_down || gamepad1.triangle)) {
+        if (firstPointButtonPressed1 == true && !(gamepad1.triangle)) {
             firstPointButtonPressed1 = false
         }
 
-        if ((gamepad1.dpad_right || gamepad1.circle) && !secondPointButtonPressed1) {
+        if ((gamepad1.circle) && !secondPointButtonPressed1) {
             recalculateSecondPoint(currentDetections = currentDetections)
 
             secondPointButtonPressed1 = true
         }
-        if (secondPointButtonPressed1 == true && !(gamepad1.dpad_right || gamepad1.circle)) {
+        if (secondPointButtonPressed1 == true && !(gamepad1.circle)) {
             secondPointButtonPressed1 = false
         }
-        if ((gamepad1.dpad_up || gamepad1.cross) && !thirdPointButtonPressed1) {
+        if ((gamepad1.cross) && !thirdPointButtonPressed1) {
             recalculateThirdPoint(currentDetections = currentDetections)
 
             thirdPointButtonPressed1 = true
         }
-        if (thirdPointButtonPressed1 == true && !((gamepad1.dpad_up || gamepad1.cross))) {
+        if (thirdPointButtonPressed1 == true && !(gamepad1.cross)) {
             thirdPointButtonPressed1 = false
         }
         //gamepad1.cross controls triangle and cross values
 
-        if ((gamepad1.b || gamepad1.square) && !fourthPointButtonPressed1) {
+        if ((gamepad1.square) && !fourthPointButtonPressed1) {
             recalculateFourthPoint(currentDetections = currentDetections)
 
             fourthPointButtonPressed1 = true
         }
-        if (fourthPointButtonPressed1 == true && !(gamepad1.dpad_left || gamepad1.square)) {
+        if (fourthPointButtonPressed1 == true && !(gamepad1.square)) {
             fourthPointButtonPressed1 = false
         }
 
-        if (gamepad1.right_bumper && !rightSecondaryPressed1 == true) {
+        if (currentControllerState.rightBumperPressed  && (previousControllerState==null || previousControllerState.rightBumperPressed ==false) ) {
             toggleFieldSide()
             zeroAllValues()
-
-            rightSecondaryPressed1 = true
-        }
-        if (rightSecondaryPressed1 == true && !gamepad1.right_bumper) {
-            rightSecondaryPressed1 = false
         }
 
-        if (gamepad1.left_bumper && !leftSecondaryPressed1 == true) {
+        if (gamepad1.left_bumper && (previousControllerState==null || previousControllerState.leftBumperPressed ==false))  {
             toggleBackBoardAlliance()
             zeroAllValues()
-
-            leftSecondaryPressed1 = true
-        }
-        if (leftSecondaryPressed1 == true && !gamepad1.left_bumper) {
-            leftSecondaryPressed1 = false
         }
 
     }
