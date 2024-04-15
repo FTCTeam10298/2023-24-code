@@ -1,11 +1,18 @@
 package us.brainstormz.robotTwo
 
+import FieldRelativePointInSpace
+import android.util.Size
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.robotcore.hardware.Gamepad
+import fieldConfigurationToTest
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
+import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropPosition
 import us.brainstormz.robotTwo.RobotTwoPropDetector.*
@@ -50,7 +57,13 @@ class RobotTwoAuto(
             getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> getNextTargetFromList(previousAutoInput= previousTargetWorld.autoInput!!) },
     )
 
-    fun getTargetWorldFromAutoInput(autoInput: AutoInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetWorld: TargetWorld): TargetWorld {
+    fun getTargetWorldFromAutoInput(
+            autoInput: AutoInput,
+            actualWorld: ActualWorld,
+            aprilTagReadings: List<AprilTagDetection>,
+            previousActualWorld: ActualWorld,
+            previousTargetWorld: TargetWorld
+    ): TargetWorld {
 
         /**Interpret Transfer State*/
         val transferState = transfer.getTransferState(
@@ -183,9 +196,24 @@ class RobotTwoAuto(
             ArmInput.NoInput -> handoffTarget.depo
         }
 
+        val drivetrainTarget = if (autoInput.getCurrentPositionAndRotationFromAprilTag) {
+            Drivetrain.DrivetrainTarget(actualWorld.actualRobot.positionAndRotation)
+        } else {
+            autoInput.drivetrainTarget
+        }
+
+        if (autoInput.getCurrentPositionAndRotationFromAprilTag) {
+            val drivetrainIsNotMoving = drivetrain.getVelocity(actualWorld, previousActualWorld).checkIfIsLessThan(drivetrain.maxVelocityToStayAtPosition)
+            if (drivetrainIsNotMoving) {
+                drivetrain.localizer.setPositionAndRotation(
+                        getCurrentPositionAndRotationFromAprilTag(actualWorld)
+                )
+            }
+        }
+
         return TargetWorld(
                 targetRobot = TargetRobot(
-                        drivetrainTarget = autoInput.drivetrainTarget,
+                        drivetrainTarget = drivetrainTarget,
                         depoTarget = depoTargetWithInitArm,
                         collectorTarget = handoffTarget.collector,
                         hangPowers = RobotTwoHardware.HangPowers.Holding,
@@ -203,6 +231,33 @@ class RobotTwoAuto(
                 gamepad1Rumble = null
         )
     }
+
+
+    private val aprilTagLocalization = AprilTagLocalizationFunctions(
+            cameraXOffset= RobotTwoHardware.robotLengthInches/2,
+            cameraYOffset= 0.00
+    )
+    private val currentFieldConfiguration = fieldConfigurationToTest
+    private val aprilTagLocalizer = ReusableAprilTagFieldLocalizer(
+            aprilTagLocalization = aprilTagLocalization,
+            averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
+            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets)
+
+    private fun getCurrentPositionAndRotationFromAprilTag(actualWorld: ActualWorld): PositionAndRotation {
+        val currentDetections = actualWorld.aprilTagReadings
+        val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
+        val theTargetAprilTagPositionInfo = aprilTagLocalizer.returnAprilTagInFieldCentricCoords(closestAprilTag)
+
+        fun FieldRelativePointInSpace.toPositionAndRotation() = PositionAndRotation(
+                x = this.xInches,
+                y = this.yInches,
+                r = this.headingDegrees
+        )
+
+        return theTargetAprilTagPositionInfo.FieldRelativePointInSpace.toPositionAndRotation()
+    }
+
+
 
     private val xForNavigatingUnderStageDoor = -((RobotTwoHardware.robotWidthInches/2) + 2)
 
@@ -414,6 +469,17 @@ class RobotTwoAuto(
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
+                                        ),
+                                        blankAutoState.copy(
+//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+//                                                        x = pushPurpleFarFromTrussX - 12,
+//                                                        y = startPosition.y - 20,
+//                                                        r = 0.0,
+//                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(hasTimeElapsed(1000, targetWorld), targetWorld)
+                                                },
+                                                getCurrentPositionAndRotationFromAprilTag = true
                                         ),
                                 )
                             }.addArmInitToPath()
@@ -924,10 +990,13 @@ class RobotTwoAuto(
         drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
     }
 
-
-    fun loop(hardware: RobotTwoHardware, gamepad1: SerializableGamepad) = measured("main loop"){
+    fun loop(hardware: RobotTwoHardware, aprilTagPipeline: AprilTagPipelineForEachCamera, gamepad1: SerializableGamepad) = measured("main loop"){
         runRobot(
-                targetStateFetcher = { actualWorld, previousActualWorld, previousTargetWorld ->
+                targetStateFetcher = { actualWorldWithoutAprilTags, previousActualWorld, previousTargetWorld ->
+
+                    val actualWorld = actualWorldWithoutAprilTags.copy(
+
+                    )
 
                     val autoInput = nextAutoInput(
                             actualWorld,
@@ -942,6 +1011,7 @@ class RobotTwoAuto(
                     val targetWorld = getTargetWorldFromAutoInput(
                             autoInput = autoInput,
                             actualWorld = actualWorld,
+                            aprilTagReadings = aprilTagPipeline.detections(),
                             previousActualWorld = previousActualWorld,
                             previousTargetWorld = previousTargetWorld
                     )

@@ -52,7 +52,8 @@ data class AutoInput (
         val intakeInput: RobotTwoAuto.IntakeInput,
         @get:JsonIgnore
         val getNextInput: ((actualWorld: ActualWorld, previousActualWorld: ActualWorld, targetWorld: TargetWorld) -> AutoInput)? = null,
-        val listIndex: Int? = null
+        val listIndex: Int? = null,
+        val getCurrentPositionAndRotationFromAprilTag: Boolean = false
 )
 
 data class TargetWorld(

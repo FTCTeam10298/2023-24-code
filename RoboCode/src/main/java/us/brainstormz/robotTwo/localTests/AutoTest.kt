@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.Gamepad
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.FauxOpenCvAbstraction
 import us.brainstormz.faux.PrintlnTelemetry
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoAuto
 import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
@@ -31,7 +32,8 @@ class AutoTest {
     fun runTest(testSteps: List<ActualWorld>, numberOfTimesToRunInitLoop: Int): List<Pair<ActualWorld, TargetWorld>> {
         val opmode = FauxOpMode(telemetry = PrintlnTelemetry())
         val hardware = FauxRobotTwoHardware(opmode = opmode, telemetry = opmode.telemetry)
-        val program = RobotTwoAuto(opmode.telemetry)//, AprilTagPipeline(hardware.backCameraName, hardware.backCameraResolution))
+        val program = RobotTwoAuto(opmode.telemetry)
+        val aprilTagPipeline = AprilTagPipelineForEachCamera(hardware.backCameraName, hardware.backCameraResolution)
 //        val openCvAbstraction = FauxOpenCvAbstraction(opmode)
 
         program.init(hardware)
@@ -49,7 +51,7 @@ class AutoTest {
 
             //Run Once
             for (i in 1..numberOfTimesToRunInitLoop) {
-                program.loop(hardware, gamepad1 = blankGamepad())
+                program.loop(hardware, aprilTagPipeline, gamepad1 = blankGamepad())
             }
 
             //Get result

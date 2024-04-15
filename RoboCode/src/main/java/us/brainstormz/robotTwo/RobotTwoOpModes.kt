@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import android.util.Size
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -7,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.vision.VisionPortal
 import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.faux.PrintlnTelemetry
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.robotTwo.onRobotTests.AprilTagPipeline
 
@@ -40,6 +42,7 @@ class Autonomous: OpMode() {
     private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= multiTelemetry, opmode = this)
 
     private val opencv = OpenCvAbstraction(this)
+    private val aprilTagPipeline = AprilTagPipelineForEachCamera("Webcam 1", Size(640, 480))
     private lateinit var auto: RobotTwoAuto
     override fun init() {
         hardware.init(hardwareMap)
@@ -57,9 +60,12 @@ class Autonomous: OpMode() {
 
     override fun start() {
         auto.start(hardware)
+
+        aprilTagPipeline.init(viewContainerId = null, hardwareMap = hardwareMap)
+        aprilTagPipeline.resumeStreaming()
     }
 
     override fun loop() {
-        auto.loop(hardware= hardware, SerializableGamepad(gamepad1))
+        auto.loop(hardware= hardware, aprilTagPipeline, SerializableGamepad(gamepad1))
     }
 }
