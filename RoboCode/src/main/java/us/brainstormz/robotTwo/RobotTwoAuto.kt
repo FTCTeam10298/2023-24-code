@@ -209,17 +209,17 @@ class RobotTwoAuto(
     private val depositY = -53.0
     private fun depositingPosition(propPosition: PropPosition) = when (propPosition) {
         PropPosition.Left -> PositionAndRotation(
-                x = -32.0,
+                x = -29.4,
                 y = depositY,
                 r = 0.0
         )
         PropPosition.Center -> PositionAndRotation(
-                x = -36.0,
+                x = -35.4,
                 y = depositY,
                 r = 0.0
         )
         PropPosition.Right -> PositionAndRotation(
-                x = -40.0,
+                x = -41.4,
                 y = depositY,
                 r = 0.0
         )
@@ -434,7 +434,7 @@ class RobotTwoAuto(
                         parkPath = listOf(
                                 blankAutoState.copy(
                                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                x = startPosition.x,
+                                                x = startPosition.x+1,
                                                 y = -50.0,
                                                 r = 0.0,
                                         )),
@@ -444,7 +444,7 @@ class RobotTwoAuto(
                                 ),
                                 blankAutoState.copy(
                                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                x = startPosition.x,
+                                                x = startPosition.x+1,
                                                 y = -60.0,
                                                 r = 0.0,
                                         )),
