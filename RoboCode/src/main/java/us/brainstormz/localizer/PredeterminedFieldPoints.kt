@@ -1,9 +1,11 @@
 package us.brainstormz.localizer
 
-import FourPoints
+import us.brainstormz.localizer.aprilTagLocalization.CalculateAprilTagCalibration
+import us.brainstormz.localizer.aprilTagLocalization.FourPoints
 
-data class PointInXInchesAndYInches(val xInches: Double?, val yInches: Double?)
-data class MutablePointInXInchesAndYInches(var xInches: Double?, var yInches: Double?)
+
+data class PointInXInchesAndYInches(val xInches: Double, val yInches: Double)
+data class MutablePointInXInchesAndYInches(var xInches: Double, var yInches: Double)
 
 
 class PredeterminedFieldPoints {

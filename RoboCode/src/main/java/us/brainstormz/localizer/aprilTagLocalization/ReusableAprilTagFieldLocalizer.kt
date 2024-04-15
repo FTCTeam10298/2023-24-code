@@ -18,7 +18,7 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
                                      private val averageErrorRedSide: AverageAprilTagBackboardOffset,
                                      private val averageErrorBlueSide: AverageAprilTagBackboardOffset){
 
-    fun getFieldPositionsForTag(detection: AprilTagDetection):FieldRelativePointInSpace? {
+    fun getFieldPositionsForTag(detection: AprilTagDetection):FieldRelativePointInSpace {
         return returnAprilTagInFieldCentricCoords(detection).FieldRelativePointInSpace
     }
 
@@ -108,7 +108,7 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
 
 
     data class AprilTagAndData(val AprilTag: AprilTagDetection, val CamRelativePointInSpace: CameraRelativePointInSpace?,
-                               val TagRelativePointInSpace: TagRelativePointInSpace?, val FieldRelativePointInSpace: FieldRelativePointInSpace?,
+                               val TagRelativePointInSpace: TagRelativePointInSpace?, val FieldRelativePointInSpace: FieldRelativePointInSpace,
                                val AllianceSide: AllianceSide, val valueHasOneInchAccuracy: Boolean)
 
 }

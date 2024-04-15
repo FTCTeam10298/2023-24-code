@@ -110,6 +110,7 @@ class AprilTagLocalizationFunctions(val cameraXOffset: Double, val cameraYOffset
 //            closestToCenter
 //        }
 //        else {
+
         return sortedByRange[0]
 //        }
     }

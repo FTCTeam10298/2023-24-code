@@ -27,6 +27,20 @@ object AprilTagFieldConfigurations {
             )
     )
 
+    //TODO: delete
+    val garageFieldAtHomeButPotatoBot = FieldConfiguration(
+            BlueAllianceOffsets = AverageAprilTagBackboardOffset(
+                    xInches = 0.27875,
+                    yInches = 3.1625,
+                    hDegrees = 0.0, //0
+            ),
+            RedAllianceOffsets = AverageAprilTagBackboardOffset(
+                    xInches = 0.0125,
+                    yInches = 4.15,
+                    hDegrees = 0.0,
+            )
+    )
+
     val leftFieldAtWorlds = FieldConfiguration(
             BlueAllianceOffsets = AverageAprilTagBackboardOffset(
                     xInches = 0.04375,
