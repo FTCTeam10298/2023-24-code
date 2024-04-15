@@ -462,6 +462,7 @@ class HandoffManager(
 
         telemetry.addLine("\nhandoffCoordinated: $handoffCoordinated")
 
+//        val liftIsHighEnoughThatTheExtendoCouldInterfereWithGoingDown = actualWorld.actualRobot.depoState.lift.currentPositionTicks > Lift.LiftPositions.ExtendoCouldInterfereWithGoingDown.ticks
         val coordinatedCollector = collectorManager.coordinateCollector(
                 timestampMillis = actualWorld.timestampMilis,
                 uncoordinatedTarget = collectorTarget.copy(
@@ -473,25 +474,31 @@ class HandoffManager(
                             )
 
                         } else {
-                            if (handoffCoordinated.extendo == ExtendoHandoffControlDecision.HandoffPosition) {
-
-                                val slideIsSuperCloseToZero = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks <= 300
-
-                                if (slideIsSuperCloseToZero && !actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated) {
-                                    Extendo.ExtendoTarget(
-                                        power = -0.6,
-                                        movementMode = DualMovementModeSubsystem.MovementMode.Power,
-                                        targetPosition = Extendo.ExtendoPositions.Min
-                                    )
-                                } else {
-                                    Extendo.ExtendoTarget(
+                            val realTarget = if (handoffCoordinated.extendo == ExtendoHandoffControlDecision.HandoffPosition) {
+                                Extendo.ExtendoTarget(
                                         targetPosition = Extendo.ExtendoPositions.Min,
                                         movementMode = DualMovementModeSubsystem.MovementMode.Position,
-                                    )
-                                }
+                                )
                             } else {
                                 collectorTarget.extendo
                             }
+
+                            val extendoTargetIsIn = realTarget.targetPosition == Extendo.ExtendoPositions.Min && realTarget.movementMode == DualMovementModeSubsystem.MovementMode.Position
+
+                            val extendoIsSuperCloseToZero = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks <= 300
+                            val extendoIsntAtLimit = !actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
+
+                            if (extendoTargetIsIn && extendoIsSuperCloseToZero && extendoIsntAtLimit) {
+                                Extendo.ExtendoTarget(
+                                        power = -0.6,
+                                        movementMode = DualMovementModeSubsystem.MovementMode.Power,
+                                        targetPosition = Extendo.ExtendoPositions.Min
+                                )
+                            } else {
+                                realTarget
+                            }
+
+
                         } ,
                         latches = TransferTarget(
                                 left = LatchTarget(deriveLatchPositionFromPixelHolder(handoffCoordinated.latches.left, collectorTarget.latches.left.target), 0),

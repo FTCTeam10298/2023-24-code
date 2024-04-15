@@ -45,6 +45,7 @@ data class TargetRobot(
 data class AutoInput (
         val drivetrainTarget: Drivetrain.DrivetrainTarget,
         val depoInput: RobotTwoTeleOp.DepoInput,
+        val armAtInitPosition: Boolean,
         val handoffInput: RobotTwoTeleOp.HandoffInput,
         val wristInput: RobotTwoTeleOp.WristInput,
         val extendoInput: Extendo.ExtendoPositions,

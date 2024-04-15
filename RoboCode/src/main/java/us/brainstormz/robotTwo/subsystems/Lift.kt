@@ -17,8 +17,9 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     @JsonTypeName("LiftPositions")
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
-        PastDown(0),
+//        PastDown(0),
         Down(0),
+        ExtendoCouldInterfereWithGoingDown(100),
         AutoLowYellowPlacement((330*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         AutoAbovePartnerPlacement((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         ClearForArmToMove(500),
@@ -52,7 +53,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override val allowedMovementBeforeResetTicks: Int = 700
     override val allTheWayInPositionTicks: Int = 0
     override val stallCurrentAmps: Double = 5.0
-    override val findResetPower: Double = 1.0
+    override val findResetPower: Double = 0.5
 
 //    @JsonTypeName("actual-lift")
 //    data class ActualLift(override val currentPositionTicks: Int,
