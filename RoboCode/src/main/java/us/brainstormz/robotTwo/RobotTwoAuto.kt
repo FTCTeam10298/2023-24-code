@@ -1,10 +1,10 @@
 package us.brainstormz.robotTwo
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
-import us.brainstormz.robotTwo.RobotTwoHardware.UnchangingRobotAttributes.alliance
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropPosition
 import us.brainstormz.robotTwo.RobotTwoTeleOp.*
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initLatchTarget
@@ -21,6 +21,8 @@ import us.brainstormz.robotTwo.subsystems.Lift
 import us.brainstormz.robotTwo.subsystems.Neopixels.*
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
+import us.brainstormz.telemetryWizard.TelemetryConsole
+import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.utils.measured
 import kotlin.math.absoluteValue
 
@@ -631,7 +633,8 @@ class RobotTwoAuto(
 
     data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val shouldDoYellow: Boolean)
 
-    private var startPosition: StartPosition = StartPosition.Backboard
+    private val console = TelemetryConsole(telemetry)
+    private val wizard = TelemetryWizard(console, null)
 
     fun init(hardware: RobotTwoHardware) {
         initRobot(
@@ -639,17 +642,63 @@ class RobotTwoAuto(
             localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         )
 
+        wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "partnerYellow", firstMenu = true)
+        wizard.newMenu("partnerYellow", "What will our partner be placing on the board?", listOf("Yellow", "Nothing"), nextMenu = "startingPos")
+        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience" to "doYellow", "Backboard" to null))
+        wizard.newMenu("doYellow", "What do we do after the purple?", listOf("Yellow", "Nothing"))
+
+
         telemetry.addLine("init Called")
     }
 
-    fun start(hardware: RobotTwoHardware) {
+    private fun getMenuWizardResults(): WizardResults {
+        return WizardResults(
+                alliance = when (wizard.wasItemChosen("alliance", "Red")) {
+                    true -> RobotTwoHardware.Alliance.Red
+                    false -> RobotTwoHardware.Alliance.Blue
+                },
+                startPosition = when (wizard.wasItemChosen("startingPos", "Audience")) {
+                    true -> StartPosition.Audience
+                    false -> StartPosition.Backboard
+                },
+                partnerIsPlacingYellow = wizard.wasItemChosen("partnerYellow", "Yellow"),
+                shouldDoYellow = wizard.wasItemChosen("doYellow", "Yellow")
+        )
+    }
 
-        val startPositionAndRotation: PositionAndRotation = when (alliance) {
-            RobotTwoHardware.Alliance.Red -> startPosition.redStartPosition
-            RobotTwoHardware.Alliance.Blue -> flipRedPositionToBlue(startPosition.redStartPosition)
+    private var wizardResults: WizardResults = WizardResults(
+            alliance = RobotTwoHardware.Alliance.Red,
+            startPosition = StartPosition.Backboard,
+            partnerIsPlacingYellow = false,
+            shouldDoYellow = false,
+    )
+    private var previousWizardIsDone = false
+    fun initLoop(hardware: RobotTwoHardware, gamepad1: Gamepad) {
+        if (!previousWizardIsDone) {
+            val wizardIsDone = wizard.summonWizard(gamepad1)
+            if (wizardIsDone) {
+                wizardResults = getMenuWizardResults()
+
+//                runCamera(opencv, wizardResults!!)
+//                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
+            }
+            previousWizardIsDone = wizardIsDone
+        } else {
+//            telemetry.addLine("propPosition? = ${propDetector?.propPosition}")
+            telemetry.addLine("wizardResults: ${wizardResults}")
+        }
+    }
+
+    fun start(hardware: RobotTwoHardware) {
+        val startPositionAndRotation: PositionAndRotation = when (wizardResults.alliance) {
+            RobotTwoHardware.Alliance.Red ->
+                wizardResults.startPosition.redStartPosition
+
+            RobotTwoHardware.Alliance.Blue ->
+                flipRedPositionToBlue(wizardResults.startPosition.redStartPosition)
         }
 
-        autoStateList = calcAutoTargetStateList(alliance, startPosition, PropPosition.Right)
+        autoStateList = calcAutoTargetStateList(wizardResults.alliance, wizardResults.startPosition, PropPosition.Right)
 
         drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
     }

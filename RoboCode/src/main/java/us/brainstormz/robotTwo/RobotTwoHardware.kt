@@ -165,10 +165,6 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         Blue
     }
 
-    object UnchangingRobotAttributes {
-        var alliance = Alliance.Red
-    }
-
     override lateinit var hwMap: HardwareMap
     lateinit var ctrlHub: SmartLynxModule
     lateinit var exHub: SmartLynxModule

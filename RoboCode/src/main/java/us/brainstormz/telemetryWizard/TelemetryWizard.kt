@@ -24,7 +24,7 @@ class TelemetryWizard(private val console: TelemetryConsole, private val opmode:
         menuList += Menu(name, caption, items, firstMenu)
     }
 
-    fun getMenu(id: String?): Menu? = menuList.first{ it.id == id }
+    fun getMenu(id: String?): Menu? = menuList.firstOrNull{ it.id == id }
 
     fun wasItemChosen(id: String, item: String): Boolean = getMenu(id)?.answer?.first == item
 

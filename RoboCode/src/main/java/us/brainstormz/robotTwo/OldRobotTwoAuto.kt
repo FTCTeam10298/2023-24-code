@@ -8,7 +8,6 @@ import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
 import us.brainstormz.pid.PID
-import us.brainstormz.robotTwo.RobotTwoHardware.UnchangingRobotAttributes.alliance
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropColors

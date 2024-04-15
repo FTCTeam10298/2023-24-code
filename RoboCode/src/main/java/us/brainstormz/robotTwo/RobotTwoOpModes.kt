@@ -48,6 +48,10 @@ class Autonomous: OpMode() {
         auto.init(hardware)
     }
 
+    override fun init_loop() {
+        auto.initLoop(hardware, gamepad1)
+    }
+
     override fun start() {
         auto.start(hardware)
     }
