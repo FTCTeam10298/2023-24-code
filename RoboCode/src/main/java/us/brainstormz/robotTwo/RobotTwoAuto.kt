@@ -245,7 +245,9 @@ class RobotTwoAuto(
                                 actualWorld = actualWorld
                         )
 
-                         nextTargetFromCondition(isDepoAtPosition, targetWorld)
+                        val isRobotMoving = drivetrain.getVelocity(actualWorld, previousActualWorld).checkIfIsLessThan(drivetrain.maxVelocityToStayAtPosition)
+
+                         nextTargetFromCondition(isDepoAtPosition && !isRobotMoving, targetWorld)
                     }
             ),
             blankAutoState.copy(
@@ -275,7 +277,7 @@ class RobotTwoAuto(
                     depoInput = DepoInput.YellowPlacement,
                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
 
-                        nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                     }
             ),
     )
