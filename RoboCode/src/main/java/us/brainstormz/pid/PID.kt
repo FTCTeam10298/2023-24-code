@@ -1,5 +1,6 @@
 package us.brainstormz.pid
 
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
@@ -85,6 +86,15 @@ class PID(val name:String, val kp: Double = 0.0, val ki: Double = 0.0, val kd: D
         vMin = applyMin(v)
 
         return vMin
+    }
+
+    fun fancyP(inputP: Double): Double {
+        var absFancyP = abs(inputP)
+        if (absFancyP <= 0.067)
+            absFancyP *= 3.0
+        else if (absFancyP <= 0.2)
+            absFancyP = 0.2
+        return absFancyP * inputP.sign
     }
 
     override fun toString(): String {
