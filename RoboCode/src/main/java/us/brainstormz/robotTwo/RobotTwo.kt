@@ -26,6 +26,7 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
 import us.brainstormz.utils.measured
 import java.io.File
+import java.lang.Exception
 
 abstract class RobotTwo(private val telemetry: Telemetry) {
     val intake = Intake()
@@ -149,6 +150,26 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
         }
     }
 
+    fun <T> saveSomething(somethingToSave: T) {
+        Thread {
+            try {
+                val file = File("/storage/emulated/0/Download/something$numberOfSnapshotsMade.json")
+                file.createNewFile()
+                if (file.exists() && file.isFile) {
+                    numberOfSnapshotsMade++
+
+                    val jsonEncoded = jacksonObjectMapper().writeValueAsString(somethingToSave)
+
+                    println("SAVING something $numberOfSnapshotsMade: ${jsonEncoded}")
+                    file.printWriter().use {
+                        it.print(jsonEncoded)
+                    }
+                }
+            } catch (e: Exception) {
+                println("oopsie poopsie")
+            }
+        }.start()
+    }
 
     private var numberOfSnapshotsMade = 0
     fun saveStateSnapshot(actualWorld: ActualWorld, previousActualWorld: ActualWorld?, targetWorld: TargetWorld, previousActualTarget: TargetWorld?) {

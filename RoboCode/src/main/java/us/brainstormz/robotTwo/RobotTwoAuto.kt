@@ -10,6 +10,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldConfigurations
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
@@ -203,11 +204,17 @@ class RobotTwoAuto(
         }
 
         if (autoInput.getCurrentPositionAndRotationFromAprilTag) {
+            telemetry.addLine("\n\nApril Tag localization!!")
+            telemetry.addLine("tagging fr fr no cap\n")
             val drivetrainIsNotMoving = drivetrain.getVelocity(actualWorld, previousActualWorld).checkIfIsLessThan(drivetrain.maxVelocityToStayAtPosition)
-            if (drivetrainIsNotMoving) {
-                drivetrain.localizer.setPositionAndRotation(
-                        getCurrentPositionAndRotationFromAprilTag(actualWorld)
-                )
+            val aprilTagsAreDetected = aprilTagReadings.isNotEmpty()
+            if (aprilTagsAreDetected && drivetrainIsNotMoving) {
+                val aprilTagPosition = getCurrentPositionAndRotationFromAprilTag(aprilTagReadings)
+                telemetry.addLine("aprilTagPosition: $aprilTagPosition")
+                val delta = aprilTagPosition - actualWorld.actualRobot.positionAndRotation
+                telemetry.addLine("april tag vs odom delta: ${delta}")
+                saveSomething("delta: $delta \naprilTagPosition: $aprilTagPosition")
+                drivetrain.localizer.setPositionAndRotation(aprilTagPosition)
             }
         }
 
@@ -237,21 +244,21 @@ class RobotTwoAuto(
             cameraXOffset= RobotTwoHardware.robotLengthInches/2,
             cameraYOffset= 0.00
     )
-    private val currentFieldConfiguration = fieldConfigurationToTest
+    private val currentFieldConfiguration = AprilTagFieldConfigurations.garageFieldAtHome
     private val aprilTagLocalizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
             averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
             averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets)
 
-    private fun getCurrentPositionAndRotationFromAprilTag(actualWorld: ActualWorld): PositionAndRotation {
-        val currentDetections = actualWorld.aprilTagReadings
+    private fun getCurrentPositionAndRotationFromAprilTag(aprilTagReadings: List<AprilTagDetection>): PositionAndRotation {
+        val currentDetections = aprilTagReadings
         val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
         val theTargetAprilTagPositionInfo = aprilTagLocalizer.returnAprilTagInFieldCentricCoords(closestAprilTag)
 
         fun FieldRelativePointInSpace.toPositionAndRotation() = PositionAndRotation(
                 x = this.xInches,
                 y = this.yInches,
-                r = this.headingDegrees
+                r = this.headingDegrees - 180
         )
 
         return theTargetAprilTagPositionInfo.FieldRelativePointInSpace.toPositionAndRotation()
@@ -470,22 +477,30 @@ class RobotTwoAuto(
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
                                         ),
-                                        blankAutoState.copy(
-//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-//                                                        x = pushPurpleFarFromTrussX - 12,
-//                                                        y = startPosition.y - 20,
-//                                                        r = 0.0,
-//                                                )),
-                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                    nextTargetFromCondition(hasTimeElapsed(1000, targetWorld), targetWorld)
-                                                },
-                                                getCurrentPositionAndRotationFromAprilTag = true
-                                        ),
                                 )
                             }.addArmInitToPath()
                         },
                         purpleDriveToBoardPath = { propPosition ->
                             listOf(
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
+                                                    y = -30.0
+                                            )),
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                            },
+                                    ),
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
+                                                    y = -30.0
+                                            )),
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                telemetry.addLine("Hey there :eyes:")
+                                                println("Hey there :eyes:")
+                                                nextTargetFromCondition(hasTimeElapsed(5000, targetWorld), targetWorld)
+                                            },
+                                            getCurrentPositionAndRotationFromAprilTag = true
+                                    ),
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
@@ -992,11 +1007,7 @@ class RobotTwoAuto(
 
     fun loop(hardware: RobotTwoHardware, aprilTagPipeline: AprilTagPipelineForEachCamera, gamepad1: SerializableGamepad) = measured("main loop"){
         runRobot(
-                targetStateFetcher = { actualWorldWithoutAprilTags, previousActualWorld, previousTargetWorld ->
-
-                    val actualWorld = actualWorldWithoutAprilTags.copy(
-
-                    )
+                targetStateFetcher = { actualWorld, previousActualWorld, previousTargetWorld ->
 
                     val autoInput = nextAutoInput(
                             actualWorld,
