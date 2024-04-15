@@ -7,7 +7,10 @@ import us.brainstormz.localizer.PointInXInchesAndYInches
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldConfigurations
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
+import us.brainstormz.localizer.aprilTagLocalization.FourPoints
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
+import us.brainstormz.localizer.aprilTagLocalization.calculateAprilTagOffsets
+import us.brainstormz.localizer.aprilTagLocalization.findErrorOfFourPoints
 
 /*
 LIST OF TESTS
@@ -180,6 +183,8 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
     //
     //x is always
 
+
+
     val localizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
             averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
@@ -208,6 +213,18 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
     var whichWorldsFieldAreWeOn: String = "Left"
     var allianceSideOfBoard: String = "Red"
 
+    enum class MenuLevel {
+        GetData,
+        ShowOffsets
+    }
+
+    var currentMenuLevel = MenuLevel.ShowOffsets
+
+
+    lateinit var aprilTagDeltasOld: FourPoints
+    lateinit var aprilTagDeltasNew: FourPoints
+    lateinit var aprilTagOffsets: PointInXInchesAndYInches
+
 
 
 
@@ -232,24 +249,18 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
 //        hardware.init(hardwareMap)
 
-        data class RetainedState(
-                val aPressed: Boolean,
-                val bPressed: Boolean,
-                val yPressed: Boolean,
-                val xPressed: Boolean
-        )
-
         telemetry.update()
 
 //        var previousAState = RetainedState(aPressed = gamepad1.a)
 
         var rightSecondaryPressed = false
-        var leftSecondaryPressed = false
+        val leftSecondaryPressed = false
 
-        var firstPointButtonPressed = false
-        var secondPointButtonPressed = false
-        var fourthPointButtonPressed = false
-        var thirdPointButtonPressed = false
+        val firstPointButtonPressed = false
+        val secondPointButtonPressed = false
+        val fourthPointButtonPressed = false
+        val thirdPointButtonPressed = false
+        val dPadLeftPressed = false
 
         waitForStart()
 
@@ -260,70 +271,19 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
             val currentDetections = getListOfCurrentAprilTagsSeen()
 
-            if ((gamepad1.dpad_down || gamepad1.triangle) && !firstPointButtonPressed) {
-                recalculateFirstPoint(currentDetections = currentDetections)
+             listenForWindowChange(dPadLeftPressed)
 
-                firstPointButtonPressed = true
-            }
-            if (firstPointButtonPressed == true && !(gamepad1.dpad_down || gamepad1.triangle) ) {
-                firstPointButtonPressed = false
-            }
+            when (currentMenuLevel) {
+                MenuLevel.GetData ->
+                 captureBackboardData (firstPointButtonPressed, currentDetections, secondPointButtonPressed,
+                        thirdPointButtonPressed, fourthPointButtonPressed, rightSecondaryPressed,
+                        leftSecondaryPressed)
 
-            if ((gamepad1.dpad_right || gamepad1.circle) && !secondPointButtonPressed) {
-                recalculateSecondPoint(currentDetections = currentDetections)
-
-                secondPointButtonPressed = true
-            }
-            if (secondPointButtonPressed == true && !(gamepad1.dpad_right || gamepad1.circle)) {
-                secondPointButtonPressed = false
-            }
-            if ((gamepad1.dpad_up || gamepad1.cross) && !thirdPointButtonPressed) {
-                recalculateThirdPoint(currentDetections = currentDetections)
-
-                thirdPointButtonPressed = true
-            }
-            if (thirdPointButtonPressed == true && !((gamepad1.dpad_up || gamepad1.cross))) {
-                thirdPointButtonPressed = false
-            }
-            //gamepad1.cross controls triangle and cross values
-
-            if ((gamepad1.dpad_left || gamepad1.square) && !fourthPointButtonPressed) {
-                recalculateFourthPoint(currentDetections = currentDetections)
-
-                fourthPointButtonPressed = true
-            }
-            if (fourthPointButtonPressed == true && !(gamepad1.dpad_left || gamepad1.square)) {
-                fourthPointButtonPressed = false
+                MenuLevel.ShowOffsets -> findOffsetsAndShowResultingReductionOfError()
+//                    findOffsetsAndShowResultingReductionOfError(null!!)
             }
 
-            if (gamepad1.right_bumper && !rightSecondaryPressed == true) {
-                toggleFieldSide()
-                zeroAllValues()
-
-                rightSecondaryPressed = true
-            }
-            if (rightSecondaryPressed == true && !gamepad1.right_bumper) {
-                rightSecondaryPressed = false
-            }
-
-            if (gamepad1.left_bumper && !leftSecondaryPressed == true) {
-                toggleBackBoardAlliance()
-                zeroAllValues()
-
-                leftSecondaryPressed = true
-            }
-            if (leftSecondaryPressed == true && !gamepad1.left_bumper) {
-                leftSecondaryPressed = false
-            }
-
-
-
-
-
-
-
-
-            showData()
+            showData(currentMenuLevel)
             telemetry.update()
 
 //            if (aWasPressed) {
@@ -353,7 +313,132 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
     }
 
-    /** Gabe edit me */
+    private fun listenForWindowChange(dPadLeftPressed: Boolean): Boolean {
+        var dPadLeftPressedState = dPadLeftPressed
+
+        if ((gamepad1.y || gamepad1.dpad_left) && !dPadLeftPressedState) {
+            currentMenuLevel = when(currentMenuLevel) {
+                MenuLevel.GetData -> MenuLevel.ShowOffsets
+                MenuLevel.ShowOffsets -> MenuLevel.GetData
+            }
+
+        }
+
+        if (dPadLeftPressedState == true && !(gamepad1.y || gamepad1.dpad_left)) {
+            dPadLeftPressedState = false
+        }
+
+        return dPadLeftPressedState
+
+    }
+
+    private fun captureBackboardData(firstPointButtonPressed: Boolean, currentDetections: List<AprilTagDetection>, secondPointButtonPressed: Boolean, thirdPointButtonPressed: Boolean, fourthPointButtonPressed: Boolean, rightSecondaryPressed: Boolean, leftSecondaryPressed: Boolean) {
+        var firstPointButtonPressed1 = firstPointButtonPressed
+        var secondPointButtonPressed1 = secondPointButtonPressed
+        var thirdPointButtonPressed1 = thirdPointButtonPressed
+        var fourthPointButtonPressed1 = fourthPointButtonPressed
+        var rightSecondaryPressed1 = rightSecondaryPressed
+        var leftSecondaryPressed1 = leftSecondaryPressed
+
+        if ((gamepad1.dpad_down || gamepad1.triangle) && !firstPointButtonPressed1) {
+            recalculateFirstPoint(currentDetections = currentDetections)
+
+            firstPointButtonPressed1 = true
+        }
+        if (firstPointButtonPressed1 == true && !(gamepad1.dpad_down || gamepad1.triangle)) {
+            firstPointButtonPressed1 = false
+        }
+
+        if ((gamepad1.dpad_right || gamepad1.circle) && !secondPointButtonPressed1) {
+            recalculateSecondPoint(currentDetections = currentDetections)
+
+            secondPointButtonPressed1 = true
+        }
+        if (secondPointButtonPressed1 == true && !(gamepad1.dpad_right || gamepad1.circle)) {
+            secondPointButtonPressed1 = false
+        }
+        if ((gamepad1.dpad_up || gamepad1.cross) && !thirdPointButtonPressed1) {
+            recalculateThirdPoint(currentDetections = currentDetections)
+
+            thirdPointButtonPressed1 = true
+        }
+        if (thirdPointButtonPressed1 == true && !((gamepad1.dpad_up || gamepad1.cross))) {
+            thirdPointButtonPressed1 = false
+        }
+        //gamepad1.cross controls triangle and cross values
+
+        if ((gamepad1.b || gamepad1.square) && !fourthPointButtonPressed1) {
+            recalculateFourthPoint(currentDetections = currentDetections)
+
+            fourthPointButtonPressed1 = true
+        }
+        if (fourthPointButtonPressed1 == true && !(gamepad1.dpad_left || gamepad1.square)) {
+            fourthPointButtonPressed1 = false
+        }
+
+        if (gamepad1.right_bumper && !rightSecondaryPressed1 == true) {
+            toggleFieldSide()
+            zeroAllValues()
+
+            rightSecondaryPressed1 = true
+        }
+        if (rightSecondaryPressed1 == true && !gamepad1.right_bumper) {
+            rightSecondaryPressed1 = false
+        }
+
+        if (gamepad1.left_bumper && !leftSecondaryPressed1 == true) {
+            toggleBackBoardAlliance()
+            zeroAllValues()
+
+            leftSecondaryPressed1 = true
+        }
+        if (leftSecondaryPressed1 == true && !gamepad1.left_bumper) {
+            leftSecondaryPressed1 = false
+        }
+
+    }
+
+    private fun findOffsetsAndShowResultingReductionOfError() {
+        val firstFoundPoint = firstPointCalculatedPosition
+        val secondFoundPoint = secondPointCalculatedPosition
+        val thirdFoundPoint = thirdPointCalculatedPosition
+        val fourthFoundPoint = fourthPointCalculatedPosition
+
+        val measuredFourPoints = FourPoints(
+                first =  PointInXInchesAndYInches(
+                        xInches = firstFoundPoint.xInches,
+                        yInches = firstFoundPoint.yInches
+                ),
+                second =  PointInXInchesAndYInches(
+                        xInches = secondFoundPoint.xInches,
+                        yInches = secondFoundPoint.yInches
+                ),
+                third =  PointInXInchesAndYInches(
+                        xInches = thirdFoundPoint.xInches,
+                        yInches = thirdFoundPoint.yInches
+                ),
+                fourth =  PointInXInchesAndYInches(
+                        xInches = fourthFoundPoint.xInches,
+                        yInches = fourthFoundPoint.yInches
+                ),
+        )
+
+        val enteredAllianceSide = when(allianceSideOfBoard) {
+            "Red" -> ReusableAprilTagFieldLocalizer.AllianceSide.Red
+            "Blue" -> ReusableAprilTagFieldLocalizer.AllianceSide.Blue
+            else -> ReusableAprilTagFieldLocalizer.AllianceSide.Red
+        }
+
+        //TODO: Change this so that we can a/b our previous config with our new one. (I'm thinking load it from the card).
+        aprilTagDeltasOld = findErrorOfFourPoints(enteredAllianceSide, measuredFourPoints)
+        aprilTagDeltasNew = aprilTagDeltasOld
+
+        aprilTagOffsets = calculateAprilTagOffsets(aprilTagDeltasOld)
+
+    }
+
+
+            /** Gabe edit me */
     private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>, idOfTargetAprilTag: Int): AprilTagDetection? {
         for (detection in currentDetections) {
             if (detection.id == idOfTargetAprilTag) {
@@ -610,34 +695,77 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //
 //    }
 
-    fun showData() {
-        val first = firstPointCalculatedPosition
-        val second = secondPointCalculatedPosition
-        val third = thirdPointCalculatedPosition
-        val fourth = fourthPointCalculatedPosition
+    fun showData(currentMenuLevel: MenuLevel) {
 
-        telemetry.addLine("Field: $whichWorldsFieldAreWeOn - [RB] to change")
-        telemetry.addLine("Backboard Alliance: $allianceSideOfBoard - [LB] to change")
 
-        telemetry.addLine("\nFirst point -     ⃤  to change")
-        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
-                first.xInches,
-                first.yInches))
+        if (currentMenuLevel == MenuLevel.GetData) {
+            val first = firstPointCalculatedPosition
+            val second = secondPointCalculatedPosition
+            val third = thirdPointCalculatedPosition
+            val fourth = fourthPointCalculatedPosition
 
-        telemetry.addLine("\n\n Second point -    ⃝     to change")
-        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
-                second.xInches,
-                second.yInches))
+            telemetry.addLine("Field: $whichWorldsFieldAreWeOn - [RB] to change")
+            telemetry.addLine("Backboard Alliance: $allianceSideOfBoard - [LB] to change")
 
-        telemetry.addLine("\n\n Third point - ╳  to change")
-        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
-                third.xInches,
-                third.yInches))
+            telemetry.addLine("\nFirst point -     ⃤  to change")
+            telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
+                    first.xInches,
+                    first.yInches))
 
-        telemetry.addLine("\n\n Fourth point -     ⃞      to change")
-        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
-                fourth.xInches,
-                fourth.yInches))
+            telemetry.addLine("\n\n Second point -    ⃝     to change")
+            telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
+                    second.xInches,
+                    second.yInches))
+
+            telemetry.addLine("\n\n Third point - ╳  to change")
+            telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
+                    third.xInches,
+                    third.yInches))
+
+            telemetry.addLine("\n\n Fourth point -     ⃞      to change")
+            telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
+                    fourth.xInches,
+                    fourth.yInches))
+
+            telemetry.addLine("\n [DPAD LEFT] to preview offsets")
+
+
+        }
+        else if (currentMenuLevel == MenuLevel.GetData) {
+
+            val oldDeltas = aprilTagDeltasOld
+            val newDeltas = aprilTagDeltasNew
+
+            telemetry.addLine("Current || Previous Errors on board $whichWorldsFieldAreWeOn, alliance $allianceSideOfBoard")
+
+            telemetry.addLine(String.format("\n\nFirst: %6.2f, %6.2f || %6.2f, %6.2f",
+                    newDeltas.first.xInches,
+                    newDeltas.first.yInches,
+                    oldDeltas.first.xInches,
+                    oldDeltas.first.yInches))
+
+            telemetry.addLine(String.format("\n\nSecond: %6.2f, %6.2f || %6.2f, %6.2f",
+                    newDeltas.second.xInches,
+                    newDeltas.second.yInches,
+                    oldDeltas.second.xInches,
+                    oldDeltas.second.yInches))
+
+            telemetry.addLine(String.format("\n\nThird: %6.2f, %6.2f || %6.2f, %6.2f",
+                    newDeltas.third.xInches,
+                    newDeltas.third.yInches,
+                    oldDeltas.third.xInches,
+                    oldDeltas.third.yInches))
+
+            telemetry.addLine(String.format("\n\nFourth: %6.2f, %6.2f || %6.2f, %6.2f",
+                    newDeltas.fourth.xInches,
+                    newDeltas.fourth.yInches,
+                    oldDeltas.fourth.xInches,
+                    oldDeltas.fourth.yInches))
+
+            telemetry.addLine("\n\n [DPAD LEFT] to view the calculated offset - snap a photo!")
+
+            telemetry.addLine("\n\n THE ACTUAL OFFSET: ")
+    }
 
 
     }
