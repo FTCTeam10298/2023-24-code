@@ -63,7 +63,7 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
 
 
     override var precisionInches: Double = defaultPrecisionInches
-    override var precisionDegrees: Double = 3.0
+    override var precisionDegrees: Double = 6.0
 
     /**
      * Blocking function

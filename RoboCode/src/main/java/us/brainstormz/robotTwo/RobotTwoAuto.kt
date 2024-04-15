@@ -285,26 +285,35 @@ class RobotTwoAuto(
     private fun depositCenterPurple(startPosition: PositionAndRotation) = listOf(
             blankAutoState.copy(
                     drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                            x = startPosition.x + 32.5,
+                            x = startPosition.x + 31.5,
                             y = startPosition.y - 2,
                     )),
-                    armAtInitPosition = ArmInput.InitPosition,
                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                         nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                     }
             ),
             blankAutoState.copy(
                     drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                            x = startPosition.x + 21,
+                            x = startPosition.x + 20,
                             y = startPosition.y - 2,
                     )),
-                    armAtInitPosition = ArmInput.InitPosition,
                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                         nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                     }
             ),
     )
 
+
+    private fun List<AutoInput>.addArmInitToPath(): List<AutoInput> = this.map { autoInput ->
+        autoInput.copy(
+                armAtInitPosition = ArmInput.InitPosition
+        )
+    }
+    private fun List<AutoInput>.addArmUnderTrussToPath(): List<AutoInput> = this.map { autoInput ->
+        autoInput.copy(
+                armAtInitPosition = ArmInput.GoUnderTrussPosition
+        )
+    }
 
     private fun calcAutoTargetStateList(
             alliance: RobotTwoHardware.Alliance,
@@ -322,7 +331,18 @@ class RobotTwoAuto(
                                 PropPosition.Left -> listOf(
 
                                 )
-                                PropPosition.Center -> depositCenterPurple(startPosition)
+                                PropPosition.Center -> depositCenterPurple(startPosition) + listOf(
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
+                                                        x = startPosition.x + 20,
+                                                        y = startPosition.y - 2,
+                                                        r = 0.0
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                )
                                 PropPosition.Right -> listOf(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
@@ -330,7 +350,6 @@ class RobotTwoAuto(
                                                         y = startPosition.y - 10,
                                                         r = startPosition.r,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
@@ -341,7 +360,6 @@ class RobotTwoAuto(
                                                         y = startPosition.y - 10,
                                                         r = startPosition.r,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
@@ -352,24 +370,22 @@ class RobotTwoAuto(
                                                         y = startPosition.y - 20,
                                                         r = 0.0,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
                                         ),
                                 )
-                            }
+                            }.addArmInitToPath()
                         },
                         purpleDriveToBoardPath = { propPosition ->
                             listOf(
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
-                                            armAtInitPosition = ArmInput.InitPosition,
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
                                     ),
-                            )
+                            ).addArmInitToPath()
                         },
                         yellowDepositSequence = { propPosition ->
                             depositYellow(propPosition)
@@ -522,7 +538,7 @@ class RobotTwoAuto(
                                                 }
                                         ),
                                 )
-                            }
+                            }.addArmInitToPath()
                         },
                         purpleDriveToBoardPath = { propPosition ->
                             listOf(
@@ -555,7 +571,7 @@ class RobotTwoAuto(
                                                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
                                     ),
-                            )
+                            ).addArmUnderTrussToPath()
                         },
                         yellowDepositSequence = { propPosition ->
                             depositYellow(propPosition)
@@ -629,7 +645,7 @@ class RobotTwoAuto(
     }
 
     private fun isRobotAtPrecisePosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld): Boolean {
-        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = 2.0, precisionDegrees = 5.0)
+        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = 2.0, precisionDegrees = 4.0)
     }
 
     private fun isRobotAtAngle(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld): Boolean {
