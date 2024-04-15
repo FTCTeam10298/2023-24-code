@@ -42,7 +42,7 @@ fun returnCamCentricCoordsInTagCentricCoordsPartDeux(anyOldTag: CameraRelativePo
 
 
 val fieldConfigurationToTest =
-        AprilTagFieldConfigurations.garageFieldAtHomeButPotatoBot
+        AprilTagFieldConfigurations.garageFieldAtHome
 
 @TeleOp(name = "Test AprilTag Configuration", group = "AprilTag")
 class TestAprilTagConfiguration: LinearOpMode() {
