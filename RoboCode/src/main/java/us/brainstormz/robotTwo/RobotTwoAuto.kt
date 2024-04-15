@@ -238,8 +238,14 @@ class RobotTwoAuto(
                     drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
                     depoInput = DepoInput.YellowPlacement,
                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                        val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
-                        nextTargetFromCondition(liftIsAtPosition, targetWorld)
+
+                        val isDepoAtPosition = isDepoAtPosition(
+                                armTarget = Arm.Positions.Out,
+                                liftTarget = Lift.LiftPositions.AutoLowYellowPlacement,
+                                actualWorld = actualWorld
+                        )
+
+                         nextTargetFromCondition(isDepoAtPosition, targetWorld)
                     }
             ),
             blankAutoState.copy(
@@ -260,6 +266,16 @@ class RobotTwoAuto(
                         val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
 
                         nextTargetFromCondition(wristIsAtPosition && liftIsAtPosition, targetWorld)
+                    }
+            ),
+            blankAutoState.copy(
+                    drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
+                            y = depositingPosition(propPosition).y + 3
+                    )),
+                    depoInput = DepoInput.YellowPlacement,
+                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+
+                        nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                     }
             ),
     )
@@ -392,7 +408,7 @@ class RobotTwoAuto(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
                                                         x = startPosition.x + 29,
-                                                        y = startPosition.y + 9,
+                                                        y = startPosition.y + 12,
                                                         r = startPosition.r,
                                                 )),
                                                 armAtInitPosition = ArmInput.InitPosition,
@@ -403,7 +419,7 @@ class RobotTwoAuto(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
                                                         x = startPosition.x + 20,
-                                                        y = startPosition.y + 9,
+                                                        y = startPosition.y + 12,
                                                         r = startPosition.r,
                                                 )),
                                                 armAtInitPosition = ArmInput.InitPosition,
@@ -587,6 +603,17 @@ class RobotTwoAuto(
         }
 
         return allianceMirroredAndAsList
+    }
+
+    private fun isDepoAtPosition(
+            armTarget: Arm.Positions,
+            liftTarget: Lift.LiftPositions,
+            actualWorld: ActualWorld
+    ): Boolean {
+        val liftIsAtTarget = lift.isLiftAtPosition(liftTarget.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
+        val armIsAtTarget = depoManager.checkIfArmIsAtTarget(armTarget, actualWorld.actualRobot.depoState.armAngleDegrees)
+
+        return liftIsAtTarget && armIsAtTarget
     }
 
     private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
