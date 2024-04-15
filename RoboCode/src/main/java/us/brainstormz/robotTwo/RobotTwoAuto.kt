@@ -303,6 +303,8 @@ class RobotTwoAuto(
             ),
     )
 
+    private val pushPurpleFarFromTrussX = -35.0
+    private val pushPurpleCloseToTrussX = -34.0
 
     private fun List<AutoInput>.addArmInitToPath(): List<AutoInput> = this.map { autoInput ->
         autoInput.copy(
@@ -329,7 +331,46 @@ class RobotTwoAuto(
                         purplePlacementPath = { propPosition ->
                             when (propPosition) {
                                 PropPosition.Left -> listOf(
-
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = pushPurpleCloseToTrussX - 2,
+                                                        y = startPosition.y,
+                                                        r = startPosition.r,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = pushPurpleCloseToTrussX,
+                                                        y = startPosition.y + 4,
+                                                        r = startPosition.r + 90,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = pushPurpleCloseToTrussX,
+                                                        y = startPosition.y - 6,
+                                                        r = startPosition.r + 90,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = pushPurpleCloseToTrussX,
+                                                        y = startPosition.y - 6,
+                                                        r = 0.0,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
                                 )
                                 PropPosition.Center -> depositCenterPurple(startPosition) + listOf(
                                         blankAutoState.copy(
@@ -346,7 +387,7 @@ class RobotTwoAuto(
                                 PropPosition.Right -> listOf(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 24,
+                                                        x = pushPurpleFarFromTrussX,
                                                         y = startPosition.y - 10,
                                                         r = startPosition.r,
                                                 )),
@@ -356,7 +397,7 @@ class RobotTwoAuto(
                                         ),
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 12,
+                                                        x = pushPurpleFarFromTrussX - 12,
                                                         y = startPosition.y - 10,
                                                         r = startPosition.r,
                                                 )),
@@ -366,7 +407,7 @@ class RobotTwoAuto(
                                         ),
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 12,
+                                                        x = pushPurpleFarFromTrussX - 12,
                                                         y = startPosition.y - 20,
                                                         r = 0.0,
                                                 )),
@@ -425,33 +466,30 @@ class RobotTwoAuto(
                                 PropPosition.Left -> listOf(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 29,
+                                                        x = pushPurpleFarFromTrussX,
                                                         y = startPosition.y + 12,
                                                         r = startPosition.r,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
                                         ),
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 20,
+                                                        x = pushPurpleFarFromTrussX - 12,
                                                         y = startPosition.y + 12,
                                                         r = startPosition.r,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
                                         ),
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 20,
+                                                        x = pushPurpleFarFromTrussX - 12,
                                                         y = startPosition.y - 1,
                                                         r = startPosition.r,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
@@ -462,7 +500,6 @@ class RobotTwoAuto(
                                                         y = startPosition.y - 1,
                                                         r = startPosition.r,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
@@ -470,12 +507,30 @@ class RobotTwoAuto(
                                 )
                                 PropPosition.Center -> depositCenterPurple(startPosition) + listOf(
                                         blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
+                                                        x = startPosition.x + 20,
+                                                        y = startPosition.y + 1,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
+                                                        x = startPosition.x + 20,
+                                                        y = startPosition.y + 1,
+                                                        r = 0.0
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
                                                         x = -40.0,
                                                         y = startPosition.y + RobotTwoHardware.robotWidthInches + 1,
-                                                        r = startPosition.r,
+                                                        r = 0.0,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
@@ -486,7 +541,6 @@ class RobotTwoAuto(
                                                         y = startPosition.y + RobotTwoHardware.robotWidthInches + 1,
                                                         r = 0.0,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
@@ -495,33 +549,30 @@ class RobotTwoAuto(
                                 PropPosition.Right -> listOf(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 27,
+                                                        x = pushPurpleCloseToTrussX - 2,
                                                         y = startPosition.y,
                                                         r = startPosition.r,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
                                         ),
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 29,
+                                                        x = pushPurpleCloseToTrussX,
                                                         y = startPosition.y - 4,
                                                         r = startPosition.r - 90,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
                                         ),
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 29,
+                                                        x = pushPurpleCloseToTrussX,
                                                         y = startPosition.y + 6,
                                                         r = startPosition.r - 90,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
@@ -532,7 +583,6 @@ class RobotTwoAuto(
                                                         y = startPosition.y + 8,
                                                         r = startPosition.r,
                                                 )),
-                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
