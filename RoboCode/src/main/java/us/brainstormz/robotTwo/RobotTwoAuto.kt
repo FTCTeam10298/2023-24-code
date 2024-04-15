@@ -34,6 +34,17 @@ class RobotTwoAuto(
     private val telemetry: Telemetry,
 ): RobotTwo(telemetry) {
 
+    private val blankAutoState = AutoInput(
+            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
+            depoInput = DepoInput.Down,
+            armAtInitPosition = ArmInput.NoInput,
+            handoffInput = HandoffInput.NoInput,
+            wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
+            extendoInput = ExtendoPositions.Min,
+            intakeInput = IntakeInput.NoInput,
+            getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> getNextTargetFromList(previousAutoInput= previousTargetWorld.autoInput!!) },
+    )
+
     fun getTargetWorldFromAutoInput(autoInput: AutoInput, actualWorld: ActualWorld, previousActualWorld: ActualWorld, previousTargetWorld: TargetWorld): TargetWorld {
 
         /**Interpret Transfer State*/
@@ -188,27 +199,305 @@ class RobotTwoAuto(
         )
     }
 
-    enum class IntakeInput {
-        Intake,
-        NoInput
+    private val xForNavigatingUnderStageDoor = (RobotTwoHardware.robotWidthInches/2) + 2
+
+    private val depositY = -53.0
+    private fun depositingPosition(propPosition: PropPosition) = when (propPosition) {
+        PropPosition.Left -> PositionAndRotation(
+                x = -32.0,
+                y = depositY,
+                r = 0.0
+        )
+        PropPosition.Center -> PositionAndRotation(
+                x = -36.0,
+                y = depositY,
+                r = 0.0
+        )
+        PropPosition.Right -> PositionAndRotation(
+                x = -40.0,
+                y = depositY,
+                r = 0.0
+        )
     }
 
-    enum class ArmInput {
-        InitPosition,
-        GoUnderTrussPosition,
-        NoInput
-    }
+    private val pushIntoBoardDrivetrainPower = -0.3
 
-    private val blankAutoState = AutoInput(
-            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
-            depoInput = DepoInput.Down,
-            armAtInitPosition = ArmInput.NoInput,
-            handoffInput = HandoffInput.NoInput,
-            wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
-            extendoInput = ExtendoPositions.Min,
-            intakeInput = IntakeInput.NoInput,
-            getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> getNextTargetFromList(previousAutoInput= previousTargetWorld.autoInput!!) },
+    private fun depositYellow(propPosition: PropPosition) = listOf(
+            blankAutoState.copy(
+                    drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
+                    depoInput = DepoInput.YellowPlacement,
+                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                    }
+            ),
+            blankAutoState.copy(
+                    drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
+                    depoInput = DepoInput.YellowPlacement,
+                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                        val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
+                        nextTargetFromCondition(liftIsAtPosition, targetWorld)
+                    }
+            ),
+            blankAutoState.copy(
+                    drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
+                    depoInput = DepoInput.YellowPlacement,
+                    wristInput = WristInput(
+                            left = ClawInput.Drop,
+                            right = ClawInput.Drop
+                    ),
+                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                        val wristIsAtPosition = wrist.wristIsAtPosition(
+                                target = Wrist.WristTargets(
+                                        left = Claw.ClawTarget.Retracted,
+                                        right = Claw.ClawTarget.Retracted
+                                ),
+                                actual = actualWorld.actualRobot.depoState.wristAngles
+                        )
+                        val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
+
+                        nextTargetFromCondition(wristIsAtPosition && liftIsAtPosition, targetWorld)
+                    }
+            ),
     )
+
+    private fun calcAutoTargetStateList(
+            alliance: RobotTwoHardware.Alliance,
+            startingSide: StartPosition,
+            propPosition: PropPosition
+    ): List<AutoInput> {
+
+        val startPosition = startingSide.redStartPosition
+
+        val redPath: PathPreAssembled = when (startingSide) {
+            StartPosition.Backboard -> {
+                PathPreAssembled(
+                        purplePlacementPath = { propPosition ->
+                            when (propPosition) {
+                                PropPosition.Left -> listOf(
+
+                                )
+                                PropPosition.Center -> listOf(
+
+                                )
+                                PropPosition.Right -> listOf(
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = startPosition.x + 24,
+                                                        y = startPosition.y - 10,
+                                                        r = startPosition.r,
+                                                )),
+                                                armAtInitPosition = ArmInput.InitPosition,
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = startPosition.x + 12,
+                                                        y = startPosition.y - 10,
+                                                        r = startPosition.r,
+                                                )),
+                                                armAtInitPosition = ArmInput.InitPosition,
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = startPosition.x + 12,
+                                                        y = startPosition.y - 20,
+                                                        r = 0.0,
+                                                )),
+                                                armAtInitPosition = ArmInput.InitPosition,
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                )
+                            }
+                        },
+                        purpleDriveToBoardPath = { propPosition ->
+                            listOf(
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
+                                            armAtInitPosition = ArmInput.InitPosition,
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                            }
+                                    ),
+                            )
+                        },
+                        yellowDepositSequence = { propPosition ->
+                            depositYellow(propPosition)
+                        },
+                        parkPath = listOf(
+                                blankAutoState.copy(
+                                        drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                x = startPosition.x,
+                                                y = -50.0,
+                                                r = 0.0,
+                                        )),
+                                        getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                            nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                        }
+                                ),
+                                blankAutoState.copy(
+                                        drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                x = startPosition.x,
+                                                y = -60.0,
+                                                r = 0.0,
+                                        )),
+                                        getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                            nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                        }
+                                )
+                        )
+                )
+            }
+
+
+
+
+            StartPosition.Audience -> {
+                PathPreAssembled(
+                        purplePlacementPath = { propPosition ->
+                            when (propPosition) {
+                                PropPosition.Left -> listOf(
+
+                                )
+                                PropPosition.Center -> listOf(
+
+                                )
+                                PropPosition.Right -> listOf(
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = startPosition.x + 25,
+                                                        y = startPosition.y,
+                                                        r = startPosition.r,
+                                                )),
+                                                armAtInitPosition = ArmInput.InitPosition,
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = startPosition.x + 27,
+                                                        y = startPosition.y - 4,
+                                                        r = startPosition.r - 90,
+                                                )),
+                                                armAtInitPosition = ArmInput.GoUnderTrussPosition,
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = startPosition.x + 27,
+                                                        y = startPosition.y + 6,
+                                                        r = startPosition.r - 90,
+                                                )),
+                                                armAtInitPosition = ArmInput.GoUnderTrussPosition,
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        blankAutoState.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                        x = -25.0,
+                                                        y = startPosition.y + 8,
+                                                        r = startPosition.r,
+                                                )),
+                                                armAtInitPosition = ArmInput.GoUnderTrussPosition,
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                )
+                            }
+                        },
+                        purpleDriveToBoardPath = { propPosition ->
+                            listOf(
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                    x = -xForNavigatingUnderStageDoor,
+                                                    y = 38.0,
+                                                    r = 0.0,
+                                            )),
+                                            armAtInitPosition = ArmInput.GoUnderTrussPosition,
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                            }
+                                    ),
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                    x = -xForNavigatingUnderStageDoor,
+                                                    y = -25.0,
+                                                    r = 0.0,
+                                            )),
+                                            armAtInitPosition = ArmInput.GoUnderTrussPosition,
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                            }
+                                    ),
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
+                                            armAtInitPosition = ArmInput.GoUnderTrussPosition,
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                            }
+                                    ),
+                            )
+                        },
+                        yellowDepositSequence = { propPosition ->
+                            depositYellow(propPosition)
+                        },
+                        parkPath = listOf(
+                                blankAutoState.copy(
+                                        drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                x = -(RobotTwoHardware.robotWidthInches/2 + 3),
+                                                y = -48.0,
+                                                r = 0.0,
+                                        )),
+                                        getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                            nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                        }
+                                ),
+                                blankAutoState.copy(
+                                        drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                                x = -(RobotTwoHardware.robotWidthInches/2 + 3),
+                                                y = -60.0,
+                                                r = 0.0,
+                                        )),
+                                        getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                            nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                        }
+                                )
+                        )
+                )
+            }
+        }
+
+        val allianceIsColorBlue = alliance == RobotTwoHardware.Alliance.Blue
+        val propPositionSwappedToMatchBlue = when (propPosition) {
+            PropPosition.Left -> PropPosition.Right
+            PropPosition.Center -> PropPosition.Center
+            PropPosition.Right -> PropPosition.Left
+        }
+        val adjustedPropPosition = if (allianceIsColorBlue) {
+            propPositionSwappedToMatchBlue
+        } else {
+            propPosition
+        }
+
+        val allianceMirroredAndAsList = if (allianceIsColorBlue) {
+            mirrorRedAutoToBlue(redPath.assemblePath(adjustedPropPosition))
+        } else {
+            redPath.assemblePath(adjustedPropPosition)
+        }
+
+        return allianceMirroredAndAsList
+    }
 
     private fun hasTimeElapsed(timeToElapseMilis: Long, targetWorld: TargetWorld): Boolean {
         val taskStartedTimeMilis = targetWorld.timeTargetStartedMilis
@@ -229,8 +518,6 @@ class RobotTwoAuto(
         return rotationErrorDegrees.absoluteValue <= 3.0
     }
 
-    private val pushIntoBoardDrivetrainPower = -0.3
-
     private fun checkIfLiftIsOkToDriveUnderTruss(actualWorld: ActualWorld): Boolean {
         return !lift.isLiftAbovePosition(
                 targetPositionTicks = 100,
@@ -241,6 +528,18 @@ class RobotTwoAuto(
     private fun checkIfHandoffIsDone(previousTargetWorld: TargetWorld): Boolean {
         return !previousTargetWorld.doingHandoff
     }
+
+    enum class IntakeInput {
+        Intake,
+        NoInput
+    }
+
+    enum class ArmInput {
+        InitPosition,
+        GoUnderTrussPosition,
+        NoInput
+    }
+
 
     /** Path assembly */
     data class CyclePath(
@@ -282,241 +581,6 @@ class RobotTwoAuto(
         Audience(PositionAndRotation(   x = RobotTwoHardware.redStartingXInches,
                 y= 36.0,
                 r= RobotTwoHardware.redStartingRDegrees))
-    }
-
-    private fun calcAutoTargetStateList(
-            alliance: RobotTwoHardware.Alliance,
-            startingSide: StartPosition,
-            propPosition: PropPosition
-    ): List<AutoInput> {
-
-        val startPosition = startingSide.redStartPosition
-
-        val redPath: PathPreAssembled = when (startingSide) {
-            StartPosition.Backboard -> {
-                PathPreAssembled(
-                        purplePlacementPath = { propPosition ->
-                            when (propPosition) {
-                                PropPosition.Left -> listOf(
-
-                                )
-                                PropPosition.Center -> listOf(
-
-                                )
-                                PropPosition.Right -> listOf(
-                                        blankAutoState.copy(
-                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                        x = startPosition.x + 24,
-                                                        y = startPosition.y - 10,
-                                                        r = startPosition.r,
-                                                )),
-                                                armAtInitPosition = ArmInput.InitPosition,
-                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                                }
-                                        ),
-                                        blankAutoState.copy(
-                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                        x = startPosition.x + 12,
-                                                        y = startPosition.y - 10,
-                                                        r = startPosition.r,
-                                                )),
-                                                armAtInitPosition = ArmInput.InitPosition,
-                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                                }
-                                        ),
-                                        blankAutoState.copy(
-                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                        x = startPosition.x + 12,
-                                                        y = startPosition.y - 20,
-                                                        r = 0.0,
-                                                )),
-                                                armAtInitPosition = ArmInput.InitPosition,
-                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                                }
-                                        ),
-                                )
-                            }
-                        },
-                        purpleDriveToBoardPath = { propPosition ->
-                            listOf(
-                                blankAutoState.copy(
-                                        drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                x = startPosition.x + 26,
-                                                y = -53.0,
-                                                r = 0.0,
-                                        )),
-                                        armAtInitPosition = ArmInput.InitPosition,
-                                        getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                            nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                        }
-                                ),
-                            )
-                        },
-                        yellowDepositSequence = { propPosition ->
-                            listOf(
-                                    blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
-                                            depoInput = DepoInput.YellowPlacement,
-                                            handoffInput = HandoffInput.Handoff,
-                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
-                                                nextTargetFromCondition(liftIsAtPosition, targetWorld)
-                                            }
-                                    ),
-                                    blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y= pushIntoBoardDrivetrainPower)),
-                                            depoInput = DepoInput.YellowPlacement,
-                                            handoffInput = HandoffInput.NoInput,
-                                            wristInput = WristInput(
-                                                    left = ClawInput.Drop,
-                                                    right = ClawInput.Drop
-                                            ),
-                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                val wristIsAtPosition = wrist.wristIsAtPosition(
-                                                        target = Wrist.WristTargets(
-                                                                left = Claw.ClawTarget.Retracted,
-                                                                right = Claw.ClawTarget.Retracted
-                                                        ),
-                                                        actual = actualWorld.actualRobot.depoState.wristAngles
-                                                )
-                                                val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
-
-                                                nextTargetFromCondition(wristIsAtPosition && liftIsAtPosition, targetWorld)
-                                            }
-                                    ),
-                            )
-                        },
-                        parkPath = listOf(
-                                blankAutoState.copy(
-                                        drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                x = startPosition.x,
-                                                y = -50.0,
-                                                r = 0.0,
-                                        )),
-                                        getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                            nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                        }
-                                ),
-                                blankAutoState.copy(
-                                        drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                x = startPosition.x,
-                                                y = -60.0,
-                                                r = 0.0,
-                                        )),
-                                        getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                            nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                        }
-                                )
-                        )
-                )
-            }
-
-
-
-
-            StartPosition.Audience -> {
-                PathPreAssembled(
-                        purplePlacementPath = { propPosition ->
-                            when (propPosition) {
-                                PropPosition.Left -> listOf(
-
-                                )
-                                PropPosition.Center -> listOf(
-
-                                )
-                                PropPosition.Right -> listOf(
-                                        blankAutoState.copy(
-                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                        x = startPosition.x + 25,
-                                                        y = startPosition.y,
-                                                        r = startPosition.r,
-                                                )),
-                                                armAtInitPosition = ArmInput.InitPosition,
-                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                                }
-                                        ),
-                                        blankAutoState.copy(
-                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                        x = startPosition.x + 27,
-                                                        y = startPosition.y - 4,
-                                                        r = startPosition.r - 90,
-                                                )),
-                                                armAtInitPosition = ArmInput.GoUnderTrussPosition,
-                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                                }
-                                        ),
-                                        blankAutoState.copy(
-                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                        x = startPosition.x + 27,
-                                                        y = startPosition.y + 6,
-                                                        r = startPosition.r - 90,
-                                                )),
-                                                armAtInitPosition = ArmInput.GoUnderTrussPosition,
-                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                    nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                                }
-                                        ),
-                                        blankAutoState.copy(
-                                                drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                        x = -25.0,
-                                                        y = startPosition.y + 8,
-                                                        r = startPosition.r,
-                                                )),
-                                                armAtInitPosition = ArmInput.GoUnderTrussPosition,
-                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                                }
-                                        ),
-                                )
-                            }
-                        },
-                        purpleDriveToBoardPath = { propPosition ->
-                            listOf(
-                                    blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(startPosition.copy(
-                                                    x = -25.0,
-                                                    y = startPosition.y + 8,
-                                                    r = startPosition.r,
-                                            )),
-                                            armAtInitPosition = ArmInput.GoUnderTrussPosition,
-                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                            }
-                                    ),
-                            )
-                        },
-                        yellowDepositSequence = { propPosition ->
-                            listOf()
-                        },
-                        parkPath = listOf()
-                )
-            }
-        }
-
-        val allianceIsColorBlue = alliance == RobotTwoHardware.Alliance.Blue
-        val propPositionSwappedToMatchBlue = when (propPosition) {
-            PropPosition.Left -> PropPosition.Right
-            PropPosition.Center -> PropPosition.Center
-            PropPosition.Right -> PropPosition.Left
-        }
-        val adjustedPropPosition = if (allianceIsColorBlue) {
-            propPositionSwappedToMatchBlue
-        } else {
-            propPosition
-        }
-
-        val allianceMirroredAndAsList = if (allianceIsColorBlue) {
-            mirrorRedAutoToBlue(redPath.assemblePath(adjustedPropPosition))
-        } else {
-            redPath.assemblePath(adjustedPropPosition)
-        }
-
-        return allianceMirroredAndAsList
     }
 
     private fun mirrorRedAutoToBlue(auto: List<AutoInput>): List<AutoInput> {
