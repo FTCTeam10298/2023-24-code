@@ -39,9 +39,12 @@ class Autonomous: OpMode() {
     private val multiTelemetry = MultipleTelemetry(telemetry, PrintlnTelemetry())
     private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= multiTelemetry, opmode = this)
 
+    private val opencv = OpenCvAbstraction(this)
     private lateinit var auto: RobotTwoAuto
     override fun init() {
         hardware.init(hardwareMap)
+
+        opencv.init(hardwareMap = hardwareMap)
 
         auto = RobotTwoAuto(multiTelemetry)
 
@@ -49,7 +52,7 @@ class Autonomous: OpMode() {
     }
 
     override fun init_loop() {
-        auto.initLoop(hardware, gamepad1)
+        auto.initLoop(hardware, opencv, gamepad1)
     }
 
     override fun start() {

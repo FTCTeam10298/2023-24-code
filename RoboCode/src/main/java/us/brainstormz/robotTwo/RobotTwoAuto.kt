@@ -3,9 +3,12 @@ package us.brainstormz.robotTwo
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
+import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropPosition
+import us.brainstormz.robotTwo.RobotTwoPropDetector.*
 import us.brainstormz.robotTwo.RobotTwoTeleOp.*
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initLatchTarget
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
@@ -631,8 +634,6 @@ class RobotTwoAuto(
             }
     }
 
-    data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val shouldDoYellow: Boolean)
-
     private val console = TelemetryConsole(telemetry)
     private val wizard = TelemetryWizard(console, null)
 
@@ -647,10 +648,35 @@ class RobotTwoAuto(
         wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience" to "doYellow", "Backboard" to null))
         wizard.newMenu("doYellow", "What do we do after the purple?", listOf("Yellow", "Nothing"))
 
-
         telemetry.addLine("init Called")
     }
 
+
+    data class CameraStuff(
+            val propDetector: RobotTwoPropDetector,
+            val opencv: OpenCvAbstraction
+    )
+    private fun runCamera(opencv: OpenCvAbstraction, wizardResults: WizardResults): CameraStuff {
+        val propColor: PropColors = when (wizardResults.alliance) {
+            RobotTwoHardware.Alliance.Blue -> PropColors.Blue
+            RobotTwoHardware.Alliance.Red -> PropColors.Red
+        }
+
+        val propDetector = RobotTwoPropDetector(telemetry, propColor)
+
+        opencv.internalCamera = false
+        opencv.cameraName = "Webcam 1"
+        opencv.cameraOrientation = OpenCvCameraRotation.UPRIGHT
+        opencv.onNewFrame(propDetector::processFrame)
+
+        return CameraStuff(
+                propDetector = propDetector,
+                opencv = opencv,
+        )
+    }
+
+
+    data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val shouldDoYellow: Boolean)
     private fun getMenuWizardResults(): WizardResults {
         return WizardResults(
                 alliance = when (wizard.wasItemChosen("alliance", "Red")) {
@@ -666,39 +692,54 @@ class RobotTwoAuto(
         )
     }
 
-    private var wizardResults: WizardResults = WizardResults(
-            alliance = RobotTwoHardware.Alliance.Red,
-            startPosition = StartPosition.Backboard,
-            partnerIsPlacingYellow = false,
-            shouldDoYellow = false,
+    data class InitLoopResults(
+            val wizardResults: WizardResults,
+            val cameraStuff: CameraStuff?,
+    )
+    private var initLoopResults: InitLoopResults = InitLoopResults(
+            wizardResults = WizardResults(
+                    alliance = RobotTwoHardware.Alliance.Red,
+                    startPosition = StartPosition.Backboard,
+                    partnerIsPlacingYellow = false,
+                    shouldDoYellow = false,
+            ),
+            cameraStuff = null,
     )
     private var previousWizardIsDone = false
-    fun initLoop(hardware: RobotTwoHardware, gamepad1: Gamepad) {
+    fun initLoop(hardware: RobotTwoHardware, opencv: OpenCvAbstraction, gamepad1: Gamepad) {
         if (!previousWizardIsDone) {
             val wizardIsDone = wizard.summonWizard(gamepad1)
             if (wizardIsDone) {
-                wizardResults = getMenuWizardResults()
+                val wizardResults = getMenuWizardResults()
 
-//                runCamera(opencv, wizardResults!!)
-//                hardware.lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK)
+                initLoopResults = InitLoopResults(
+                        wizardResults = wizardResults,
+                        cameraStuff = runCamera(opencv, wizardResults)
+                )
+
+                previousWizardIsDone = true
             }
-            previousWizardIsDone = wizardIsDone
         } else {
-//            telemetry.addLine("propPosition? = ${propDetector?.propPosition}")
-            telemetry.addLine("wizardResults: ${wizardResults}")
+            telemetry.addLine("propPosition: ${initLoopResults.cameraStuff?.propDetector?.propPosition}")
+            telemetry.addLine("wizardResults: ${initLoopResults}")
         }
     }
 
     fun start(hardware: RobotTwoHardware) {
+        val propPosition = initLoopResults.cameraStuff?.propDetector?.propPosition ?: PropPosition.Right
+        initLoopResults.cameraStuff?.opencv?.stop()
+
+        val wizardResults = initLoopResults.wizardResults
+
         val startPositionAndRotation: PositionAndRotation = when (wizardResults.alliance) {
             RobotTwoHardware.Alliance.Red ->
-                wizardResults.startPosition.redStartPosition
+                initLoopResults.wizardResults.startPosition.redStartPosition
 
             RobotTwoHardware.Alliance.Blue ->
                 flipRedPositionToBlue(wizardResults.startPosition.redStartPosition)
         }
 
-        autoStateList = calcAutoTargetStateList(wizardResults.alliance, wizardResults.startPosition, PropPosition.Right)
+        autoStateList = calcAutoTargetStateList(wizardResults.alliance, wizardResults.startPosition, propPosition)
 
         drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
     }
