@@ -36,17 +36,18 @@ import java.lang.Thread.sleep
 fun exponentialIncrements(from:Long, init: Long) = generateSequence(from){ x -> Math.max(init, x) * 2}
 fun exponentialIncrements(from:Long, to:Long, init: Long = 1) = exponentialIncrements(from, init).takeWhile { it <= to }
 
-val rIncrements: Sequence<Long> = Sequence { listOf<Long>(0, 40, 90, 40, 0).listIterator() }
+val rIncrements: Sequence<Long> = Sequence { listOf<Long>(0, 90, 180, 270).listIterator() }
 
 fun incrementSequence():List<PositionAndRotation>{
 
     return exponentialIncrements(from = 0, to = 30).flatMap{ y->
-            exponentialIncrements(from = 0, to = 60).flatMap{ x ->
-                rIncrements.map{ r->
+        exponentialIncrements(from = 0, to = 60).flatMap{ x ->
+            rIncrements.map{ r->
                 PositionAndRotation(
                         y= y.toDouble(),
                         x= x.toDouble(),
-                        r= r.toDouble())
+                        r= r.toDouble()
+                )
             }
         }
     }.toList()

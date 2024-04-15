@@ -32,10 +32,25 @@ open class MecanumMovement(override val localizer: Localizer, override val hardw
     //Works good for turn only
     val rotationOnlyPID = PID(
             name = "r only",
-            kp= 0.91,
-            ki= 5.0E-4,
+//            kp= 0.91,
+//            ki= 5.0E-4,
+//            kd= 150.0,
+
+            kp= 1.2,
+            ki= 1.0E-4,
             kd= 150.0,
     )
+
+//
+//    "kp" : 1.2,
+//    "ki" : 1.0E-4,
+//    "kd" : 150.0,
+
+//    "kp" : 1.15,
+//    "ki" : 0.002,
+//    "kd" : 0.0,
+//    "min" : 0.0
+
     //Works good for 3 axis
     val rotationWithOtherAxisPID = PID(
             name = "r multi-axis",
