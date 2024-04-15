@@ -65,7 +65,16 @@ fun findErrorOfFourPoints(allianceSide: ReusableAprilTagFieldLocalizer.AllianceS
 
 }
 
-class CalculateAprilTagCalibration {
+fun calculateAprilTagOffsets(fourMeasuredPoints: FourPoints): PointInXInchesAndYInches {
+    val averageXOffset: Double = ((fourMeasuredPoints.first.xInches + fourMeasuredPoints.second.xInches
+            + fourMeasuredPoints.third.xInches + fourMeasuredPoints.fourth.xInches)/4)
 
+    val averageYOffset: Double = ((fourMeasuredPoints.first.yInches + fourMeasuredPoints.second.yInches
+            + fourMeasuredPoints.third.yInches + fourMeasuredPoints.fourth.yInches)/4)
+
+    return(PointInXInchesAndYInches(
+            xInches = averageXOffset,
+            yInches = averageYOffset
+    ))
 
 }

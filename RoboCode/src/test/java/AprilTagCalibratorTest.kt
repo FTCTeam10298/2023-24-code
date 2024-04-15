@@ -6,6 +6,7 @@ import us.brainstormz.localizer.PredeterminedFieldPoints
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldConfigurations
 import us.brainstormz.localizer.aprilTagLocalization.FourPoints
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
+import us.brainstormz.localizer.aprilTagLocalization.calculateAprilTagOffsets
 import us.brainstormz.localizer.aprilTagLocalization.findErrorOfFourPoints
 import us.brainstormz.localizer.aprilTagLocalization.getDelta
 
@@ -45,25 +46,24 @@ class AprilTagCalibratorTest {
     @Test
     fun deltaForFourPoints() {
 
-
         // given
-        val allianceSide: ReusableAprilTagFieldLocalizer.AllianceSide = ReusableAprilTagFieldLocalizer.AllianceSide.Blue
+        val allianceSide: ReusableAprilTagFieldLocalizer.AllianceSide = ReusableAprilTagFieldLocalizer.AllianceSide.Red
         val fourPointsAprilTagMeasurement = FourPoints(
                 first = PointInXInchesAndYInches(
-                        xInches = 47.0,
-                        yInches = -49.1
+                        xInches = -23.34,
+                        yInches = 43.9
                 ),
                 second = PointInXInchesAndYInches(
-                        xInches = 23.39,
-                        yInches = -49.19
+                        xInches = -47.48,
+                        yInches = -44.45
                 ),
                 third = PointInXInchesAndYInches(
-                        xInches = 45.69,
-                        yInches = -26.79
+                        xInches = -24.44,
+                        yInches = -18.46
                 ),
                 fourth = PointInXInchesAndYInches(
-                        xInches = 23.74,
-                        yInches = -26.37
+                        xInches = -47.69,
+                        yInches = -18.59
                 )
         )
 
@@ -79,29 +79,71 @@ class AprilTagCalibratorTest {
         // then
         val expected = FourPoints(
                 first = PointInXInchesAndYInches(
-                        xInches = getDelta(fourPointsAprilTagMeasurement.first.xInches, field.Blue.first.xInches),
-                        yInches = getDelta(fourPointsAprilTagMeasurement.first.yInches, field.Blue.first.yInches)
+                        xInches = getDelta(fourPointsAprilTagMeasurement.first.xInches, field.Red.first.xInches),
+                        yInches = getDelta(fourPointsAprilTagMeasurement.first.yInches, field.Red.first.yInches)
                 ),
 
                 second = PointInXInchesAndYInches(
-                        xInches = getDelta(fourPointsAprilTagMeasurement.second.xInches, field.Blue.second.xInches),
-                        yInches = getDelta(fourPointsAprilTagMeasurement.second.yInches, field.Blue.second.yInches)
+                        xInches = getDelta(fourPointsAprilTagMeasurement.second.xInches, field.Red.second.xInches),
+                        yInches = getDelta(fourPointsAprilTagMeasurement.second.yInches, field.Red.second.yInches)
                 ),
 
                 third = PointInXInchesAndYInches(
-                        xInches = getDelta(fourPointsAprilTagMeasurement.third.xInches, field.Blue.third.xInches),
-                        yInches = getDelta(fourPointsAprilTagMeasurement.third.yInches, field.Blue.third.yInches)
+                        xInches = getDelta(fourPointsAprilTagMeasurement.third.xInches, field.Red.third.xInches),
+                        yInches = getDelta(fourPointsAprilTagMeasurement.third.yInches, field.Red.third.yInches)
                 ),
 
                 fourth = PointInXInchesAndYInches(
-                        xInches = getDelta(fourPointsAprilTagMeasurement.fourth.xInches, field.Blue.fourth.xInches),
-                        yInches = getDelta(fourPointsAprilTagMeasurement.fourth.yInches, field.Blue.fourth.yInches)
+                        xInches = getDelta(fourPointsAprilTagMeasurement.fourth.xInches, field.Red.fourth.xInches),
+                        yInches = getDelta(fourPointsAprilTagMeasurement.fourth.yInches, field.Red.fourth.yInches)
                 ),
         )
 
         assertJsonEquals(expected, actualFourPoints)
         Assert.assertEquals(expected, actualFourPoints)
     }
+
+    @Test
+    fun getOffsets() {
+
+        // given
+        val allianceSide: ReusableAprilTagFieldLocalizer.AllianceSide = ReusableAprilTagFieldLocalizer.AllianceSide.Red
+
+        val fourPointsAprilTagMeasurement = FourPoints(
+                first = PointInXInchesAndYInches(
+                        xInches = -23.34,
+                        yInches = 43.9
+                ),
+                second = PointInXInchesAndYInches(
+                        xInches = -47.48,
+                        yInches = -44.45
+                ),
+                third = PointInXInchesAndYInches(
+                        xInches = -24.44,
+                        yInches = -18.46
+                ),
+                fourth = PointInXInchesAndYInches(
+                        xInches = -47.69,
+                        yInches = -18.59
+                )
+        )
+
+
+        val actualFourPoints = findErrorOfFourPoints(
+                allianceSide = allianceSide,
+                fourPointsPredictedMeasurement = fourPointsAprilTagMeasurement
+        )
+
+        // when
+        val offsets = calculateAprilTagOffsets(actualFourPoints)
+
+        // then
+        Assert.assertEquals(0.0125, offsets.xInches, 0.001)
+        Assert.assertEquals(4.15, offsets.yInches, 0.001)
+
+
+    }
+
     fun junk(){
 //        data class BooleanForXAndY(val xInches: Boolean, val yInches: Boolean)
 //
