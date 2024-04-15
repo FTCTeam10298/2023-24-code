@@ -371,7 +371,7 @@ class RobotTwoAuto(
                                 PropPosition.Right -> listOf(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 25,
+                                                        x = startPosition.x + 27,
                                                         y = startPosition.y,
                                                         r = startPosition.r,
                                                 )),
@@ -382,22 +382,22 @@ class RobotTwoAuto(
                                         ),
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 27,
+                                                        x = startPosition.x + 29,
                                                         y = startPosition.y - 4,
                                                         r = startPosition.r - 90,
                                                 )),
-                                                armAtInitPosition = ArmInput.GoUnderTrussPosition,
+                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
                                         ),
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                        x = startPosition.x + 27,
+                                                        x = startPosition.x + 29,
                                                         y = startPosition.y + 6,
                                                         r = startPosition.r - 90,
                                                 )),
-                                                armAtInitPosition = ArmInput.GoUnderTrussPosition,
+                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPrecisePosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
@@ -408,7 +408,7 @@ class RobotTwoAuto(
                                                         y = startPosition.y + 8,
                                                         r = startPosition.r,
                                                 )),
-                                                armAtInitPosition = ArmInput.GoUnderTrussPosition,
+                                                armAtInitPosition = ArmInput.InitPosition,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
@@ -631,7 +631,7 @@ class RobotTwoAuto(
 
     data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val shouldDoYellow: Boolean)
 
-    private var startPosition: StartPosition = StartPosition.Audience
+    private var startPosition: StartPosition = StartPosition.Backboard
 
     fun init(hardware: RobotTwoHardware) {
         initRobot(
