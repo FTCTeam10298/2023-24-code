@@ -650,7 +650,7 @@ class RobotTwoAuto(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
                                                         x = -25.0,
                                                         y = startPosition.y + 8,
-                                                        r = startPosition.r,
+                                                        r = 0.0,
                                                 )),
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
