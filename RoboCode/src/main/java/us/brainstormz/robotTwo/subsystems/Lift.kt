@@ -11,16 +11,25 @@ import us.brainstormz.robotTwo.RobotTwoTeleOp
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
+import kotlin.math.PI
 
 
 class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
+
+    companion object {
+        val ticksPerRevolutionConversionFactor = 1/384.5
+        val spoolDiameterInches = 2.06299
+        val spoolCircumferenceInches = PI * spoolDiameterInches
+        val ticksToInchesConversionFactor: Double = ticksPerRevolutionConversionFactor * spoolCircumferenceInches
+        fun inchesToTicks(inches: Double): Int = (inches / ticksToInchesConversionFactor).toInt()
+    }
 
     @JsonTypeName("LiftPositions")
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
 //        PastDown(0),
         Down(0),
         ExtendoCouldInterfereWithGoingDown(100),
-        AutoLowYellowPlacement((330*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        AutoLowYellowPlacement(inchesToTicks(2.0)),
         AutoAbovePartnerPlacement((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         ClearForArmToMove(500),
         TargetClearForArmToMove(560),
