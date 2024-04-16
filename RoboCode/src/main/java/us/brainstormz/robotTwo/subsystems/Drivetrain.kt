@@ -8,6 +8,7 @@ import us.brainstormz.motion.MecanumMovement
 import us.brainstormz.utils.measured
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.RobotTwoHardware
+import java.math.BigDecimal
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -94,9 +95,12 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
     }
 
     val maxVelocityToStayAtPosition = DriveVelocity(
-            xInchesPerMili = 0.25 / 1000.0,
-            yInchesPerMili = 0.25 / 1000.0,
-            rDegreesPerMili = 3 / 1000.0
+//            xInchesPerMili = 0.25 / 1000.0,
+//            yInchesPerMili = 0.25 / 1000.0,
+//            rDegreesPerMili = 5 / 1000.0
+            xInchesPerMilli = 1.toBigDecimal() / 1000.toBigDecimal(),
+            yInchesPerMilli = 1.toBigDecimal() / 1000.toBigDecimal(),
+            rDegreesPerMilli = 10.toBigDecimal() / 1000.toBigDecimal()
     )
     fun checkIfDrivetrainIsAtPosition(targetPosition: PositionAndRotation, actualWorld: ActualWorld, previousWorld: ActualWorld, precisionInches: Double, precisionDegrees: Double): Boolean {
         val isRobotCurrentlyAtTarget = isRobotAtPosition(
@@ -104,31 +108,40 @@ class Drivetrain(hardware: RobotTwoHardware, localizer: Localizer, private val t
                 targetPosition= targetPosition,
                 precisionInches= precisionInches,
                 precisionDegrees= precisionDegrees)
-        val willRobotStayAtTarget = getVelocity(actualWorld, previousWorld).checkIfIsLessThan(maxVelocityToStayAtPosition)
+        val willRobotStayAtTarget = getVelocity(actualWorld, previousWorld).checkIfIsLessThanOrEqualTo(maxVelocityToStayAtPosition)
         return isRobotCurrentlyAtTarget && willRobotStayAtTarget
     }
 
-    data class DriveVelocity(val xInchesPerMili: Double, val yInchesPerMili: Double, val rDegreesPerMili: Double) {
-        fun checkIfIsLessThan(other: DriveVelocity): Boolean {
-            val xIsLess = xInchesPerMili < other.xInchesPerMili
-            val yIsLess = yInchesPerMili < other.yInchesPerMili
-            val rIsLess = rDegreesPerMili < other.rDegreesPerMili
+    data class DriveVelocity(val xInchesPerMilli: BigDecimal, val yInchesPerMilli: BigDecimal, val rDegreesPerMilli: BigDecimal) {
+        fun checkIfIsLessThanOrEqualTo(other: DriveVelocity): Boolean {
+            val xIsLess = xInchesPerMilli <= other.xInchesPerMilli
+
+            val yIsLess = yInchesPerMilli <= other.yInchesPerMilli
+
+            val rIsLess = rDegreesPerMilli <= other.rDegreesPerMilli
+
             return xIsLess && yIsLess && rIsLess
         }
     }
 
     fun getVelocity(actualPosition: PositionAndRotation, actualTimeMilis: Long, previousPosition: PositionAndRotation, previousTimeMilis: Long): DriveVelocity {
-        val deltaPosition = actualPosition - previousPosition
-        val deltaTime = actualTimeMilis - previousTimeMilis
+        val deltaX = actualPosition.x - previousPosition.x
+        val deltaY = actualPosition.y - previousPosition.y
+        val deltaR = actualPosition.r - previousPosition.r
+        val deltaTimeMillis = actualTimeMilis - previousTimeMilis
 
         return DriveVelocity(
-                xInchesPerMili = deltaPosition.x / deltaTime,
-                yInchesPerMili = deltaPosition.y / deltaTime,
-                rDegreesPerMili = deltaPosition.r / deltaTime
+                xInchesPerMilli = deltaX.toBigDecimal() / deltaTimeMillis.toBigDecimal(),
+                yInchesPerMilli = deltaY.toBigDecimal() / deltaTimeMillis.toBigDecimal(),
+                rDegreesPerMilli = deltaR.toBigDecimal() / deltaTimeMillis.toBigDecimal()
         )
     }
 
     fun getVelocity(actualWorld: ActualWorld, previousWorld: ActualWorld): DriveVelocity {
         return getVelocity(actualWorld.actualRobot.positionAndRotation, actualWorld.timestampMilis, previousWorld.actualRobot.positionAndRotation, previousWorld.timestampMilis)
+    }
+
+    fun checkIfRobotIsMoving(actualWorld: ActualWorld, previousWorld: ActualWorld): Boolean {
+        return getVelocity(actualWorld, previousWorld).checkIfIsLessThanOrEqualTo(maxVelocityToStayAtPosition)
     }
 }

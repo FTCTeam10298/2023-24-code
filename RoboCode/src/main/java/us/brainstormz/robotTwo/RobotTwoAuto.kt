@@ -1,6 +1,5 @@
 package us.brainstormz.robotTwo
 
-import FieldRelativePointInSpace
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -9,10 +8,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.localizer.AprilTagLocalizerRepackaged
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
-import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldConfigurations
-import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
-import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
 import us.brainstormz.openCvAbstraction.OpenCvAbstraction
 import us.brainstormz.robotTwo.RobotTwoPropDetector.PropPosition
 import us.brainstormz.robotTwo.RobotTwoPropDetector.*
@@ -203,7 +199,7 @@ class RobotTwoAuto(
         }
 
         if (autoInput.getCurrentPositionAndRotationFromAprilTag) {
-            val drivetrainIsNotMoving = drivetrain.getVelocity(actualWorld, previousActualWorld).checkIfIsLessThan(drivetrain.maxVelocityToStayAtPosition)
+            val drivetrainIsNotMoving = drivetrain.getVelocity(actualWorld, previousActualWorld).checkIfIsLessThanOrEqualTo(drivetrain.maxVelocityToStayAtPosition)
             if (drivetrainIsNotMoving) {
                 val positionAndRotationFromAprilTag = aprilTagLocalizerRepackaged.recalculatePositionAndRotation(aprilTagReadings)
                 telemetry.addLine("aprilTagPosition: $positionAndRotationFromAprilTag")
@@ -241,10 +237,13 @@ class RobotTwoAuto(
 
     private val aprilTagLocalizerRepackaged = AprilTagLocalizerRepackaged(telemetry = telemetry)
 
+    private fun recalibrateToAprilTagSequence(): List<AutoInput> {
+        return listOf()
+    }
 
     private val xForNavigatingUnderStageDoor = -((RobotTwoHardware.robotWidthInches/2) + 2)
 
-    private val depositY = -53.0
+    private val depositY = -52.0
     private fun depositingPosition(propPosition: PropPosition) = when (propPosition) {
         PropPosition.Left -> PositionAndRotation(
                 x = -29.4,
@@ -269,6 +268,7 @@ class RobotTwoAuto(
                     drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
                     depoInput = DepoInput.YellowPlacement,
                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                        telemetry.addLine("Waiting for robot to get to board position")
                         nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                     }
             ),
@@ -283,9 +283,11 @@ class RobotTwoAuto(
                                 actualWorld = actualWorld
                         )
 
-                        val isRobotMoving = drivetrain.getVelocity(actualWorld, previousActualWorld).checkIfIsLessThan(drivetrain.maxVelocityToStayAtPosition)
+                        val isRobotStopped = !drivetrain.checkIfRobotIsMoving(actualWorld, previousActualWorld)
 
-                         nextTargetFromCondition(isDepoAtPosition && !isRobotMoving, targetWorld)
+                        telemetry.addLine("Waiting for depo to get to scoring position ($isDepoAtPosition) and robot to stop moving (${isRobotStopped}), velocity: ${drivetrain.getVelocity(actualWorld, previousActualWorld)})")
+
+                         nextTargetFromCondition(isDepoAtPosition && isRobotStopped, targetWorld)
                     }
             ),
             blankAutoState.copy(
@@ -296,6 +298,9 @@ class RobotTwoAuto(
                             right = ClawInput.Drop
                     ),
                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+
+                        telemetry.addLine("Waiting for lift to go up and claws to close")
+
                         val wristIsAtPosition = wrist.wristIsAtPosition(
                                 target = Wrist.WristTargets(
                                         left = Claw.ClawTarget.Retracted,
@@ -305,17 +310,24 @@ class RobotTwoAuto(
                         )
                         val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
 
-                        nextTargetFromCondition(wristIsAtPosition && liftIsAtPosition, targetWorld)
-                    }
-            ),
-            blankAutoState.copy(
-                    drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
-                            y = depositingPosition(propPosition).y + 3
-                    )),
-                    depoInput = DepoInput.YellowPlacement,
-                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                        val isTargetDone = wristIsAtPosition && liftIsAtPosition
+                        if (isTargetDone) {
+                            val atBoardPosition = actualWorld.actualRobot.positionAndRotation.y
+                            targetWorld.autoInput!!.copy(
+                                    drivetrainTarget = Drivetrain.DrivetrainTarget(actualWorld.actualRobot.positionAndRotation.copy(
+                                            y = atBoardPosition + 6
+                                    )),
+                                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                        telemetry.addLine("Waiting for robot to back away from board")
 
-                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                        val backAwayFromBoardY = atBoardPosition + 3
+                                        val isRobotInPosition = actualWorld.actualRobot.positionAndRotation.y >= backAwayFromBoardY
+                                        nextTargetFromCondition(isRobotInPosition, targetWorld)
+                                    }
+                            )
+                        } else {
+                            targetWorld.autoInput!!
+                        }
                     }
             ),
     )
@@ -471,8 +483,9 @@ class RobotTwoAuto(
                                                     y = -30.0
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                val isButtonPressed = actualWorld.actualGamepad1.touchpad
-                                                nextTargetFromCondition(isButtonPressed, targetWorld)
+                                                val isButtonNotPressed = !actualWorld.actualGamepad1.touchpad
+                                                val waitIsDone = hasTimeElapsed(1500, targetWorld)
+                                                nextTargetFromCondition(isButtonNotPressed && waitIsDone, targetWorld)
                                             },
                                             getCurrentPositionAndRotationFromAprilTag = true
                                     ),
@@ -669,6 +682,25 @@ class RobotTwoAuto(
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
+                                    ),
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
+                                                    y = -30.0
+                                            )),
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                            },
+                                    ),
+                                    blankAutoState.copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
+                                                    y = -30.0
+                                            )),
+                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                val isButtonNotPressed = !actualWorld.actualGamepad1.touchpad
+                                                val waitIsDone = hasTimeElapsed(1500, targetWorld)
+                                                nextTargetFromCondition(isButtonNotPressed && waitIsDone, targetWorld)
+                                            },
+                                            getCurrentPositionAndRotationFromAprilTag = true
                                     ),
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
@@ -983,18 +1015,18 @@ class RobotTwoAuto(
     fun loop(hardware: RobotTwoHardware, aprilTagPipeline: AprilTagPipelineForEachCamera, gamepad1: SerializableGamepad) = measured("main loop"){
         runRobot(
                 targetStateFetcher = { actualWorldWithoutAprilTags, previousActualWorld, previousTargetWorld ->
-
                     val actualWorld = actualWorldWithoutAprilTags.copy(
                             aprilTagReadings = listOf()
                     )
+
+                    val velocity = previousActualWorld?.let { drivetrain.getVelocity(actualWorld, it) }
+                    telemetry.addLine("velocity: $velocity")
 
                     val autoInput = nextAutoInput(
                             actualWorld,
                             previousActualWorld,
                             previousTargetWorld
                     )
-                    telemetry.addLine("previous auto input index: ${previousTargetWorld?.autoInput?.listIndex}")
-                    telemetry.addLine("new auto input index: ${autoInput.listIndex}")
 
                     val previousActualWorld = previousActualWorld ?: TeleopTest.emptyWorld
                     val previousTargetWorld: TargetWorld = previousTargetWorld ?: initialPreviousTargetState
