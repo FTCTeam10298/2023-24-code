@@ -629,7 +629,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         /**Intake Noodles*/
         val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis?:actualWorld.timestampMilis)
-        val waitBeforeEjectingMillis = 200
+        val waitBeforeEjectingMillis = 300
         val timeToStartEjection = theRobotJustCollectedTwoPixels && (timeSincePixelsTransferredMillis > waitBeforeEjectingMillis)
 
         val timeSinceEjectionStartedMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis?:actualWorld.timestampMilis)
