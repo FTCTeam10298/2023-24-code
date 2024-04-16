@@ -29,14 +29,14 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 //        PastDown(0),
         Down(0),
         ExtendoCouldInterfereWithGoingDown(100),
-        AutoLowYellowPlacement(inchesToTicks(2.0)),
+        AutoLowYellowPlacement(inchesToTicks(0.0)),
         AutoAbovePartnerPlacement((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         ClearForArmToMove(500),
         TargetClearForArmToMove(560),
-        SetLine1(360),
+        SetLine1(inchesToTicks(6.0)),
         SetLine2Other((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
-        SetLine2((1000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
-        SetLine3((1800*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        SetLine2(inchesToTicks(13.5)),
+        SetLine3(inchesToTicks(25.5)),
         Max((2100*SlideConversion.oldToNewMotorEncoderConversion).toInt())
     }
 
