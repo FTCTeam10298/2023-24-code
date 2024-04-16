@@ -201,10 +201,23 @@ class TestAprilTagConfiguration: LinearOpMode() {
 
         if (theTargetAprilTag != null) {
             val theTargetAprilTagPositionInfo = localizer.returnAprilTagInFieldCentricCoords(theTargetAprilTag)
-            val theTargetAprilTagPositionTagRelative = theTargetAprilTagPositionInfo.TagRelativePointInSpace
+            val theTargetAprilTagPositionTagRelative = theTargetAprilTagPositionInfo.TagRelativePointInSpace!!
             val theTargetAprilTagPositionFieldRelative = theTargetAprilTagPositionInfo.FieldRelativePointInSpace
 
             telemetry.addLine(String.format("\n==== (ID %d) %s", theTargetAprilTag.id, "WAS YOUR SELECTED TAG, AND I FOUND IT!"))
+
+
+            telemetry.addLine("CamRelative X: ${theTargetAprilTagPositionInfo.CamRelativePointInSpace!!.xInches}")
+            telemetry.addLine("CamRelative Y: ${theTargetAprilTagPositionInfo.CamRelativePointInSpace.yInches}")
+            telemetry.addLine("CamRelative Bearing: ${theTargetAprilTagPositionInfo.CamRelativePointInSpace.yawDegrees  }")
+
+            telemetry.addLine("TagRelative X: ${theTargetAprilTagPositionTagRelative?.xInches}")
+            telemetry.addLine("TagRelative Y: ${theTargetAprilTagPositionTagRelative?.yInches}")
+            telemetry.addLine("TagRelative Bearing: ${theTargetAprilTagPositionTagRelative?.headingDegrees}")
+
+            telemetry.addLine("Field X: ${theTargetAprilTagPositionFieldRelative?.xInches}")
+            telemetry.addLine("Field Y: ${theTargetAprilTagPositionFieldRelative?.yInches}")
+            telemetry.addLine("Field Bearing: ${theTargetAprilTagPositionFieldRelative?.headingDegrees}")
 
             // Step through the list of detections and display info for each one.
 
@@ -219,7 +232,7 @@ class TestAprilTagConfiguration: LinearOpMode() {
                 val idOfLeastDistortedTag = leastDistortedAprilTag.id
 
                 //elvis operator
-                val currentRobotPositionRelativeToCamera = theTargetAprilTag.ftcPose.bearing
+                val currentRobotPositionRelativeToCamera = theTargetAprilTag.ftcPose
 
 
                 telemetry.addLine("AprilTag Current Position Of Robot (tag ${detection.id}): $currentRobotPositionRelativeToCamera")
@@ -231,9 +244,8 @@ class TestAprilTagConfiguration: LinearOpMode() {
 //                println("Robot Y: ${theTargetAprilTagPosition?.yInches}")
 //                println("Robot Bearing: ${theTargetAprilTagPosition?.headingDegrees}")
 
-//                println("Field X: ${theTargetAprilTagPositionFieldRelative?.xInches}")
-//                println("Robot Y: ${theTargetAprilTagPositionFieldRelative?.yInches}")
-//                println("Robot Bearing: ${theTargetAprilTagPositionFieldRelative?.headingDegrees}")
+
+
                 println("Least Distorted Apriltag: $idOfLeastDistortedTag")
 
 
@@ -255,8 +267,7 @@ class TestAprilTagConfiguration: LinearOpMode() {
 //                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y))
 //            }
             }
-        }
-        else {
+        } else {
             telemetry.addLine("I just don't see it.")
         }
          // ...

@@ -71,6 +71,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
     override lateinit var rBDrive: DcMotor
 
     companion object {
+        val cameraBackwardOffsetFromRobotCenterInches = 8.35879
         val robotLengthInches = 17.75
         val robotWidthInches = 16.21457
         val tabCutoffCompensationInches = 0.5

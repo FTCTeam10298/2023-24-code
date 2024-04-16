@@ -1,3 +1,4 @@
+import android.util.Size
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.Assert
@@ -6,6 +7,7 @@ import org.junit.Test
 import us.brainstormz.faux.FauxOpMode
 import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation
+import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
 import us.brainstormz.robotTwo.ActualWorld
 import us.brainstormz.robotTwo.DepoManager
 import us.brainstormz.robotTwo.DepoTarget
@@ -497,6 +499,7 @@ class FullAutoTest {
         val auto = RobotTwoAuto(
             opmode.telemetry,
         )
+        val aprilTagPipeline = AprilTagPipelineForEachCamera("Webcam 1", Size(640, 480))
 
         auto.init(hardware)
 
@@ -522,7 +525,7 @@ class FullAutoTest {
             auto.getTime = { now }
 
             //Run
-            auto.loop(gamepad1 = actualWorld.actualGamepad1, hardware = hardware)
+            auto.loop(gamepad1 = actualWorld.actualGamepad1, aprilTagPipeline = aprilTagPipeline, hardware = hardware)
 
             //Get result
             auto.functionalReactiveAutoRunner.previousTargetState!!

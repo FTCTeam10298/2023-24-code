@@ -2,43 +2,60 @@ package us.brainstormz.localizer.aprilTagLocalization
 
 import FieldRelativePointInSpace
 import TagRelativePointInSpace
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase
+import us.brainstormz.faux.PrintlnTelemetry
 import us.brainstormz.localizer.PositionAndRotation
 import kotlin.math.*
 
-class AprilTagLocalizationFunctions(val cameraXOffset: Double, val cameraYOffset: Double) {
+class AprilTagLocalizationFunctions(val cameraXOffset: Double, val cameraYOffset: Double, val telemetry: Telemetry = PrintlnTelemetry()) {
+
+    fun calcRobotPositionFromCameraPosition(cameraPositionAndRotation: FieldRelativePointInSpace, cameraOffsetFromRobotCenterYInches: Double): FieldRelativePointInSpace {
+
+        val angleForTrigRadians = Math.toRadians(cameraPositionAndRotation.headingDegrees - 90)
+
+        val xOffset = cos(angleForTrigRadians) * cameraOffsetFromRobotCenterYInches
+        val yOffset = sin(angleForTrigRadians) * cameraOffsetFromRobotCenterYInches
+
+        val offsetPosition = FieldRelativePointInSpace(
+                xInches = xOffset + cameraPositionAndRotation.xInches,
+                yInches = yOffset + cameraPositionAndRotation.yInches,
+                headingDegrees = cameraPositionAndRotation.headingDegrees
+        )
+
+        return offsetPosition
+    }
+
     //distance of the camera from the bot's center so that we find position relative to bot center
     // not camera center.
-    fun getCameraPositionOnField(aprilTagID: Int, aprilTagInTagCentricCoords: TagRelativePointInSpace,
-                                 allianceSideFound: ReusableAprilTagFieldLocalizer.AllianceSide): FieldRelativePointInSpace {
-
-        /** adds relative position to position of tags on field, because both are calculated with
-         * the same origin (point with an x and y of 0), because then we reflect how much more/less the bot
-         * position is than the apriltag position.
-         */
-
-        //This code is meant to be used 12-14 in. from the AprilTag, and will return coords.
-        //based on the closest AprilTag, with an accuracy of +-1/2 inch.
-
-        val tagRelativeToCamera = aprilTagInTagCentricCoords
+    fun getCameraPositionOnField(aprilTagID: Int,
+                                 aprilTagInTagCentricCoords: TagRelativePointInSpace,
+                                 allianceSideFound: ReusableAprilTagFieldLocalizer.AllianceSide
+    ): FieldRelativePointInSpace {
 
 
-        val tagRelativeToCameraOurCoordinateSystem = PositionAndRotation(
-                x= tagRelativeToCamera.xInches + cameraXOffset,
-                y= -tagRelativeToCamera.yInches + cameraYOffset,
-                r= tagRelativeToCamera.headingDegrees - 180 //originally bearing, WATCH OUT
+        val positionOfTagOnField = getAprilTagLocation(aprilTagID).posAndRot
+        val cameraCenterPositionOnField = FieldRelativePointInSpace(
+                xInches = positionOfTagOnField.x + aprilTagInTagCentricCoords.xInches,
+                yInches = positionOfTagOnField.y - aprilTagInTagCentricCoords.yInches,
+                headingDegrees = aprilTagInTagCentricCoords.headingDegrees //originally bearing, WATCH OUT
         )
+
+        telemetry.addLine("cameraCenterPositionOnField: $cameraCenterPositionOnField")
+
+        val tagRelativeToCameraOurCoordinateSystem = calcRobotPositionFromCameraPosition(
+                cameraPositionAndRotation = cameraCenterPositionOnField,
+                cameraOffsetFromRobotCenterYInches = cameraYOffset
+        )
+        telemetry.addLine("tagRelativeToCameraOurCoordinateSystem: $tagRelativeToCameraOurCoordinateSystem")
 
         //TODO: Convert to James's coordinate system.
 
 
-        val tagRelativeToField = getAprilTagLocation(aprilTagID).posAndRot
 
         //I guess subtraction works? Some things should just be worked out with experimentation.
         //Has to be 12-14 inches from most on-center target for results accurate to +- one inch.
-        val  robotRelativeToFieldX = tagRelativeToField.x + tagRelativeToCameraOurCoordinateSystem.x
-        val robotRelativeToFieldY = tagRelativeToField.y + tagRelativeToCameraOurCoordinateSystem.y
 
         //TODO: TRIGONOMETRYYYY IDK if this is complete :&
 //        //We're trying to find the angle between the AprilTag Y Axis and the bot. Draw this out:
@@ -77,7 +94,7 @@ class AprilTagLocalizationFunctions(val cameraXOffset: Double, val cameraYOffset
 //        //arctangent takes us home to the first angle! Yay!
 ////        val angleBetween
 
-        return FieldRelativePointInSpace(robotRelativeToFieldX, robotRelativeToFieldY, tagRelativeToCameraOurCoordinateSystem.r)
+        return tagRelativeToCameraOurCoordinateSystem
         //yaw is equivalent to bearing
     }
 

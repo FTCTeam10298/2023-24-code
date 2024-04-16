@@ -1,10 +1,8 @@
 package us.brainstormz.robotTwo
 
 import FieldRelativePointInSpace
-import android.util.Size
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.robotcore.hardware.Gamepad
-import fieldConfigurationToTest
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.openftc.easyopencv.OpenCvCameraRotation
@@ -241,18 +239,17 @@ class RobotTwoAuto(
 
 
     private val aprilTagLocalization = AprilTagLocalizationFunctions(
-            cameraXOffset= RobotTwoHardware.robotLengthInches/2,
-            cameraYOffset= 0.00
+            cameraXOffset= 0.0,//RobotTwoHardware.robotLengthInches/2,
+            cameraYOffset= 0.0
     )
-    private val currentFieldConfiguration = AprilTagFieldConfigurations.garageFieldAtHome
+    private val currentFieldConfiguration = AprilTagFieldConfigurations.fieldConfigurationNoOffsets//AprilTagFieldConfigurations.garageFieldAtHome
     private val aprilTagLocalizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
             averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
             averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets)
 
     private fun getCurrentPositionAndRotationFromAprilTag(aprilTagReadings: List<AprilTagDetection>): PositionAndRotation {
-        val currentDetections = aprilTagReadings
-        val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
+        val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(aprilTagReadings)
         val theTargetAprilTagPositionInfo = aprilTagLocalizer.returnAprilTagInFieldCentricCoords(closestAprilTag)
 
         fun FieldRelativePointInSpace.toPositionAndRotation() = PositionAndRotation(
@@ -495,9 +492,8 @@ class RobotTwoAuto(
                                                     y = -30.0
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                telemetry.addLine("Hey there :eyes:")
-                                                println("Hey there :eyes:")
-                                                nextTargetFromCondition(hasTimeElapsed(5000, targetWorld), targetWorld)
+                                                val isButtonPressed = actualWorld.actualGamepad1.touchpad
+                                                nextTargetFromCondition(isButtonPressed, targetWorld)
                                             },
                                             getCurrentPositionAndRotationFromAprilTag = true
                                     ),
@@ -1007,7 +1003,11 @@ class RobotTwoAuto(
 
     fun loop(hardware: RobotTwoHardware, aprilTagPipeline: AprilTagPipelineForEachCamera, gamepad1: SerializableGamepad) = measured("main loop"){
         runRobot(
-                targetStateFetcher = { actualWorld, previousActualWorld, previousTargetWorld ->
+                targetStateFetcher = { actualWorldWithoutAprilTags, previousActualWorld, previousTargetWorld ->
+
+                    val actualWorld = actualWorldWithoutAprilTags.copy(
+                            aprilTagReadings = listOf()
+                    )
 
                     val autoInput = nextAutoInput(
                             actualWorld,
