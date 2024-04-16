@@ -66,7 +66,7 @@ class Arm: Subsystem, DualMovementModeSubsystem {
         hardware.armServo2.power = power
     }
 
-    private fun getEncoderReader(hardware: RobotTwoHardware) = AxonEncoderReader(hardware.armEncoder, angleOffsetDegrees = 320 - 180.0)
+    private fun getEncoderReader(hardware: RobotTwoHardware) = AxonEncoderReader(hardware.armEncoder, angleOffsetDegrees = 323 - 180.0)
     fun getArmAngleDegrees(hardware: RobotTwoHardware): Double {
         //20
         //180
@@ -118,7 +118,7 @@ class Arm: Subsystem, DualMovementModeSubsystem {
     /** 0 angle is where the flat face of the claws is facing parallel to the ground */
 //    fun getArmAngleDegrees(): Double {
 //        return encoderReader.getPositionDegrees()
-//    }
+//    }1
 
 //    fun getArmState(): Arm.Positions = Arm.Positions.entries.firstOrNull { it ->
 //        getArmAngleDegrees() == it.angleDegrees
