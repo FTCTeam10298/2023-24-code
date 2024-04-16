@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.openftc.easyopencv.OpenCvCameraRotation
+import us.brainstormz.localizer.AprilTagLocalizerRepackaged
 import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.localizer.RRTwoWheelLocalizer
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldConfigurations
@@ -202,17 +203,18 @@ class RobotTwoAuto(
         }
 
         if (autoInput.getCurrentPositionAndRotationFromAprilTag) {
-            telemetry.addLine("\n\nApril Tag localization!!")
-            telemetry.addLine("tagging fr fr no cap\n")
             val drivetrainIsNotMoving = drivetrain.getVelocity(actualWorld, previousActualWorld).checkIfIsLessThan(drivetrain.maxVelocityToStayAtPosition)
-            val aprilTagsAreDetected = aprilTagReadings.isNotEmpty()
-            if (aprilTagsAreDetected && drivetrainIsNotMoving) {
-                val aprilTagPosition = getCurrentPositionAndRotationFromAprilTag(aprilTagReadings)
-                telemetry.addLine("aprilTagPosition: $aprilTagPosition")
-                val delta = aprilTagPosition - actualWorld.actualRobot.positionAndRotation
-                telemetry.addLine("april tag vs odom delta: ${delta}")
-                saveSomething("delta: $delta \naprilTagPosition: $aprilTagPosition")
-                drivetrain.localizer.setPositionAndRotation(aprilTagPosition)
+            if (drivetrainIsNotMoving) {
+                val positionAndRotationFromAprilTag = aprilTagLocalizerRepackaged.recalculatePositionAndRotation(aprilTagReadings)
+                telemetry.addLine("aprilTagPosition: $positionAndRotationFromAprilTag")
+
+                positionAndRotationFromAprilTag?.let {aprilTagPosition ->
+                    val delta = aprilTagPosition - actualWorld.actualRobot.positionAndRotation
+                    telemetry.addLine("april tag vs odom delta: ${delta}")
+
+                    saveSomething("delta: $delta \naprilTagPosition: $aprilTagPosition")
+                    drivetrain.localizer.setPositionAndRotation(aprilTagPosition)
+                }
             }
         }
 
@@ -237,30 +239,7 @@ class RobotTwoAuto(
         )
     }
 
-
-    private val aprilTagLocalization = AprilTagLocalizationFunctions(
-            cameraXOffset= 0.0,//RobotTwoHardware.robotLengthInches/2,
-            cameraYOffset= 0.0
-    )
-    private val currentFieldConfiguration = AprilTagFieldConfigurations.fieldConfigurationNoOffsets//AprilTagFieldConfigurations.garageFieldAtHome
-    private val aprilTagLocalizer = ReusableAprilTagFieldLocalizer(
-            aprilTagLocalization = aprilTagLocalization,
-            averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
-            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets)
-
-    private fun getCurrentPositionAndRotationFromAprilTag(aprilTagReadings: List<AprilTagDetection>): PositionAndRotation {
-        val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(aprilTagReadings)
-        val theTargetAprilTagPositionInfo = aprilTagLocalizer.returnAprilTagInFieldCentricCoords(closestAprilTag)
-
-        fun FieldRelativePointInSpace.toPositionAndRotation() = PositionAndRotation(
-                x = this.xInches,
-                y = this.yInches,
-                r = this.headingDegrees - 180
-        )
-
-        return theTargetAprilTagPositionInfo.FieldRelativePointInSpace.toPositionAndRotation()
-    }
-
+    private val aprilTagLocalizerRepackaged = AprilTagLocalizerRepackaged(telemetry = telemetry)
 
 
     private val xForNavigatingUnderStageDoor = -((RobotTwoHardware.robotWidthInches/2) + 2)

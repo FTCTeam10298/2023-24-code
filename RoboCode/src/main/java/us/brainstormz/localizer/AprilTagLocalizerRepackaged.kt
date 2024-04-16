@@ -13,9 +13,8 @@ import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocali
 import us.brainstormz.robotTwo.RobotTwoHardware
 
 class AprilTagLocalizerRepackaged(
-        private val telemetry: Telemetry,
-        private val aprilTagPipeline: AprilTagPipelineForEachCamera
-): Localizer {
+        private val telemetry: Telemetry
+) {
 
     private val aprilTagLocalizationMath = AprilTagLocalizationFunctions(
             cameraXOffset= 0.0,
@@ -36,13 +35,10 @@ class AprilTagLocalizerRepackaged(
             r = this.headingDegrees
     )
 
-    private var currentPositionAndRotation: PositionAndRotation? = null
-    override fun currentPositionAndRotation(): PositionAndRotation = currentPositionAndRotation ?: PositionAndRotation()
-    override fun recalculatePositionAndRotation() {
-        val aprilTagDetections = aprilTagPipeline.detections()
+    fun recalculatePositionAndRotation(aprilTagDetections: List<AprilTagDetection>): PositionAndRotation? {
 
         val aprilTagsAreDetected = aprilTagDetections.isNotEmpty()
-        currentPositionAndRotation = if (aprilTagsAreDetected) {
+        return if (aprilTagsAreDetected) {
 
             val closestAprilTag: AprilTagDetection = aprilTagLocalizationMath.findClosestAprilTagToBot(
                     allAprilTags = aprilTagDetections
@@ -54,21 +50,15 @@ class AprilTagLocalizerRepackaged(
 
             theTargetAprilTagPositionInfo.FieldRelativePointInSpace.toPositionAndRotation()
         } else {
-            currentPositionAndRotation
+            null
         }
-    }
-
-    override fun setPositionAndRotation(newPosition: PositionAndRotation) {
-        val message = "This doesn't mean anything to april tags. They're absolute."
-        telemetry.addLine(message)
-        println(message)
     }
 }
 
 @TeleOp
 class TestAprilTagLocalizerRepackaged: OpMode() {
     private val aprilTagPipeline = AprilTagPipelineForEachCamera("Webcam 1", Size(640, 480))
-    private val localizerRepackaged = AprilTagLocalizerRepackaged(telemetry, aprilTagPipeline)
+    private val localizerRepackaged = AprilTagLocalizerRepackaged(telemetry)
 
     private val hardware: RobotTwoHardware = RobotTwoHardware(telemetry= telemetry, opmode = this)
 
@@ -82,8 +72,8 @@ class TestAprilTagLocalizerRepackaged: OpMode() {
     }
 
     override fun loop() {
-        localizerRepackaged.recalculatePositionAndRotation()
-        val currentPosition = localizerRepackaged.currentPositionAndRotation()
+        val currentPosition = localizerRepackaged.recalculatePositionAndRotation(aprilTagPipeline.detections())
+
         telemetry.addLine("currentPosition: $currentPosition")
         telemetry.update()
     }
