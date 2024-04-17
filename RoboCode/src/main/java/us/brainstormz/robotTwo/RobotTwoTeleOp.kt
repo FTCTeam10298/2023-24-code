@@ -197,7 +197,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         /**Depo*/
         val depoGamepad2Input: DepoInput? = when {
-            gamepad2.dpad_up -> {
+            gamepad2.dpad_up && !previousGamepad2.dpad_up -> {
                 when (previousTargetState.driverInput.depo) {
                     DepoInput.Preset4 -> DepoInput.Preset5
                     DepoInput.Preset5 -> DepoInput.Preset6
@@ -205,7 +205,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                         DepoInput.Preset4
                     }
                 }
-
             }
             gamepad2.dpad_down -> {
                 DepoInput.Down
@@ -447,12 +446,16 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
             }
 
         /**Dropdown*/
-        val dropdown = if (gamepad1.left_stick_y != 0f) {
-            DropdownInput.NoInput
-        } else if (gamepad1.dpad_left) {
-            DropdownInput.Five
-        } else {
-            DropdownInput.NoInput
+        val dropdown = when {
+            gamepad1.left_stick_y != 0f -> {
+                DropdownInput.Manual
+            }
+            gamepad2.left_trigger != 0.0f -> {
+                DropdownInput.Five
+            }
+            else -> {
+                DropdownInput.NoInput
+            }
         }
 
         /**Extendo*/
@@ -666,12 +669,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         /**Dropdown*/
         val dropdownTarget = when (driverInput.dropdown) {
-            RobotTwoTeleOp.DropdownInput.Five -> {
+            DropdownInput.Five -> {
                 Dropdown.DropdownTarget(Dropdown.DropdownPresets.FivePixels)
             }
             DropdownInput.NoInput -> {
+//                if (previousTargetState.targetRobot.collectorTarget.dropDown)
                 if (intakeNoodleTarget == Intake.CollectorPowers.Intake) {
-                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.TwoPixels)
+                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.OnePixel)
                 } else {
                     Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up)
                 }
