@@ -42,13 +42,13 @@ object AprilTagFieldConfigurations {
 
     val rightFieldAtWorlds = FieldConfiguration(
             BlueAllianceOffsets = AverageAprilTagBackboardOffset(
-                    xInches = 0.296,
-                    yInches = 2.748,
+                    xInches = 0.0,
+                    yInches = 0.0,
                     hDegrees = 0.0,
             ),
             RedAllianceOffsets = AverageAprilTagBackboardOffset(
-                    xInches = 0.363,
-                    yInches = 2.485,
+                    xInches = 0.0,
+                    yInches = 0.0,
                     hDegrees = 0.0,
             )
     )
