@@ -277,11 +277,9 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                 isLiftManualOverrideActive -> {
                     0.2
                 }
-
                 dpadAdjustIsActive -> {
                     0.4
                 }
-
                 else -> {
                     0.2
                 }
@@ -359,10 +357,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         val liftTargetIsDown = dpadInput == DepoInput.Down
         val liftIsGoingUp = previousRobotTarget.depoTarget.targetType == DepoTargetType.GoingOut
 
+        val collectorIsntEmpty = previousTargetState.targetRobot.collectorTarget.transferSensorState.left.hasPixelBeenSeen || previousTargetState.targetRobot.collectorTarget.transferSensorState.right.hasPixelBeenSeen
+        val intakeIsntOff = previousTargetState.targetRobot.collectorTarget.intakeNoodles != Intake.CollectorPowers.Off
+
         telemetry.addLine("bothClawsAreRetracted: $bothClawsAreRetracted")
 
         val gamepadOneBumperMode: Gamepad1BumperMode = when {
-            bothClawsAreRetracted || liftTargetIsDown -> {
+            bothClawsAreRetracted || liftTargetIsDown || collectorIsntEmpty || intakeIsntOff -> {
                 Gamepad1BumperMode.Collector
             }
             liftIsGoingUp -> {
