@@ -1,5 +1,6 @@
 package us.brainstormz.robotTwo
 
+import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
 import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -58,6 +59,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         Preset2,
         Preset3,
         Preset4,
+        Preset5,
+        Preset6,
         ScoringHeightAdjust,
         Down,
         Manual,
@@ -174,7 +177,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         /**Control Mode*/
         val gamepad1ControlMode: GamepadControlMode =
-            if (gamepad1.touchpad && !previousGamepad1.touchpad) {
+            if (gamepad1.share && !previousGamepad1.share) {
                 when (previousTargetState.driverInput.gamepad1ControlMode) {
                     GamepadControlMode.Normal -> GamepadControlMode.Manual
                     GamepadControlMode.Manual -> GamepadControlMode.Normal
@@ -184,7 +187,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
             }
 
         val gamepad2ControlMode: GamepadControlMode =
-            if (gamepad2.touchpad && !previousGamepad2.touchpad) {
+            if (gamepad2.share && !previousGamepad2.share) {
                 when (previousTargetState.driverInput.gamepad2ControlMode) {
                     GamepadControlMode.Normal -> GamepadControlMode.Manual
                     GamepadControlMode.Manual -> GamepadControlMode.Normal
@@ -196,48 +199,47 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         /**Depo*/
         val depoGamepad2Input: DepoInput? = when {
             gamepad2.dpad_up -> {
-                DepoInput.Preset4
-            }
+                when (previousTargetState.driverInput.depo) {
+                    DepoInput.Preset4 -> DepoInput.Preset5
+                    DepoInput.Preset5 -> DepoInput.Preset6
+                    else -> {
+                        DepoInput.Preset4
+                    }
+                }
 
+            }
             gamepad2.dpad_down -> {
                 DepoInput.Down
             }
-
             gamepad2.dpad_right && !previousGamepad2.dpad_right -> {
                 when (previousTargetState.driverInput.depo) {
                     DepoInput.Preset1 -> DepoInput.Preset2
                     DepoInput.Preset2 -> DepoInput.Preset3
-//                    Lift.LiftPositions.Preset3 -> DepoInput.Preset4
                     else -> {
                         DepoInput.Preset1
                     }
                 }
-//                if (previousRobotTarget.depoTarget.lift.targetPosition != Lift.LiftPositions.SetLine1) {
-//                    DepoInput.Preset1
-//                } else {
-//                    DepoInput.Preset2
-//                }
             }
-
             else -> null
         }
+        telemetry.addLine("\ndepoGamepad2Input: $depoGamepad2Input")
+
         val depoGamepad1Input: DepoInput = when {
             gamepad1.dpad_up -> {
                 DepoInput.Preset4
             }
-
-            gamepad1.dpad_left -> {
+            gamepad1.dpad_right -> {
                 DepoInput.Preset3
             }
-
             gamepad1.dpad_down -> {
                 DepoInput.Preset1
             }
-
             else -> DepoInput.NoInput
         }
+        telemetry.addLine("depoGamepad1Input: $depoGamepad1Input")
 
         val dpadInput: DepoInput = depoGamepad2Input ?: depoGamepad1Input
+        telemetry.addLine("dpadInput: $dpadInput\n")
 
         val liftStickInput = -gamepad2.right_stick_y.toDouble()
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
@@ -252,8 +254,10 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 //                Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
                     Lift.LiftPositions.SetLine1 -> LiftControlMode.Adjust
                     Lift.LiftPositions.SetLine2 -> LiftControlMode.Adjust
-                    Lift.LiftPositions.SetLine2Other -> LiftControlMode.Adjust
                     Lift.LiftPositions.SetLine3 -> LiftControlMode.Adjust
+                    Lift.LiftPositions.Preset1 -> LiftControlMode.Adjust
+                    Lift.LiftPositions.Preset2 -> LiftControlMode.Adjust
+//                    Lift.LiftPositions.Preset3 -> LiftControlMode.Adjust
                     else -> {
                         val isEnumTarget =
                             Lift.LiftPositions.entries.contains(previousTargetState.targetRobot.depoTarget.lift.targetPosition)
@@ -315,12 +319,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         val liftVariableInput = if (depoInput == DepoInput.ScoringHeightAdjust) {
             //Ticks to go to
-//            val previousLiftTargetWasCustom = Lift.LiftPositions.entries.contains(previousRobotTarget.depoTarget.lift.targetPosition)
-//            val liftPositionToAdjustOffOf: Double = if (!previousLiftTargetWasCustom) {
-//                previousRobotTarget.depoTarget.lift.targetPosition.ticks.toDouble()
-//            } else {
-//                previousRobotTarget.depoTarget.lift.targetPosition.ticks.toDouble()
-//            }
             val liftPositionToAdjustOffOf: Double =
                 previousRobotTarget.depoTarget.lift.targetPosition.ticks.toDouble()
             val maxLiftAdjustSpeedTicksPerSecond: Double = 900.0
@@ -346,31 +344,35 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         }
 
         /**Bumper Mode*/
-        val gamepad1DpadIsActive = depoGamepad1Input != DepoInput.NoInput
-        val gamepad2DpadIsActive = depoGamepad2Input != null
-        val liftTargetIsDown =
-            previousRobotTarget.depoTarget.lift.targetPosition == Lift.LiftPositions.Down
+        //Brody, after the jittering i don't get claw control
+        //Brody, at the low preset i don't get claw control
+
+        //~~gamepad 1 claw control anytime lift is up
+        //gamepad 2 more presets that cycle on dpad up
+        //~~gamepad 2 right trigger opens the latches
+
+//        val gamepad1DpadIsActive = depoGamepad1Input != DepoInput.NoInput
+//        val gamepad2DpadIsActive = depoGamepad2Input != null
+//        val liftTargetIsDown =
+//            previousRobotTarget.depoTarget.lift.targetPosition == Lift.LiftPositions.Down
         val bothClawsAreRetracted = wrist.wristIsAtPosition(
             WristTargets(both = ClawTarget.Retracted),
             actualWorld.actualRobot.depoState.wristAngles
         )
 
-        telemetry.addLine("gamepad2DpadIsActive: $gamepad2DpadIsActive")
-        telemetry.addLine("liftTargetIsDown: $liftTargetIsDown")
+        val liftTargetIsUp = previousRobotTarget.depoTarget.targetType == DepoTargetType.GoingOut
+
+//        telemetry.addLine("gamepad2DpadIsActive: $gamepad2DpadIsActive")
+//        telemetry.addLine("liftTargetIsDown: $liftTargetIsDown")
         telemetry.addLine("bothClawsAreRetracted: $bothClawsAreRetracted")
 
-        //Brody, after the jittering i don't get claw control
-        //Brody, at the low preset i don't get claw control
-
         val gamepadOneBumperMode: Gamepad1BumperMode = when {
-            gamepad1DpadIsActive -> {
-                Gamepad1BumperMode.Claws
-            }
-
-            gamepad2DpadIsActive || bothClawsAreRetracted -> {
+            bothClawsAreRetracted -> {
                 Gamepad1BumperMode.Collector
             }
-
+            liftTargetIsUp -> {
+                Gamepad1BumperMode.Claws
+            }
             else -> {
                 previousTargetState.driverInput.bumperMode
             }
@@ -453,7 +455,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         /**Dropdown*/
         val dropdown = if (gamepad1.left_stick_y != 0f) {
             DropdownInput.NoInput
-        } else if (gamepad1.x) {
+        } else if (gamepad1.dpad_left) {
             DropdownInput.Five
         } else {
             DropdownInput.NoInput
@@ -482,12 +484,15 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         }
 
         /**Latches*/
-        val leftLatch = if (gamepad1.left_stick_button) {
+        val gamepad2LatchInput = gamepad2.right_trigger >= 0.2
+
+        val leftLatch = if (gamepad1.left_stick_button || gamepad2LatchInput) {
             LatchInput.Open
         } else {
             LatchInput.NoInput
         }
-        val rightLatch = if (gamepad1.right_stick_button) {
+
+        val rightLatch = if (gamepad1.right_stick_button || gamepad2LatchInput) {
             LatchInput.Open
         } else {
             LatchInput.NoInput
@@ -720,8 +725,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         )
 
 //        Handoff Coordination
-        val driverInputIsManual = driverInput.depo == DepoInput.Manual
-        val overrideHandoff = driverInputIsManual || driverInput.gamepad1ControlMode == GamepadControlMode.Manual
+        val overrideHandoff = driverInput.gamepad2ControlMode == GamepadControlMode.Manual || driverInput.gamepad1ControlMode == GamepadControlMode.Manual
         val combinedTarget = if (overrideHandoff) {
 
             fun latchInputToLatchPosition(latchInput: LatchInput): Transfer.LatchPositions =
@@ -772,7 +776,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                                     ),
                             ),
                             extendo = when (driverInput.extendo) {
-                                RobotTwoTeleOp.ExtendoInput.ExtendManual -> {
+                                ExtendoInput.ExtendManual -> {
                                     Extendo.ExtendoTarget(
                                             targetPosition = Extendo.ExtendoPositions.Min,
                                             movementMode = DualMovementModeSubsystem.MovementMode.Power,
@@ -821,7 +825,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                             movementMode = DualMovementModeSubsystem.MovementMode.Power,
                             power = -0.5)
                 }
-
                 ExtendoInput.NoInput -> {
                     if (doHandoffSequence) {
                         val slideThinksItsAtZero = actualRobot.collectorSystemState.extendo.currentPositionTicks <= 0
@@ -858,7 +861,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                     transferSensorState = transferState,
                     latches = Transfer.TransferTarget(
                             left = getLatchTargetFromDriverInput(driverInput.leftLatch),
-                            right = getLatchTargetFromDriverInput(driverInput.rightLatch)),
+                            right = getLatchTargetFromDriverInput(driverInput.rightLatch)
+                    ),
                     extendo = extendoTargetState,
             )
 
@@ -965,7 +969,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                 doingHandoff = doHandoffSequence,
                 driverInput = repeatDriverInputForDepo,
                 autoInput = teleopAutoState,
-                gamepad1Rumble = RobotTwoTeleOp.RumbleEffects.Throb
+                gamepad1Rumble = RumbleEffects.Throb
         )
     }
 

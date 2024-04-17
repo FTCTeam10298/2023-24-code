@@ -13,7 +13,6 @@ import kotlin.math.sign
 import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem.*
 import kotlin.math.PI
 
-
 class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     companion object {
@@ -31,21 +30,25 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         ExtendoCouldInterfereWithGoingDown(100),
         AutoLowYellowPlacement(inchesToTicks(0.0)),
         AutoAbovePartnerPlacement((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
-        ClearForArmToMove(500),
-        TargetClearForArmToMove(560),
+        ClearForArmToMove(inchesToTicks(9.5)),
+        TargetClearForArmToMove(inchesToTicks(10.0)),
+        Preset1(inchesToTicks(1.0)),
+        Preset2(inchesToTicks(4.0)),
+
         SetLine1(inchesToTicks(6.0)),
-        SetLine2Other((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         SetLine2(inchesToTicks(13.5)),
-        SetLine3(inchesToTicks(25.5)),
-        Max((2100*SlideConversion.oldToNewMotorEncoderConversion).toInt())
+        SetLine3(inchesToTicks(22.0)),
+        Max(inchesToTicks(28.5))
     }
 
     fun getGetLiftTargetFromDepoTarget(depoInput: RobotTwoTeleOp.DepoInput, position: Double): SlideSubsystem.SlideTargetPosition {
         return when (depoInput) {
-            RobotTwoTeleOp.DepoInput.Preset1 -> LiftPositions.SetLine1
-            RobotTwoTeleOp.DepoInput.Preset2 -> LiftPositions.SetLine2Other
-            RobotTwoTeleOp.DepoInput.Preset3 -> LiftPositions.SetLine2
-            RobotTwoTeleOp.DepoInput.Preset4 -> LiftPositions.SetLine3
+            RobotTwoTeleOp.DepoInput.Preset1 -> LiftPositions.Preset1
+            RobotTwoTeleOp.DepoInput.Preset2 -> LiftPositions.Preset2
+            RobotTwoTeleOp.DepoInput.Preset3 -> LiftPositions.SetLine1
+            RobotTwoTeleOp.DepoInput.Preset4 -> LiftPositions.SetLine2
+            RobotTwoTeleOp.DepoInput.Preset5 -> LiftPositions.SetLine3
+            RobotTwoTeleOp.DepoInput.Preset6 -> LiftPositions.Max
             RobotTwoTeleOp.DepoInput.Down -> LiftPositions.Down
             RobotTwoTeleOp.DepoInput.YellowPlacement -> LiftPositions.AutoLowYellowPlacement
 //            RobotTwoTeleOp.DepoInput.NoInput -> LiftPositions.Nothing

@@ -13,13 +13,19 @@ class Arm: Subsystem, DualMovementModeSubsystem {
 
     @Serializable
     data class ArmTarget(
-            override val targetPosition: Positions,
+            override val targetPosition: ArmAngle,
             override val movementMode: DualMovementModeSubsystem.MovementMode,
             override val power: Double): DualMovementModeSubsystem.TargetMovementSubsystem {
-                constructor(targetPosition: Positions): this(targetPosition= targetPosition, movementMode= DualMovementModeSubsystem.MovementMode.Position, power = 0.0)
+                constructor(targetPosition: ArmAngle): this(targetPosition= targetPosition, movementMode= DualMovementModeSubsystem.MovementMode.Position, power = 0.0)
             }
 
-    enum class Positions(val angleDegrees:Double) {
+    interface ArmAngle {
+        val angleDegrees: Double
+    }
+
+    class VariableArmTarget(override val angleDegrees: Double): ArmAngle
+
+    enum class Positions(override val angleDegrees:Double): ArmAngle {
         TooFarIn(285.0),
         ClearLiftMovement(238.0),
         In(238.0),
@@ -36,6 +42,7 @@ class Arm: Subsystem, DualMovementModeSubsystem {
     private val outPid = PID("arm/outPid", kp= 0.0026, kd = 0.01)
     private val outHoldingConstant = 0.08
     private val inPid = PID("arm/inPid", kp= 0.0017, ki = 0.00000018)//, kd = 0.000055)
+//    private val inPid = PID("arm/inPid", ki = 0.00000018)//, kd = 0.000055)
     private val inHoldingConstant = 0.035
     val weightHorizontalDegrees = 235
     val holdingConstantAngleOffset = weightHorizontalDegrees - 180

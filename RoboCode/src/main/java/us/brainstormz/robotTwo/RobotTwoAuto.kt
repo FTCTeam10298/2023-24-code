@@ -199,8 +199,8 @@ class RobotTwoAuto(
         }
 
         if (autoInput.getCurrentPositionAndRotationFromAprilTag) {
-            val drivetrainIsNotMoving = drivetrain.getVelocity(actualWorld, previousActualWorld).checkIfIsLessThanOrEqualTo(drivetrain.maxVelocityToStayAtPosition)
-            if (drivetrainIsNotMoving) {
+//            val drivetrainIsNotMoving = drivetrain.getVelocity(actualWorld, previousActualWorld).checkIfIsLessThanOrEqualTo(drivetrain.maxVelocityToStayAtPosition)
+//            if (drivetrainIsNotMoving) {
                 val positionAndRotationFromAprilTag = aprilTagLocalizerRepackaged.recalculatePositionAndRotation(aprilTagReadings)
                 telemetry.addLine("aprilTagPosition: $positionAndRotationFromAprilTag")
 
@@ -211,7 +211,7 @@ class RobotTwoAuto(
                     saveSomething("delta: $delta \naprilTagPosition: $aprilTagPosition")
                     drivetrain.localizer.setPositionAndRotation(aprilTagPosition)
                 }
-            }
+//            }
         }
 
         return TargetWorld(
@@ -243,7 +243,7 @@ class RobotTwoAuto(
 
     private val xForNavigatingUnderStageDoor = -((RobotTwoHardware.robotWidthInches/2) + 2)
 
-    private val depositY = -52.0
+    private val depositY = -52.5
     private fun depositingPosition(propPosition: PropPosition) = when (propPosition) {
         PropPosition.Left -> PositionAndRotation(
                 x = -29.4,
@@ -283,11 +283,17 @@ class RobotTwoAuto(
                                 actualWorld = actualWorld
                         )
 
-                        val isRobotStopped = !drivetrain.checkIfRobotIsMoving(actualWorld, previousActualWorld)
+                        val deltaPositionInches = (actualWorld.actualRobot.positionAndRotation.y - previousActualWorld.actualRobot.positionAndRotation.y).absoluteValue
+                        val deltaTimeSeconds = (actualWorld.timestampMilis - previousActualWorld.timestampMilis) * 1000
+                        val velocityInchesPerSeconds = deltaPositionInches / deltaTimeSeconds
+                        val allowedVelocityInchesPerSeconds = 1.0
+                        val velocityIsLess = velocityInchesPerSeconds < allowedVelocityInchesPerSeconds
+                        telemetry.addLine("\nbackwardVelocity: $velocityInchesPerSeconds")
+                        telemetry.addLine("velocityIsLess: $velocityIsLess\n")
 
-                        telemetry.addLine("Waiting for depo to get to scoring position ($isDepoAtPosition) and robot to stop moving (${isRobotStopped}), velocity: ${drivetrain.getVelocity(actualWorld, previousActualWorld)})")
+                        telemetry.addLine("Waiting for depo to get to scoring position ($isDepoAtPosition)")
 
-                         nextTargetFromCondition(isDepoAtPosition && isRobotStopped, targetWorld)
+                         nextTargetFromCondition(isDepoAtPosition && hasTimeElapsed(500, targetWorld), targetWorld)
                     }
             ),
             blankAutoState.copy(
@@ -484,7 +490,7 @@ class RobotTwoAuto(
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 val isButtonNotPressed = !actualWorld.actualGamepad1.touchpad
-                                                val waitIsDone = hasTimeElapsed(1500, targetWorld)
+                                                val waitIsDone = hasTimeElapsed(800, targetWorld)
                                                 nextTargetFromCondition(isButtonNotPressed && waitIsDone, targetWorld)
                                             },
                                             getCurrentPositionAndRotationFromAprilTag = true
@@ -697,7 +703,7 @@ class RobotTwoAuto(
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 val isButtonNotPressed = !actualWorld.actualGamepad1.touchpad
-                                                val waitIsDone = hasTimeElapsed(1500, targetWorld)
+                                                val waitIsDone = hasTimeElapsed(800, targetWorld)
                                                 nextTargetFromCondition(isButtonNotPressed && waitIsDone, targetWorld)
                                             },
                                             getCurrentPositionAndRotationFromAprilTag = true
@@ -779,11 +785,11 @@ class RobotTwoAuto(
     }
 
     private fun isRobotAtPosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld, precisionInches: Double = drivetrain.precisionInches, precisionDegrees: Double = drivetrain.precisionDegrees): Boolean {
-        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = precisionInches, precisionDegrees = precisionDegrees)
+        return drivetrain.checkIfRobotIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = precisionInches, precisionDegrees = precisionDegrees)
     }
 
     private fun isRobotAtPrecisePosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld): Boolean {
-        return drivetrain.checkIfDrivetrainIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = 2.0, precisionDegrees = 4.0)
+        return drivetrain.checkIfRobotIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = 2.0, precisionDegrees = 5.0)
     }
 
     private fun isRobotAtAngle(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld): Boolean {
@@ -1018,9 +1024,6 @@ class RobotTwoAuto(
                     val actualWorld = actualWorldWithoutAprilTags.copy(
                             aprilTagReadings = listOf()
                     )
-
-                    val velocity = previousActualWorld?.let { drivetrain.getVelocity(actualWorld, it) }
-                    telemetry.addLine("velocity: $velocity")
 
                     val autoInput = nextAutoInput(
                             actualWorld,

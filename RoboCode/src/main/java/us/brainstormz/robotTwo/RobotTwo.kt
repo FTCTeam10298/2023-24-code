@@ -40,7 +40,7 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
     val lift: Lift = Lift(telemetry)
     val collectorSystem: CollectorManager = CollectorManager(transfer= transfer, extendo= extendo, intake = intake, telemetry= telemetry)
     val depoManager: DepoManager = DepoManager(arm= arm, lift= lift, wrist= wrist, telemetry= telemetry)
-    val handoffManager: HandoffManager = HandoffManager(collectorSystem, depoManager, wrist, arm, lift, transfer, telemetry)
+    val handoffManager: HandoffManager = HandoffManager(collectorSystem, depoManager, extendo, wrist, arm, lift, transfer, telemetry)
     lateinit var drivetrain: Drivetrain
 
     lateinit var stateDumper: StateDumper

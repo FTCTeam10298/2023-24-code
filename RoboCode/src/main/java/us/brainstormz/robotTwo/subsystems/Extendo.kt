@@ -81,7 +81,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override val allowedMovementBeforeResetTicks: Int = 140
     override val allTheWayInPositionTicks: Int = 0
     override val stallCurrentAmps: Double = 4.0
-    override val findResetPower: Double = 0.4
+    override val findResetPower: Double = 0.8
 
     fun calcPowerToMoveExtendo(targetPositionTicks: Int, actualRobot: ActualRobot, previousActualRobot: ActualRobot): Double {
         val actualExtendo = actualRobot.collectorSystemState.extendo

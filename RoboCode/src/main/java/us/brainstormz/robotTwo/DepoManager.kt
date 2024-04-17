@@ -105,12 +105,16 @@ class DepoManager(
         )
     }
 
-    fun checkIfArmIsAtTarget(armTarget: Arm.Positions, actualArmAngleDegrees: Double): Boolean {
-        return when (armTarget) {
-            Arm.Positions.ClearLiftMovement -> actualArmAngleDegrees < Arm.Positions.TooFarIn.angleDegrees && actualArmAngleDegrees >= Arm.Positions.ClearLiftMovement.angleDegrees
-            Arm.Positions.In -> actualArmAngleDegrees >= (Arm.Positions.In.angleDegrees)
-            Arm.Positions.Out -> actualArmAngleDegrees <= (Arm.Positions.OkToDropPixels.angleDegrees + 2)
-            else -> arm.isArmAtAngle(armTarget.angleDegrees, actualArmAngleDegrees)
+    fun checkIfArmIsAtTarget(armTarget: Arm.ArmAngle, actualArmAngleDegrees: Double): Boolean {
+        return if (armTarget is Arm.Positions) {
+            when (armTarget) {
+                Arm.Positions.ClearLiftMovement -> actualArmAngleDegrees < Arm.Positions.TooFarIn.angleDegrees && actualArmAngleDegrees >= Arm.Positions.ClearLiftMovement.angleDegrees
+                Arm.Positions.In -> actualArmAngleDegrees >= (Arm.Positions.In.angleDegrees)
+                Arm.Positions.Out -> actualArmAngleDegrees <= (Arm.Positions.OkToDropPixels.angleDegrees + 2)
+                else -> arm.isArmAtAngle(armTarget.angleDegrees, actualArmAngleDegrees)
+            }
+        } else {
+            armTarget.angleDegrees == actualArmAngleDegrees
         }
     }
 
@@ -170,7 +174,7 @@ class DepoManager(
         telemetry.addLine("wristTarget: ${wristTarget.asMap}")
         telemetry.addLine("finalWristPosition: ${finalDepoTarget.wristPosition.asMap}")
 
-        val armTarget: Arm.Positions = if (bothClawsAreAtFinalTarget) {
+        val armTarget: Arm.ArmAngle = if (bothClawsAreAtFinalTarget) {
             when (liftIsAtFinalRestingPlace) {
                 true -> {
                     finalDepoTarget.armPosition.targetPosition
@@ -308,18 +312,19 @@ class DepoManager(
                 }
 
 
-        val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
-            val liftIsSuperCloseToZero = actualWorld.actualRobot.depoState.lift.currentPositionTicks <= 100
-            val liftIsntAtLimit = !actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated
-
-            if (liftIsSuperCloseToZero && liftIsntAtLimit) {
-                Lift.TargetLift(power = -lift.findResetPower, movementMode = MovementMode.Power)
-            } else {
-                movingArmAndLiftTarget.lift
-            }
-        } else {
-            movingArmAndLiftTarget.lift
-        }
+        val liftWithFindReset = movingArmAndLiftTarget.lift
+//        val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
+//            val liftIsSuperCloseToZero = actualWorld.actualRobot.depoState.lift.currentPositionTicks <= 100
+//            val liftIsntAtLimit = !actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated
+//
+//            if (liftIsSuperCloseToZero && liftIsntAtLimit) {
+//                Lift.TargetLift(power = -lift.findResetPower, movementMode = MovementMode.Power)
+//            } else {
+//                movingArmAndLiftTarget.lift
+//            }
+//        } else {
+//            movingArmAndLiftTarget.lift
+//        }
 
         return movingArmAndLiftTarget.copy(wristPosition = wristPosition, lift = liftWithFindReset)
     }

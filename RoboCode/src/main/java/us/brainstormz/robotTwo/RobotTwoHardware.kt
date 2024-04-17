@@ -252,7 +252,7 @@ open class RobotTwoHardware(private val telemetry:Telemetry, private val opmode:
         perpendicularEncoder = OverflowEncoder(RawEncoder(perpendicularOdomMotor))
 
         //neopixel support
-        neopixelDriver = hwMap["neopixels"] as AdafruitNeopixelSeesaw
+        neopixelDriver = hwMap["neo"] as AdafruitNeopixelSeesaw
         neopixelSystem.initialize(neopixelDriver)
 
         // Drivetrain

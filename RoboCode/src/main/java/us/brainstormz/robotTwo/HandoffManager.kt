@@ -13,6 +13,7 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 class HandoffManager(
         private val collectorManager: CollectorManager,
         private val depoManager: DepoManager,
+        private val extendo: Extendo,
         private val wrist: Wrist,
         private val arm: Arm,
         private val lift: Lift,
@@ -462,44 +463,48 @@ class HandoffManager(
 
         telemetry.addLine("\nhandoffCoordinated: $handoffCoordinated")
 
-//        val liftIsHighEnoughThatTheExtendoCouldInterfereWithGoingDown = actualWorld.actualRobot.depoState.lift.currentPositionTicks > Lift.LiftPositions.ExtendoCouldInterfereWithGoingDown.ticks
+        val driversAreRetractingExtendo = extendoInput == RobotTwoTeleOp.ExtendoInput.RetractManual || extendoInput == RobotTwoTeleOp.ExtendoInput.RetractSetAmount
+        val driversAreExtendoExtendo = extendoInput == RobotTwoTeleOp.ExtendoInput.ExtendManual
+
+        val extendoPassedThroughFromHandoff = if (driversAreRetractingExtendo) {
+            collectorTarget.extendo
+        } else {
+            if (!actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated && depoDriverInput.depo == RobotTwoTeleOp.DepoInput.Down && !driversAreExtendoExtendo) {
+                Extendo.ExtendoTarget(
+                        targetPosition = Extendo.ExtendoPositions.OutFarEnoughToCompletelyClearDepo,
+                        movementMode = DualMovementModeSubsystem.MovementMode.Position,
+                )
+            } else {
+                val realTarget = if (handoffCoordinated.extendo == ExtendoHandoffControlDecision.HandoffPosition) {
+                    Extendo.ExtendoTarget(
+                            targetPosition = Extendo.ExtendoPositions.Min,
+                            movementMode = DualMovementModeSubsystem.MovementMode.Position,
+                    )
+                } else {
+                    collectorTarget.extendo
+                }
+
+                val extendoTargetIsIn = realTarget.targetPosition == Extendo.ExtendoPositions.Min && realTarget.movementMode == DualMovementModeSubsystem.MovementMode.Position
+
+                val extendoIsSuperCloseToZero = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks <= 300
+                val extendoIsntAtLimit = !actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
+
+                if (extendoTargetIsIn && extendoIsSuperCloseToZero && extendoIsntAtLimit) {
+                    Extendo.ExtendoTarget(
+                            power = -extendo.findResetPower,
+                            movementMode = DualMovementModeSubsystem.MovementMode.Power,
+                            targetPosition = Extendo.ExtendoPositions.Min
+                    )
+                } else {
+                    realTarget
+                }
+            }
+        }
+
         val coordinatedCollector = collectorManager.coordinateCollector(
                 timestampMillis = actualWorld.timestampMilis,
                 uncoordinatedTarget = collectorTarget.copy(
-                        extendo = if (!actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated && depoDriverInput.depo == RobotTwoTeleOp.DepoInput.Down) {
-
-                            Extendo.ExtendoTarget(
-                                    targetPosition = Extendo.ExtendoPositions.OutFarEnoughToCompletelyClearDepo,
-                                    movementMode = DualMovementModeSubsystem.MovementMode.Position,
-                            )
-
-                        } else {
-                            val realTarget = if (handoffCoordinated.extendo == ExtendoHandoffControlDecision.HandoffPosition) {
-                                Extendo.ExtendoTarget(
-                                        targetPosition = Extendo.ExtendoPositions.Min,
-                                        movementMode = DualMovementModeSubsystem.MovementMode.Position,
-                                )
-                            } else {
-                                collectorTarget.extendo
-                            }
-
-                            val extendoTargetIsIn = realTarget.targetPosition == Extendo.ExtendoPositions.Min && realTarget.movementMode == DualMovementModeSubsystem.MovementMode.Position
-
-                            val extendoIsSuperCloseToZero = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks <= 300
-                            val extendoIsntAtLimit = !actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated
-
-                            if (extendoTargetIsIn && extendoIsSuperCloseToZero && extendoIsntAtLimit) {
-                                Extendo.ExtendoTarget(
-                                        power = -0.6,
-                                        movementMode = DualMovementModeSubsystem.MovementMode.Power,
-                                        targetPosition = Extendo.ExtendoPositions.Min
-                                )
-                            } else {
-                                realTarget
-                            }
-
-
-                        } ,
+                        extendo = extendoPassedThroughFromHandoff,
                         latches = TransferTarget(
                                 left = LatchTarget(deriveLatchPositionFromPixelHolder(handoffCoordinated.latches.left, collectorTarget.latches.left.target), 0),
                                 right= LatchTarget(deriveLatchPositionFromPixelHolder(handoffCoordinated.latches.right, collectorTarget.latches.right.target), 0)
@@ -515,9 +520,23 @@ class HandoffManager(
                 handoffCompleted = handoffCoordinated.handoffCompleted
         )
 
+        val armShouldHoldCurrentPositionBecauseWereTransferring = !handoffCoordinated.handoffCompleted && actualWorld.actualRobot.collectorSystemState.extendo.limitSwitchIsActivated && handoffCoordinated.depo == DepoHandoffControlDecision.DriverControlledPosition
+        val coordinatedDepoWithArm = coordinatedDepo.copy(
+            armPosition = if (armShouldHoldCurrentPositionBecauseWereTransferring) {
+                Arm.ArmTarget(
+                        targetPosition = Arm.VariableArmTarget(actualWorld.actualRobot.depoState.armAngleDegrees),
+                        movementMode = DualMovementModeSubsystem.MovementMode.Position,
+                        power = 0.0
+                )
+            } else {
+                coordinatedDepo.armPosition
+            }
+
+        )
+
         return CollectorDepositorTarget(
                 collector = coordinatedCollector,
-                depo = coordinatedDepo,
+                depo = coordinatedDepoWithArm,
                 handoffCompleted = handoffCoordinated.handoffCompleted
         )
     }
