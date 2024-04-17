@@ -105,11 +105,12 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         val power = if (isStalling) {
             pidPower.coerceAtLeast(-0.5)
         } else {
-            if (pidPower.absoluteValue <= 0.05) {
-                0.0
-            } else {
-                pidPower
-            }
+            pidPower
+//            if (pidPower.absoluteValue <= 0.05) {
+//                0.0
+//            } else {
+//                pidPower
+//            }
         }
 
         return power
