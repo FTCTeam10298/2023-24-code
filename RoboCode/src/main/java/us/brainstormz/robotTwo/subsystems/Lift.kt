@@ -88,7 +88,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     }
 
 
-    private val acceptablePositionErrorTicks = 70
+    private val acceptablePositionErrorTicks = inchesToTicks(1.0)//70
     fun isLiftAtPosition(targetPositionTicks: Int, actualLiftPositionTicks: Int): Boolean {
         val currentPositionTicks = actualLiftPositionTicks
         val positionErrorTicks = targetPositionTicks - currentPositionTicks
@@ -116,7 +116,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         hardware.liftMotorSlave.power = allowedPower
     }
 
-    override val pid = PID("lift", kp = 0.0035)
+    override val pid = PID("lift", kp = 0.004)
     fun calculatePowerToMoveToPosition(targetPositionTicks: Int, currentPosition: Int): Double {
         val positionError = targetPositionTicks - currentPosition
         val gravityConstant = if (positionError.sign > 0) {
