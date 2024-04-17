@@ -26,7 +26,8 @@ class AprilTagLocalizerRepackaged(
     private val aprilTagLocalizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalizationMath,
             averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
-            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets
+            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets,
+            telemetry = telemetry
     )
 
     fun FieldRelativePointInSpace.toPositionAndRotation() = PositionAndRotation(

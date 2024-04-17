@@ -14,15 +14,20 @@ class AprilTagLocalizationFunctions(val cameraXOffset: Double, val cameraYOffset
     fun calcRobotPositionFromCameraPosition(cameraPositionAndRotation: FieldRelativePointInSpace, cameraOffsetFromRobotCenterYInches: Double): FieldRelativePointInSpace {
 
         val angleForTrigRadians = Math.toRadians(cameraPositionAndRotation.headingDegrees - 90)
+        telemetry.addLine("angleForTrigRadians: $angleForTrigRadians")
 
         val xOffset = cos(angleForTrigRadians) * cameraOffsetFromRobotCenterYInches
         val yOffset = sin(angleForTrigRadians) * cameraOffsetFromRobotCenterYInches
+
+        telemetry.addLine("xOffset: $xOffset")
+        telemetry.addLine("yOffset: $yOffset")
 
         val offsetPosition = FieldRelativePointInSpace(
                 xInches = xOffset + cameraPositionAndRotation.xInches,
                 yInches = yOffset + cameraPositionAndRotation.yInches,
                 headingDegrees = cameraPositionAndRotation.headingDegrees
         )
+        telemetry.addLine("offsetPosition: $offsetPosition")
 
         return offsetPosition
     }
@@ -36,6 +41,10 @@ class AprilTagLocalizationFunctions(val cameraXOffset: Double, val cameraYOffset
 
 
         val positionOfTagOnField = getAprilTagLocation(aprilTagID).posAndRot
+
+        telemetry.addLine("aprilTagInTagCentricCoords: $aprilTagInTagCentricCoords")
+        telemetry.addLine("positionOfTagOnField: $positionOfTagOnField")
+
         val cameraCenterPositionOnField = FieldRelativePointInSpace(
                 xInches = positionOfTagOnField.x + aprilTagInTagCentricCoords.xInches,
                 yInches = positionOfTagOnField.y - aprilTagInTagCentricCoords.yInches,

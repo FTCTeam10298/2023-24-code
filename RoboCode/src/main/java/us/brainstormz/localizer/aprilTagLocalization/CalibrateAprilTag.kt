@@ -188,7 +188,9 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
     val localizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
             averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
-            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets)
+            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets,
+            telemetry = telemetry
+    )
 
     var firstPointCalculatedPosition = MutablePointInXInchesAndYInches(
             xInches = 0.0,

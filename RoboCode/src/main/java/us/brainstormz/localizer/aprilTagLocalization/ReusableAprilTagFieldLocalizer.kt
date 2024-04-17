@@ -3,6 +3,7 @@ package us.brainstormz.localizer.aprilTagLocalization
 import CameraRelativePointInSpace
 import FieldRelativePointInSpace
 import TagRelativePointInSpace
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import returnCamCentricCoordsInTagCentricCoordsPartDeux
 import kotlin.math.abs
@@ -14,9 +15,12 @@ data class AverageAprilTagBackboardOffset (
         val hDegrees: Double
 )
 
-class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLocalizationFunctions,
-                                     private val averageErrorRedSide: AverageAprilTagBackboardOffset,
-                                     private val averageErrorBlueSide: AverageAprilTagBackboardOffset){
+class ReusableAprilTagFieldLocalizer(
+        private val aprilTagLocalization:AprilTagLocalizationFunctions,
+        private val averageErrorRedSide: AverageAprilTagBackboardOffset,
+        private val averageErrorBlueSide: AverageAprilTagBackboardOffset,
+        private val telemetry: Telemetry
+){
 
     fun getFieldPositionsForTag(detection: AprilTagDetection):FieldRelativePointInSpace {
         return returnAprilTagInFieldCentricCoords(detection).FieldRelativePointInSpace
@@ -73,6 +77,7 @@ class ReusableAprilTagFieldLocalizer(private val aprilTagLocalization:AprilTagLo
         }
 
         val thisTagInFieldCentricCoords = aprilTagLocalization.getCameraPositionOnField(aprilTagID = aprilTag.id, thisTagInTagCentricCoords, alliancePositionOfTag)
+
 
         val resultPositionInJamesFieldCoords = returnFieldCentricCoordsInJamesFieldCoords(thisTagInFieldCentricCoords, alliancePositionOfTag)
 

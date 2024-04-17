@@ -68,7 +68,9 @@ class TestAprilTagConfiguration: LinearOpMode() {
     val localizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
             averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
-            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets)
+            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets,
+            telemetry = telemetry
+    )
 
     private val aprilTagThings = listOf(
 //            Size(2304, 1536)
