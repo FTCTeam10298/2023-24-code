@@ -9,6 +9,7 @@ class Intake: Subsystem {
         Off(0.0),
         Intake(1.0),
         Eject(-1.0),
+        AutoEject(-1.0),
         EjectDraggedPixelPower(-0.1)
     }
 

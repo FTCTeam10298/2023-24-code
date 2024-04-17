@@ -623,21 +623,32 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         val wereBothPixelsInPreviously = previousTransferLeftSensorState && previousTransferRightSensorState
 
         val theRobotJustCollectedTwoPixels = areBothPixelsIn && !wereBothPixelsInPreviously
-
+        val theRobotJustLostAPixel = !areBothPixelsIn && wereBothPixelsInPreviously
 
         /**Intake Noodles*/
-        val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis?:actualWorld.timestampMilis)
+        val timestampOfBothPixelsLoadedIntoTransferMillis = if (theRobotJustCollectedTwoPixels) {
+            actualWorld.timestampMilis
+        } else {
+            previousTargetState.targetRobot.collectorTarget.timestampOfBothPixelsLoadedIntoTransferMillis
+        }
+
+        val timeSinceBothPixelsLoadedIntoTransferMillis: Long = actualWorld.timestampMilis - (timestampOfBothPixelsLoadedIntoTransferMillis?:actualWorld.timestampMilis)
         val waitBeforeEjectingMillis = 300
-        val timeToStartEjection = theRobotJustCollectedTwoPixels && (timeSincePixelsTransferredMillis > waitBeforeEjectingMillis)
+        val timeToStartEjection:Boolean = areBothPixelsIn && timeSinceBothPixelsLoadedIntoTransferMillis > waitBeforeEjectingMillis && (previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.Intake)
+
+        if (timeToStartEjection)
+            println("timeSinceBothPixelsLoadedIntoTransferMillis: ${timeSinceBothPixelsLoadedIntoTransferMillis}")
 
         val timeSinceEjectionStartedMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMillis?:actualWorld.timestampMilis)
         val ejectionTimeMillis = 1000
         val timeToStopEjecting = timeSinceEjectionStartedMillis > ejectionTimeMillis
 
-        val wasPreviouslyEjecting = previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.Eject
-        val stopAutomaticEjection = timeToStopEjecting && wasPreviouslyEjecting// && doHandoffSequence
+        val wasPreviouslyAutoEjecting = previousTargetState.targetRobot.collectorTarget.intakeNoodles == Intake.CollectorPowers.AutoEject
+        val stopAutomaticEjection = timeToStopEjecting && wasPreviouslyAutoEjecting// && doHandoffSequence
         val intakeNoodleTarget = if (timeToStartEjection) {
-            Intake.CollectorPowers.Eject
+            Intake.CollectorPowers.AutoEject
+        } else if (theRobotJustLostAPixel && wasPreviouslyAutoEjecting) {
+            Intake.CollectorPowers.Intake
         } else if (stopAutomaticEjection) {
             Intake.CollectorPowers.Off
         } else {
@@ -648,19 +659,11 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                 CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
             }
         }
+
         val timeOfEjectionStartMillis = if (timeToStartEjection) {
             actualWorld.timestampMilis
-        } else if (stopAutomaticEjection) {
-            null
         } else {
             previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMillis
-        }
-        val timeOfTransferredMillis = if (theRobotJustCollectedTwoPixels) {
-            actualWorld.timestampMilis
-        } else if (stopAutomaticEjection) {
-            null
-        } else {
-            previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis
         }
 
         /**Dropdown*/
@@ -758,7 +761,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                             },
                             dropDown = dropdownTarget,
                             timeOfEjectionStartMillis = 0,
-                            timeOfTransferredMillis = 0,
+                            timestampOfBothPixelsLoadedIntoTransferMillis = 0,
                             transferSensorState = transferState,
                             latches = Transfer.TransferTarget(
                                     left = Transfer.LatchTarget(
@@ -850,7 +853,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                     intakeNoodles = intakeNoodleTarget,
                     dropDown = dropdownTarget,
                     timeOfEjectionStartMillis = timeOfEjectionStartMillis,
-                    timeOfTransferredMillis = timeOfTransferredMillis,
+                    timestampOfBothPixelsLoadedIntoTransferMillis = timestampOfBothPixelsLoadedIntoTransferMillis,
                     transferSensorState = transferState,
                     latches = Transfer.TransferTarget(
                             left = getLatchTargetFromDriverInput(driverInput.leftLatch),
@@ -1075,7 +1078,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                     intakeNoodles = Intake.CollectorPowers.Off,
                     dropDown = Dropdown.DropdownTarget(Dropdown.DropdownPresets.Init),
                     timeOfEjectionStartMillis = 0,
-                    timeOfTransferredMillis = 0,
+                    timestampOfBothPixelsLoadedIntoTransferMillis = 0,
                     transferSensorState = Transfer.TransferSensorState(
                         left = initSensorState,
                         right = initSensorState

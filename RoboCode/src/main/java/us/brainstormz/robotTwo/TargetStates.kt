@@ -27,7 +27,7 @@ data class DepoTarget(
 data class CollectorTarget(
         val extendo: Extendo.ExtendoTarget,
         val timeOfEjectionStartMillis: Long?,
-        val timeOfTransferredMillis: Long?,
+        val timestampOfBothPixelsLoadedIntoTransferMillis: Long?,
         val intakeNoodles: Intake.CollectorPowers,
         val dropDown: Dropdown.DropdownTarget,
         val transferSensorState: Transfer.TransferSensorState,

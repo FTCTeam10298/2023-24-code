@@ -79,7 +79,7 @@ class RobotTwoAuto(
 
 
         /**Collector*/
-        val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetWorld.targetRobot.collectorTarget.timeOfTransferredMillis?:actualWorld.timestampMilis)
+        val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetWorld.targetRobot.collectorTarget.timestampOfBothPixelsLoadedIntoTransferMillis?:actualWorld.timestampMilis)
         val waitBeforeEjectingMillis = 200
         val timeToStartEjection = theRobotJustCollectedTwoPixels && (timeSincePixelsTransferredMillis > waitBeforeEjectingMillis)
 
@@ -103,7 +103,7 @@ class RobotTwoAuto(
         } else if (stopAutomaticEjection) {
             null
         } else {
-            previousTargetWorld.targetRobot.collectorTarget.timeOfTransferredMillis
+            previousTargetWorld.targetRobot.collectorTarget.timestampOfBothPixelsLoadedIntoTransferMillis
         }
 
 
@@ -143,7 +143,7 @@ class RobotTwoAuto(
                 intakeNoodles = intakeNoodleTarget,
                 dropDown = Dropdown.DropdownTarget(dropdownTarget),
                 timeOfEjectionStartMillis = timeOfEjectionStartMillis,
-                timeOfTransferredMillis = timeOfTransferredMillis,
+                timestampOfBothPixelsLoadedIntoTransferMillis = timeOfTransferredMillis,
                 transferSensorState = transferState,
                 latches = Transfer.TransferTarget(initLatchTarget, initLatchTarget),
                 extendo = Extendo.ExtendoTarget(autoInput.extendoInput),
