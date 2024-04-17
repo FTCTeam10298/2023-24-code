@@ -26,7 +26,7 @@ data class DepoTarget(
 )
 data class CollectorTarget(
         val extendo: Extendo.ExtendoTarget,
-        val timeOfEjectionStartMilis: Long?,
+        val timeOfEjectionStartMillis: Long?,
         val timeOfTransferredMillis: Long?,
         val intakeNoodles: Intake.CollectorPowers,
         val dropDown: Dropdown.DropdownTarget,

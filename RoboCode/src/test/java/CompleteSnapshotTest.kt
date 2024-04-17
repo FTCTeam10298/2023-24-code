@@ -67,7 +67,7 @@ class CompleteSnapshotTest {
                         collectorTarget = CollectorTarget(
                                 intakeNoodles = Intake.CollectorPowers.Off,
                                 dropDown= Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up),
-                                timeOfEjectionStartMilis = 0,
+                                timeOfEjectionStartMillis = 0,
                                 timeOfTransferredMillis = 0,
                                 transferSensorState = Transfer.TransferSensorState(
                                         left = RobotTwoTeleOp.initSensorState,
