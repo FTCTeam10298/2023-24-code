@@ -22,7 +22,6 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.robotTwo.subsystems.Wrist.WristTargets
 import us.brainstormz.utils.Utils.sqrKeepSign
 import us.brainstormz.utils.measured
-import kotlin.math.absoluteValue
 
 class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
@@ -95,7 +94,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
     }
 
     enum class DropdownInput {
-        Five,
+        One,
         Manual,
         NoInput
     }
@@ -242,72 +241,77 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         val liftStickInput = -gamepad2.right_stick_y.toDouble()
         val armOverrideStickValue = gamepad2.right_stick_x.toDouble()
 
-        val depoInput = if (gamepad2ControlMode == GamepadControlMode.Manual) {
-            telemetry.addLine("gamepad2RightStickMode: $gamepad2ControlMode")
-
-            val isLiftControlActive = liftStickInput.absoluteValue > 0.2
-
-            val liftControlMode =
-                when (previousTargetState.targetRobot.depoTarget.lift.targetPosition) {
-//                Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
-                    Lift.LiftPositions.SetLine1 -> LiftControlMode.Adjust
-                    Lift.LiftPositions.SetLine2 -> LiftControlMode.Adjust
-                    Lift.LiftPositions.SetLine3 -> LiftControlMode.Adjust
-                    Lift.LiftPositions.Preset1 -> LiftControlMode.Adjust
-                    Lift.LiftPositions.Preset2 -> LiftControlMode.Adjust
-//                    Lift.LiftPositions.Preset3 -> LiftControlMode.Adjust
-                    else -> {
-                        val isEnumTarget =
-                            Lift.LiftPositions.entries.contains(previousTargetState.targetRobot.depoTarget.lift.targetPosition)
-                        if (!isEnumTarget) {
-                            LiftControlMode.Adjust
-                        } else {
-                            LiftControlMode.Override
-                        }
-                    }
-                }
-            telemetry.addLine("liftControlMode: $liftControlMode")
-            val isLiftManualOverrideActive =
-                isLiftControlActive && liftControlMode == LiftControlMode.Override
-            val dpadAdjustIsActive =
-                isLiftControlActive && liftControlMode == LiftControlMode.Adjust
-
-            val armManualOverrideActivationThreshold = when {
-                isLiftManualOverrideActive -> {
-                    0.2
-                }
-                dpadAdjustIsActive -> {
-                    0.4
-                }
-                else -> {
-                    0.2
-                }
-            }
-            val isArmManualOverrideActive =
-                armOverrideStickValue.absoluteValue >= armManualOverrideActivationThreshold
-
-            val driverInputIsManual = isLiftManualOverrideActive || isArmManualOverrideActive
-            val depoWasManualLastLoop =
-                previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual
-
-
-            if ((driverInputIsManual || (depoWasManualLastLoop && dpadInput == DepoInput.NoInput))) {
-                DepoInput.Manual
-            } else if (dpadAdjustIsActive || (previousTargetState.driverInput.depo == DepoInput.ScoringHeightAdjust && dpadInput == DepoInput.NoInput)) {
-                DepoInput.ScoringHeightAdjust
-            } else {
-                dpadInput
-            }
-        } else {
-            if (dpadInput == DepoInput.Manual) {
+        //fix tobeys lift controls next
+        val depoInput = if (dpadInput == DepoInput.Manual) {
                 DepoInput.NoInput
             } else {
                 dpadInput
             }
-        }
+//        val depoInput = if (gamepad2ControlMode == GamepadControlMode.Manual) {
+//            telemetry.addLine("gamepad2RightStickMode: $gamepad2ControlMode")
+//
+//            val isLiftControlActive = liftStickInput.absoluteValue > 0.2
+//
+//            val liftControlMode =
+//                when (previousTargetState.targetRobot.depoTarget.lift.targetPosition) {
+////                Lift.LiftPositions.BackboardBottomRow -> LiftControlMode.Adjust
+//                    Lift.LiftPositions.SetLine1 -> LiftControlMode.Adjust
+//                    Lift.LiftPositions.SetLine2 -> LiftControlMode.Adjust
+//                    Lift.LiftPositions.SetLine3 -> LiftControlMode.Adjust
+//                    Lift.LiftPositions.Preset1 -> LiftControlMode.Adjust
+//                    Lift.LiftPositions.Preset2 -> LiftControlMode.Adjust
+////                    Lift.LiftPositions.Preset3 -> LiftControlMode.Adjust
+//                    else -> {
+//                        val isEnumTarget =
+//                            Lift.LiftPositions.entries.contains(previousTargetState.targetRobot.depoTarget.lift.targetPosition)
+//                        if (!isEnumTarget) {
+//                            LiftControlMode.Adjust
+//                        } else {
+//                            LiftControlMode.Override
+//                        }
+//                    }
+//                }
+//            telemetry.addLine("liftControlMode: $liftControlMode")
+//            val isLiftManualOverrideActive =
+//                isLiftControlActive && liftControlMode == LiftControlMode.Override
+//            val dpadAdjustIsActive =
+//                isLiftControlActive && liftControlMode == LiftControlMode.Adjust
+//
+//            val armManualOverrideActivationThreshold = when {
+//                isLiftManualOverrideActive -> {
+//                    0.2
+//                }
+//                dpadAdjustIsActive -> {
+//                    0.4
+//                }
+//                else -> {
+//                    0.2
+//                }
+//            }
+//            val isArmManualOverrideActive =
+//                armOverrideStickValue.absoluteValue >= armManualOverrideActivationThreshold
+//
+//            val driverInputIsManual = isLiftManualOverrideActive || isArmManualOverrideActive
+//            val depoWasManualLastLoop =
+//                previousTargetState.targetRobot.depoTarget.targetType == DepoTargetType.Manual
+//
+//
+//            if ((driverInputIsManual || (depoWasManualLastLoop && dpadInput == DepoInput.NoInput))) {
+//                DepoInput.Manual
+//            } else if (dpadAdjustIsActive || (previousTargetState.driverInput.depo == DepoInput.ScoringHeightAdjust && dpadInput == DepoInput.NoInput)) {
+//                DepoInput.ScoringHeightAdjust
+//            } else {
+//                dpadInput
+//            }
+//        } else {
+//            if (dpadInput == DepoInput.Manual) {
+//                DepoInput.NoInput
+//            } else {
+//                dpadInput
+//            }
+//        }
 
-
-        val armOverridePower = if (depoInput == DepoInput.Manual) {
+        val armOverridePower = if (gamepad2ControlMode == GamepadControlMode.Manual) {
             armOverrideStickValue
         } else {
             0.0
@@ -451,7 +455,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                 DropdownInput.Manual
             }
             gamepad2.left_trigger != 0.0f -> {
-                DropdownInput.Five
+                DropdownInput.One
             }
             else -> {
                 DropdownInput.NoInput
@@ -669,13 +673,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         /**Dropdown*/
         val dropdownTarget = when (driverInput.dropdown) {
-            DropdownInput.Five -> {
-                Dropdown.DropdownTarget(Dropdown.DropdownPresets.FivePixels)
+            DropdownInput.One -> {
+                Dropdown.DropdownTarget(Dropdown.DropdownPresets.OnePixel)
             }
             DropdownInput.NoInput -> {
 //                if (previousTargetState.targetRobot.collectorTarget.dropDown)
                 if (intakeNoodleTarget == Intake.CollectorPowers.Intake) {
-                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.OnePixel)
+                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.TwoPixels)
                 } else {
                     Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up)
                 }
