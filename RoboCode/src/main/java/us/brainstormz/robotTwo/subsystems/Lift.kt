@@ -32,10 +32,10 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         AutoAbovePartnerPlacement((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         ClearForArmToMove(inchesToTicks(9.5)),
         TargetClearForArmToMove(ClearForArmToMove.ticks + inchesToTicks(2.0)),
-        Preset1(inchesToTicks(1.0)),
-        Preset2(inchesToTicks(4.0)),
+        Preset1(inchesToTicks(5.0)),
+        Preset2(inchesToTicks(7.5)),
 
-        SetLine1(inchesToTicks(6.0)),
+        SetLine1(inchesToTicks(10.0)),
         SetLine2(inchesToTicks(13.5)),
         SetLine3(inchesToTicks(22.0)),
         Max(inchesToTicks(28.5))
@@ -116,7 +116,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         hardware.liftMotorSlave.power = allowedPower
     }
 
-    override val pid = PID("lift", kp = 0.004)
+    override val pid = PID("lift", kp = 0.0045)
     fun calculatePowerToMoveToPosition(targetPositionTicks: Int, currentPosition: Int): Double {
         val positionError = targetPositionTicks - currentPosition
         val gravityConstant = if (positionError.sign > 0) {
