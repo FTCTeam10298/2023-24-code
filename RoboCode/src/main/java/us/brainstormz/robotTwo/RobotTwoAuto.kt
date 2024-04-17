@@ -269,7 +269,7 @@ class RobotTwoAuto(
                     depoInput = DepoInput.YellowPlacement,
                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                         telemetry.addLine("Waiting for robot to get to board position")
-                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                        nextTargetFromCondition(isRobotAtXPosition(actualWorld, targetWorld, allowedErrorXInches = 0.5), targetWorld)
                     }
             ),
             blankAutoState.copy(
@@ -293,7 +293,7 @@ class RobotTwoAuto(
 
                         telemetry.addLine("Waiting for depo to get to scoring position ($isDepoAtPosition)")
 
-                         nextTargetFromCondition(isDepoAtPosition && hasTimeElapsed(500, targetWorld), targetWorld)
+                        nextTargetFromCondition(isDepoAtPosition && hasTimeElapsed(500, targetWorld), targetWorld)
                     }
             ),
             blankAutoState.copy(
@@ -490,7 +490,7 @@ class RobotTwoAuto(
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 val isButtonNotPressed = !actualWorld.actualGamepad1.touchpad
-                                                val waitIsDone = hasTimeElapsed(5000, targetWorld)
+                                                val waitIsDone = hasTimeElapsed(1000, targetWorld)
                                                 nextTargetFromCondition(isButtonNotPressed && waitIsDone, targetWorld)
                                             },
                                             getCurrentPositionAndRotationFromAprilTag = true
@@ -703,7 +703,7 @@ class RobotTwoAuto(
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 val isButtonNotPressed = !actualWorld.actualGamepad1.touchpad
-                                                val waitIsDone = hasTimeElapsed(5000, targetWorld)
+                                                val waitIsDone = hasTimeElapsed(1000, targetWorld)
                                                 nextTargetFromCondition(isButtonNotPressed && waitIsDone, targetWorld)
                                             },
                                             getCurrentPositionAndRotationFromAprilTag = true
@@ -787,13 +787,12 @@ class RobotTwoAuto(
     private fun isRobotAtPosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld, precisionInches: Double = drivetrain.precisionInches, precisionDegrees: Double = drivetrain.precisionDegrees): Boolean {
         return drivetrain.checkIfRobotIsAtPosition(targetWorld.targetRobot.drivetrainTarget.targetPosition, previousWorld = previousActualState, actualWorld = actualState, precisionInches = precisionInches, precisionDegrees = precisionDegrees)
     }
-    private fun isRobotAtXPosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld): Boolean {
-        return drivetrain.checkIfRobotIsAtPosition(
-                targetWorld.targetRobot.drivetrainTarget.targetPosition,
-                previousWorld = previousActualState,
-                actualWorld = actualState,
-                precisionInches = 3.0,
-                precisionDegrees = 5.0)
+
+    private fun isRobotAtXPosition(actualState: ActualWorld, targetXInches: Double, allowedErrorXInches: Double = 2.0): Boolean {
+        return (actualState.actualRobot.positionAndRotation.x - targetXInches).absoluteValue <= allowedErrorXInches
+    }
+    private fun isRobotAtXPosition(actualState: ActualWorld, targetWorld: TargetWorld, allowedErrorXInches: Double = 2.0): Boolean {
+        return (actualState.actualRobot.positionAndRotation.x - targetWorld.targetRobot.drivetrainTarget.targetPosition.x).absoluteValue <= allowedErrorXInches
     }
 
     private fun isRobotAtPrecisePosition(actualState: ActualWorld, previousActualState: ActualWorld, targetWorld: TargetWorld): Boolean {

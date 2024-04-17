@@ -531,7 +531,6 @@ class HandoffManager(
             } else {
                 coordinatedDepo.armPosition
             }
-
         )
 
         return CollectorDepositorTarget(
