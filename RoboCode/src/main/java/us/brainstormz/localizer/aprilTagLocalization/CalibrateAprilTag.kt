@@ -7,10 +7,7 @@ import us.brainstormz.localizer.PointInXInchesAndYInches
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagFieldConfigurations
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagLocalizationFunctions
 import us.brainstormz.localizer.aprilTagLocalization.AprilTagPipelineForEachCamera
-import us.brainstormz.localizer.aprilTagLocalization.FourPoints
 import us.brainstormz.localizer.aprilTagLocalization.ReusableAprilTagFieldLocalizer
-import us.brainstormz.localizer.aprilTagLocalization.calculateAprilTagOffsets
-import us.brainstormz.localizer.aprilTagLocalization.findErrorOfFourPoints
 
 /*
 LIST OF TESTS
@@ -151,8 +148,65 @@ LIST OF TESTS
 //
 //}
 
-//for calibration, set this to
-val currentFieldConfiguration = AprilTagFieldConfigurations.garageFieldAtHome
+data class FourPoints(
+        val first: PointInXInchesAndYInches,
+        val second: PointInXInchesAndYInches,
+        val third: PointInXInchesAndYInches,
+        val fourth: PointInXInchesAndYInches
+)
+
+//fun findErrorOfFourPoints(allianceSide: ReusableAprilTagFieldLocalizer.AllianceSide,
+//                          fourPointsPredictedMeasurement: FourPoints): FourPoints {
+//    val predeterminedFieldPoints = PredeterminedFieldPoints()
+//
+//    val predeterminedFieldPointsRedOrBlue = when(allianceSide) {
+//        ReusableAprilTagFieldLocalizer.AllianceSide.Blue -> predeterminedFieldPoints.Blue
+//        ReusableAprilTagFieldLocalizer.AllianceSide.Red -> predeterminedFieldPoints.Red
+//    }
+//
+//    val realWorldMeasurementOfFirst = predeterminedFieldPointsRedOrBlue.first
+//    val realWorldMeasurementOfSecond = predeterminedFieldPointsRedOrBlue.second
+//    val realWorldMeasurementOfThird = predeterminedFieldPointsRedOrBlue.third
+//    val realWorldMeasurementOfFourth = predeterminedFieldPointsRedOrBlue.fourth
+//
+//    val predictedMeasurementOfFirst = fourPointsPredictedMeasurement.first
+//    val predictedMeasurementOfSecond = fourPointsPredictedMeasurement.second
+//    val predictedMeasurementOfThird = fourPointsPredictedMeasurement.third
+//    val predictedMeasurementOfFourth = fourPointsPredictedMeasurement.fourth
+//
+//    val differenceBetweenActualMeasurementAndPredictionFirst = PointInXInchesAndYInches(
+//           xInches = realWorldMeasurementOfFirst.xInches - abs(predictedMeasurementOfFirst.xInches),
+//           yInches = realWorldMeasurementOfFirst.xInches - abs(predictedMeasurementOfFirst.xInches)
+//
+//    )
+//
+//    val differenceBetweenActualMeasurementAndPredictionSecond = PointInXInchesAndYInches(
+//            xInches = realWorldMeasurementOfSecond.xInches - abs(predictedMeasurementOfSecond.xInches),
+//            yInches = realWorldMeasurementOfSecond.xInches - abs(predictedMeasurementOfSecond.xInches)
+//    )
+//
+//    val differenceBetweenActualMeasurementAndPredictionThird = PointInXInchesAndYInches(
+//            xInches = realWorldMeasurementOfThird.xInches - abs(predictedMeasurementOfThird.xInches),
+//            yInches = realWorldMeasurementOfThird.xInches - abs(predictedMeasurementOfThird.xInches)
+//    )
+//
+//    val differenceBetweenActualMeasurementAndPredictionFourth = PointInXInchesAndYInches(
+//            xInches = realWorldMeasurementOfFourth.xInches - abs(predictedMeasurementOfFourth.xInches),
+//            yInches = realWorldMeasurementOfFourth.xInches - abs(predictedMeasurementOfFourth.xInches)
+//    )
+//
+//
+//
+//    return(FourPoints(
+//            first = differenceBetweenActualMeasurementAndPredictionFirst,
+//            second = differenceBetweenActualMeasurementAndPredictionSecond,
+//            third = differenceBetweenActualMeasurementAndPredictionThird,
+//            fourth = differenceBetweenActualMeasurementAndPredictionFourth
+//    ))
+//
+//}
+
+val currentFieldConfiguration = AprilTagFieldConfigurations.fieldConfigurationNoOffsets
 
 @TeleOp(name = "AprilTag Calibration System", group = "AprilTag")
 class AprilTagOmeter_Calibration: LinearOpMode() {
@@ -183,14 +237,10 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
     //
     //x is always
 
-
-
     val localizer = ReusableAprilTagFieldLocalizer(
             aprilTagLocalization = aprilTagLocalization,
             averageErrorRedSide = currentFieldConfiguration.RedAllianceOffsets,
-            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets,
-            telemetry = telemetry
-    )
+            averageErrorBlueSide =  currentFieldConfiguration.BlueAllianceOffsets)
 
     var firstPointCalculatedPosition = MutablePointInXInchesAndYInches(
             xInches = 0.0,
@@ -215,18 +265,6 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
     var whichWorldsFieldAreWeOn: String = "Left"
     var allianceSideOfBoard: String = "Red"
 
-    enum class MenuLevel {
-        GetData,
-        ShowOffsets
-    }
-
-    var currentMenuLevel = MenuLevel.ShowOffsets
-
-
-    lateinit var aprilTagDeltasOld: FourPoints
-    lateinit var aprilTagDeltasNew: FourPoints
-    lateinit var aprilTagOffsets: PointInXInchesAndYInches
-
 
 
 
@@ -241,13 +279,6 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
     )
 
 
-    data class TrackedControllerState (
-        val rightBumperPressed:Boolean,
-        val leftBumperPressed:Boolean,
-            val dPadLeftPressed: Boolean
-    )
-    var previousControllerState:TrackedControllerState? = null
-
     override fun runOpMode() {
 
         aprilTagThings.forEach {
@@ -258,56 +289,98 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 
 //        hardware.init(hardwareMap)
 
+        data class RetainedState(
+                val aPressed: Boolean,
+                val bPressed: Boolean,
+                val yPressed: Boolean,
+                val xPressed: Boolean
+        )
+
         telemetry.update()
 
 //        var previousAState = RetainedState(aPressed = gamepad1.a)
 
-//        var rightSecondaryPressed = false
-        val leftSecondaryPressed = false
+        var rightSecondaryPressed = false
+        var leftSecondaryPressed = false
 
-        val firstPointButtonPressed = false
-        val secondPointButtonPressed = false
-        val fourthPointButtonPressed = false
-        val thirdPointButtonPressed = false
-        val dPadLeftPressed = false
+        var firstPointButtonPressed = false
+        var secondPointButtonPressed = false
+        var fourthPointButtonPressed = false
+        var thirdPointButtonPressed = false
 
         waitForStart()
 
         while(opModeIsActive()) {
 //            val state = RetainedState(aPressed = gamepad1.a)
 
-            val currentControllerState = TrackedControllerState(
-                    rightBumperPressed = gamepad1.right_bumper,
-                    leftBumperPressed = gamepad1.left_bumper,
-                    dPadLeftPressed = gamepad1.dpad_left
-            )
-
             aprilTagThings.forEach { it.resumeStreaming() }
 
             val currentDetections = getListOfCurrentAprilTagsSeen()
 
-            previousControllerState = currentControllerState
+            if ((gamepad1.dpad_down || gamepad1.triangle) && !firstPointButtonPressed) {
+                recalculateFirstPoint(currentDetections = currentDetections)
 
-             listenForWindowChange(previousControllerState)
-
-            when (currentMenuLevel) {
-                MenuLevel.GetData ->
-                 captureBackboardData (
-                    previousControllerState,
-                    currentControllerState,
-                    firstPointButtonPressed,
-                    currentDetections,
-                    secondPointButtonPressed,
-                    thirdPointButtonPressed,
-                    fourthPointButtonPressed,
-                    leftSecondaryPressed,
-                 )
-
-                MenuLevel.ShowOffsets -> findOffsetsAndShowResultingReductionOfError()
-//                    findOffsetsAndShowResultingReductionOfError(null!!)
+                firstPointButtonPressed = true
+            }
+            if (firstPointButtonPressed == true && !(gamepad1.dpad_down || gamepad1.triangle) ) {
+                firstPointButtonPressed = false
             }
 
-            showData(currentMenuLevel)
+            if ((gamepad1.dpad_right || gamepad1.circle) && !secondPointButtonPressed) {
+                recalculateSecondPoint(currentDetections = currentDetections)
+
+                secondPointButtonPressed = true
+            }
+            if (secondPointButtonPressed == true && !(gamepad1.dpad_right || gamepad1.circle)) {
+                secondPointButtonPressed = false
+            }
+            if ((gamepad1.dpad_up || gamepad1.cross) && !thirdPointButtonPressed) {
+                recalculateThirdPoint(currentDetections = currentDetections)
+
+                thirdPointButtonPressed = true
+            }
+            if (thirdPointButtonPressed == true && !((gamepad1.dpad_up || gamepad1.cross))) {
+                thirdPointButtonPressed = false
+            }
+            //gamepad1.cross controls triangle and cross values
+
+            if ((gamepad1.dpad_left || gamepad1.square) && !fourthPointButtonPressed) {
+                recalculateFourthPoint(currentDetections = currentDetections)
+
+                fourthPointButtonPressed = true
+            }
+            if (fourthPointButtonPressed == true && !(gamepad1.dpad_left || gamepad1.square)) {
+                fourthPointButtonPressed = false
+            }
+
+            if (gamepad1.right_bumper && !rightSecondaryPressed == true) {
+                toggleFieldSide()
+                zeroAllValues()
+
+                rightSecondaryPressed = true
+            }
+            if (rightSecondaryPressed == true && !gamepad1.right_bumper) {
+                rightSecondaryPressed = false
+            }
+
+            if (gamepad1.left_bumper && !leftSecondaryPressed == true) {
+                toggleBackBoardAlliance()
+                zeroAllValues()
+
+                leftSecondaryPressed = true
+            }
+            if (leftSecondaryPressed == true && !gamepad1.left_bumper) {
+                leftSecondaryPressed = false
+            }
+
+
+
+
+
+
+
+
+            showData()
             telemetry.update()
 
 //            if (aWasPressed) {
@@ -322,133 +395,20 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //            sleep(20)
 
 
-            previousControllerState = currentControllerState
+
+
         }
         if(isStopRequested) {
             aprilTagThings.forEach { it.close() }
             sleep(1000)
-
-            //TODO: Full stack check. Delete calibration, find new calibration, implement it, test it.
-
+            //TODO: STOP CRASHING THE BOT EVERY RUN...
             //REBOOT THE BOT IF THE CAMERA BLUESCREENS and is on Hardware Config.
             //Also, we can just leave this code running to get data.
         }
 
     }
 
-    private fun listenForWindowChange(previousControllerState: TrackedControllerState?) {
-
-        val currentControllerStateWindowChange = TrackedControllerState(
-                rightBumperPressed = gamepad1.right_bumper,
-                leftBumperPressed = gamepad1.left_bumper,
-                dPadLeftPressed = gamepad1.dpad_left
-        )
-
-        if ((gamepad1.dpad_left) && !(currentControllerStateWindowChange.rightBumperPressed  && (previousControllerState==null || previousControllerState.rightBumperPressed ==false))) {
-            currentMenuLevel = when (currentMenuLevel) {
-                MenuLevel.GetData -> MenuLevel.ShowOffsets
-                MenuLevel.ShowOffsets -> MenuLevel.GetData
-            }
-        }
-    }
-
-    private fun captureBackboardData(previousControllerState:TrackedControllerState?, currentControllerState:TrackedControllerState, firstPointButtonPressed: Boolean, currentDetections: List<AprilTagDetection>, secondPointButtonPressed: Boolean, thirdPointButtonPressed: Boolean, fourthPointButtonPressed: Boolean, leftSecondaryPressed: Boolean) {
-        var firstPointButtonPressed1 = firstPointButtonPressed
-        var secondPointButtonPressed1 = secondPointButtonPressed
-        var thirdPointButtonPressed1 = thirdPointButtonPressed
-        var fourthPointButtonPressed1 = fourthPointButtonPressed
-//        var rightSecondaryPressed1 = rightSecondaryPressed
-        var leftSecondaryPressed1 = leftSecondaryPressed
-
-        if ((gamepad1.triangle) && !firstPointButtonPressed1) {
-            recalculateFirstPoint(currentDetections = currentDetections)
-
-            firstPointButtonPressed1 = true
-        }
-        if (firstPointButtonPressed1 == true && !(gamepad1.triangle)) {
-            firstPointButtonPressed1 = false
-        }
-
-        if ((gamepad1.circle) && !secondPointButtonPressed1) {
-            recalculateSecondPoint(currentDetections = currentDetections)
-
-            secondPointButtonPressed1 = true
-        }
-        if (secondPointButtonPressed1 == true && !(gamepad1.circle)) {
-            secondPointButtonPressed1 = false
-        }
-        if ((gamepad1.cross) && !thirdPointButtonPressed1) {
-            recalculateThirdPoint(currentDetections = currentDetections)
-
-            thirdPointButtonPressed1 = true
-        }
-        if (thirdPointButtonPressed1 == true && !(gamepad1.cross)) {
-            thirdPointButtonPressed1 = false
-        }
-        //gamepad1.cross controls triangle and cross values
-
-        if ((gamepad1.square) && !fourthPointButtonPressed1) {
-            recalculateFourthPoint(currentDetections = currentDetections)
-
-            fourthPointButtonPressed1 = true
-        }
-        if (fourthPointButtonPressed1 == true && !(gamepad1.square)) {
-            fourthPointButtonPressed1 = false
-        }
-
-        if (currentControllerState.rightBumperPressed  && (previousControllerState==null || previousControllerState.rightBumperPressed ==false) ) {
-            toggleFieldSide()
-            zeroAllValues()
-        }
-
-        if (gamepad1.left_bumper && (previousControllerState==null || previousControllerState.leftBumperPressed ==false))  {
-            toggleBackBoardAlliance()
-            zeroAllValues()
-        }
-
-    }
-
-    private fun findOffsetsAndShowResultingReductionOfError() {
-        val firstFoundPoint = firstPointCalculatedPosition
-        val secondFoundPoint = secondPointCalculatedPosition
-        val thirdFoundPoint = thirdPointCalculatedPosition
-        val fourthFoundPoint = fourthPointCalculatedPosition
-
-        val measuredFourPoints = FourPoints(
-                first =  PointInXInchesAndYInches(
-                        xInches = firstFoundPoint.xInches,
-                        yInches = firstFoundPoint.yInches
-                ),
-                second =  PointInXInchesAndYInches(
-                        xInches = secondFoundPoint.xInches,
-                        yInches = secondFoundPoint.yInches
-                ),
-                third =  PointInXInchesAndYInches(
-                        xInches = thirdFoundPoint.xInches,
-                        yInches = thirdFoundPoint.yInches
-                ),
-                fourth =  PointInXInchesAndYInches(
-                        xInches = fourthFoundPoint.xInches,
-                        yInches = fourthFoundPoint.yInches
-                ),
-        )
-
-        val enteredAllianceSide = when(allianceSideOfBoard) {
-            "Red" -> ReusableAprilTagFieldLocalizer.AllianceSide.Red
-            "Blue" -> ReusableAprilTagFieldLocalizer.AllianceSide.Blue
-            else -> ReusableAprilTagFieldLocalizer.AllianceSide.Red
-        }
-
-        //TODO: Change this so that we can a/b our previous config with our new one. (I'm thinking load it from the card).
-        aprilTagDeltasOld = findErrorOfFourPoints(enteredAllianceSide, measuredFourPoints)
-        aprilTagDeltasNew = aprilTagDeltasOld
-
-        aprilTagOffsets = calculateAprilTagOffsets(aprilTagDeltasOld)
-
-    }
-
-
-            /** Gabe edit me */
+    /** Gabe edit me */
     private fun returnTargetAprilTag(currentDetections: List<AprilTagDetection>, idOfTargetAprilTag: Int): AprilTagDetection? {
         for (detection in currentDetections) {
             if (detection.id == idOfTargetAprilTag) {
@@ -469,7 +429,43 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
     }
 
 
+    private fun showAllAprilTagsInfo(currentDetections: List<AprilTagDetection>) {
 
+        if (currentDetections.isNotEmpty()) {
+
+            for (detection in currentDetections) {
+
+                val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
+
+                val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
+                val detectionAllianceSide = allDetectionData?.AllianceSide
+                val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
+                val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
+
+                if (currentDetections.isNotEmpty()) {
+
+                    println(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name))
+                    //
+                    println(String.format("XYH %6.1f %6.1f %6.1f  (inch, inch, deg)",
+                            detectionFieldCoords?.xInches,
+                            detectionFieldCoords?.yInches,
+                            detectionFieldCoords?.headingDegrees))
+
+                    println(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw))
+
+                    println(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation))
+                    println(String.format("We're on alliance side {$detectionAllianceSide}, and our code says this measurement is accurate: {$detectionAccuracy}"))
+                }
+            }
+            val closestAprilTag: AprilTagDetection = aprilTagLocalization.findClosestAprilTagToBot(currentDetections)
+            showTargetAprilTagInfo(
+                    listOfAllAprilTagsDetected = currentDetections,
+                    leastDistortedAprilTag = closestAprilTag)
+
+        }
+
+
+    }
 
     private fun recalculateFirstPoint(currentDetections: List<AprilTagDetection>) {
 
@@ -488,16 +484,16 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
                 println("The list of tags wasn't empty...")
 
 
-                if (detection.id == closestAprilTag.id && detection.ftcPose != null) {
-//                    val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData = localizer.returnAprilTagInFieldCentricCoords(detection)
+                if (detection.id == closestAprilTag.id) {
+                    val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 //
                     val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
 //                    val detectionAllianceSide = allDetectionData?.AllianceSide
 //                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
-//                    val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection).TagRelativePointInSpace
+                    val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
-                     firstPointCalculatedPosition.xInches = detectionFieldCoords.xInches
-                     firstPointCalculatedPosition.yInches = detectionFieldCoords.yInches
+                     firstPointCalculatedPosition.xInches = detectionFieldCoords?.xInches
+                     firstPointCalculatedPosition.yInches = detectionFieldCoords?.yInches
 
 
                 } else {
@@ -525,17 +521,17 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
                 println("The list of tags wasn't empty...")
 
 
-                if (detection.id == closestAprilTag.id && detection.ftcPose != null) {
+                if (detection.id == closestAprilTag.id) {
 
-                    val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData = localizer.returnAprilTagInFieldCentricCoords(detection)
+                    val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 //
                     val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
 //                    val detectionAllianceSide = allDetectionData?.AllianceSide
 //                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
-                    val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection).TagRelativePointInSpace
+                    val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
-                    secondPointCalculatedPosition.xInches = detectionFieldCoords!!.xInches
-                    secondPointCalculatedPosition.yInches = detectionFieldCoords.yInches
+                    secondPointCalculatedPosition.xInches = detectionFieldCoords?.xInches
+                    secondPointCalculatedPosition.yInches = detectionFieldCoords?.yInches
 
 
                 } else {
@@ -563,7 +559,7 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
                 println("The list of tags wasn't empty...")
 
 
-                if (detection.id == closestAprilTag.id && detection.ftcPose != null) {
+                if (detection.id == closestAprilTag.id) {
 
                     val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 //
@@ -572,8 +568,8 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
                     val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
-                    thirdPointCalculatedPosition.xInches = detectionFieldCoords?.xInches!!
-                    thirdPointCalculatedPosition.yInches = detectionFieldCoords?.yInches!!
+                    thirdPointCalculatedPosition.xInches = detectionFieldCoords?.xInches
+                    thirdPointCalculatedPosition.yInches = detectionFieldCoords?.yInches
 
 
                 } else {
@@ -601,16 +597,16 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
                 println("The list of tags wasn't empty...")
 
 
-                if (detection.id == closestAprilTag.id && detection.ftcPose != null) {
-                    val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData = localizer.returnAprilTagInFieldCentricCoords(detection)
+                if (detection.id == closestAprilTag.id) {
+                    val allDetectionData: ReusableAprilTagFieldLocalizer.AprilTagAndData? = localizer.returnAprilTagInFieldCentricCoords(detection)
 //
                     val detectionFieldCoords = localizer.getFieldPositionsForTag(detection)
 //                    val detectionAllianceSide = allDetectionData?.AllianceSide
 //                    val detectionAccuracy = allDetectionData?.valueHasOneInchAccuracy
-                    val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection).TagRelativePointInSpace
+                    val detectionTagCoords = localizer.returnAprilTagInFieldCentricCoords(detection)?.TagRelativePointInSpace
 
-                    fourthPointCalculatedPosition.xInches = detectionFieldCoords!!.xInches
-                    fourthPointCalculatedPosition.yInches = detectionFieldCoords.yInches
+                    fourthPointCalculatedPosition.xInches = detectionFieldCoords?.xInches
+                    fourthPointCalculatedPosition.yInches = detectionFieldCoords?.yInches
 
 
                 } else {
@@ -705,77 +701,34 @@ class AprilTagOmeter_Calibration: LinearOpMode() {
 //
 //    }
 
-    fun showData(currentMenuLevel: MenuLevel) {
+    fun showData() {
+        val first = firstPointCalculatedPosition
+        val second = secondPointCalculatedPosition
+        val third = thirdPointCalculatedPosition
+        val fourth = fourthPointCalculatedPosition
 
+        telemetry.addLine("Field: $whichWorldsFieldAreWeOn - [RB] to change")
+        telemetry.addLine("Backboard Alliance: $allianceSideOfBoard - [LB] to change")
 
-        if (currentMenuLevel == MenuLevel.GetData) {
-            val first = firstPointCalculatedPosition
-            val second = secondPointCalculatedPosition
-            val third = thirdPointCalculatedPosition
-            val fourth = fourthPointCalculatedPosition
+        telemetry.addLine("\nFirst point -     ⃤  to change")
+        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
+                first.xInches,
+                first.yInches))
 
-            telemetry.addLine("Field: $whichWorldsFieldAreWeOn - [RB] to change")
-            telemetry.addLine("Backboard Alliance: $allianceSideOfBoard - [LB] to change")
+        telemetry.addLine("\n\n Second point -     ⃝      to change")
+        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
+                second.xInches,
+                second.yInches))
 
-            telemetry.addLine("\nFirst point -     ⃤  to change")
-            telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
-                    first.xInches,
-                    first.yInches))
+        telemetry.addLine("\n\n Third point - ╳  to change")
+        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
+                third.xInches,
+                third.yInches))
 
-            telemetry.addLine("\n\n Second point -    ⃝     to change")
-            telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
-                    second.xInches,
-                    second.yInches))
-
-            telemetry.addLine("\n\n Third point - ╳  to change")
-            telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
-                    third.xInches,
-                    third.yInches))
-
-            telemetry.addLine("\n\n Fourth point -     ⃞      to change")
-            telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
-                    fourth.xInches,
-                    fourth.yInches))
-
-            telemetry.addLine("\n [DPAD LEFT] to preview offsets")
-
-
-        }
-        else if (currentMenuLevel == MenuLevel.GetData) {
-
-            val oldDeltas = aprilTagDeltasOld
-            val newDeltas = aprilTagDeltasNew
-
-            telemetry.addLine("Current || Previous Errors on board $whichWorldsFieldAreWeOn, alliance $allianceSideOfBoard")
-
-            telemetry.addLine(String.format("\n\nFirst: %6.2f, %6.2f || %6.2f, %6.2f",
-                    newDeltas.first.xInches,
-                    newDeltas.first.yInches,
-                    oldDeltas.first.xInches,
-                    oldDeltas.first.yInches))
-
-            telemetry.addLine(String.format("\n\nSecond: %6.2f, %6.2f || %6.2f, %6.2f",
-                    newDeltas.second.xInches,
-                    newDeltas.second.yInches,
-                    oldDeltas.second.xInches,
-                    oldDeltas.second.yInches))
-
-            telemetry.addLine(String.format("\n\nThird: %6.2f, %6.2f || %6.2f, %6.2f",
-                    newDeltas.third.xInches,
-                    newDeltas.third.yInches,
-                    oldDeltas.third.xInches,
-                    oldDeltas.third.yInches))
-
-            telemetry.addLine(String.format("\n\nFourth: %6.2f, %6.2f || %6.2f, %6.2f",
-                    newDeltas.fourth.xInches,
-                    newDeltas.fourth.yInches,
-                    oldDeltas.fourth.xInches,
-                    oldDeltas.fourth.yInches))
-
-            telemetry.addLine("\n\n [DPAD LEFT] to view the calculated offset - snap a photo!")
-
-            telemetry.addLine("\n\n THE ACTUAL OFFSET: ")
-    }
+        telemetry.addLine("\n\n Fourth point -     ⃞      to change")
+        telemetry.addLine(String.format("XY %6.2f %6.2f (inch, inch)",
+                fourth.xInches,
+                fourth.yInches))
 
 
     }
