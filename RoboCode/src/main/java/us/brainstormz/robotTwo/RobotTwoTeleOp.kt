@@ -668,12 +668,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         /**Dropdown*/
         val dropdownTarget = when (driverInput.dropdown) {
-            RobotTwoTeleOp.DropdownInput.Five -> {
+            DropdownInput.Five -> {
                 Dropdown.DropdownTarget(Dropdown.DropdownPresets.FivePixels)
             }
             DropdownInput.NoInput -> {
                 if (intakeNoodleTarget == Intake.CollectorPowers.Intake) {
-                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.TwoPixels)
+                    Dropdown.DropdownTarget(Dropdown.DropdownPresets.OnePixel)
                 } else {
                     Dropdown.DropdownTarget(Dropdown.DropdownPresets.Up)
                 }

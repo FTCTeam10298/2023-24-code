@@ -12,7 +12,7 @@ class Dropdown: Subsystem, DualMovementModeSubsystem {
 //        FourPixels(0.2),
         ThreePixels(0.1),
         TwoPixels(0.08),
-        OnePixel(0.0)
+        OnePixel(0.04)
     }
 
     @Serializable
