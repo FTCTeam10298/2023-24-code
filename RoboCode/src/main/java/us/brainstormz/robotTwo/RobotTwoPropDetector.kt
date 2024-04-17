@@ -14,9 +14,9 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
     }
 
     private val positionsMappedToRects = listOf(
-        PropPosition.Left to Rect(Point(0.0, 170.0), Point(40.0, 230.0)),
-        PropPosition.Center to Rect(Point(120.0, 150.0), Point(200.0, 200.0)),
-        PropPosition.Right to Rect(Point(290.0, 170.0), Point(320.0, 230.0))
+        PropPosition.Left to Rect(Point(0.0, 100.0), Point(50.0, 200.0)),
+        PropPosition.Center to Rect(Point(120.0, 130.0), Point(200.0, 180.0)),
+        PropPosition.Right to Rect(Point(270.0, 100.0), Point(320.0, 200.0))
     )
 
     private val blue = Scalar(0.0, 0.0, 255.0)
