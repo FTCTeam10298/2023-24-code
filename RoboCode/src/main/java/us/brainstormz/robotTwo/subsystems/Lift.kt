@@ -31,7 +31,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         AutoLowYellowPlacement(inchesToTicks(0.0)),
         AutoAbovePartnerPlacement((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         ClearForArmToMove(inchesToTicks(9.5)),
-        TargetClearForArmToMove(inchesToTicks(10.0)),
+        TargetClearForArmToMove(ClearForArmToMove.ticks + inchesToTicks(2.0)),
         Preset1(inchesToTicks(1.0)),
         Preset2(inchesToTicks(4.0)),
 
