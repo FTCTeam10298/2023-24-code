@@ -312,19 +312,19 @@ class DepoManager(
                 }
 
 
-        val liftWithFindReset = movingArmAndLiftTarget.lift
-//        val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
-//            val liftIsSuperCloseToZero = actualWorld.actualRobot.depoState.lift.currentPositionTicks <= 100
-//            val liftIsntAtLimit = !actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated
-//
-//            if (liftIsSuperCloseToZero && liftIsntAtLimit) {
-//                Lift.TargetLift(power = -lift.findResetPower, movementMode = MovementMode.Power)
-//            } else {
-//                movingArmAndLiftTarget.lift
-//            }
-//        } else {
-//            movingArmAndLiftTarget.lift
-//        }
+//        val liftWithFindReset = movingArmAndLiftTarget.lift
+        val liftWithFindReset = if (movingArmAndLiftTarget.lift.targetPosition == Lift.LiftPositions.Down && actualDepo.lift.currentPositionTicks <= Lift.LiftPositions.Down.ticks && actualDepo.armAngleDegrees >= Arm.Positions.InsideTheBatteryBox.angleDegrees) {
+            val liftIsSuperCloseToZero = actualWorld.actualRobot.depoState.lift.currentPositionTicks <= 100
+            val liftIsntAtLimit = !actualWorld.actualRobot.depoState.lift.limitSwitchIsActivated
+
+            if (liftIsSuperCloseToZero && liftIsntAtLimit) {
+                Lift.TargetLift(power = -lift.findResetPower, movementMode = MovementMode.Power)
+            } else {
+                movingArmAndLiftTarget.lift
+            }
+        } else {
+            movingArmAndLiftTarget.lift
+        }
 
         return movingArmAndLiftTarget.copy(wristPosition = wristPosition, lift = liftWithFindReset)
     }
