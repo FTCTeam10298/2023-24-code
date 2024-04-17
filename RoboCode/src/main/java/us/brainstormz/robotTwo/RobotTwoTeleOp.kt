@@ -1,6 +1,5 @@
 package us.brainstormz.robotTwo
 
-import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.Gamepad.RumbleEffect
 import kotlinx.serialization.Serializable
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -344,11 +343,8 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         }
 
         /**Bumper Mode*/
-        //Brody, after the jittering i don't get claw control
-        //Brody, at the low preset i don't get claw control
-
         //~~gamepad 1 claw control anytime lift is up
-        //gamepad 2 more presets that cycle on dpad up
+        //~~gamepad 2 more presets that cycle on dpad up
         //~~gamepad 2 right trigger opens the latches
 
 //        val gamepad1DpadIsActive = depoGamepad1Input != DepoInput.NoInput
@@ -360,17 +356,16 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
             actualWorld.actualRobot.depoState.wristAngles
         )
 
-        val liftTargetIsUp = previousRobotTarget.depoTarget.targetType == DepoTargetType.GoingOut
+        val liftTargetIsDown = dpadInput == DepoInput.Down
+        val liftIsGoingUp = previousRobotTarget.depoTarget.targetType == DepoTargetType.GoingOut
 
-//        telemetry.addLine("gamepad2DpadIsActive: $gamepad2DpadIsActive")
-//        telemetry.addLine("liftTargetIsDown: $liftTargetIsDown")
         telemetry.addLine("bothClawsAreRetracted: $bothClawsAreRetracted")
 
         val gamepadOneBumperMode: Gamepad1BumperMode = when {
-            bothClawsAreRetracted -> {
+            bothClawsAreRetracted || liftTargetIsDown -> {
                 Gamepad1BumperMode.Collector
             }
-            liftTargetIsUp -> {
+            liftIsGoingUp -> {
                 Gamepad1BumperMode.Claws
             }
             else -> {
@@ -404,8 +399,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         } else {
             ClawInput.NoInput
         }
-
-        //Brody - if i press up while the extendo is jittering it only takes one pixel up
 
         /**Collector*/
         //when collector stops and starts forget about the remembered roller intake times
