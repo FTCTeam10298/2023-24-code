@@ -310,11 +310,8 @@ class RobotTwoAuto(
     private fun addOutUnderTwelve(autoInput: List<AutoInput>): List<AutoInput> = autoInput.map { it.copy(handoffInput = it.handoffInput.copy(armPosition = Arm.Positions.OutButUnderTwelve))}
 
     private val pushIntoBoardDrivetrainPower = -0.3
-    private fun depositYellow(propPosition: PropPosition, alliance: RobotTwoHardware.Alliance, partnerIsPlacingYellow: Boolean): List<AutoInput> {
-        val liftHeight = when {
-            partnerIsPlacingYellow -> DepoInput.AbovePartnerYellowPlacement
-            else -> DepoInput.YellowPlacement
-        }
+    private fun depositYellow(propPosition: PropPosition, alliance: RobotTwoHardware.Alliance, liftHeight: DepoInput): List<AutoInput> {
+
 
         return listOf(
                 blankAutoState.copy(
@@ -326,7 +323,10 @@ class RobotTwoAuto(
                         ),
                         getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                             telemetry.addLine("Waiting for robot to get to board position")
-                            nextTargetFromCondition(isRobotAtXPosition(actualWorld, targetWorld, allowedErrorXInches = 1.0) || hasTimeElapsed(1000, targetWorld), targetWorld)
+                            val drivetrainIsAtPosition = isRobotAtXPosition(actualWorld, targetWorld, allowedErrorXInches = 1.0)
+                            val liftIsAtPosition = lift.isLiftAtPosition(Lift.LiftPositions.AutoLowYellowPlacement.ticks, actualWorld.actualRobot.depoState.lift.currentPositionTicks)
+
+                            nextTargetFromCondition(liftIsAtPosition || drivetrainIsAtPosition || hasTimeElapsed(1000, targetWorld), targetWorld)
                         }
                 ),
                 blankAutoState.copy(
@@ -354,7 +354,7 @@ class RobotTwoAuto(
 
                             telemetry.addLine("Waiting for depo to get to scoring position ($isDepoAtPosition)")
 
-                            nextTargetFromCondition(isDepoAtPosition && hasTimeElapsed(500, targetWorld), targetWorld)
+                            nextTargetFromCondition(isDepoAtPosition || hasTimeElapsed(1500, targetWorld), targetWorld)
                         }
                 ),
                 blankAutoState.copy(
@@ -440,6 +440,10 @@ class RobotTwoAuto(
                     nextTargetFromCondition(waitIsDone, targetWorld)
                 }
         )
+        val liftHeight = when {
+            partnerIsPlacingYellow -> DepoInput.AbovePartnerYellowPlacement
+            else -> DepoInput.YellowPlacement
+        }
 
         val redPath: PathPreAssembled = when (startingSide) {
             StartPosition.Backboard -> {
@@ -550,6 +554,11 @@ class RobotTwoAuto(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance).copy(
                                                     y = -30.0
                                             )),
+                                            handoffInput = HandoffTarget(
+                                                    armPosition = Arm.Positions.AutoInitPosition,
+                                                    depoInput = liftHeight,
+                                                    wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping)
+                                            ),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 val isButtonNotPressed = !actualWorld.actualGamepad1.touchpad
                                                 val waitIsDone = hasTimeElapsed(1000, targetWorld)
@@ -559,6 +568,11 @@ class RobotTwoAuto(
                                     ),
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance)),
+                                            handoffInput = HandoffTarget(
+                                                    armPosition = Arm.Positions.AutoInitPosition,
+                                                    depoInput = liftHeight,
+                                                    wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping)
+                                            ),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
@@ -566,7 +580,7 @@ class RobotTwoAuto(
                             )
                         },
                         yellowDepositSequence = { propPosition ->
-                            depositYellow(propPosition, alliance, partnerIsPlacingYellow)
+                            depositYellow(propPosition, alliance, liftHeight)
                         },
                         parkPath = listOf(
                                 blankAutoState.copy(
@@ -762,6 +776,11 @@ class RobotTwoAuto(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance).copy(
                                                     y = -30.0
                                             )),
+                                            handoffInput = HandoffTarget(
+                                                    armPosition = Arm.Positions.AutoInitPosition,
+                                                    depoInput = liftHeight,
+                                                    wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping)
+                                            ),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 val isButtonNotPressed = !actualWorld.actualGamepad1.touchpad
                                                 val waitIsDone = hasTimeElapsed(1000, targetWorld)
@@ -771,6 +790,11 @@ class RobotTwoAuto(
                                     ),
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance)),
+                                            handoffInput = HandoffTarget(
+                                                    armPosition = Arm.Positions.AutoInitPosition,
+                                                    depoInput = liftHeight,
+                                                    wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping)
+                                            ),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
@@ -778,7 +802,7 @@ class RobotTwoAuto(
                             ))
                         },
                         yellowDepositSequence = { propPosition ->
-                            depositYellow(propPosition, alliance, partnerIsPlacingYellow)
+                            depositYellow(propPosition, alliance, liftHeight)
                         },
                         parkPath = listOf(
                                 blankAutoState.copy(
