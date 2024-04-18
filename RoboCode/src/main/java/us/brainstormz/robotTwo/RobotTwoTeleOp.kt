@@ -451,7 +451,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         /**Dropdown*/
         val dropdown = when {
-            gamepad1.left_stick_y != 0f -> {
+            gamepad1.right_stick_y != 0f -> {
                 DropdownInput.Manual
             }
             gamepad2.left_trigger != 0.0f -> {
@@ -593,7 +593,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
             wrist = WristInput(leftClaw, rightClaw),
             collector = inputCollectorStateSystem,
             dropdown = dropdown,
-            dropdownPositionOverride = gamepad1.left_stick_y.toDouble(),
+            dropdownPositionOverride = gamepad1.right_stick_y.toDouble(),
             leftLatch = leftLatch,
             rightLatch = rightLatch,
             extendo = extendo,
@@ -634,11 +634,25 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
 
         /**Intake Noodles*/
-        val timeSincePixelsTransferredMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis?:actualWorld.timestampMilis)
-        val waitBeforeEjectingMillis = 300
-        val timeToStartEjection = theRobotJustCollectedTwoPixels && (timeSincePixelsTransferredMillis > waitBeforeEjectingMillis)
+        val timeOfTransferredMillis = if (theRobotJustCollectedTwoPixels) {
+            actualWorld.timestampMilis
+        } else if (previousTargetState.targetRobot.collectorTarget.intakeNoodles != Intake.CollectorPowers.Intake) {
+            null
+        } else {
+            previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis
+        }
+        val timeSincePixelsTransferredMillis: Long = timeOfTransferredMillis?.let { actualWorld.timestampMilis - it } ?: actualWorld.timestampMilis
+        val waitBeforeEjectingMillis = 500
+        val timeToStartEjection = areBothPixelsIn && (timeSincePixelsTransferredMillis > waitBeforeEjectingMillis)
 
-        val timeSinceEjectionStartedMillis: Long = actualWorld.timestampMilis - (previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis?:actualWorld.timestampMilis)
+        val timeOfEjectionStartMillis = if (timeToStartEjection) {
+            actualWorld.timestampMilis
+        } else if (previousTargetState.targetRobot.collectorTarget.intakeNoodles != Intake.CollectorPowers.Eject) {
+            null
+        } else {
+            previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis
+        }
+        val timeSinceEjectionStartedMillis: Long = timeOfEjectionStartMillis?.let { actualWorld.timestampMilis - it } ?: actualWorld.timestampMilis
         val ejectionTimeMillis = 1000
         val timeToStopEjecting = timeSinceEjectionStartedMillis > ejectionTimeMillis
 
@@ -650,26 +664,15 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
             Intake.CollectorPowers.Off
         } else {
             when (driverInput.collector) {
-                RobotTwoTeleOp.CollectorInput.Intake -> Intake.CollectorPowers.Intake
+                CollectorInput.Intake -> Intake.CollectorPowers.Intake
                 CollectorInput.Eject -> Intake.CollectorPowers.Eject
                 CollectorInput.Off -> Intake.CollectorPowers.Off
                 CollectorInput.NoInput -> previousTargetState.targetRobot.collectorTarget.intakeNoodles
             }
         }
-        val timeOfEjectionStartMillis = if (timeToStartEjection) {
-            actualWorld.timestampMilis
-        } else if (stopAutomaticEjection) {
-            null
-        } else {
-            previousTargetState.targetRobot.collectorTarget.timeOfEjectionStartMilis
-        }
-        val timeOfTransferredMillis = if (theRobotJustCollectedTwoPixels) {
-            actualWorld.timestampMilis
-        } else if (stopAutomaticEjection) {
-            null
-        } else {
-            previousTargetState.targetRobot.collectorTarget.timeOfTransferredMillis
-        }
+
+        telemetry.addLine("timeOfEjectionStartMillis: $timeOfEjectionStartMillis")
+        telemetry.addLine("timeOfTransferredMillis: $timeOfTransferredMillis")
 
         /**Dropdown*/
         val dropdownTarget = when (driverInput.dropdown) {
