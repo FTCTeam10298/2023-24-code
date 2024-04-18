@@ -14,7 +14,6 @@ import us.brainstormz.robotTwo.RobotTwoPropDetector.PropPosition
 import us.brainstormz.robotTwo.RobotTwoPropDetector.*
 import us.brainstormz.robotTwo.RobotTwoTeleOp.*
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initLatchTarget
-import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initSensorState
 import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
 import us.brainstormz.robotTwo.localTests.TeleopTest
 import us.brainstormz.robotTwo.subsystems.Arm
@@ -429,6 +428,7 @@ class RobotTwoAuto(
             startingSide: StartPosition,
             propPosition: PropPosition,
             partnerIsPlacingYellow: Boolean,
+            numberOfCycles: Int,
             waitTimeMillis: Long
     ): List<AutoInput> {
 
@@ -582,6 +582,14 @@ class RobotTwoAuto(
                         yellowDepositSequence = { propPosition ->
                             depositYellow(propPosition, alliance, liftHeight)
                         },
+
+
+                        
+
+
+
+
+
                         parkPath = listOf(
                                 blankAutoState.copy(
                                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
@@ -1003,6 +1011,7 @@ class RobotTwoAuto(
     private val wizard = TelemetryWizard(console, null)
 
     private val timesToWait = listOf(1, 3, 5, 8, 10)
+    private val cycleOptions = listOf(1, 2)
 
     fun init(hardware: RobotTwoHardware) {
         initRobot(
@@ -1012,7 +1021,8 @@ class RobotTwoAuto(
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "partnerYellow", firstMenu = true)
         wizard.newMenu("partnerYellow", "What will our partner be placing on the board?", listOf("Yellow", "Nothing"), nextMenu = "startingPos")
-        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"), nextMenu = "wait")
+        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience" to "wait", "Backboard" to "cycles"))
+        wizard.newMenu("cycles", "How many cycles to attempt?", listOf("No cycles") + cycleOptions.map{ it.toString() }, nextMenu = "wait")
         wizard.newMenu("wait", "How many seconds to wait before scoring yellow?", listOf("No wait") + timesToWait.map{ it.toString() })
 
         telemetry.addLine("init Called")
@@ -1043,7 +1053,13 @@ class RobotTwoAuto(
     }
 
 
-    data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val waitSeconds: Int)
+    data class WizardResults(
+            val alliance: RobotTwoHardware.Alliance,
+            val startPosition: StartPosition,
+            val partnerIsPlacingYellow: Boolean,
+            val numberOfCycles: Int,
+            val waitSeconds: Int
+    )
     private fun getMenuWizardResults(): WizardResults {
         return try {
             WizardResults(
@@ -1056,6 +1072,9 @@ class RobotTwoAuto(
                     false -> StartPosition.Backboard
                 },
                 partnerIsPlacingYellow = wizard.wasItemChosen("partnerYellow", "Yellow"),
+                numberOfCycles = cycleOptions.firstOrNull { it ->
+                    wizard.wasItemChosen("cycles", it.toString())
+                } ?: 0,
                 waitSeconds = timesToWait.firstOrNull { it ->
                         wizard.wasItemChosen("wait", it.toString())
 
@@ -1076,6 +1095,7 @@ class RobotTwoAuto(
                     alliance = RobotTwoHardware.Alliance.Red,
                     startPosition = StartPosition.Backboard,
                     partnerIsPlacingYellow = false,
+                    numberOfCycles = 0,
                     waitSeconds = 0,
             ),
             cameraStuff = null,
@@ -1119,6 +1139,7 @@ class RobotTwoAuto(
                 startingSide = wizardResults.startPosition,
                 propPosition = propPosition,
                 partnerIsPlacingYellow = wizardResults.partnerIsPlacingYellow,
+                numberOfCycles = wizardResults.numberOfCycles,
                 waitTimeMillis = wizardResults.waitSeconds * 1000L
         )
 
