@@ -9,6 +9,7 @@ class Dropdown: Subsystem, DualMovementModeSubsystem {
         Init(0.8),
         Up(0.25),
         FivePixels(0.24),
+        FivePixelsForAuto(0.22),
 //        FourPixels(0.2),
         ThreePixels(0.1),
         TwoPixels(0.08),

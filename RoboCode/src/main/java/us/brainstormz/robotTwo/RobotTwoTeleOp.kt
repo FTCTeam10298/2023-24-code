@@ -1072,7 +1072,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                         wristTargets = WristTargets(ClawTarget.Gripping)
                 ),
                 extendoInput = Extendo.ExtendoPositions.Min,
-                intakeInput = RobotTwoAuto.IntakeInput.NoInput,
+                intakeInput = Intake.CollectorPowers.Off,
                 dropdownPosition = Dropdown.DropdownPresets.FivePixels,
                 getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> throw Exception("Why are you running?") }
         )

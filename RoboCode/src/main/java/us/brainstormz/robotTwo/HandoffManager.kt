@@ -343,6 +343,8 @@ class HandoffManager(
         doingHandoff:Boolean,
     ): CollectorDepositorTarget {
 
+
+
         fun deriveLatchPositionFromPixelHolder(pixelHolder: HandoffCoordinated.HandoffCommand, driverInputLatchPosition: LatchPositions): LatchPositions {
             return when(pixelHolder) {
                 HandoffCoordinated.HandoffCommand.Holding -> LatchPositions.Closed
@@ -450,6 +452,8 @@ class HandoffManager(
                 transferSensorState = collectorTarget.transferSensorState,
         )
 
+        telemetry.addLine("handoffCoordinated: ${handoffCoordinated.extendo}")
+
         val depoDriverInput = RobotTwoTeleOp.noInput.copy(
                 depo = when (handoffCoordinated.depo) {
                     DepoHandoffControlDecision.HandoffPosition -> RobotTwoTeleOp.DepoInput.Down
@@ -500,6 +504,7 @@ class HandoffManager(
                 }
             }
         }
+        telemetry.addLine("extendoPassedThroughFromHandoff: ${extendoPassedThroughFromHandoff}")
 
         val coordinatedCollector = collectorManager.coordinateCollector(
                 timestampMillis = actualWorld.timestampMilis,
@@ -512,6 +517,7 @@ class HandoffManager(
                 ),
                 previousTargetWorld = previousTargetWorld,
         )
+        telemetry.addLine("coordinatedCollector: ${coordinatedCollector.extendo}")
 
         val coordinatedDepo = depoManager.fullyManageDepo(
                 target = depoDriverInput,

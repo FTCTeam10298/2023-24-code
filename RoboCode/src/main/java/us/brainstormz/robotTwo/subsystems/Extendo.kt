@@ -15,7 +15,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override var pid: PID =
                         PID(
                                 name= "extendo",
-                                kp= 0.00181,
+                                kp= 0.00186,
                                 ki= 2.1E-7,
                                 kd= 0.08,
                         )

@@ -64,7 +64,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     override val allowedMovementBeforeResetTicks: Int = 700
     override val allTheWayInPositionTicks: Int = 0
     override val stallCurrentAmps: Double = 5.0
-    override val findResetPower: Double = 0.5
+    override val findResetPower: Double = 0.8
 
 //    @JsonTypeName("actual-lift")
 //    data class ActualLift(override val currentPositionTicks: Int,
