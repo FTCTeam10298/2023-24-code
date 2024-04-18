@@ -30,6 +30,7 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.utils.measured
+import java.lang.Exception
 import kotlin.math.absoluteValue
 
 fun Any.printPretty() = jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
@@ -376,16 +377,24 @@ class RobotTwoAuto(
     private fun calcAutoTargetStateList(
             alliance: RobotTwoHardware.Alliance,
             startingSide: StartPosition,
-            propPosition: PropPosition
+            propPosition: PropPosition,
+            waitTimeMillis: Long
     ): List<AutoInput> {
 
         val startPosition = startingSide.redStartPosition
+
+        fun addWait(autoInput: AutoInput): AutoInput = autoInput.copy(
+                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                    val waitIsDone = hasTimeElapsed(waitTimeMillis, targetWorld)
+                    nextTargetFromCondition(waitIsDone, targetWorld)
+                }
+        )
 
         val redPath: PathPreAssembled = when (startingSide) {
             StartPosition.Backboard -> {
                 PathPreAssembled(
                         purplePlacementPath = { propPosition ->
-                            when (propPosition) {
+                            val propPlacement = when (propPosition) {
                                 PropPosition.Left -> listOf(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
@@ -472,7 +481,8 @@ class RobotTwoAuto(
                                                 }
                                         ),
                                 )
-                            }.addArmInitToPath()
+                            }
+                            (propPlacement + addWait(propPlacement.last())).addArmInitToPath()
                         },
                         purpleDriveToBoardPath = { propPosition ->
                             listOf(
@@ -481,7 +491,8 @@ class RobotTwoAuto(
                                                     y = -30.0
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                val delayIsDone = hasTimeElapsed(waitTimeMillis, targetWorld)
+                                                nextTargetFromCondition(delayIsDone && isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             },
                                     ),
                                     blankAutoState.copy(
@@ -537,7 +548,7 @@ class RobotTwoAuto(
             StartPosition.Audience -> {
                 PathPreAssembled(
                         purplePlacementPath = { propPosition ->
-                            when (propPosition) {
+                            val propPlacement = when (propPosition) {
                                 PropPosition.Left -> listOf(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
@@ -663,7 +674,8 @@ class RobotTwoAuto(
                                                 }
                                         ),
                                 )
-                            }.addArmInitToPath()
+                            }
+                            (propPlacement + addWait(propPlacement.last())).addArmInitToPath()
                         },
                         purpleDriveToBoardPath = { propPosition ->
                             listOf(
@@ -918,6 +930,8 @@ class RobotTwoAuto(
     private val console = TelemetryConsole(telemetry)
     private val wizard = TelemetryWizard(console, null)
 
+    private val timesToWait = listOf(1, 3, 5, 8, 10)
+
     fun init(hardware: RobotTwoHardware) {
         initRobot(
             hardware = hardware,
@@ -926,8 +940,8 @@ class RobotTwoAuto(
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "partnerYellow", firstMenu = true)
         wizard.newMenu("partnerYellow", "What will our partner be placing on the board?", listOf("Yellow", "Nothing"), nextMenu = "startingPos")
-        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience" to "doYellow", "Backboard" to null))
-        wizard.newMenu("doYellow", "What do we do after the purple?", listOf("Yellow", "Nothing"))
+        wizard.newMenu("startingPos", "What side of the truss are we on?", listOf("Audience", "Backboard"), nextMenu = "wait")
+        wizard.newMenu("wait", "How many seconds to wait before scoring yellow?", listOf("No wait") + timesToWait.map{ it.toString() })
 
         telemetry.addLine("init Called")
     }
@@ -957,9 +971,10 @@ class RobotTwoAuto(
     }
 
 
-    data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val shouldDoYellow: Boolean)
+    data class WizardResults(val alliance: RobotTwoHardware.Alliance, val startPosition: StartPosition, val partnerIsPlacingYellow: Boolean, val waitSeconds: Int)
     private fun getMenuWizardResults(): WizardResults {
-        return WizardResults(
+        return try {
+            WizardResults(
                 alliance = when (wizard.wasItemChosen("alliance", "Red")) {
                     true -> RobotTwoHardware.Alliance.Red
                     false -> RobotTwoHardware.Alliance.Blue
@@ -969,8 +984,15 @@ class RobotTwoAuto(
                     false -> StartPosition.Backboard
                 },
                 partnerIsPlacingYellow = wizard.wasItemChosen("partnerYellow", "Yellow"),
-                shouldDoYellow = wizard.wasItemChosen("doYellow", "Yellow")
-        )
+                waitSeconds = timesToWait.firstOrNull { it ->
+                        wizard.wasItemChosen("wait", it.toString())
+
+                } ?: 0
+            )
+        } catch (e: Exception) {
+            telemetry.addLine("\nMENU FAILED!!\nUsing defaults")
+            initLoopResults.wizardResults
+        }
     }
 
     data class InitLoopResults(
@@ -982,7 +1004,7 @@ class RobotTwoAuto(
                     alliance = RobotTwoHardware.Alliance.Red,
                     startPosition = StartPosition.Backboard,
                     partnerIsPlacingYellow = false,
-                    shouldDoYellow = false,
+                    waitSeconds = 0,
             ),
             cameraStuff = null,
     )
@@ -1020,7 +1042,12 @@ class RobotTwoAuto(
                 flipRedPositionToBlue(wizardResults.startPosition.redStartPosition)
         }
 
-        autoStateList = calcAutoTargetStateList(wizardResults.alliance, wizardResults.startPosition, propPosition)
+        autoStateList = calcAutoTargetStateList(
+                alliance = wizardResults.alliance,
+                startingSide = wizardResults.startPosition,
+                propPosition = propPosition,
+                waitTimeMillis = wizardResults.waitSeconds * 1000L
+        )
 
         drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
     }
