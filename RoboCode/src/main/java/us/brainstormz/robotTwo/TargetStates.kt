@@ -62,7 +62,7 @@ data class TargetWorld(
     val autoInput: AutoInput? = null,
 
     val timeTargetStartedMilis: Long = 0,
-    val gamepad1Rumble: RobotTwoTeleOp.RumbleEffects?
+    val gamepad2Rumble: RobotTwoTeleOp.GamepadRumble
 ) {
     override fun equals(other: Any?): Boolean =
         if (other is TargetWorld) {
@@ -71,7 +71,7 @@ data class TargetWorld(
                     other.doingHandoff == doingHandoff &&
                     other.autoInput == autoInput &&
                     other.timeTargetStartedMilis == timeTargetStartedMilis &&
-                    other.gamepad1Rumble == gamepad1Rumble
+                    other.gamepad2Rumble == gamepad2Rumble
         } else {
             false
         }
@@ -175,6 +175,7 @@ data class SerializableGamepad(
         isRumbling = g.isRumbling,
     )
 
-
+    fun rumble(left: Double, right: Double, durationMillis: Int) = theGamepad?.rumble(left, right, durationMillis)
+    fun stopRumble() = theGamepad?.stopRumble()
     fun runRumbleEffect(effect: Gamepad.RumbleEffect) = theGamepad?.runRumbleEffect(effect)
 }

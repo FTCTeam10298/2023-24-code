@@ -36,6 +36,12 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
         OneTap(RumbleEffect.Builder().addStep(1.0, 1.0, 800).build())//.addStep(0.0, 0.0, 200),
     }
 
+
+    data class GamepadRumble(
+            val left: Double,
+            val right: Double
+    )
+
     enum class LiftControlMode {
         Adjust,
         Override
@@ -958,6 +964,18 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         val lights = LightTarget(desiredPixelLightPattern, colorToDisplay)
 
+        fun deriveGamepadRumbleFromClawState(side: Side): Double {
+            return if (combinedTarget.depo.wristPosition.getBySide(side) == ClawTarget.Gripping) {
+                1.0
+            } else {
+                0.0
+            }
+        }
+        val gamepad2Rumble = GamepadRumble(
+                left = deriveGamepadRumbleFromClawState(Side.Left),
+                right = deriveGamepadRumbleFromClawState(Side.Right)
+        )
+
         return TargetWorld(
                 targetRobot = TargetRobot(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(
@@ -974,7 +992,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                 doingHandoff = doHandoffSequence,
                 driverInput = repeatDriverInputForDepo,
                 autoInput = teleopAutoState,
-                gamepad1Rumble = RumbleEffects.Throb
+                gamepad2Rumble = gamepad2Rumble
         )
     }
 
@@ -1114,7 +1132,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
             doingHandoff = false,
             driverInput = noInput,
             autoInput = teleopAutoState,
-            gamepad1Rumble = null
+            gamepad2Rumble = GamepadRumble(0.0, 0.0)
         )
     }
 

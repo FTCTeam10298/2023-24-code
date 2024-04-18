@@ -3,7 +3,6 @@ package us.brainstormz.robotTwo
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.firstinspires.ftc.robotcore.external.navigation.Position
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.openftc.easyopencv.OpenCvCameraRotation
 import us.brainstormz.localizer.AprilTagLocalizerRepackaged
@@ -310,7 +309,7 @@ class RobotTwoAuto(
                 } else {
                     previousTargetWorld.timeTargetStartedMilis
                 },
-                gamepad1Rumble = null
+                gamepad2Rumble = GamepadRumble(0.0, 0.0)
         )
     }
 

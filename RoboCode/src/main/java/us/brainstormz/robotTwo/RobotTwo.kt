@@ -3,24 +3,18 @@ package us.brainstormz.robotTwo
 import StatsDumper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.qualcomm.hardware.lynx.LynxModule
+import com.qualcomm.robotcore.hardware.Gamepad.RUMBLE_DURATION_CONTINUOUS
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import us.brainstormz.faux.FauxLocalizer
 import us.brainstormz.localizer.Localizer
-import us.brainstormz.localizer.PositionAndRotation
 import us.brainstormz.operationFramework.FunctionalReactiveAutoRunner
-import us.brainstormz.robotTwo.RobotTwoTeleOp.Companion.initialPreviousTargetState
-import us.brainstormz.robotTwo.RobotTwoTeleOp.*
-import us.brainstormz.robotTwo.localTests.TeleopTest
 import us.brainstormz.robotTwo.subsystems.Arm
 import us.brainstormz.robotTwo.subsystems.Claw
 import us.brainstormz.robotTwo.subsystems.Drivetrain
 import us.brainstormz.robotTwo.subsystems.Dropdown
-import us.brainstormz.robotTwo.subsystems.DualMovementModeSubsystem
 import us.brainstormz.robotTwo.subsystems.Extendo
 import us.brainstormz.robotTwo.subsystems.Intake
 import us.brainstormz.robotTwo.subsystems.Lift
-import us.brainstormz.robotTwo.subsystems.Neopixels
 import us.brainstormz.robotTwo.subsystems.Transfer
 import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.utils.DeltaTimeMeasurer
@@ -124,15 +118,9 @@ abstract class RobotTwo(private val telemetry: Telemetry) {
                         transfer= transfer
                     )
                 }
-                measured("rumble"){
-                    if (targetState.gamepad1Rumble != null) {
-                        if (!gamepad1.isRumbling) {
-                            gamepad1.runRumbleEffect(targetState.gamepad1Rumble.effect)
-                        }
-                        if (!gamepad2.isRumbling) {
-                            gamepad2.runRumbleEffect(targetState.gamepad1Rumble.effect)
-                        }
-                    }
+
+                measured("rumble") {
+                    gamepad2.rumble(targetState.gamepad2Rumble.left * 0.3, targetState.gamepad2Rumble.right, RUMBLE_DURATION_CONTINUOUS)
                 }
             }
         )
