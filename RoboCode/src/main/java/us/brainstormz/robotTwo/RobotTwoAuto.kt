@@ -270,7 +270,7 @@ class RobotTwoAuto(
                     depoInput = DepoInput.YellowPlacement,
                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                         telemetry.addLine("Waiting for robot to get to board position")
-                        nextTargetFromCondition(isRobotAtXPosition(actualWorld, targetWorld, allowedErrorXInches = 0.5), targetWorld)
+                        nextTargetFromCondition(isRobotAtXPosition(actualWorld, targetWorld, allowedErrorXInches = 1.0) || hasTimeElapsed(1000, targetWorld), targetWorld)
                     }
             ),
             blankAutoState.copy(
