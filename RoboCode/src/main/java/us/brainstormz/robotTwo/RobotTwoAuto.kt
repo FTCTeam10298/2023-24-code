@@ -32,6 +32,7 @@ import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.utils.measured
 import java.lang.Exception
 import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 fun Any.printPretty() = jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
 fun ActualWorld.withoutLights() = this.copy(actualRobot=this.actualRobot.copy(neopixelState = StripState(true, emptyList()))).printPretty()
@@ -234,7 +235,7 @@ class RobotTwoAuto(
     private val xForNavigatingUnderStageDoor = -((RobotTwoHardware.robotWidthInches/2) + 2)
 
     private val depositY = -52.5
-    private fun depositingPosition(propPosition: PropPosition) = when (propPosition) {
+    private fun centerOfDropArea(propPosition: PropPosition) = when (propPosition) {
         PropPosition.Left -> PositionAndRotation(
                 x = -29.4,
                 y = depositY,
@@ -251,11 +252,23 @@ class RobotTwoAuto(
                 r = 0.0
         )
     }
+    private fun depositingPosition(propPosition: PropPosition, alliance: RobotTwoHardware.Alliance): PositionAndRotation {
+        val allianceMultiplier = when (alliance) {
+            RobotTwoHardware.Alliance.Red -> -1
+            RobotTwoHardware.Alliance.Blue -> 1
+        }
+
+        val offset = 2.0 * allianceMultiplier.sign
+
+        return centerOfDropArea(propPosition).copy(
+                x = centerOfDropArea(propPosition).x - offset
+        )
+    }
 
     private val pushIntoBoardDrivetrainPower = -0.3
-    private fun depositYellow(propPosition: PropPosition) = listOf(
+    private fun depositYellow(propPosition: PropPosition, alliance: RobotTwoHardware.Alliance) = listOf(
             blankAutoState.copy(
-                    drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
+                    drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance)),
                     depoInput = DepoInput.YellowPlacement,
                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                         telemetry.addLine("Waiting for robot to get to board position")
@@ -476,7 +489,7 @@ class RobotTwoAuto(
                         purpleDriveToBoardPath = { propPosition ->
                             listOf(
                                     blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance).copy(
                                                     y = -30.0
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
@@ -485,7 +498,7 @@ class RobotTwoAuto(
                                             },
                                     ),
                                     blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance).copy(
                                                     y = -30.0
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
@@ -496,7 +509,7 @@ class RobotTwoAuto(
                                             getCurrentPositionAndRotationFromAprilTag = true
                                     ),
                                     blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance)),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                             }
@@ -504,7 +517,7 @@ class RobotTwoAuto(
                             ).addArmInitToPath()
                         },
                         yellowDepositSequence = { propPosition ->
-                            depositYellow(propPosition)
+                            depositYellow(propPosition, alliance)
                         },
                         parkPath = listOf(
                                 blankAutoState.copy(
@@ -691,7 +704,7 @@ class RobotTwoAuto(
                                             }
                                     ),
                                     blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance).copy(
                                                     y = -30.0
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
@@ -699,7 +712,7 @@ class RobotTwoAuto(
                                             },
                                     ),
                                     blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition).copy(
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance).copy(
                                                     y = -30.0
                                             )),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
@@ -710,7 +723,7 @@ class RobotTwoAuto(
                                             getCurrentPositionAndRotationFromAprilTag = true
                                     ),
                                     blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition)),
+                                            drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance)),
                                             armAtInitPosition = ArmInput.GoUnderTrussPosition,
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
@@ -719,7 +732,7 @@ class RobotTwoAuto(
                             ).addArmUnderTrussToPath()
                         },
                         yellowDepositSequence = { propPosition ->
-                            depositYellow(propPosition)
+                            depositYellow(propPosition, alliance)
                         },
                         parkPath = listOf(
                                 blankAutoState.copy(
