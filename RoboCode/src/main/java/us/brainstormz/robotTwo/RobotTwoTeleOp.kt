@@ -53,6 +53,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
     enum class DepoInput {
         YellowPlacement,
+        AbovePartnerYellowPlacement,
         Preset1,
         Preset2,
         Preset3,
@@ -1065,12 +1066,13 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
 
         val teleopAutoState = AutoInput(
                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation()),
-                depoInput = DepoInput.NoInput,
-                handoffInput = HandoffInput.NoInput,
-                wristInput = WristInput(ClawInput.NoInput, ClawInput.NoInput),
+                handoffInput = RobotTwoAuto.HandoffTarget(
+                        armPosition = Arm.Positions.AutoInitPosition,
+                        depoInput = DepoInput.Down,
+                        wristTargets = WristTargets(ClawTarget.Gripping)
+                ),
                 extendoInput = Extendo.ExtendoPositions.Min,
                 intakeInput = RobotTwoAuto.IntakeInput.NoInput,
-                armAtInitPosition = RobotTwoAuto.ArmInput.NoInput,
                 getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> throw Exception("Why are you running?") }
         )
 

@@ -44,10 +44,7 @@ data class TargetRobot(
 
 data class AutoInput (
         val drivetrainTarget: Drivetrain.DrivetrainTarget,
-        val depoInput: RobotTwoTeleOp.DepoInput,
-        val armAtInitPosition: RobotTwoAuto.ArmInput,
-        val handoffInput: RobotTwoTeleOp.HandoffInput,
-        val wristInput: RobotTwoTeleOp.WristInput,
+        val handoffInput: RobotTwoAuto.HandoffTarget,
         val extendoInput: Extendo.ExtendoPositions,
         val intakeInput: RobotTwoAuto.IntakeInput,
         @get:JsonIgnore

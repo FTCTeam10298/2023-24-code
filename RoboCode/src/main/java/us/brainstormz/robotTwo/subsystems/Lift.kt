@@ -27,7 +27,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
         Down(0),
         AutoLowYellowPlacement(inchesToTicks(2.0)),
-        AutoAbovePartnerPlacement(inchesToTicks(2.0)),
+        AutoAbovePartnerPlacement(inchesToTicks(4.0)),
         ClearForArmToMove(inchesToTicks(9.5)),
         TargetClearForArmToMove(ClearForArmToMove.ticks + inchesToTicks(2.0)),
         Preset1(inchesToTicks(5.0)),
@@ -49,6 +49,7 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
             RobotTwoTeleOp.DepoInput.Preset6 -> LiftPositions.Max
             RobotTwoTeleOp.DepoInput.Down -> LiftPositions.Down
             RobotTwoTeleOp.DepoInput.YellowPlacement -> LiftPositions.AutoLowYellowPlacement
+            RobotTwoTeleOp.DepoInput.AbovePartnerYellowPlacement -> LiftPositions.AutoAbovePartnerPlacement
 //            RobotTwoTeleOp.DepoInput.NoInput -> LiftPositions.Nothing
 //            RobotTwoTeleOp.DepoInput.ScoringHeightAdjust -> SlideSubsystem.VariableTargetPosition(ticks = position.toInt())
 //            RobotTwoTeleOp.DepoInput.Manual -> SlideSubsystem.VariableTargetPosition(0)
