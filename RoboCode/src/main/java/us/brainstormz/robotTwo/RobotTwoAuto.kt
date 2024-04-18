@@ -256,7 +256,9 @@ class RobotTwoAuto(
                     telemetry.addLine("april tag vs odom delta: ${delta}")
 
                     saveSomething("delta: $delta \naprilTagPosition: $aprilTagPosition")
-                    drivetrain.localizer.setPositionAndRotation(aprilTagPosition)
+                    drivetrain.localizer.setPositionAndRotation(aprilTagPosition.copy(
+                            r = actualWorld.actualRobot.positionAndRotation.r
+                    ))
                 }
 //            }
         }
