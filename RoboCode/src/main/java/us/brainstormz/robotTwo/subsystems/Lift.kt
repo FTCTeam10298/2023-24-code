@@ -25,11 +25,9 @@ class Lift(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 
     @JsonTypeName("LiftPositions")
     enum class LiftPositions(override val ticks: Int): SlideSubsystem.SlideTargetPosition {
-//        PastDown(0),
         Down(0),
-        ExtendoCouldInterfereWithGoingDown(100),
-        AutoLowYellowPlacement(inchesToTicks(0.0)),
-        AutoAbovePartnerPlacement((500*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
+        AutoLowYellowPlacement(inchesToTicks(2.0)),
+        AutoAbovePartnerPlacement(inchesToTicks(2.0)),
         ClearForArmToMove(inchesToTicks(9.5)),
         TargetClearForArmToMove(ClearForArmToMove.ticks + inchesToTicks(2.0)),
         Preset1(inchesToTicks(5.0)),
