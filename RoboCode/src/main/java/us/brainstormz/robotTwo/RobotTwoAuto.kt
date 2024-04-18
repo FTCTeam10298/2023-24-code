@@ -108,17 +108,6 @@ class RobotTwoAuto(
         }
 
 
-//        val intakeNoodleTarget = if (timeToStartEjection) {
-//            Intake.CollectorPowers.Eject
-//        } else if (stopAutomaticEjection) {
-//            Intake.CollectorPowers.Off
-//        } else {
-//            when (autoInput.intakeInput) {
-//                IntakeInput.Intake -> Intake.CollectorPowers.Intake
-//                IntakeInput.NoInput -> previousTargetWorld.targetRobot.collectorTarget.intakeNoodles
-//            }
-//        }
-
         val intakeNoodleTarget = when (autoInput.intakeInput) {
                 IntakeInput.Intake -> Intake.CollectorPowers.Intake
                 IntakeInput.NoInput -> Intake.CollectorPowers.Off
@@ -361,7 +350,7 @@ class RobotTwoAuto(
     )
 
     private val pushPurpleFarFromTrussX = -35.0
-    private val pushPurpleCloseToTrussX = -34.0
+    private val pushPurpleCloseToTrussX = -36.0
 
     private fun List<AutoInput>.addArmInitToPath(): List<AutoInput> = this.map { autoInput ->
         autoInput.copy(
