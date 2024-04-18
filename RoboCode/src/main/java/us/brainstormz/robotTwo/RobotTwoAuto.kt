@@ -54,6 +54,7 @@ class RobotTwoAuto(
             ),
             extendoInput = ExtendoPositions.Min,
             intakeInput = IntakeInput.NoInput,
+            dropdownPosition = Dropdown.DropdownPresets.FivePixels,
             getNextInput = { actualWorld, previousActualWorld, previousTargetWorld -> getNextTargetFromList(previousAutoInput= previousTargetWorld.autoInput!!) },
     )
 
@@ -195,7 +196,7 @@ class RobotTwoAuto(
 
                 fun clawTargetToClawInput(clawTarget: Claw.ClawTarget): ClawInput {
                     return when (clawTarget) {
-                        Claw.ClawTarget.Gripping -> ClawInput.Hold
+                        Claw.ClawTarget.Gripping -> ClawInput.NoInput
                         Claw.ClawTarget.Retracted -> ClawInput.Drop
                     }
                 }
@@ -644,9 +645,9 @@ class RobotTwoAuto(
                                     listOf(
                                             blankAutoState.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                            x = -48.0,
-                                                            y = 44.0,
-                                                            r = -38.0,
+                                                            x = cycleUnderTrussXPosition + 8,
+                                                            y = 41.5,
+                                                            r = -30.0,
                                                     )),
                                                     extendoInput = ExtendoPositions.CollectFromStack,
                                                     intakeInput = IntakeInput.Intake,
@@ -656,12 +657,13 @@ class RobotTwoAuto(
                                                             wristTargets = Wrist.WristTargets(Claw.ClawTarget.Retracted)
                                                     ),
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                        val weGotTwoPixels = Side.entries.fold(true) { acc, side ->
-                                                            val pixelIsInSide = targetWorld.targetRobot.collectorTarget.transferSensorState.getBySide(side).hasPixelBeenSeen
-                                                            acc && pixelIsInSide
-                                                        }
+                                                        val left = targetWorld.targetRobot.collectorTarget.transferSensorState.left.hasPixelBeenSeen
+                                                        val right = targetWorld.targetRobot.collectorTarget.transferSensorState.right.hasPixelBeenSeen
+
+                                                        val both = left && right
+
                                                         val timeIsUp = hasTimeElapsed(5000, targetWorld)
-                                                        nextTargetFromCondition(weGotTwoPixels || timeIsUp, targetWorld)
+                                                        nextTargetFromCondition(both || (timeIsUp && (left || right)), targetWorld)
                                                     }
                                             ),
                                     )
@@ -706,9 +708,9 @@ class RobotTwoAuto(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(depositingPosition(propPosition, alliance)),
                                                 handoffInput = HandoffTarget(
-                                                        armPosition = Arm.Positions.AutoInitPosition,
-                                                        depoInput = liftHeight,
-                                                        wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping)
+                                                        depoInput = DepoInput.AbovePartnerYellowPlacement,
+                                                        handoffInput = HandoffInput.Handoff,
+                                                        wristTargets = Wrist.WristTargets(Claw.ClawTarget.Retracted)
                                                 ),
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     telemetry.addLine("Waiting for robot to get to board position")
@@ -721,9 +723,9 @@ class RobotTwoAuto(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y = pushIntoBoardDrivetrainPower)),
                                                 handoffInput = HandoffTarget(
-                                                        armPosition = Arm.Positions.Out,
-                                                        depoInput = liftHeight,
-                                                        wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping)
+                                                        depoInput = DepoInput.AbovePartnerYellowPlacement,
+                                                        handoffInput = HandoffInput.Handoff,
+                                                        wristTargets = Wrist.WristTargets(Claw.ClawTarget.Retracted)
                                                 ),
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
 
@@ -749,8 +751,8 @@ class RobotTwoAuto(
                                         blankAutoState.copy(
                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(Drivetrain.DrivetrainPower(y = pushIntoBoardDrivetrainPower)),
                                                 handoffInput = HandoffTarget(
-                                                        armPosition = Arm.Positions.Out,
-                                                        depoInput = liftHeight,
+                                                        depoInput = DepoInput.AbovePartnerYellowPlacement,
+                                                        handoffInput = HandoffInput.Handoff,
                                                         wristTargets = Wrist.WristTargets(Claw.ClawTarget.Retracted)
                                                 ),
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
@@ -773,6 +775,11 @@ class RobotTwoAuto(
                                                                 drivetrainTarget = Drivetrain.DrivetrainTarget(actualWorld.actualRobot.positionAndRotation.copy(
                                                                         y = atBoardPosition + 6
                                                                 )),
+                                                                handoffInput = HandoffTarget(
+                                                                        depoInput = DepoInput.AbovePartnerYellowPlacement,
+                                                                        handoffInput = HandoffInput.Handoff,
+                                                                        wristTargets = Wrist.WristTargets(Claw.ClawTarget.Retracted)
+                                                                ),
                                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                                     telemetry.addLine("Waiting for robot to back away from board")
 
