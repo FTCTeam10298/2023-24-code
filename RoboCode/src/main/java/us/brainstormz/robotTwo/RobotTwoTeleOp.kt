@@ -680,7 +680,6 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                 Dropdown.DropdownTarget(Dropdown.DropdownPresets.OnePixel)
             }
             DropdownInput.NoInput -> {
-//                if (previousTargetState.targetRobot.collectorTarget.dropDown)
                 if (intakeNoodleTarget == Intake.CollectorPowers.Intake) {
                     Dropdown.DropdownTarget(Dropdown.DropdownPresets.TwoPixels)
                 } else {
@@ -797,7 +796,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                                     Extendo.ExtendoTarget(
                                             targetPosition = Extendo.ExtendoPositions.Min,
                                             movementMode = DualMovementModeSubsystem.MovementMode.Power,
-                                            power = -0.7)
+                                            power = -1.0)
                                 }
                                 ExtendoInput.NoInput -> {
                                     Extendo.ExtendoTarget(
@@ -828,7 +827,7 @@ class RobotTwoTeleOp(private val telemetry: Telemetry): RobotTwo(telemetry) {
                     Extendo.ExtendoTarget(
                             targetPosition = previousExtendoTargetPosition,
                             movementMode = DualMovementModeSubsystem.MovementMode.Power,
-                            power = -0.5)
+                            power = -1.0)
                 }
                 ExtendoInput.NoInput -> {
                     if (doHandoffSequence) {
