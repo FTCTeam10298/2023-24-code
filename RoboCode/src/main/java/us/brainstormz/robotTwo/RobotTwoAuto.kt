@@ -702,7 +702,7 @@ class RobotTwoAuto(
                                     val startCollectionPosition = PositionAndRotation(
                                             x = cycleUnderTrussXPosition + 8,
                                             y = 41.5,
-                                            r = -28.0,
+                                            r = -22.0,
                                     )
 
                                     listOf(
@@ -772,7 +772,7 @@ class RobotTwoAuto(
                                             ),
                                             cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition.copy(
-                                                            r = startCollectionPosition.r - 8
+                                                            r = startCollectionPosition.r - 10
                                                     )),
                                                     extendoInput = ExtendoPositions.CollectFromStack2,
                                                     intakeInput = Intake.CollectorPowers.Intake,
