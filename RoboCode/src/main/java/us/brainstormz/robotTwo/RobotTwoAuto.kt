@@ -463,6 +463,7 @@ class RobotTwoAuto(
     private val pushPurpleFarFromTrussX = -35.0
     private val pushPurpleCloseToTrussX = -36.0
 
+    private var indexOfCollectionStart: Int? = null
     private fun calcAutoTargetStateList(
             alliance: RobotTwoHardware.Alliance,
             startingSide: StartPosition,
@@ -699,7 +700,7 @@ class RobotTwoAuto(
                                     )
                                 },
                                 collectFromStack = { propPosition ->
-                                    val collectionPosition = PositionAndRotation(
+                                    val startCollectionPosition = PositionAndRotation(
                                             x = cycleUnderTrussXPosition + 8,
                                             y = 41.5,
                                             r = -28.0,
@@ -707,7 +708,7 @@ class RobotTwoAuto(
 
                                     listOf(
                                             cyclePreCollectBase.copy(
-                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(collectionPosition),
+                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
                                                     extendoInput = ExtendoPositions.CollectFromStack,
                                                     handoffInput = HandoffTarget(
                                                             armPosition = Arm.Positions.OutButUnderTwelve,
@@ -725,7 +726,7 @@ class RobotTwoAuto(
                                                     }
                                             ),
                                             cyclePreCollectBase.copy(
-                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(collectionPosition),
+                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
                                                     extendoInput = ExtendoPositions.CollectFromStack,
                                                     handoffInput = HandoffTarget(
                                                             armPosition = Arm.Positions.OutButUnderTwelve,
@@ -738,7 +739,46 @@ class RobotTwoAuto(
                                                     }
                                             ),
                                             cycleCollectionAndPostBase.copy(
-                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(collectionPosition),
+                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
+                                                    extendoInput = ExtendoPositions.CollectFromStack,
+                                                    intakeInput = Intake.CollectorPowers.Intake,
+                                                    dropdownPosition = Dropdown.DropdownPresets.OnePixel,
+                                                    handoffInput = HandoffTarget(
+                                                            armPosition = Arm.Positions.OutButUnderTwelve,
+                                                            depoInput = DepoInput.Down,
+                                                            wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
+                                                    ),
+                                                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+
+                                                        indexOfCollectionStart = targetWorld.autoInput?.listIndex
+
+                                                        val left = targetWorld.targetRobot.collectorTarget.transferSensorState.left.hasPixelBeenSeen
+                                                        val right = targetWorld.targetRobot.collectorTarget.transferSensorState.right.hasPixelBeenSeen
+
+                                                        val both = left && right
+                                                        val either = left || right
+
+                                                        val timeIsUp = hasTimeElapsed(2000, targetWorld)
+
+                                                        val nextTarget = if (!either) {
+                                                            targetWorld.copy(
+                                                                    autoInput = targetWorld.autoInput?.copy(
+                                                                            drivetrainTarget = Drivetrain.DrivetrainTarget(
+                                                                                    startCollectionPosition.copy(
+                                                                                        r = startCollectionPosition.r + 10
+                                                                                    )
+                                                                            )
+                                                                    )
+                                                            )
+                                                        } else {
+                                                            targetWorld
+                                                        }
+
+                                                        nextTargetFromCondition(both || (timeIsUp && either), nextTarget)
+                                                    }
+                                            ),
+                                            cycleCollectionAndPostBase.copy(
+                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
                                                     extendoInput = ExtendoPositions.CollectFromStack,
                                                     intakeInput = Intake.CollectorPowers.Intake,
                                                     dropdownPosition = Dropdown.DropdownPresets.OnePixel,
@@ -753,12 +793,12 @@ class RobotTwoAuto(
 
                                                         val both = left && right
 
-                                                        val timeIsUp = hasTimeElapsed(3000, targetWorld)
+                                                        val timeIsUp = hasTimeElapsed(2000, targetWorld)
                                                         nextTargetFromCondition(both || (timeIsUp && (left || right)), targetWorld)
                                                     }
                                             ),
                                             cycleCollectionAndPostBase.copy(
-                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(collectionPosition),
+                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
                                                     extendoInput = ExtendoPositions.CollectFromStack,
                                                     intakeInput = Intake.CollectorPowers.Eject,
                                                     handoffInput = HandoffTarget(
@@ -767,7 +807,23 @@ class RobotTwoAuto(
                                                             wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
                                                     ),
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                        nextTargetFromCondition(hasTimeElapsed(500, targetWorld), targetWorld)
+
+                                                        val left = targetWorld.targetRobot.collectorTarget.transferSensorState.left.hasPixelBeenSeen
+                                                        val right = targetWorld.targetRobot.collectorTarget.transferSensorState.right.hasPixelBeenSeen
+
+                                                        nextTargetFromCondition(
+                                                                hasTimeElapsed(500, targetWorld),
+                                                                if (!(left && right)) {
+                                                                    targetWorld.copy(
+                                                                            autoInput = targetWorld.autoInput?.copy(
+                                                                                    listIndex = indexOfCollectionStart
+                                                                            )
+                                                                    )
+                                                                } else {
+                                                                    targetWorld
+                                                                }
+
+                                                        )
                                                     }
                                             ),
                                     )
