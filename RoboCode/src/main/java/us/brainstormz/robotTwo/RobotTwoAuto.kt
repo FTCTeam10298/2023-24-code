@@ -811,48 +811,6 @@ class RobotTwoAuto(
                                             cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
                                                     extendoInput = ExtendoPositions.CollectFromStack1,
-                                                    intakeInput = Intake.CollectorPowers.Intake,
-                                                    dropdownPosition = Dropdown.DropdownPresets.FivePixels,
-                                                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-
-                                                        indexOfCollectionStart = targetWorld.autoInput?.listIndex
-
-                                                        val left = targetWorld.targetRobot.collectorTarget.transferSensorState.left.hasPixelBeenSeen
-                                                        val right = targetWorld.targetRobot.collectorTarget.transferSensorState.right.hasPixelBeenSeen
-
-                                                        val both = left && right
-
-                                                        val timeIsUp = hasTimeElapsed(1000, targetWorld)
-
-                                                        val condition = both || timeIsUp
-
-                                                        nextTargetFromCondition(condition, targetWorld)
-                                                    }
-                                            ),
-                                            cycleCollectionAndPostBase.copy(
-                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
-                                                    extendoInput = ExtendoPositions.CollectFromStack1,
-                                                    intakeInput = Intake.CollectorPowers.Off,
-                                                    dropdownPosition = Dropdown.DropdownPresets.FivePixels,
-                                                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-
-                                                        indexOfCollectionStart = targetWorld.autoInput?.listIndex
-
-                                                        val left = targetWorld.targetRobot.collectorTarget.transferSensorState.left.hasPixelBeenSeen
-                                                        val right = targetWorld.targetRobot.collectorTarget.transferSensorState.right.hasPixelBeenSeen
-
-                                                        val both = left && right
-
-                                                        val timeIsUp = hasTimeElapsed(200, targetWorld)
-
-                                                        val condition = both || timeIsUp
-
-                                                        nextTargetFromCondition(condition, targetWorld)
-                                                    }
-                                            ),
-                                            cycleCollectionAndPostBase.copy(
-                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
-                                                    extendoInput = ExtendoPositions.CollectFromStack1,
                                                     intakeInput = Intake.CollectorPowers.Eject,
                                                     handoffInput = HandoffTarget(
                                                             armPosition = Arm.Positions.OutButUnderTwelve,
@@ -866,9 +824,18 @@ class RobotTwoAuto(
 
                                                         println("condition ID: J")
 
-                                                        nextTargetFromCondition(hasTimeElapsed(500, targetWorld), targetWorld)
-
-//                                                        nextTargetFromConditior
+                                                        nextTargetFromCondition(
+                                                                hasTimeElapsed(500, targetWorld),
+                                                                if (!(left && right)) {
+                                                                    targetWorld.copy(
+                                                                            autoInput = targetWorld.autoInput?.copy(
+                                                                                    listIndex = indexOfCollectionStart
+                                                                            )
+                                                                    )
+                                                                } else {
+                                                                    targetWorld
+                                                                }
+                                                        )
                                                     }
                                             ),
                                     )
@@ -878,7 +845,7 @@ class RobotTwoAuto(
                                             cyclePreCollectBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
                                                             x = cycleUnderTrussXPosition - 1,
-                                                            y = 40.0,
+                                                            y = 35.0,
                                                             r = 0.0,
                                                     )),
                                                     intakeInput = Intake.CollectorPowers.Eject,
@@ -1412,7 +1379,7 @@ class RobotTwoAuto(
     private val wizard = TelemetryWizard(console, null)
 
     private val timesToWait = listOf(1, 3, 5, 8, 10)
-    private val cycleOptions = listOf(1, 2)
+    private val cycleOptions = listOf(1)
 
     fun init(hardware: RobotTwoHardware) {
         initRobot(
