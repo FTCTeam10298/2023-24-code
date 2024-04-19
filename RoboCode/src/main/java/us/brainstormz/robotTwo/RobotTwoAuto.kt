@@ -717,13 +717,14 @@ class RobotTwoAuto(
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                         drivetrain.rotationPID = PID(
                                                                 name = "r only",
-                                                                kp= 1.4,
+                                                                kp= 1.6,
                                                                 ki= 1.0E-4,
                                                                 kd= 150.0,
                                                         )
                                                         nextTargetFromCondition(hasTimeElapsed(500, targetWorld), targetWorld)
                                                     }
                                             ),
+                                            //pattern I want: drop down goes up and down, robot turns back and forth, extendo moves forward and back
                                             cyclePreCollectBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
                                                     extendoInput = ExtendoPositions.CollectFromStack1,
@@ -759,11 +760,10 @@ class RobotTwoAuto(
                                                         val right = targetWorld.targetRobot.collectorTarget.transferSensorState.right.hasPixelBeenSeen
 
                                                         val both = left && right
-                                                        val either = left || right
 
-                                                        val timeIsUp = hasTimeElapsed(2000, targetWorld)
+                                                        val timeIsUp = hasTimeElapsed(1000, targetWorld)
 
-                                                        val condition = both || (timeIsUp && either)
+                                                        val condition = both || timeIsUp
 
                                                         println("condition ID: A, value: $condition")
 
@@ -772,7 +772,7 @@ class RobotTwoAuto(
                                             ),
                                             cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition.copy(
-                                                            r = startCollectionPosition.r + 15
+                                                            r = startCollectionPosition.r - 8
                                                     )),
                                                     extendoInput = ExtendoPositions.CollectFromStack2,
                                                     intakeInput = Intake.CollectorPowers.Intake,
@@ -789,19 +789,14 @@ class RobotTwoAuto(
                                                         val both = left && right
                                                         val either = left || right
 
-                                                        val timeIsUp = hasTimeElapsed(2000, targetWorld)
+                                                        val timeIsUp = hasTimeElapsed(1000, targetWorld)
 
+                                                        val condition = both || timeIsUp
                                                         val nextTarget = if (!either && timeIsUp) {
-                                                            targetWorld.copy(
-                                                                    autoInput = targetWorld.autoInput?.copy(
-                                                                            listIndex = targetWorld.autoInput.listIndex?.minus(2)
-                                                                    )
-                                                            )
+                                                            (indexOfCollectionStart?.let{targetWorld.atIndex(it -1 )} ?: targetWorld)
                                                         } else {
                                                             targetWorld
                                                         }
-
-                                                        val condition = both || (timeIsUp && either)
 
                                                         println("condition ID: D, value: $condition")
 

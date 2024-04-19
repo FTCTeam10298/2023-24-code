@@ -65,6 +65,11 @@ data class TargetWorld(
     val timeTargetStartedMilis: Long = 0,
     val gamepad2Rumble: RobotTwoTeleOp.GamepadRumble
 ) {
+
+    fun atIndex(i:Int) =this.copy(autoInput = autoInput?.copy(
+            listIndex = i
+    ))
+
     override fun equals(other: Any?): Boolean =
         if (other is TargetWorld) {
                     other.targetRobot == targetRobot &&
