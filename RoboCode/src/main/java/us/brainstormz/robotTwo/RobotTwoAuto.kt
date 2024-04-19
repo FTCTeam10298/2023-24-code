@@ -622,7 +622,7 @@ class RobotTwoAuto(
                                             ),
                                             getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                 val isButtonNotPressed = !actualWorld.actualGamepad1.touchpad
-                                                val waitIsDone = hasTimeElapsed(1000, targetWorld)
+                                                val waitIsDone = hasTimeElapsed(700, targetWorld)
                                                 nextTargetFromCondition(isButtonNotPressed && waitIsDone, targetWorld)
                                             },
                                             getCurrentPositionAndRotationFromAprilTag = true
