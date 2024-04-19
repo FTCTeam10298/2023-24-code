@@ -106,7 +106,10 @@ class Transfer(private val telemetry: Telemetry) {
     @Serializable
     data class TransferTarget(
             override val left: LatchTarget,
-            override val right: LatchTarget): Side.ThingWithSides<LatchTarget>
+            override val right: LatchTarget
+    ): Side.ThingWithSides<LatchTarget> {
+        constructor(both: LatchTarget): this(left = both, right = both)
+    }
 
     fun powerSubsystem(transferState: TransferTarget, hardware: RobotTwoHardware, actualRobot: ActualRobot) {
         hardware.leftTransferServo.power = transferState.left.target.position

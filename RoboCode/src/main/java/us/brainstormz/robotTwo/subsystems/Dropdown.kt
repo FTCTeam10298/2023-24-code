@@ -6,10 +6,10 @@ import us.brainstormz.robotTwo.RobotTwoHardware
 
 class Dropdown: Subsystem, DualMovementModeSubsystem {
     enum class DropdownPresets(val position: Double) {
-        Init(0.8),
-        Up(0.25),
-        FivePixels(0.24),
-        FivePixelsForAuto(0.22),
+        Init(0.7),
+        Up(0.22),
+        FivePixels(0.22),
+        FivePixelsForAuto(0.20),
 //        FourPixels(0.2),
         ThreePixels(0.1),
         TwoPixels(0.08),

@@ -47,6 +47,7 @@ data class AutoInput (
         val handoffInput: RobotTwoAuto.HandoffTarget,
         val extendoInput: Extendo.ExtendoPositions,
         val intakeInput: Intake.CollectorPowers,
+        val latchOverride: Transfer.TransferTarget,
         val dropdownPosition: Dropdown.DropdownPresets,
         @get:JsonIgnore
         val getNextInput: ((actualWorld: ActualWorld, previousActualWorld: ActualWorld, targetWorld: TargetWorld) -> AutoInput)? = null,
