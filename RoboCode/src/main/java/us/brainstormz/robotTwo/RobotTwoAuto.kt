@@ -171,14 +171,11 @@ class RobotTwoAuto(
         )
 
         /**Handoff*/
-
-
         val ifHanodffManagerOn = autoInput.handoffInput.handoffManagerOn
         val handoffTarget = if (ifHanodffManagerOn) {
             val doingHandoff = autoInput.handoffInput.handoffInput == HandoffInput.Handoff
 
             val repeatDriverInputForDepo = when {
-//            doingHandoff -> DepoInput.Down
                 autoInput.handoffInput.depoInput == DepoInput.NoInput -> {
                     DepoInput.Down
                 }
@@ -277,19 +274,18 @@ class RobotTwoAuto(
         }
 
         if (autoInput.getCurrentPositionAndRotationFromAprilTag) {
-                val positionAndRotationFromAprilTag = aprilTagLocalizerRepackaged.recalculatePositionAndRotation(aprilTagReadings)
-                telemetry.addLine("aprilTagPosition: $positionAndRotationFromAprilTag")
+            val positionAndRotationFromAprilTag = aprilTagLocalizerRepackaged.recalculatePositionAndRotation(aprilTagReadings)
+            telemetry.addLine("aprilTagPosition: $positionAndRotationFromAprilTag")
 
-                positionAndRotationFromAprilTag?.let {aprilTagPosition ->
-                    val delta = aprilTagPosition - actualWorld.actualRobot.positionAndRotation
-                    telemetry.addLine("april tag vs odom delta: ${delta}")
+            positionAndRotationFromAprilTag?.let {aprilTagPosition ->
+                val delta = aprilTagPosition - actualWorld.actualRobot.positionAndRotation
+                telemetry.addLine("april tag vs odom delta: ${delta}")
 
-                    saveSomething("delta: $delta \naprilTagPosition: $aprilTagPosition")
-                    drivetrain.localizer.setPositionAndRotation(aprilTagPosition.copy(
-                            r = actualWorld.actualRobot.positionAndRotation.r
-                    ))
-                }
-//            }
+                saveSomething<String>("delta: $delta \naprilTagPosition: $aprilTagPosition")
+                drivetrain.localizer.setPositionAndRotation(aprilTagPosition.copy(
+                        r = actualWorld.actualRobot.positionAndRotation.r
+                ))
+            }
         }
 
         return TargetWorld(
@@ -314,10 +310,6 @@ class RobotTwoAuto(
     }
 
     private val aprilTagLocalizerRepackaged = AprilTagLocalizerRepackaged(telemetry = telemetry)
-
-    private fun recalibrateToAprilTagSequence(): List<AutoInput> {
-        return listOf()
-    }
 
     private val xForNavigatingUnderStageDoor = -((RobotTwoHardware.robotWidthInches/2) + 2)
 
@@ -1204,13 +1196,6 @@ class RobotTwoAuto(
         return !previousTargetWorld.doingHandoff
     }
 
-    enum class ArmInput {
-        InitPosition,
-        GoUnderTrussPosition,
-        NoInput
-    }
-
-
     /** Path assembly */
     data class CyclePath(
             val numberOfCycles: Int,
@@ -1243,9 +1228,8 @@ class RobotTwoAuto(
 
             val cycles = cyclePath?.assemblePath(propPosition) ?: emptyList()
 
-            val beforePark = fiftyPoint// + cycles
-            return  beforePark + parkPath(beforePark.last())
-
+            val beforePark = fiftyPoint + cycles
+            return beforePark + parkPath(beforePark.last())
         }
     }
 
