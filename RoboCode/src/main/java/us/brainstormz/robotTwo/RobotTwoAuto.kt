@@ -793,7 +793,7 @@ class RobotTwoAuto(
 
                                                         val condition = both || timeIsUp
                                                         val nextTarget = if (!either && timeIsUp) {
-                                                            (indexOfCollectionStart?.let{targetWorld.atIndex(it -1 )} ?: targetWorld)
+                                                            (indexOfCollectionStart?.let{targetWorld.atIndex(it -2 )} ?: targetWorld)
                                                         } else {
                                                             targetWorld
                                                         }
@@ -912,7 +912,7 @@ class RobotTwoAuto(
                                             ),
                                             cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(spitIntoBackstagePosition),
-                                                    extendoInput = ExtendoPositions.CollectFromStack1,
+                                                    extendoInput = ExtendoPositions.CollectFromStack2,
                                                     handoffInput = HandoffTarget(
                                                             armPosition = Arm.Positions.OutButUnderTwelve,
                                                             depoInput = DepoInput.Down,
@@ -921,7 +921,7 @@ class RobotTwoAuto(
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                         drivetrain.rotationPID = drivetrain.rotationOnlyPID
 
-                                                        val extendoIsOutEnough = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= ExtendoPositions.ReadyToEject.ticks
+                                                        val extendoIsOutEnough = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= ExtendoPositions.CollectFromStack1.ticks
 
                                                         nextTargetFromCondition(extendoIsOutEnough, targetWorld)
                                                     }
@@ -929,7 +929,7 @@ class RobotTwoAuto(
                                             cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(spitIntoBackstagePosition),
                                                     intakeInput = Intake.CollectorPowers.Eject,
-                                                    extendoInput = ExtendoPositions.CollectFromStack1,
+                                                    extendoInput = ExtendoPositions.Min,
                                                     latchOverride = Transfer.TransferTarget(Transfer.LatchTarget(Transfer.LatchPositions.Open, 0L)),
                                                     handoffInput = HandoffTarget(
                                                             armPosition = Arm.Positions.OutButUnderTwelve,
@@ -938,6 +938,8 @@ class RobotTwoAuto(
                                                     ),
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                         val timeIsDone = hasTimeElapsed(1000, targetWorld)
+
+                                                        println("nooodles: " + targetWorld.targetRobot.collectorTarget.intakeNoodles)
 
                                                         nextTargetFromCondition(timeIsDone, targetWorld)
                                                     }
