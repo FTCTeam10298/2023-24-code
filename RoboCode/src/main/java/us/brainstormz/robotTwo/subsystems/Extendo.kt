@@ -42,6 +42,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
         OutFarEnoughToCompletelyClearDepo(200),
 //        Manual(0),
         ReadyToEject(200),
+        AutoPark(500),
         CollectFromStack1(800),
         CollectFromStack2(1000),
         PurpleFarSidePosition((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),

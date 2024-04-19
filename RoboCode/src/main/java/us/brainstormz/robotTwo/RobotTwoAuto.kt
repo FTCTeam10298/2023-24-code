@@ -494,7 +494,7 @@ class RobotTwoAuto(
 
         val redPath: PathPreAssembled = when (startingSide) {
             StartPosition.Backboard -> {
-                val cycleUnderTrussXPosition = -58.0
+                val cycleUnderTrussXPosition = -58.5
 
                 val cyclePreCollectBase = blankAutoState.copy(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
@@ -977,7 +977,7 @@ class RobotTwoAuto(
                             } else {
                                 listOf(
                                         previousAutoInput.copy(
-                                                extendoInput = ExtendoPositions.CollectFromStack1,
+                                                extendoInput = ExtendoPositions.AutoPark,
                                                 getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                     nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                 }
