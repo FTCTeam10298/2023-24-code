@@ -515,7 +515,7 @@ class RobotTwoAuto(
                                 y = startPosition.y,
                                 r = 0.0,
                         )),
-                        dropdownPosition = Dropdown.DropdownPresets.OnePixel,
+                        dropdownPosition = Dropdown.DropdownPresets.FivePixelsForAuto,
                         handoffInput = HandoffTarget(
                                 armPosition = Arm.Positions.OutButUnderTwelve,
                                 depoInput = DepoInput.Down,
@@ -706,11 +706,9 @@ class RobotTwoAuto(
                                     )
 
                                     listOf(
-                                            cycleCollectionAndPostBase.copy(
+                                            cyclePreCollectBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(collectionPosition),
                                                     extendoInput = ExtendoPositions.CollectFromStack,
-                                                    intakeInput = Intake.CollectorPowers.Intake,
-                                                    dropdownPosition = Dropdown.DropdownPresets.FivePixelsForAuto,
                                                     handoffInput = HandoffTarget(
                                                             armPosition = Arm.Positions.OutButUnderTwelve,
                                                             depoInput = DepoInput.Down,
@@ -724,6 +722,19 @@ class RobotTwoAuto(
                                                                 kd= 150.0,
                                                         )
                                                         nextTargetFromCondition(hasTimeElapsed(500, targetWorld), targetWorld)
+                                                    }
+                                            ),
+                                            cyclePreCollectBase.copy(
+                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(collectionPosition),
+                                                    extendoInput = ExtendoPositions.CollectFromStack,
+                                                    handoffInput = HandoffTarget(
+                                                            armPosition = Arm.Positions.OutButUnderTwelve,
+                                                            depoInput = DepoInput.Down,
+                                                            wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
+                                                    ),
+                                                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                        val extendoIsOutEnoughToRunCollector = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= Extendo.ExtendoPositions.ReadyToEject.ticks
+                                                        nextTargetFromCondition(extendoIsOutEnoughToRunCollector, targetWorld)
                                                     }
                                             ),
                                             cycleCollectionAndPostBase.copy(
@@ -803,7 +814,7 @@ class RobotTwoAuto(
                                 scoreCycle = { propPosition ->
                                     listOf(
                                             cycleCollectionAndPostBase.copy(
-                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(spitIntoBackstagePosition.copy(r = -1.0)),
+                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(spitIntoBackstagePosition.copy(r = 1.0)),
                                                     handoffInput = HandoffTarget(
                                                             armPosition = Arm.Positions.OutButUnderTwelve,
                                                             depoInput = DepoInput.Down,
@@ -826,12 +837,12 @@ class RobotTwoAuto(
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                         drivetrain.rotationPID = PID(
                                                                 name = "r only",
-                                                                kp= 1.4,
+                                                                kp= 1.55,
                                                                 ki= 1.0E-4,
                                                                 kd= 150.0,
                                                         )
 
-                                                        val drivetrainIsAtPosition = isRobotAtRPosition(actualWorld, targetWorld)
+                                                        val drivetrainIsAtPosition = isRobotAtRPosition(actualWorld, targetWorld, allowedErrorRDegrees = 10.0)
 
                                                         nextTargetFromCondition(drivetrainIsAtPosition, targetWorld)
                                                     }
