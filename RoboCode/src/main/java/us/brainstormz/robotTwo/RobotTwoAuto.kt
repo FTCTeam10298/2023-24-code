@@ -1199,7 +1199,7 @@ class RobotTwoAuto(
             val cycles = cyclePath?.assemblePath(propPosition) ?: emptyList()
 
             val beforePark = fiftyPoint + cycles
-            return beforePark + parkPath(beforePark.last())
+            return beforePark //+ parkPath(beforePark.last())
         }
     }
 
