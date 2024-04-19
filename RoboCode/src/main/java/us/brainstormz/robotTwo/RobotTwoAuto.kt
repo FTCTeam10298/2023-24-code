@@ -1292,7 +1292,7 @@ class RobotTwoAuto(
     private val wizard = TelemetryWizard(console, null)
 
     private val timesToWait = listOf(1, 3, 5, 8, 10)
-    private val cycleOptions = listOf(1, 2)
+    private val cycleOptions = listOf(1)
 
     fun init(hardware: RobotTwoHardware) {
         initRobot(
