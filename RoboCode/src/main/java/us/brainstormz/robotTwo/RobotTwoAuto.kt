@@ -926,7 +926,7 @@ class RobotTwoAuto(
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                         drivetrain.rotationPID = drivetrain.rotationOnlyPID
 
-                                                        val extendoIsOutEnough = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= 300
+                                                        val extendoIsOutEnough = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= 500
 
                                                         nextTargetFromCondition(extendoIsOutEnough, targetWorld)
                                                     }
@@ -952,27 +952,38 @@ class RobotTwoAuto(
                                     )
                                 },
                         ),
-                        parkPath = { previousAutoInput ->
-                            listOf(
-                                    previousAutoInput.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(previousAutoInput.drivetrainTarget.targetPosition.copy(
-                                                    x = startPosition.x + 1,
-                                                    y = -50.0,
-                                            )),
-                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                            }
-                                    ),
-                                    previousAutoInput.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(previousAutoInput.drivetrainTarget.targetPosition.copy(
-                                                    x = startPosition.x + 1,
-                                                    y = -60.0,
-                                            )),
-                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                            }
-                                    )
-                            )
+                        parkPath = { previousAutoInput, doingCycles->
+                            if (!doingCycles) {
+                                listOf(
+                                        previousAutoInput.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(previousAutoInput.drivetrainTarget.targetPosition.copy(
+                                                        x = startPosition.x + 1,
+                                                        y = -50.0,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        previousAutoInput.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(previousAutoInput.drivetrainTarget.targetPosition.copy(
+                                                        x = startPosition.x + 1,
+                                                        y = -60.0,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        )
+                                )
+                            } else {
+                                listOf(
+                                        previousAutoInput.copy(
+                                                extendoInput = ExtendoPositions.CollectFromStack1,
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                )
+                            }
                         }
                 )
             }
@@ -1174,7 +1185,7 @@ class RobotTwoAuto(
                         yellowDepositSequence = { propPosition ->
                             depositYellow(propPosition, alliance, liftHeight)
                         },
-                        parkPath = { previousAutoInput ->
+                        parkPath = { previousAutoInput, doingCycles ->
                             listOf(
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
@@ -1296,7 +1307,7 @@ class RobotTwoAuto(
             val purpleDriveToBoardPath: (PropPosition)->List<AutoInput>,
             val yellowDepositSequence: (PropPosition)->List<AutoInput>,
             val cyclePath: CyclePath? = null,
-            val parkPath: (previousAutoInput: AutoInput) -> List<AutoInput>) {
+            val parkPath: (previousAutoInput: AutoInput, doingCycles: Boolean) -> List<AutoInput>) {
         fun assemblePath(propPosition: PropPosition): List<AutoInput> {
             val fiftyPoint = purplePlacementPath(propPosition) +
                     purpleDriveToBoardPath(propPosition) +
@@ -1305,7 +1316,7 @@ class RobotTwoAuto(
             val cycles = cyclePath?.assemblePath(propPosition) ?: emptyList()
 
             val beforePark = fiftyPoint + cycles
-            return beforePark //+ parkPath(beforePark.last())
+            return beforePark + parkPath(beforePark.last(), cyclePath != null)
         }
     }
 
@@ -1368,7 +1379,7 @@ class RobotTwoAuto(
     private val wizard = TelemetryWizard(console, null)
 
     private val timesToWait = listOf(1, 3, 5, 8, 10)
-    private val cycleOptions = listOf(1, 2, 3)
+    private val cycleOptions = listOf(1)
 
     fun init(hardware: RobotTwoHardware) {
         initRobot(
