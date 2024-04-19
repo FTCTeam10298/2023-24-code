@@ -12,13 +12,12 @@ import us.brainstormz.robotTwo.tuningAndCalibration.printPID
 import kotlin.math.absoluteValue
 
 class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
-    override var pid: PID =
-                        PID(
-                                name= "extendo",
-                                kp= 0.00186,
-                                ki= 2.1E-7,
-                                kd= 0.08,
-                        )
+    override var pid: PID = PID(
+            name= "extendo",
+            kp= 0.00186,
+            ki= 2.1E-7,
+            kd= 0.08,
+    )
 
 
 
@@ -44,7 +43,7 @@ class Extendo(override val telemetry: Telemetry): Subsystem, SlideSubsystem {
 //        Manual(0),
         ReadyToEject(200),
         CollectFromStack1(800),
-        CollectFromStack2(1100),
+        CollectFromStack2(1000),
         PurpleFarSidePosition((700*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         PurpleCloseSidePosition((800*SlideConversion.oldToNewMotorEncoderConversion).toInt()),
         PurpleCenterPosition((2000*SlideConversion.oldToNewMotorEncoderConversion).toInt()),

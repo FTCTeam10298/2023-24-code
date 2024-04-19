@@ -717,7 +717,7 @@ class RobotTwoAuto(
                                                             r = 0.0,
                                                     )),
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld) && hasTimeElapsed(500, targetWorld), targetWorld)
                                                     }
                                             ),
                                     )
@@ -726,7 +726,7 @@ class RobotTwoAuto(
                                     val startCollectionPosition = PositionAndRotation(
                                             x = cycleUnderTrussXPosition + 8,
                                             y = 41.5,
-                                            r = -22.0,
+                                            r = -25.0,
                                     )
 
                                     listOf(
@@ -926,7 +926,7 @@ class RobotTwoAuto(
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                         drivetrain.rotationPID = drivetrain.rotationOnlyPID
 
-                                                        val extendoIsOutEnough = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= ExtendoPositions.CollectFromStack1.ticks
+                                                        val extendoIsOutEnough = actualWorld.actualRobot.collectorSystemState.extendo.currentPositionTicks >= 300
 
                                                         nextTargetFromCondition(extendoIsOutEnough, targetWorld)
                                                     }
@@ -1375,6 +1375,13 @@ class RobotTwoAuto(
             hardware = hardware,
             localizer = RRTwoWheelLocalizer(hardware= hardware, inchesPerTick= hardware.inchesPerTick)
         )
+
+        extendo.pid = PID(
+                        name= "extendo",
+                        kp= 0.002,
+                        ki= 2.1E-7,
+                        kd= 0.08,
+                )
 
         wizard.newMenu("alliance", "What alliance are we on?", listOf("Red", "Blue"), nextMenu = "partnerYellow", firstMenu = true)
         wizard.newMenu("partnerYellow", "What will our partner be placing on the board?", listOf("Yellow", "Nothing"), nextMenu = "startingPos")
