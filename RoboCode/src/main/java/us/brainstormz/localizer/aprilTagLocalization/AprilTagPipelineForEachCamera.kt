@@ -31,10 +31,10 @@ open class AprilTagPipelineForEachCamera(val cameraName: String, val resolution:
     }
 
     fun close() {
-        visionPortal!!.close()
+        visionPortal?.close()
     }
 
     fun detections() = aprilTag?.detections ?: emptyList()
 
-    fun resumeStreaming() = visionPortal!!.resumeStreaming()
+    fun resumeStreaming() = visionPortal?.resumeStreaming()
 }
