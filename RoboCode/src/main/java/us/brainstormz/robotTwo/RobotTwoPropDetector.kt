@@ -43,7 +43,24 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
     private val redHighMat = Mat()
     private var regions: Map<PropPosition, Mat> = emptyMap()
 
+    private var firstFrameTimeMillis: Long? = null
+    private var baselines: Map<RobotTwoPropDetector.PropPosition, Double>? = null
+
+    fun setBaselines(){
+        baselines = null
+    }
+
+    fun setBaselines(baselines: Map<RobotTwoPropDetector.PropPosition, Double>){
+        println("Setting color baselines to $baselines")
+        this.baselines = baselines
+    }
+
+
     fun processFrame(frame: Mat): Mat {
+        if (firstFrameTimeMillis == null) {
+            firstFrameTimeMillis = System.currentTimeMillis()
+        }
+
         Imgproc.cvtColor(frame, mat, Imgproc.COLOR_RGB2HSV)
 
         when (colorToDetect) {
@@ -63,15 +80,32 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
         val colorIntensities = regions.map { (position, rect) ->
             position to Core.sumElems(rect).`val`[0]
         }.toMap()
+        println("colorIntensities: $colorIntensities")
+
+        val now = System.currentTimeMillis()
+        val timeSinceFirstFrameMillis = now - (firstFrameTimeMillis?:now)
+        val timeToWaitAfterFirstFrameBeforeCalibratingMillis = 500
+        if(timeSinceFirstFrameMillis >= timeToWaitAfterFirstFrameBeforeCalibratingMillis && baselines == null) {
+            setBaselines(colorIntensities)
+        }
 
         regions.forEach {(position, rect) ->
             rect.release()
         }
+    
+        val colorIntensityRelativeToBaseline = colorIntensities.map { (position, intensity) ->
+            position to (baselines?.get(position)?.let { baseline ->
+                val relativeIntensity = intensity - baseline
+                relativeIntensity
+            } ?: 0.0)
+        }
+        println("baselines: $baselines")
+        println("colorIntensityRelativeToBaseline: $colorIntensityRelativeToBaseline")
 
-        propPosition = colorIntensities.entries.maxBy { (position, value) ->
+        propPosition = colorIntensityRelativeToBaseline.maxByOrNull { (position, value) ->
             telemetry.addLine("color Intensity $position = $value")
             value
-        }.key
+        }?.first ?: propPosition
 
         positionsMappedToRects.forEach {(position, rect) ->
             val borderColor = if (position == propPosition) colorToDetectAsScalar else white
