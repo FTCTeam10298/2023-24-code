@@ -51,7 +51,7 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
     }
 
     fun setBaselines(baselines: Map<RobotTwoPropDetector.PropPosition, Double>){
-        telemetry.addLine("Setting color baselines to $baselines")
+        println("Setting color baselines to $baselines")
         this.baselines = baselines
     }
 
@@ -80,7 +80,7 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
         val colorIntensities = regions.map { (position, rect) ->
             position to Core.sumElems(rect).`val`[0]
         }.toMap()
-        telemetry.addLine("colorIntensities: $colorIntensities")
+        println("colorIntensities: $colorIntensities")
 
         val now = System.currentTimeMillis()
         val timeSinceFirstFrameMillis = now - (firstFrameTimeMillis?:now)
@@ -88,6 +88,48 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
         if(timeSinceFirstFrameMillis >= timeToWaitAfterFirstFrameBeforeCalibratingMillis && baselines == null) {
             setBaselines(colorIntensities)
         }
+
+
+//        2024-04-19 07:57:33.482  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.484  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.484  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.485  4214-4379  System.out              com.qualcomm.ftcrobotcontroller      I  colorIntensities: {Left=44625.0, Center=32895.0, Right=119595.0}
+//        2024-04-19 07:57:33.485  4214-4379  System.out              com.qualcomm.ftcrobotcontroller      I  baselines: null
+//        2024-04-19 07:57:33.485  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.486  4214-4379  System.out              com.qualcomm.ftcrobotcontroller      I  colorIntensityRelativeToBaseline: [(Left, 0.0), (Center, 0.0), (Right, 0.0)]
+//        2024-04-19 07:57:33.486  4214-4379  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: color Intensity Left = 0.0
+//        2024-04-19 07:57:33.486  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.486  4214-4379  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: color Intensity Center = 0.0
+//        2024-04-19 07:57:33.486  4214-4379  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: color Intensity Right = 0.0
+//        2024-04-19 07:57:33.486  4214-4379  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: %%Telemetry.Update%%
+//        2024-04-19 07:57:33.487  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.487  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.489  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.489  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.491  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.491  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.493  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.493  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.494  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.495  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.496  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.497  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.498  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.498  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.500  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.500  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.501  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.502  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.503  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.503  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.505  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.505  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.507  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.507  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.508  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+//        2024-04-19 07:57:33.509  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: wizardResults: InitLoopResults(wizardResults=WizardResults(alliance=Blue, startPosition=Backboard, partnerIsPlacingYellow=false, numberOfCycles=1, waitSeconds=0), cameraStuff=CameraStuff(propDetector=us.brainstormz.robotTwo.RobotTwoPropDetector@6d7028d, opencv=us.brainstormz.openCvAbstraction.OpenCvAbstraction@2613c42))
+//        2024-04-19 07:57:33.510  4214-4373  System.out              com.qualcomm.ftcrobotcontroller      I  Telemetry: propPosition: Left
+
         regions.forEach {(position, rect) ->
             rect.release()
         }
@@ -98,8 +140,8 @@ class RobotTwoPropDetector(private val telemetry: Telemetry, private val colorTo
                 relativeIntensity
             } ?: 0.0)
         }
-        telemetry.addLine("baselines: $baselines")
-        telemetry.addLine("colorIntensityRelativeToBaseline: $colorIntensityRelativeToBaseline")
+        println("baselines: $baselines")
+        println("colorIntensityRelativeToBaseline: $colorIntensityRelativeToBaseline")
 
         propPosition = colorIntensityRelativeToBaseline.maxByOrNull { (position, value) ->
             telemetry.addLine("color Intensity $position = $value")
