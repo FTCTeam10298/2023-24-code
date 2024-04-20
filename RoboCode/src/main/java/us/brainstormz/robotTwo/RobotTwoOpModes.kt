@@ -80,3 +80,49 @@ class Autonomous: OpMode() {
         aprilTagPipeline.close()
     }
 }
+
+
+//@Photon
+@Autonomous(name = "RobotTwoAutoNoCycles", group = "!")
+class AutonomousNoCycles: OpMode() {
+
+    private val multiTelemetry = MultipleTelemetry(telemetry, PrintlnTelemetry())
+    private val hardware: RobotTwoHardware= RobotTwoHardware(telemetry= multiTelemetry, opmode = this)
+
+    private val propDetectorOpencv = OpenCvAbstraction(this)
+    private val aprilTagPipeline = AprilTagPipelineForEachCamera("Webcam 1", Size(640, 480))
+    private val cameraMonitorViewId = VisionPortal.makeMultiPortalView(2, MultiPortalLayout.HORIZONTAL)
+    private lateinit var auto: RobotTwoAutoNoCycles
+    override fun init() {
+        hardware.init(hardwareMap)
+
+        propDetectorOpencv.init(hardwareMap = hardwareMap, cameraMonitorViewId.first())
+
+        auto = RobotTwoAutoNoCycles(multiTelemetry)
+
+        auto.init(hardware)
+    }
+
+    override fun init_loop() {
+        auto.initLoop(hardware, propDetectorOpencv, gamepad1)
+    }
+
+    override fun start() {
+        auto.start(hardware)
+
+        propDetectorOpencv.stop()
+
+        sleep(500)
+
+        aprilTagPipeline.init(viewContainerId = cameraMonitorViewId.last(), hardwareMap = hardwareMap)
+        aprilTagPipeline.resumeStreaming()
+    }
+
+    override fun loop() {
+        auto.loop(hardware= hardware, aprilTagPipeline, SerializableGamepad(gamepad1))
+    }
+
+    override fun stop() {
+        aprilTagPipeline.close()
+    }
+}
