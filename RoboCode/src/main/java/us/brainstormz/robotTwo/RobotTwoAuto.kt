@@ -660,8 +660,8 @@ class RobotTwoAuto(
                             depositYellow(propPosition, alliance, liftHeight) + listOf(
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                    x = -(RobotTwoHardware.robotWidthInches / 2 + 3),
-                                                    y = -48.0,
+                                                    x = pushPurpleFarFromTrussX - 12,
+                                                    y = startPosition.y - 20,
                                                     r = 0.0,
                                             )),
                                             handoffInput = HandoffTarget(
@@ -677,8 +677,8 @@ class RobotTwoAuto(
                                     ),
                                     blankAutoState.copy(
                                             drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                    x = -(RobotTwoHardware.robotWidthInches / 2 + 3),
-                                                    y = -48.0,
+                                                    x = pushPurpleFarFromTrussX - 12,
+                                                    y = startPosition.y - 20,
                                                     r = 0.0,
                                             )),
                                             handoffInput = HandoffTarget(
