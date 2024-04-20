@@ -953,59 +953,37 @@ class RobotTwoAuto(
                                 },
                         ),
                         parkPath = { previousAutoInput, doingCycles->
-                            listOf(
-                                    blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                    x = -(RobotTwoHardware.robotWidthInches / 2 + 3),
-                                                    y = -48.0,
-                                                    r = 0.0,
-                                            )),
-                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                            }
-                                    ),
-                                    blankAutoState.copy(
-                                            drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                    x = -(RobotTwoHardware.robotWidthInches / 2 + 3),
-                                                    y = -60.0,
-                                                    r = 0.0,
-                                            )),
-                                            getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                            }
-                                    )
-                            )
-//                            if (!doingCycles) {
-//                                listOf(
-//                                        previousAutoInput.copy(
-//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(previousAutoInput.drivetrainTarget.targetPosition.copy(
-//                                                        x = startPosition.x + 1,
-//                                                        y = -50.0,
-//                                                )),
-//                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-//                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-//                                                }
-//                                        ),
-//                                        previousAutoInput.copy(
-//                                                drivetrainTarget = Drivetrain.DrivetrainTarget(previousAutoInput.drivetrainTarget.targetPosition.copy(
-//                                                        x = startPosition.x + 1,
-//                                                        y = -60.0,
-//                                                )),
-//                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-//                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-//                                                }
-//                                        )
-//                                )
-//                            } else {
-//                                listOf(
-//                                        previousAutoInput.copy(
-//                                                extendoInput = ExtendoPositions.AutoPark,
-//                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-//                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-//                                                }
-//                                        ),
-//                                )
-//                            }
+                            if (!doingCycles) {
+                                listOf(
+                                        previousAutoInput.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(previousAutoInput.drivetrainTarget.targetPosition.copy(
+                                                        x = startPosition.x + 1,
+                                                        y = -50.0,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                        previousAutoInput.copy(
+                                                drivetrainTarget = Drivetrain.DrivetrainTarget(previousAutoInput.drivetrainTarget.targetPosition.copy(
+                                                        x = startPosition.x + 1,
+                                                        y = -60.0,
+                                                )),
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        )
+                                )
+                            } else {
+                                listOf(
+                                        previousAutoInput.copy(
+                                                extendoInput = ExtendoPositions.AutoPark,
+                                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                                }
+                                        ),
+                                )
+                            }
                         }
                 )
             }
