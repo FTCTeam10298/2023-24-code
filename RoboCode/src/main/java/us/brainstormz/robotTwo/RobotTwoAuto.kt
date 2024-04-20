@@ -32,7 +32,6 @@ import us.brainstormz.robotTwo.subsystems.Wrist
 import us.brainstormz.telemetryWizard.TelemetryConsole
 import us.brainstormz.telemetryWizard.TelemetryWizard
 import us.brainstormz.utils.measured
-import java.lang.Exception
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
@@ -524,6 +523,52 @@ class RobotTwoAuto(
                         ),
                 )
 
+                val driveToStackFromBoard = listOf(
+                        cyclePreCollectBase.copy(
+                                label = "start drive to stack from board",
+                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                        x = cycleUnderTrussXPosition - 1,
+                                        y = 35.0,
+                                        r = 0.0,
+                                )),
+                                intakeInput = Intake.CollectorPowers.Eject,
+                                handoffInput = HandoffTarget(
+                                        armPosition = Arm.Positions.OutButUnderTwelve,
+                                        depoInput = DepoInput.Down,
+                                        wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
+                                ),
+                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                    drivetrain.rotationPID = drivetrain.rotationOnlyPID
+
+                                    val liftIsOkToDriveUnderTruss = checkIfLiftIsOkToDriveUnderTruss(actualWorld)
+                                    nextTargetFromCondition(liftIsOkToDriveUnderTruss && isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                }
+                        ),
+                        cyclePreCollectBase.copy(
+                                drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
+                                        x = cycleUnderTrussXPosition - 1,
+                                        y = startPosition.y,
+                                        r = 0.0,
+                                )),
+                                intakeInput = Intake.CollectorPowers.Intake,
+                                handoffInput = HandoffTarget(
+                                        armPosition = Arm.Positions.OutButUnderTwelve,
+                                        depoInput = DepoInput.Down,
+                                        wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
+                                ),
+                                getNextInput = { actualWorld, previousActualWorld, targetWorld ->
+                                    nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
+                                }
+                        ),
+                )
+
+
+                fun startDriveToPathFromBoard(base:AutoInput) = base.copy(
+//                    listIndex = 0,
+                    jumpTo = driveToStackFromBoard[0].label,
+                )
+
+
                 PathPreAssembled(
                         purplePlacementPath = { propPosition ->
                             val propPlacement = when (propPosition) {
@@ -776,7 +821,11 @@ class RobotTwoAuto(
 
                                                         println("condition ID: A, value: $condition")
 
-                                                        nextTargetFromCondition(condition, targetWorld)
+                                                        if(checkIfTimeToGiveUpOnCollection(System.currentTimeMillis())){
+                                                            getNextTargetFromList(startDriveToPathFromBoard(cycleCollectionAndPostBase))
+                                                        }else {
+                                                            nextTargetFromCondition(condition, targetWorld)
+                                                        }
                                                     }
                                             ),
 //                                            eject after awhile of trying to collect
@@ -805,7 +854,11 @@ class RobotTwoAuto(
 
                                                         println("condition ID: D, value: $condition")
 
-                                                        nextTargetFromCondition(condition, nextTarget)
+                                                        if(checkIfTimeToGiveUpOnCollection(System.currentTimeMillis())){
+                                                            getNextTargetFromList(startDriveToPathFromBoard(cycleCollectionAndPostBase))
+                                                        }else {
+                                                            nextTargetFromCondition(condition, nextTarget)
+                                                        }
                                                     }
                                             ),
                                             cycleCollectionAndPostBase.copy(
@@ -824,60 +877,28 @@ class RobotTwoAuto(
 
                                                         println("condition ID: J")
 
-                                                        nextTargetFromCondition(
-                                                                hasTimeElapsed(500, targetWorld),
-                                                                if (!(left && right)) {
-                                                                    targetWorld.copy(
-                                                                            autoInput = targetWorld.autoInput?.copy(
-                                                                                    listIndex = indexOfCollectionStart
-                                                                            )
-                                                                    )
-                                                                } else {
-                                                                    targetWorld
-                                                                }
-                                                        )
+                                                        if(checkIfTimeToGiveUpOnCollection(System.currentTimeMillis())){
+                                                            getNextTargetFromList(startDriveToPathFromBoard(cycleCollectionAndPostBase))
+                                                        }else {
+                                                            nextTargetFromCondition(
+                                                                    hasTimeElapsed(500, targetWorld),
+                                                                    if (!(left && right)) {
+                                                                        targetWorld.copy(
+                                                                                autoInput = targetWorld.autoInput?.copy(
+                                                                                        listIndex = indexOfCollectionStart
+                                                                                )
+                                                                        )
+                                                                    } else {
+                                                                        targetWorld
+                                                                    }
+                                                            )
+                                                        }
                                                     }
                                             ),
                                     )
                                 },
                                 driveToStackFromBoard = { propPosition ->
-                                    listOf(
-                                            cyclePreCollectBase.copy(
-                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                            x = cycleUnderTrussXPosition - 1,
-                                                            y = 35.0,
-                                                            r = 0.0,
-                                                    )),
-                                                    intakeInput = Intake.CollectorPowers.Eject,
-                                                    handoffInput = HandoffTarget(
-                                                            armPosition = Arm.Positions.OutButUnderTwelve,
-                                                            depoInput = DepoInput.Down,
-                                                            wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
-                                                    ),
-                                                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                        drivetrain.rotationPID = drivetrain.rotationOnlyPID
-
-                                                        val liftIsOkToDriveUnderTruss = checkIfLiftIsOkToDriveUnderTruss(actualWorld)
-                                                        nextTargetFromCondition(liftIsOkToDriveUnderTruss && isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                                    }
-                                            ),
-                                            cyclePreCollectBase.copy(
-                                                    drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
-                                                            x = cycleUnderTrussXPosition - 1,
-                                                            y = startPosition.y,
-                                                            r = 0.0,
-                                                    )),
-                                                    intakeInput = Intake.CollectorPowers.Intake,
-                                                    handoffInput = HandoffTarget(
-                                                            armPosition = Arm.Positions.OutButUnderTwelve,
-                                                            depoInput = DepoInput.Down,
-                                                            wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
-                                                    ),
-                                                    getNextInput = { actualWorld, previousActualWorld, targetWorld ->
-                                                        nextTargetFromCondition(isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
-                                                    }
-                                            ),
-                                    )
+                                    driveToStackFromBoard
                                 },
                                 scoreCycle = { propPosition ->
                                     listOf(
@@ -1316,7 +1337,12 @@ class RobotTwoAuto(
             val cycles = cyclePath?.assemblePath(propPosition) ?: emptyList()
 
             val beforePark = fiftyPoint + cycles
-            return beforePark + parkPath(beforePark.last(), cyclePath != null)
+            val all =  beforePark + parkPath(beforePark.last(), cyclePath != null)
+            val duplicates = all.mapNotNull{it.label}.groupBy { it }.filter { it.value.size > 1 }
+            if(duplicates.isNotEmpty()){
+                throw Exception("There are duplicates: $duplicates")
+            }
+            return all
         }
     }
 
@@ -1353,15 +1379,19 @@ class RobotTwoAuto(
     }
 
     private fun getNextTargetFromList(previousAutoInput: AutoInput): AutoInput {
-        val nextIndex = previousAutoInput.listIndex?.plus(1) ?: 0
+        val jumpTo = previousAutoInput.jumpTo?.let{label->autoStateList.first { it.label == label }}
+        val jumpIndex:Int? = jumpTo?.let(autoStateList::indexOf)
+        val nextIndex = jumpIndex ?: previousAutoInput.listIndex?.plus(1) ?: 0
 
         val listLength = autoStateList.size
 
         telemetry.addLine("nextIndex: $nextIndex")
+        telemetry.addLine("jumpIndex: $jumpIndex")
         telemetry.addLine("listLength: $listLength")
 
         return autoStateList.getOrNull(nextIndex)?.copy(
-                listIndex = nextIndex
+                listIndex = nextIndex,
+                jumpTo = null,
         ) ?: previousAutoInput
     }
 
@@ -1495,6 +1525,18 @@ class RobotTwoAuto(
         }
     }
 
+
+    private var whenAutoStartedMillis: Long?  = null
+    private val timeInAutoSeconds = 30
+    private val timeItTakesToFinishAutoSeconds = 10
+    private val timeSinceAutoStartToGiveUpOnCollectionMillis = (timeInAutoSeconds - timeItTakesToFinishAutoSeconds) * 1000
+    fun checkIfTimeToGiveUpOnCollection(nowMillis: Long): Boolean {
+
+        val now = nowMillis
+        val timeSinceAutoStartMillis = now - (whenAutoStartedMillis?:now)
+        return timeSinceAutoStartMillis >= timeSinceAutoStartToGiveUpOnCollectionMillis
+    }
+
     fun start(hardware: RobotTwoHardware) {
         val propPosition = initLoopResults.cameraStuff?.propDetector?.propPosition ?: PropPosition.Right
         initLoopResults.cameraStuff?.opencv?.stop()
@@ -1517,6 +1559,7 @@ class RobotTwoAuto(
                 numberOfCycles = wizardResults.numberOfCycles,
                 waitTimeMillis = wizardResults.waitSeconds * 1000L
         )
+        whenAutoStartedMillis = System.currentTimeMillis()
 
         drivetrain.localizer.setPositionAndRotation(startPositionAndRotation)
     }

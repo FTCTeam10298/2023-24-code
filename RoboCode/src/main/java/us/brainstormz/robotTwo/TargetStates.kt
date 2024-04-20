@@ -43,6 +43,7 @@ data class TargetRobot(
 )
 
 data class AutoInput (
+        val label:String? = null,
         val drivetrainTarget: Drivetrain.DrivetrainTarget,
         val handoffInput: RobotTwoAuto.HandoffTarget,
         val extendoInput: Extendo.ExtendoPositions,
@@ -52,6 +53,7 @@ data class AutoInput (
         @get:JsonIgnore
         val getNextInput: ((actualWorld: ActualWorld, previousActualWorld: ActualWorld, targetWorld: TargetWorld) -> AutoInput)? = null,
         val listIndex: Int? = null,
+        val jumpTo:String? = null,
         val getCurrentPositionAndRotationFromAprilTag: Boolean = false
 )
 
