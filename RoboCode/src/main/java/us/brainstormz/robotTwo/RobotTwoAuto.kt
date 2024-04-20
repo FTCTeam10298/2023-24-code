@@ -493,7 +493,7 @@ class RobotTwoAuto(
 
         val redPath: PathPreAssembled = when (startingSide) {
             StartPosition.Backboard -> {
-                val cycleUnderTrussXPosition = -58.5
+                val cycleUnderTrussXPosition = -61.0
 
                 val cyclePreCollectBase = blankAutoState.copy(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
@@ -524,7 +524,7 @@ class RobotTwoAuto(
                 )
 
                 val driveToStackFromBoard = listOf(
-                        cyclePreCollectBase.copy(
+                        cycleCollectionAndPostBase.copy(
                                 label = "start drive to stack from board",
                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
                                         x = cycleUnderTrussXPosition - 1,
@@ -544,7 +544,7 @@ class RobotTwoAuto(
                                     nextTargetFromCondition(liftIsOkToDriveUnderTruss && isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                 }
                         ),
-                        cyclePreCollectBase.copy(
+                        cycleCollectionAndPostBase.copy(
                                 drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
                                         x = cycleUnderTrussXPosition - 1,
                                         y = startPosition.y,
@@ -743,7 +743,7 @@ class RobotTwoAuto(
                                 numberOfCycles = numberOfCycles,
                                 driveToBoardFromStack = { propPosition ->
                                     listOf(
-                                            cycleCollectionAndPostBase.copy(
+                                            cyclePreCollectBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
                                                             x = cycleUnderTrussXPosition,
                                                             y = startPosition.y,
@@ -755,7 +755,7 @@ class RobotTwoAuto(
                                                         nextTargetFromCondition(liftIsOkToDriveUnderTruss && isRobotAtPosition(actualWorld, previousActualWorld, targetWorld), targetWorld)
                                                     }
                                             ),
-                                            cycleCollectionAndPostBase.copy(
+                                            cyclePreCollectBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
                                                             x = cycleUnderTrussXPosition,
                                                             y = 35.0,
@@ -769,9 +769,9 @@ class RobotTwoAuto(
                                 },
                                 collectFromStack = { propPosition ->
                                     val startCollectionPosition = PositionAndRotation(
-                                            x = cycleUnderTrussXPosition + 8,
+                                            x = cycleUnderTrussXPosition + 1,
                                             y = 41.5,
-                                            r = -25.0,
+                                            r = -28.0,
                                     )
 
                                     listOf(
@@ -789,7 +789,7 @@ class RobotTwoAuto(
                                                     }
                                             ),
                                             //pattern I want: drop down goes up and down, robot turns back and forth, extendo moves forward and back
-                                            cyclePreCollectBase.copy(
+                                            cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition),
                                                     extendoInput = ExtendoPositions.CollectFromStack1,
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
@@ -822,7 +822,7 @@ class RobotTwoAuto(
                                                         println("condition ID: A, value: $condition")
 
                                                         if(checkIfTimeToGiveUpOnCollection(System.currentTimeMillis())){
-                                                            getNextTargetFromList(startDriveToPathFromBoard(cycleCollectionAndPostBase))
+                                                            getNextTargetFromList(startDriveToPathFromBoard(targetWorld.autoInput!!))
                                                         }else {
                                                             nextTargetFromCondition(condition, targetWorld)
                                                         }
@@ -831,7 +831,7 @@ class RobotTwoAuto(
 //                                            eject after awhile of trying to collect
                                             cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(startCollectionPosition.copy(
-                                                            r = startCollectionPosition.r - 10
+                                                            r = -50.0
                                                     )),
                                                     extendoInput = ExtendoPositions.CollectFromStack2,
                                                     intakeInput = Intake.CollectorPowers.Intake,
@@ -855,7 +855,7 @@ class RobotTwoAuto(
                                                         println("condition ID: D, value: $condition")
 
                                                         if(checkIfTimeToGiveUpOnCollection(System.currentTimeMillis())){
-                                                            getNextTargetFromList(startDriveToPathFromBoard(cycleCollectionAndPostBase))
+                                                            getNextTargetFromList(startDriveToPathFromBoard(targetWorld.autoInput!!))
                                                         }else {
                                                             nextTargetFromCondition(condition, nextTarget)
                                                         }
@@ -878,7 +878,7 @@ class RobotTwoAuto(
                                                         println("condition ID: J")
 
                                                         if(checkIfTimeToGiveUpOnCollection(System.currentTimeMillis())){
-                                                            getNextTargetFromList(startDriveToPathFromBoard(cycleCollectionAndPostBase))
+                                                            getNextTargetFromList(startDriveToPathFromBoard(targetWorld.autoInput!!))
                                                         }else {
                                                             nextTargetFromCondition(
                                                                     hasTimeElapsed(500, targetWorld),
@@ -904,11 +904,6 @@ class RobotTwoAuto(
                                     listOf(
                                             cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(spitIntoBackstagePosition.copy(r = 1.0)),
-                                                    handoffInput = HandoffTarget(
-                                                            armPosition = Arm.Positions.OutButUnderTwelve,
-                                                            depoInput = DepoInput.Down,
-                                                            wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
-                                                    ),
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
 
                                                         val drivetrainIsAtPosition = isRobotAtXPosition(actualWorld, targetWorld, allowedErrorXInches = 4.0)
@@ -918,11 +913,6 @@ class RobotTwoAuto(
                                             ),
                                             cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(spitIntoBackstagePosition),
-                                                    handoffInput = HandoffTarget(
-                                                            armPosition = Arm.Positions.OutButUnderTwelve,
-                                                            depoInput = DepoInput.Down,
-                                                            wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
-                                                    ),
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                         drivetrain.rotationPID = PID(
                                                                 name = "r only",
@@ -939,11 +929,6 @@ class RobotTwoAuto(
                                             cycleCollectionAndPostBase.copy(
                                                     drivetrainTarget = Drivetrain.DrivetrainTarget(spitIntoBackstagePosition),
                                                     extendoInput = ExtendoPositions.CollectFromStack2,
-                                                    handoffInput = HandoffTarget(
-                                                            armPosition = Arm.Positions.OutButUnderTwelve,
-                                                            depoInput = DepoInput.Down,
-                                                            wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
-                                                    ),
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                         drivetrain.rotationPID = drivetrain.rotationOnlyPID
 
@@ -957,11 +942,6 @@ class RobotTwoAuto(
                                                     intakeInput = Intake.CollectorPowers.Eject,
                                                     extendoInput = ExtendoPositions.Min,
                                                     latchOverride = Transfer.TransferTarget(Transfer.LatchTarget(Transfer.LatchPositions.Open, 0L)),
-                                                    handoffInput = HandoffTarget(
-                                                            armPosition = Arm.Positions.OutButUnderTwelve,
-                                                            depoInput = DepoInput.Down,
-                                                            wristTargets = Wrist.WristTargets(Claw.ClawTarget.Gripping),
-                                                    ),
                                                     getNextInput = { actualWorld, previousActualWorld, targetWorld ->
                                                         val timeIsDone = hasTimeElapsed(1000, targetWorld)
 
@@ -1528,7 +1508,7 @@ class RobotTwoAuto(
 
     private var whenAutoStartedMillis: Long?  = null
     private val timeInAutoSeconds = 30
-    private val timeItTakesToFinishAutoSeconds = 10
+    private val timeItTakesToFinishAutoSeconds = 8
     private val timeSinceAutoStartToGiveUpOnCollectionMillis = (timeInAutoSeconds - timeItTakesToFinishAutoSeconds) * 1000
     fun checkIfTimeToGiveUpOnCollection(nowMillis: Long): Boolean {
 
