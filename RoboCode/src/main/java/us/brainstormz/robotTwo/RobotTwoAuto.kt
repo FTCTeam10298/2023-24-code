@@ -493,7 +493,7 @@ class RobotTwoAuto(
 
         val redPath: PathPreAssembled = when (startingSide) {
             StartPosition.Backboard -> {
-                val cycleUnderTrussXPosition = -61.0
+                val cycleUnderTrussXPosition = -58.5
 
                 val cyclePreCollectBase = blankAutoState.copy(
                         drivetrainTarget = Drivetrain.DrivetrainTarget(PositionAndRotation(
